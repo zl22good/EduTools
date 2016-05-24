@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="index.css" />
+        <style>
+            .algorithm-description {
+                padding: 5px 10px;
+            }
+            .comment {
+                color: darkgreen;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="headerbox">
+            <div id="title">Pseudo-code for Edge-Based Algorithm</div>
+        </div>
+        <p class="algorithm-description">Dijkstra's Algorithm is a procedure to find shortest paths from a given vertex s 
+            in a graph G to all other vertices - the single-source shortest path problem. 
+            The algorithm incrementally builds a sub-graph of G which is in fact a tree containing 
+            shortest paths from s to every other vertex in the tree. A step of the algorithm consists 
+            of determining which vertex to add to the tree next. This is a variant of the approach in 
+            the Bailey text and the approach you will use when you code this.
+        </p>
+        <br/>
+       <pre>
+        <span class="comment">/* initialization */</span>
+        PriorityQueue openList = { startVertex }
+        array cost = { Big, Big, Big, ... }
+        array pred = { No, No, No, ... }
+        cost[startVertex] = 0;
+
+        <span class="comment">/* loop*/</span>
+        while ( !openList.empty())  {
+            closingVertex = vertex in openList with minimum value in cost[];
+            remove closingVertex from openList;
+
+            for each non-closed vertex with an edge from closingVertex  {
+                if ( cost[vertex] > cost[closingVertex] + edgeWeight ) {
+                    cost[vertex] = cost[closingVertex] + edgeWeight;
+                    pred[vertex] = closingVertex;
+                    put vertex into openList;
+                }
+            }
+        }
+        </pre>
+    </body>
+</html>

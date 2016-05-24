@@ -1,0 +1,268 @@
+html {
+  height:100%; 
+    margin:0;
+  border:0;
+  padding:0;
+  height:100%; 
+  max-height:100%; 
+  overflow: hidden;
+
+  background-color: #DBDBDB;
+  font-family: "calibri", serif;
+}
+
+body {
+  height:100%; 
+    margin:0;
+  border:0;
+  padding:0;
+  height:100%; 
+  max-height:100%; 
+  overflow: hidden;
+
+  background-color: #DBDBDB;
+  font-family: "calibri", serif;
+}
+
+#title {
+	width: 100%;
+	height: 100px;
+	
+	/*Permalink - use to edit and share this gradient- http://colorzilla.com/gradient-editor/#f2f6f8+0,d8e1e7+50,b5c6d0+51,e0eff9+100;Grey+Gloss+%232 */
+	background: #f2f6f8; /* Old browsers */
+	background: -moz-linear-gradient(top, #f2f6f8 0%, #d8e1e7 50%, #b5c6d0 51%, #e0eff9 100%); /* FF3.6-15 */
+	background: -webkit-linear-gradient(top, #f2f6f8 0%,#d8e1e7 50%,#b5c6d0 51%,#e0eff9 100%); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(to bottom, #f2f6f8 0%,#d8e1e7 50%,#b5c6d0 51%,#e0eff9 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2f6f8', endColorstr='#e0eff9',GradientType=0 ); /* IE6-9 */
+
+	/* border */
+	-webkit-box-shadow: 0px 3px 17px 3px rgba(0,0,0,0.75);
+	-moz-box-shadow: 0px 3px 17px 3px rgba(0,0,0,0.75);
+	box-shadow: 0px 3px 17px 3px rgba(0,0,0,0.75);
+	
+	/* text */
+	text-shadow: 2px 1px 2px rgba(150, 150, 150, 1);
+	
+	/* TITLE text font stuff*/
+	font-weight: bold;
+	font-size: 41px;
+	text-align: center 
+}
+
+#controlbox {
+	height:50px;
+	padding: 5px;
+	/* box shadow */
+	-webkit-box-shadow: inset 2px -8px 20px -4px rgba(0,0,0,0.75);
+	-moz-box-shadow: inset 2px -8px 20px -4px rgba(0,0,0,0.75);
+	box-shadow: inset 2px -8px 20px -4px rgba(0,0,0,0.75);
+}
+
+#resultWrap{
+    float: left;
+}
+
+#resultWrap p {
+    margin: 2px 0;
+}
+
+#allControl
+{
+    float:right;
+}
+
+#Pseudo, #diffAlgorithm, #file
+{
+        vertical-align: bottom;
+}
+#Pseudo {
+    margin-left:20px;
+}
+
+#filename{
+	padding-right:5px;
+}
+
+#pauseResume{
+	font-weight:bold;
+}
+
+#speedChanger{
+	font-weight:bold;
+}
+
+#startSearch{
+	font-weight:bold;
+}
+
+#file{
+	font-weight:bold;
+    width:200px;
+}
+
+#filename{
+	font-weight:bold;
+    font-size:13.3333px;
+    vertical-align: bottom;
+}
+
+#header-wrap {
+    height: 22%;
+    width: 100%;
+}
+
+#content-wrap {
+    height: 78%;
+    width: 100%;
+}
+
+#pointbox {
+/*position: fixed;*/
+/*left: 0px;*/
+/*top: 160px;*/
+/*right:400px;*/
+/*bottom: 0px;*/
+width: 30%;
+overflow:auto;
+height: 98%;
+vertical-align: top;
+display: inline-block;
+}
+
+#speed-label
+{
+    margin-right: 4px;
+    VERTICAL-ALIGN: bottom;
+    font-size: 14.3333PX;
+    font-weight: bold;
+}
+
+#startSearch
+{
+    margin-left: 40px;
+    margin-right: 5px;
+    vertical-align: bottom;
+}
+
+#pauseResume
+{
+    margin-right: 5px;
+    vertical-align: bottom;
+}
+
+#legendbox {
+/*position: absolute;*/
+/*top:200px;*/
+/*bottom:20px;*/
+/*left:220px;*/
+/*right:10px;*/
+overflow:hidden;
+width:100%;
+height: 54.9%;
+}
+
+#gethelp {
+/*position: absolute;*/
+/*top:200px;*/
+/*bottom:20px;*/
+/*left:220px;*/
+/*right:10px;*/
+/*display: none;*/
+overflow:hidden;
+width:100%;
+height: 45%;
+}
+
+#right-column {
+    vertical-align: top;
+    margin-right: 0;
+    margin-left: auto;
+    display: inline-block;
+    height: 98%;
+    width: calc(15% - 10px);
+    
+    border: 2px solid #778185;
+/*-webkit-box-shadow: 10px 10px 18px -4px rgba(0,0,0,0.75);*/
+/*-moz-box-shadow: 10px 10px 18px -4px rgba(0,0,0,0.75);*/
+/*box-shadow: 10px 10px 18px -4px rgba(0,0,0,0.75);*/
+}
+
+#map {
+/*position: absolute;*/
+/*top:180px;*/
+/*bottom:20px;*/
+/*left:420px;*/
+/*right:0px;*/
+vertical-align: top;
+display: inline-block;
+overflow:hidden;
+width: calc(55% - 10px);
+height: 98%;
+
+border: 2px solid #778185;
+/*-webkit-box-shadow: 10px 10px 18px -4px rgba(0,0,0,0.75);*/
+/*-moz-box-shadow: 10px 10px 18px -4px rgba(0,0,0,0.75);*/
+/*box-shadow: 10px 10px 18px -4px rgba(0,0,0,0.75);*/
+}
+
+#map * {
+cursor:crosshair;
+}
+
+table.nmptable {
+font-size:8pt;
+border: 1px solid black;
+border-spacing: 0px;
+margin-left: auto;
+margin-right: auto;
+background-color:white;
+}
+
+table.nmptable  td, th {
+border: solid black;
+border-width: 1px;
+}
+
+table.nmptable2 td, th {
+border-width: 0px;
+}
+
+table.nmptable tr td {
+text-align:right;
+}
+
+table.pthtable {
+font-size:10pt;
+border: 1px solid black;
+border-spacing: 0px;
+margin-left: auto;
+margin-right: auto;
+background-color:white;
+}
+
+table.pthtable  td, th {
+border: solid black;
+border-width: 1px;
+}
+
+table.pthtable tr td {
+text-align:left;
+}
+
+table.gratable {
+font-size:10pt;
+border: 1px solid black;
+border-spacing: 0px;
+margin-left: auto;
+margin-right: auto;
+background-color:white;
+}
+
+table.gratable  td, th {
+border: solid black;
+border-width: 1px;
+}
+
+table.gratable tr td {
+text-align:left;
+}
