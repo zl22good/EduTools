@@ -23,6 +23,7 @@
 // 2013-12-25 JDT  Click on GRA, PTH point label in table recenters map
 // 2014-11-17 JDT  Added .wpl file support (waypoint list)
 // 2016-06-27 JDT  Removed code duplicated by TM's tmjsfuncs.js
+// 2016-06-27 JDT  Added support for .tmg graph file format
 //
 
 // several globals (map, waypoints, markers, etc) now come from
@@ -67,20 +68,24 @@ function pointboxErrorMsg(msg) {
 // when a file is selected, this will be called
 function startRead() {
 
-    // force highway data box to be displayed
-    //var menu = document.getElementById("showHideMenu");
-    //menu.selectedIndex = 2;
-    //toggleTable();
-
     // first, retrieve the selected file (as a File object)
+    // which must be done before we toggle the table to force
+    // the pointbox to be displayed
     var file = document.getElementById('filesel').files[0];
+
+    // force highway data box to be displayed
+    var menu = document.getElementById("showHideMenu");
+    menu.options[2].selected = true;
+    toggleTable();
+
     if (file) {
-	DBG.write("file: " + file.name);
+	//DBG.write("file: " + file.name);
 	document.getElementById('filename').innerHTML = file.name;
 	if ((file.name.indexOf(".wpt") == -1) &&
 	    (file.name.indexOf(".pth") == -1) &&
 	    (file.name.indexOf(".nmp") == -1) &&
 	    (file.name.indexOf(".gra") == -1) &&
+	    (file.name.indexOf(".tmg") == -1) &&
 	    (file.name.indexOf(".wpl") == -1)) {
 	    pointboxErrorMsg("Unrecognized file type!");
 	    return;
@@ -99,7 +104,7 @@ function startRead() {
 	//reader.onerror = fileLoadError;
     }
     else {
-	DBG.write("file is null!");
+	//DBG.write("file is null!");
     }
 }
 
@@ -143,6 +148,10 @@ function processContents(fileContents) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
 	pointboxContents = parseGRAContents(fileContents);
     }
+    else if (fileName.indexOf(".tmg") >= 0) {
+	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
+	pointboxContents = parseTMGContents(fileContents);
+    }
     
     document.getElementById('pointbox').innerHTML = pointboxContents;
     document.getElementById('selected').innerHTML = pointboxContents;
@@ -157,6 +166,79 @@ function errorHandler(evt) {
 	// The file could not be read
 	document.getElementById('filecontents').innerHTML = "Error reading file...";
     }
+}
+
+// parse the contents of a .tmg file
+//
+// First line specifies TMG and version number (expected to be 1.0),
+// followed by the word "collapsed" (only supported option so far)
+// indicating that the hidden vertices in the graph are collapsed 
+// into intermediate points along edges.
+//
+// Second line specifies the number of vertices, numV, and the number
+// of edges, numE
+//
+// Next numV lines are a waypoint name (a String) followed by two
+// floating point numbers specifying the latitude and longitude
+//
+// Next numE lines are vertex numbers (based on order in the file)
+// that are connected by an edge followed by a String listing the
+// highway names that connect those points, followed by pairs of
+// floating point numbers, all space-separated, indicating the
+// coordinates of any shaping points along the edge
+//
+function parseTMGContents(fileContents) {
+
+    var lines = fileContents.replace(/\r\n/g,"\n").split('\n');
+    var header = lines[0].split(' ');
+    if (header[0] != "TMG") {
+	return '<table class="gratable"><thead><tr><th>Invalid TMG file (missing TMG marker on first line)</th></tr></table>';
+    }
+    if (header[1] != "1.0") {
+	return '<table class="gratable"><thead><tr><th>Unsupported TMG file version (' + header[1] + ')</th></tr></table>';
+    }
+    if (header[2] != "collapsed") {
+	return '<table class="gratable"><thead><tr><th>Unsupported TMG graph format (' + header[2] + ')</th></tr></table>';
+    }
+    var counts = lines[1].split(' ');
+    var numV = parseInt(counts[0]);
+    var numE = parseInt(counts[1]);
+    var summaryInfo = '<table class="gratable"><thead><tr><th>' + numV + " waypoints, " + numE + " connections.</th></tr></table>";
+
+    var vTable = '<table class="gratable"><thead><tr><th colspan="3">Waypoints</th></tr><tr><th>#</th><th>Coordinates</th><th>Waypoint Name</th></tr></thead><tbody>';
+
+    waypoints = new Array(numV);
+    for (var i = 0; i < numV; i++) {
+	var vertexInfo = lines[i+2].split(' ');
+	waypoints[i] = new Waypoint(vertexInfo[0], vertexInfo[1], vertexInfo[2], "", "");
+	vTable += '<tr><td>' + i + 
+	    '</td><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
+	    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
+	    + "<a onclick=\"javascript:LabelClick(" + i + ",'"
+	    + waypoints[i].label + "\',"
+	    + waypoints[i].lat + "," + waypoints[i].lon + ",0);\">"
+	    + waypoints[i].label + "</a></td></tr>"
+    }
+    vTable += '</tbody></table>';
+
+    var eTable = '<table class="gratable"><thead><tr><th colspan="3">Connections</th></tr><tr><th>#</th><th>Route Name(s)</th><th>Endpoints</th></tr></thead><tbody>';
+    graphEdges = new Array(numE);
+    for (var i = 0; i < numE; i++) {
+	var edgeInfo = lines[i+numV+2].split(' ');
+	if (edgeInfo.length > 3) {
+	    graphEdges[i] = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], edgeInfo.slice(3));
+	}
+	else {
+	    graphEdges[i] = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], null);
+	}
+	eTable += '<tr><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
+	    + edgeInfo[0] + ':&nbsp;' + waypoints[graphEdges[i].v1].label + 
+	    ' &harr; ' + edgeInfo[1] + ':&nbsp;' 
+	    + waypoints[graphEdges[i].v2].label + '</td></tr>';
+    }
+    eTable += '</tbody></table>';
+    genEdges = false;
+    return summaryInfo + '<p />' + vTable + '<p />' + eTable;
 }
 
 // parse the contents of a .gra file
@@ -196,7 +278,7 @@ function parseGRAContents(fileContents) {
     graphEdges = new Array(numE);
     for (var i = 0; i < numE; i++) {
 	var edgeInfo = lines[i+numV+1].split(' ');
-	graphEdges[i] = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2]);
+	graphEdges[i] = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], null);
 	eTable += '<tr><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
 	    + edgeInfo[0] + ':&nbsp;' + waypoints[graphEdges[i].v1].label + 
 	    ' &harr; ' + edgeInfo[1] + ':&nbsp;' 
@@ -314,7 +396,7 @@ function parseNMPContents(fileContents) {
     graphEdges = new Array(numE);
     for (var i = 0; i < numE; i++) {
 	// add the edge
-	graphEdges[i] = new GraphEdge(2*i, 2*i+1, "");
+	graphEdges[i] = new GraphEdge(2*i, 2*i+1, "", null);
 
 	// add an entry to the table to be drawn in the pointbox
 	var miles = Mileage(waypoints[2*i].lat, waypoints[2*i].lon, waypoints[2*i+1].lat, waypoints[2*i+1].lon).toFixed(4);
@@ -435,10 +517,11 @@ function PTHLine2Waypoint(line) {
 }
 
 
-function GraphEdge(v1, v2, label) {
+function GraphEdge(v1, v2, label, via) {
 
     this.v1 = parseInt(v1);
     this.v2 = parseInt(v2);
     this.label = label;
+    this.via = via;
     return this;
 }
