@@ -127,6 +127,8 @@ function processContents(fileContents) {
     var pointboxContents = "";
 
     // parse the file and process as appropriate
+    // TODO: check that this is always still here when we ask, might be
+    // better to store the filename in a variable for safe keeping
     var fileName = document.getElementById('filename').innerHTML;
     if (fileName.indexOf(".wpt") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint File)";
@@ -210,7 +212,7 @@ function parseTMGContents(fileContents) {
     waypoints = new Array(numV);
     for (var i = 0; i < numV; i++) {
 	var vertexInfo = lines[i+2].split(' ');
-	waypoints[i] = new Waypoint(vertexInfo[0], vertexInfo[1], vertexInfo[2], "", "");
+	waypoints[i] = new Waypoint(vertexInfo[0], vertexInfo[1], vertexInfo[2], "", new Array());
 	vTable += '<tr><td>' + i + 
 	    '</td><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
 	    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
@@ -222,22 +224,29 @@ function parseTMGContents(fileContents) {
     vTable += '</tbody></table>';
 
     var eTable = '<table class="gratable"><thead><tr><th colspan="3">Connections</th></tr><tr><th>#</th><th>Route Name(s)</th><th>Endpoints</th></tr></thead><tbody>';
-    graphEdges = new Array(numE);
+    //graphEdges = new Array(numE);
     for (var i = 0; i < numE; i++) {
 	var edgeInfo = lines[i+numV+2].split(' ');
+	var newEdge;
 	if (edgeInfo.length > 3) {
-	    graphEdges[i] = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], edgeInfo.slice(3));
+	    newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], edgeInfo.slice(3));
 	}
 	else {
-	    graphEdges[i] = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], null);
+	    newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], null);
 	}
+
+	// add this new edge to my endpoint vertex adjacency lists
+	waypoints[newEdge.v1].edgeList.push(newEdge);
+	waypoints[newEdge.v2].edgeList.push(newEdge);
+
 	eTable += '<tr><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
-	    + edgeInfo[0] + ':&nbsp;' + waypoints[graphEdges[i].v1].label + 
+	    + edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label + 
 	    ' &harr; ' + edgeInfo[1] + ':&nbsp;' 
-	    + waypoints[graphEdges[i].v2].label + '</td></tr>';
+	    + waypoints[newEdge.v2].label + '</td></tr>';
     }
     eTable += '</tbody></table>';
     genEdges = false;
+    usingAdjacencyLists = true;
     return summaryInfo + '<p />' + vTable + '<p />' + eTable;
 }
 
