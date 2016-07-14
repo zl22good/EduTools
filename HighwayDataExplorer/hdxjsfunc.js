@@ -24,6 +24,7 @@
 // 2014-11-17 JDT  Added .wpl file support (waypoint list)
 // 2016-06-27 JDT  Removed code duplicated by TM's tmjsfuncs.js
 // 2016-06-27 JDT  Added support for .tmg graph file format
+// 2016-07-14 JDT  simple .tmg format support
 //
 
 // several globals (map, waypoints, markers, etc) now come from
@@ -199,7 +200,7 @@ function parseTMGContents(fileContents) {
     if (header[1] != "1.0") {
 	return '<table class="gratable"><thead><tr><th>Unsupported TMG file version (' + header[1] + ')</th></tr></table>';
     }
-    if (header[2] != "collapsed") {
+    if ((header[2] != "simple") && (header[2] != "collapsed")) {
 	return '<table class="gratable"><thead><tr><th>Unsupported TMG graph format (' + header[2] + ')</th></tr></table>';
     }
     var counts = lines[1].split(' ');
