@@ -24,6 +24,7 @@
 // 2014-11-17 JDT  Added .wpl file support (waypoint list)
 // 2016-06-27 JDT  Removed code duplicated by TM's tmjsfuncs.js
 // 2016-06-27 JDT  Added support for .tmg graph file format
+// 2016-07-14 JDT  simple .tmg format support
 //
 
 // several globals (map, waypoints, markers, etc) now come from
@@ -199,7 +200,7 @@ function parseTMGContents(fileContents) {
     if (header[1] != "1.0") {
 	return '<table class="gratable"><thead><tr><th>Unsupported TMG file version (' + header[1] + ')</th></tr></table>';
     }
-    if (header[2] != "collapsed") {
+    if ((header[2] != "simple") && (header[2] != "collapsed")) {
 	return '<table class="gratable"><thead><tr><th>Unsupported TMG graph format (' + header[2] + ')</th></tr></table>';
     }
     var counts = lines[1].split(' ');
@@ -325,23 +326,28 @@ function parseWPTContents(fileContents) {
 
 // parse the contents of a .pth file
 //
-// Consists of a series of lines each containing a route name,
+// Consists of a series of lines each containing a route name, zero or
+// more intermediate points (latitude, longitude pairs), then a
 // waypoint name and a latitude and a longitude, all space-separated,
 // or a line containing a route name and waypoint name followed by a
 // lat,lng pair in parens
 //
 /* 
-START YT1_S 60.684924 135.059652
-YT2 MilCanRd 60.697199 135.047250
-YT2 +5 60.705383 135.054932
-YT2 4thAve 60.712623 135.050619
+START YT2@BorRd (60.862343,-135.196595)
+YT2 YT2@TakHSRd (60.85705,-135.202029)
+YT2 (60.849881,-135.203934) (60.844649,-135.187111) (60.830141,-135.187454) YT1_N/YT2_N (60.810264,-135.205286)
+YT1,YT2 (60.79662,-135.170288) YT1/YT2@KatRd (60.788579,-135.166302)
+YT1,YT2 YT1/YT2@WannRd (60.772479,-135.15044)
+YT1,YT2 YT1/YT2@CenSt (60.759893,-135.141191)
 
 or
 
-START YT1_S (60.684924,135.059652)
-YT2 MilCanRd (60.697199,135.047250)
-YT2 +5 (60.705383,135.054932)
-YT2 4thAve (60.712623,135.050619)
+START YT2@BorRd 60.862343 -135.196595
+YT2 YT2@TakHSRd 60.85705 -135.202029
+YT2 60.849881 -135.203934 60.844649 -135.187111 60.830141 -135.187454 YT1_N/YT2_N 60.810264 -135.205286
+YT1,YT2 60.79662 -135.170288 YT1/YT2@KatRd 60.788579 -135.166302
+YT1,YT2 YT1/YT2@WannRd 60.772479 -135.15044
+YT1,YT2 YT1/YT2@CenSt 60.759893 -135.141191
 
 */
 function parsePTHContents(fileContents) {
@@ -352,28 +358,35 @@ function parsePTHContents(fileContents) {
     waypoints = new Array();
     var totalMiles = 0.0;
     var segmentMiles = 0.0;
+    var previousWaypoint = null;
     for (var i = 0; i < lines.length; i++) {
 	if (lines[i].length > 0) {
-	    waypoints[waypoints.length] = PTHLine2Waypoint(lines[i]);
-	    if (waypoints.length > 1) { // make sure we are not at the first
-		segmentMiles = Mileage(waypoints[waypoints.length-2].lat,
-				       waypoints[waypoints.length-2].lon,
-				       waypoints[waypoints.length-1].lat,
-				       waypoints[waypoints.length-1].lon);
-		totalMiles += segmentMiles;
+	    // standardize first
+	    var line = standardizePTHLine(lines[i]);
+	    var info = PTHLineInfo(line, previousWaypoint);
+	    waypoints[waypoints.length] = info.waypoint;
+	    totalMiles += info.mileage;
+	    // this will display as a graph, so create and assign the
+	    // graph edges
+	    if (previousWaypoint != null) {
+		var newEdge = new GraphEdge(i-1, i, info.waypoint.elabel, info.via);
+		previousWaypoint.edgeList[previousWaypoint.edgeList.length] = newEdge;
+		info.waypoint.edgeList[0] = newEdge;
 	    }
+	    previousWaypoint = info.waypoint;
 	    table += '<tr><td>' + waypoints[waypoints.length-1].elabel +
 		"</td><td><a onclick=\"javascript:LabelClick(" + 0 + ",\'"
 	        + waypoints[waypoints.length-1].label + "\',"
 	        + waypoints[waypoints.length-1].lat + "," + waypoints[waypoints.length-1].lon +
 		",0);\">" + waypoints[waypoints.length-1].label +
-		'</a></td><td style="text-align:right">' + segmentMiles.toFixed(2) +
+		'</a></td><td style="text-align:right">' + info.mileage.toFixed(2) +
 		'</td><td style="text-align:right">' + totalMiles.toFixed(2) +
 		'</td></tr>';
 	}
     }
     table += '</tbody></table>';
-    genEdges = true;
+    //genEdges = true;
+    usingAdjacencyLists = true;
     return table;
 }
 
@@ -500,7 +513,55 @@ function Url2LatLon(url) {
     return latlon;
 }
 
+// "standardize" a PTH line so it has coordinates separated by a space
+// instead of in parens and with any extraneous spaces removed
+function standardizePTHLine(line) {
+
+    // remove extraneous spaces
+    var newline = line;
+    do {
+	line = newline;
+	newline = line.replace('  ',' ');
+    } while (line != newline);
+
+
+    // if this doesn't end in a paren, we should be good
+    if (!line.endsWith(')')) {
+	return line;
+    }
+
+    // this ends in a paren, so we convert each "(lat,lng)" group to
+    // simply "lat lng"
+    var xline = line.split(' ');
+    line = xline[0];
+    for (var pos = 1; pos < xline.length; pos++) {
+	var newlatlng = xline[pos];
+	if ((xline[pos].charAt(0) == '(') &&
+	    (xline[pos].indexOf(',') > 0) &&
+	    (xline[pos].charAt(xline[pos].length-1) == ')')) {
+	    newlatlng = xline[pos].replace('(', '');
+	    newlatlng = newlatlng.replace(',', ' ');
+	    newlatlng = newlatlng.replace(')', '');
+	}
+	line += " " + newlatlng;
+    }
+    return line;    
+}
+
+// convert a "standardized" PTH line to a Waypoint object with support
+// for intermediate points along a segment
 function PTHLine2Waypoint(line) {
+
+    var xline = line.split(' ');
+    if (xline.length < 4) {
+	return Waypoint('bad-line', 0, 0);
+    }
+    return new Waypoint(xline[xline.length-3], xline[xline.length-2], xline[xline.length-1], 0, xline[0]);
+    
+}
+
+// OLD: convert PTH line to a Waypoint object
+function PTHLine2WaypointOLD(line) {
     
     // remove any extraneous spaces in the line
     line = line.replace('  ', ' ');
@@ -525,11 +586,98 @@ function PTHLine2Waypoint(line) {
     return new Waypoint(xline[1], xline[2], xline[3], 0, xline[0]);
 }
 
+// mileage with a "standardized" PTH line that could have intermediate points
+// to include
+function mileageWithPTHLine(from, to, line) {
 
+    var xline = line.split(' ');
+    if (xline.length == 4) {
+	// no intermediate points, so just compute mileage
+	return Mileage(from.lat, from.lon, to.lat, to.lon);
+    }
+
+    // we have more points, compute sum of segments
+    var total = 0.0;
+    var last_lat = from.lat;
+    var last_lon = from.lon;
+    var num_points = (xline.length - 4) / 2;
+    for (var i = 0; i < num_points; i++) {
+	var this_lat = parseFloat(xline[2*i+1]).toFixed(6);
+	var this_lon = parseFloat(xline[2*i+2]).toFixed(6);
+	total += Mileage(last_lat, last_lon, this_lat, this_lon);
+	last_lat = this_lat;
+	last_lon = this_lon;
+    }
+    total += Mileage(last_lat, last_lon, to.lat, to.lon);
+    return total;
+}
+
+// parse all useful info from a "standardized" PTH file line and
+// return in an object with fields for waypoint (a Waypoint object),
+// mileage (a number), and via, an array of lat/lng values the
+// path passes through that will be used to construct the edge
+// that this line represents in the path
+// extra parameter is the previous waypoint for mileage computation
+function PTHLineInfo(line, from) {
+
+    var xline = line.split(' ');
+    if (xline.length < 4) {
+	return { 
+	    waypoint: Waypoint('bad-line', 0, 0), 
+	    mileage: 0.0,
+	    via: null};
+    }
+    var result = { 
+	waypoint: new Waypoint(xline[xline.length-3], xline[xline.length-2], xline[xline.length-1], xline[0], new Array()),
+	mileage: 0.0,
+	via: null
+    };
+
+    if (xline.length == 4) {
+	// no intermediate points, so just compute mileage and have a
+	// null "via" list
+	if (from != null) {
+	    result.mileage = Mileage(from.lat, from.lon, 
+				     result.waypoint.lat, result.waypoint.lon);
+	}
+	result.via = null;
+    }
+    else {
+	// we have more points, compute sum of segments
+	// and remember our list of lat/lng points in via
+	var total = 0.0;
+	var last_lat = from.lat;
+	var last_lon = from.lon;
+	var num_points = (xline.length - 4) / 2;
+	for (var i = 0; i < num_points; i++) {
+	    var this_lat = parseFloat(xline[2*i+1]).toFixed(6);
+	    var this_lon = parseFloat(xline[2*i+2]).toFixed(6);
+	    total += Mileage(last_lat, last_lon, this_lat, this_lon);
+	    last_lat = this_lat;
+	    last_lon = this_lon;
+	}
+	total += Mileage(last_lat, last_lon, 
+			 result.waypoint.lat, result.waypoint.lon);
+	result.mileage = total;
+	result.via = xline.slice(1,xline.length-3);
+    }
+    return result;
+}
+
+
+
+// GraphEdge constructor, vertex numbers can come in as strings or
+// numbers, will store as numbers
 function GraphEdge(v1, v2, label, via) {
 
-    this.v1 = parseInt(v1);
-    this.v2 = parseInt(v2);
+    if (typeof v1 === 'string') {
+	this.v1 = parseInt(v1);
+	this.v2 = parseInt(v2);
+    }
+    else {
+	this.v1 = v1;
+	this.v2 = v2;
+    }
     this.label = label;
     this.via = via;
     return this;
