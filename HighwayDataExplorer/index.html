@@ -1,24 +1,24 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html><head>
 <!--
-    
+
     Highway Data Examiner (HDX) page
 
     Load and view data files related to Travel Mapping (TM) related
     academic data sets. (Formerly used Clinched Highway Mapping (CHM)
     data.)
-    
+
     Author: Jim Teresco, Siena College, The College of Saint Rose
-    
+
     Modification History:
-    
+
     2011-06-20 JDT  Initial implementation
     2011-06-21 JDT  Added .gra support and checkbox for hidden marker display
     2011-06-23 JDT  Added .nmp file styles
     2011-08-30 JDT  Renamed to HDX, added more styles
     2013-08-14 JDT  Completed update to Google Maps API V3
     2016-06-27 JDT  Code reorganization, page design updated based on TM
-    
+
 -->
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -41,7 +41,7 @@
   top:25px;
   bottom:0px;
   width: 100%;
-  overflow:hidden; 
+  overflow:hidden;
 }
 
 #map * {
@@ -110,7 +110,10 @@
 </script>
 <p class="menubar">
 HDX: <span id="filename">Select a file to display</span>
+<button type="button" onclick="startSearch()">Search</button>
+<span id="status"></span>
 </p>
+
 <div id="map">
 </div>
 <div id="selected"></div>
