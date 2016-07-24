@@ -111,6 +111,19 @@
 <p class="menubar">
 HDX: <span id="filename">Select a file to display</span>
 <button type="button" onclick="startSearch()">Search</button>
+<select id="speedChanger" onchange="speedChanged()">
+  <option value="5">Extremely fast</option>
+  <option value="20">Very fast</option>
+  <option value="50" selected>Fast</option>
+  <option value="100">Medium speed</option>
+  <option value="250">Pretty slow</option>
+  <option value="500">Slow</option>
+  <option value="1000">Painfully slow</option>
+</select>
+
+
+
+
 <span id="status"></span>
 </p>
 
@@ -125,6 +138,7 @@ HDX: <span id="filename">Select a file to display</span>
     <tbody>
     <tr><td>
 	<input id="filesel" type="file" onchange="startRead()">
+
     </td></tr>
     <tr><td>
 	<input id="showHidden" type="checkbox" name="Show Hidden Markers" onclick="showHiddenClicked()" checked="false">&nbsp;Show Hidden Markers

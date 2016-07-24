@@ -563,6 +563,13 @@ function updateMap()
 					var win = window.open(url);
 					win.focus();
 				}
+				var delay = 50;
+				function speedChanged() {
+				    var speedChanger = document.getElementById("speedChanger");
+				    delay = speedChanger.options[speedChanger.selectedIndex].value;
+				}
+
+
 
 				// some variables to support our search with timers
 				var nextToCheck;
@@ -606,7 +613,7 @@ function updateMap()
 							statusLine.innerHTML = 'Checking: <span style="color:yellow">0</span>';
 							// enable pause button
 							//document.getElementById("pauseRestart").disabled = false;
-							setTimeout(continueSearch, 500);
+							setTimeout(continueSearch, delay);
 						}
 
 						// do an iteration of search
@@ -745,7 +752,7 @@ function updateMap()
 													strokeColor: 'yellow'});
 													document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "yellow";
 													//if (!paused) {
-														setTimeout(continueSearch, 500);
+														setTimeout(continueSearch, delay);
 												//	}
 												}
 												else {
