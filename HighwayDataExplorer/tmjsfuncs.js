@@ -565,8 +565,8 @@ function updateMap()
 				}
 				var delay = 50;
 				function speedChanged() {
-				    var speedChanger = document.getElementById("speedChanger");
-				    delay = speedChanger.options[speedChanger.selectedIndex].value;
+					var speedChanger = document.getElementById("speedChanger");
+					delay = speedChanger.options[speedChanger.selectedIndex].value;
 				}
 
 
@@ -752,15 +752,67 @@ function updateMap()
 													strokeColor: 'yellow'});
 													document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "yellow";
 													//if (!paused) {
-														setTimeout(continueSearch, delay);
-												//	}
+													setTimeout(continueSearch, delay);
+													//	}
 												}
 												else {
 													statusLine.innerHTML = "Done! Results: N: " + northIndex + " S:" + southIndex + " E: " + eastIndex + " W:" + westIndex;
 												}
 											}
 
+											var min = 9999999;
+											var maxDistance = -999999;
+											var edgeMin = null;
+											var edgeMax = null;
+											function startEdgeSearch() {
 
+												setTimeout( continueEdgeSearch(0, 0), delay);
+
+											}
+
+											function continueEdgeSearch(i,j){
+
+												if(i == waypoints.length){
+													console.log("done");
+													var maxEdgePoints = new Array(2);
+													maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
+													maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
+													new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+													var minEdgePoints = new Array(2);
+													minEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
+													minEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
+													new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+													return;
+												}
+												if (j == waypoints[i].edgeList.length){
+													console.log("edge done");
+													setTimeout(continueEdgeSearch( i + 1, 0), delay);
+													return;
+												}
+
+												var edge = waypoints[i].edgeList[j];
+												var adjucentIndex;
+												if (edge.v1==i) {
+													adjucentIndex = edge.v2;
+												} else {
+													adjucentIndex = edge.v1;
+												}
+												var distance = Feet(waypoints[i].lat, waypoints[i].lon,
+													waypoints[adjucentIndex].lat, waypoints[adjucentIndex].lon);
+													if ( distance < min){
+														min = distance;
+														edgeMin = edge;
+													}
+
+													if (distance > maxDistance){
+														maxDistance = distance;
+														edgeMax =edge;
+
+													}
+													setTimeout(continueEdgeSearch( i, j + 1), delay);
+												
+
+												}
 
 
 

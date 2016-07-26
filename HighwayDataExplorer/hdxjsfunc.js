@@ -214,7 +214,7 @@ function parseTMGContents(fileContents) {
     for (var i = 0; i < numV; i++) {
 	var vertexInfo = lines[i+2].split(' ');
 	waypoints[i] = new Waypoint(vertexInfo[0], vertexInfo[1], vertexInfo[2], "", new Array());
-	vTable += '<tr id="waypoint' + i +'"><td>' + i + 
+	vTable += '<tr id="waypoint' + i +'"><td>' + i +
 	    '</td><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
 	    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
 	    + "<a onclick=\"javascript:LabelClick(" + i + ",'"
@@ -224,7 +224,7 @@ function parseTMGContents(fileContents) {
     }
     vTable += '</tbody></table>';
 
-    var eTable = '<table class="gratable"><thead><tr><th colspan="3">Connections</th></tr><tr><th>#</th><th>Route Name(s)</th><th>Endpoints</th></tr></thead><tbody>';
+    var eTable = '<table class="gratable"><thead><tr  ><th colspan="3">Connections</th></tr><tr><th>#</th><th>Route Name(s)</th><th>Endpoints</th></tr></thead><tbody>';
     //graphEdges = new Array(numE);
     for (var i = 0; i < numE; i++) {
 	var edgeInfo = lines[i+numV+2].split(' ');
@@ -240,7 +240,7 @@ function parseTMGContents(fileContents) {
 	waypoints[newEdge.v1].edgeList.push(newEdge);
 	waypoints[newEdge.v2].edgeList.push(newEdge);
 
-	eTable += '<tr><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
+	eTable += '<tr id="connection' + i +'" ><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
 	    + edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label +
 	    ' &harr; ' + edgeInfo[1] + ':&nbsp;'
 	    + waypoints[newEdge.v2].label + '</td></tr>';
@@ -680,5 +680,8 @@ function GraphEdge(v1, v2, label, via) {
     }
     this.label = label;
     this.via = via;
+
+//console.log("v1 =  " + v1 + ", v2 =   "+ v2 + ", l =  " + label + ", v = "+ via);
+
     return this;
 }
