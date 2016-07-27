@@ -208,7 +208,7 @@ function parseTMGContents(fileContents) {
     var numE = parseInt(counts[1]);
     var summaryInfo = '<table class="gratable"><thead><tr><th>' + numV + " waypoints, " + numE + " connections.</th></tr></table>";
 
-    var vTable = '<table class="gratable"><thead><tr><th colspan="3">Waypoints</th></tr><tr><th>#</th><th>Coordinates</th><th>Waypoint Name</th></tr></thead><tbody>';
+    var vTable = '<table id="waypoints" class="gratable"><thead><tr><th colspan="3">Waypoints</th></tr><tr><th>#</th><th>Coordinates</th><th>Waypoint Name</th></tr></thead><tbody>';
 
     waypoints = new Array(numV);
     for (var i = 0; i < numV; i++) {
@@ -224,26 +224,27 @@ function parseTMGContents(fileContents) {
     }
     vTable += '</tbody></table>';
 
-    var eTable = '<table class="gratable"><thead><tr  ><th colspan="3">Connections</th></tr><tr><th>#</th><th>Route Name(s)</th><th>Endpoints</th></tr></thead><tbody>';
+    var eTable = '<table  id="connection" class="gratable"><thead><tr  ><th colspan="3">Connections</th></tr><tr><th>#</th><th>Route Name(s)</th><th>Endpoints</th></tr></thead><tbody>';
     //graphEdges = new Array(numE);
     for (var i = 0; i < numE; i++) {
-	var edgeInfo = lines[i+numV+2].split(' ');
-	var newEdge;
-	if (edgeInfo.length > 3) {
-	    newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], edgeInfo.slice(3));
-	}
-	else {
-	    newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], null);
-	}
+      var edgeInfo = lines[i+numV+2].split(' ');
+      var newEdge;
+      if (edgeInfo.length > 3) {
+        newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], edgeInfo.slice(3));
+      }
+      else {
+        newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], null);
+      }
+      var firstNode = Math.min(parseInt(newEdge.v1), parseInt(newEdge.v2));
+      var secondNode = Math.max(parseInt(newEdge.v1), parseInt(newEdge.v2));
+      // add this new edge to my endpoint vertex adjacency lists
+      waypoints[newEdge.v1].edgeList.push(newEdge);
+      waypoints[newEdge.v2].edgeList.push(newEdge);
 
-	// add this new edge to my endpoint vertex adjacency lists
-	waypoints[newEdge.v1].edgeList.push(newEdge);
-	waypoints[newEdge.v2].edgeList.push(newEdge);
-
-	eTable += '<tr id="connection' + i +'" ><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
-	    + edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label +
-	    ' &harr; ' + edgeInfo[1] + ':&nbsp;'
-	    + waypoints[newEdge.v2].label + '</td></tr>';
+      eTable += '<tr id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
+      + edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label +
+      ' &harr; ' + edgeInfo[1] + ':&nbsp;'
+      + waypoints[newEdge.v2].label + '</td></tr>';
     }
     eTable += '</tbody></table>';
     genEdges = false;

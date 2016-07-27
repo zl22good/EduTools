@@ -764,33 +764,46 @@ function updateMap()
 											var maxDistance = -999999;
 											var edgeMin = null;
 											var edgeMax = null;
+											var count =0;
 											function startEdgeSearch() {
 
-												setTimeout( continueEdgeSearch(0, 0), delay);
+												var statusLine = document.getElementById("status");
+												statusLine.innerHTML = "Preparing for Extreme Edge Search Visualization";
+												// we don't need edges here, so we remove those
+												for (var i = 0; i < connections.length; i++) {
+													connections[i].setMap(null);
+												}
+												//we don't need waypoints table here, so we remove those
+												var Table = document.getElementById("waypoints");
+												Table.innerHTML = "";
+												statusLine.innerHTML = 'Checking: <span style="color:yellow">0</span>';
+											setTimeout(continueEdgeSearch, delay,0,0);
 
 											}
 
 											function continueEdgeSearch(i,j){
-
 												if(i == waypoints.length){
-													console.log("done");
 													var maxEdgePoints = new Array(2);
 													maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
 													maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
 													new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+													var firstNode = Math.min(edgeMax.v1, edgeMax.v2);
+													var secondNode = Math.max(edgeMax.v1, edgeMax.v2);
+													document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
 													var minEdgePoints = new Array(2);
 													minEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
 													minEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
 													new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+													var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
+													var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
+													document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
 													return;
 												}
 												if (j == waypoints[i].edgeList.length){
-													console.log("edge done");
-													setTimeout(continueEdgeSearch( i + 1, 0), delay);
+													setTimeout(continueEdgeSearch, delay, i + 1, 0);
 													return;
 												}
-
-												var edge = waypoints[i].edgeList[j];
+											 	var edge = waypoints[i].edgeList[j];
 												var adjucentIndex;
 												if (edge.v1==i) {
 													adjucentIndex = edge.v2;
@@ -809,14 +822,17 @@ function updateMap()
 														edgeMax =edge;
 
 													}
-													setTimeout(continueEdgeSearch( i, j + 1), delay);
-												
+														var initEdgePoints = new Array(2);
+														 initEdgePoints [0] = new google.maps.LatLng( waypoints[edge.v1].lat, waypoints[edge.v1].lon);
+														 initEdgePoints [1] = new google.maps.LatLng( waypoints[edge.v2].lat, waypoints[edge.v2].lon);
+														new google.maps.Polyline({path: initEdgePoints, strokeColor: '#FFFF00', strokeWeight: 10, strokeOpacity: 1, map: map});
+														var firstNode = Math.min(edge.v1, edge.v2);
+														var secondNode = Math.max(edge.v1, edge.v2);
+														document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "grey";
+														setTimeout(continueEdgeSearch, delay,i, j + 1);
+
 
 												}
-
-
-
-
 
 											// JS debug window by Mike Maddox from
 											// http://javascript-today.blogspot.com/2008/07/how-about-quick-debug-output-window.html
