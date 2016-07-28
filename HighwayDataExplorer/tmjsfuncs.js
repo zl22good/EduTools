@@ -764,7 +764,7 @@ function updateMap()
 											var maxDistance = -999999;
 											var edgeMin = null;
 											var edgeMax = null;
-											var count =0;
+
 											function startEdgeSearch() {
 
 												var statusLine = document.getElementById("status");
@@ -774,7 +774,6 @@ function updateMap()
 													connections[i].setMap(null);
 												}
 												//we don't need waypoints table here, so we remove those
-												var Table = document.getElementById("waypoints");
 												Table.innerHTML = "";
 												statusLine.innerHTML = 'Checking: <span style="color:yellow">0</span>';
 											setTimeout(continueEdgeSearch, delay,0,0);
@@ -833,6 +832,76 @@ function updateMap()
 
 
 												}
+
+	var queue = [];
+	var visited =[];
+
+function startBfsSearch() {
+		visited = new Array(waypoints.length).fill(false);
+		queue.push(0);
+		processQueue();
+	}
+
+	function processQueue() {
+		if (queue.length == 0) {
+			console.log("Done!");
+			return;
+		}
+
+		if (visited[queue[0]]) {
+			var pop = queue.shift();
+			console.log("pop: " + pop);
+			printList(queue);
+			processQueue();
+			return;
+		}
+
+		visited[queue[0]] = true;
+
+		var neighbors = getAdjacentPoints(queue[0]);
+		for (var i = 0; i < neighbors.length; i++) {
+			if (visited[neighbors[i]] == false) {
+				queue.push(neighbors[i]);
+			}
+		}
+		printList(queue);
+		processQueue();
+	}
+
+	function getAdjacentPoints(pointIndex) {
+		var resultArray = [];
+		var edgeList = waypoints[pointIndex].edgeList;
+		for (var i = 0; i < edgeList.length; i++) {
+			var adjacentIndex;
+			if (edgeList[i].v1 == pointIndex) {
+				adjacentIndex = edgeList[i].v2;
+			} else {
+				adjacentIndex = edgeList[i].v1;
+			}
+			resultArray.push(adjacentIndex);
+		}
+		return resultArray;
+	}
+
+	function printList(items) {
+		if (items.length == 0) {
+			console.log("[]");
+		} else {
+			var line = `[`
+				for (var i = 0; i < items.length; i++) {
+					if (i == items.length - 1) {
+						line += items[i];
+					} else {
+						line += items[i] + `, `;
+					}
+
+				}
+				line += `]`;
+				console.log(line);
+			}
+		}
+
+
 
 											// JS debug window by Mike Maddox from
 											// http://javascript-today.blogspot.com/2008/07/how-about-quick-debug-output-window.html
