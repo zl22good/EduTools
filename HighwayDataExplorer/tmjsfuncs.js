@@ -833,39 +833,96 @@ function updateMap()
 
 												}
 
-	var queue = [];
-	var visited =[];
+var queue = [];
+var visited =[];
+var minDistanceBfs =  99999999;
+var maxDistanceBfs = -99999999;
+var minEdgeBfs;
+var maxEdgeBfs;
 
 function startBfsSearch() {
 		visited = new Array(waypoints.length).fill(false);
 		queue.push(0);
-		processQueue();
+		document.getElementById('waypoint0').style.backgroundColor="yellow";
+		markers[0].setMap(map);
+		markers[0].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			scale: 8,
+			zIndex: google.maps.Marker.MAX_ZINDEX+1,
+			fillColor: 'yellow',
+			strokeColor: 'yellow'});
+			setTimeout(processQueue, delay);
 	}
 
-	function processQueue() {
+function processQueue() {
 		if (queue.length == 0) {
 			console.log("Done!");
+      console.log("Min distance: " + minDistanceBfs);
+      console.log("Max distance: " + maxDistance);
+
+			// Change ui elements regarding max edge
+			var maxEdgePoints = new Array(2);
+			maxEdgePoints [0] = new google.maps.LatLng(waypoints[maxEdgeBfs.v1].lat, waypoints[maxEdgeBfs.v1].lon);
+			maxEdgePoints [1] = new google.maps.LatLng(waypoints[maxEdgeBfs.v2].lat, waypoints[maxEdgeBfs.v2].lon);
+			new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+			var firstNode = Math.min(maxEdgeBfs.v1, maxEdgeBfs.v2);
+			var secondNode = Math.max(maxEdgeBfs.v1, maxEdgeBfs.v2);
+			document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
+
+			// Change ui elements regarding min edge
+			var minEdgePoints = new Array(2);
+			minEdgePoints [0] = new google.maps.LatLng(waypoints[minEdgeBfs.v1].lat, waypoints[minEdgeBfs.v1].lon);
+			minEdgePoints [1] = new google.maps.LatLng(waypoints[minEdgeBfs.v2].lat, waypoints[minEdgeBfs.v2].lon);
+			new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+			var firstNode = Math.min(minEdgeBfs.v1, minEdgeBfs.v2);
+			var secondNode = Math.max(minEdgeBfs.v1, minEdgeBfs.v2);
+			document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
 			return;
 		}
-
-		if (visited[queue[0]]) {
+    if (visited[queue[0]]) {
 			var pop = queue.shift();
 			console.log("pop: " + pop);
+			document.getElementById('waypoint'+ pop).style.backgroundColor="grey";
+			markers[pop].setMap(map);
+			markers[pop].setIcon({path: google.maps.SymbolPath.CIRCLE,
+				scale: 2,
+				zIndex: google.maps.Marker.MAX_ZINDEX+1,
+				fillColor: 'grey',
+				strokeColor: 'grey'});
 			printList(queue);
-			processQueue();
+			setTimeout(processQueue, delay);
 			return;
 		}
 
 		visited[queue[0]] = true;
 
+		document.getElementById('waypoint' + queue[0]).style.backgroundColor="yellow";
+		markers[queue[0]].setMap(map);
+		markers[queue[0]].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			scale: 6,
+			zIndex: google.maps.Marker.MAX_ZINDEX+1,
+			fillColor: 'yellow',
+			strokeColor: 'yellow'});
+
 		var neighbors = getAdjacentPoints(queue[0]);
 		for (var i = 0; i < neighbors.length; i++) {
 			if (visited[neighbors[i]] == false) {
 				queue.push(neighbors[i]);
+
+        var distance = Feet(waypoints[neighbors[i]].lat, waypoints[neighbors[i]].lon, waypoints[queue[0]].lat, waypoints[queue[0]].lon);
+				if (distance < minDistanceBfs) {
+        	minDistanceBfs = distance;
+					minEdgeBfs = waypoints[queue[0]].edgeList[i];
+        }
+
+        if (distance > maxDistanceBfs) {
+          maxDistanceBfs = distance;
+					maxEdgeBfs  = waypoints[queue[0]].edgeList[i];
+        }
+
 			}
 		}
 		printList(queue);
-		processQueue();
+		setTimeout(processQueue, delay);
 	}
 
 	function getAdjacentPoints(pointIndex) {
@@ -879,6 +936,7 @@ function startBfsSearch() {
 				adjacentIndex = edgeList[i].v1;
 			}
 			resultArray.push(adjacentIndex);
+
 		}
 		return resultArray;
 	}
@@ -903,22 +961,22 @@ function startBfsSearch() {
 
 
 
-											// JS debug window by Mike Maddox from
-											// http://javascript-today.blogspot.com/2008/07/how-about-quick-debug-output-window.html
-											var DBG = {
-												write : function(txt){
-													if (!window.dbgwnd){
-														window.dbgwnd = window.open("","debug","status=0,toolbar=0,location=0,menubar=0,directories=0,resizable=0,scrollbars=1,width=600,height=250");
-														window.dbgwnd.document.write('<html><head></head><body style="background-color:black"><div id="main" style="color:green;font-size:12px;font-family:Courier New;"></div></body></html>');
-													}
-													var x = window.dbgwnd.document.getElementById("main");
-													this.line=(this.line==null)?1:this.line+=1;
-													txt=this.line+': '+txt;
-													if (x.innerHTML == ""){
-														x.innerHTML = txt;
-													}
-													else {
-														x.innerHTML = txt + "<br/>" + x.innerHTML;
-													}
-												}
-											}
+	// JS debug window by Mike Maddox from
+	// http://javascript-today.blogspot.com/2008/07/how-about-quick-debug-output-window.html
+	var DBG = {
+		write : function(txt){
+			if (!window.dbgwnd){
+				window.dbgwnd = window.open("","debug","status=0,toolbar=0,location=0,menubar=0,directories=0,resizable=0,scrollbars=1,width=600,height=250");
+				window.dbgwnd.document.write('<html><head></head><body style="background-color:black"><div id="main" style="color:green;font-size:12px;font-family:Courier New;"></div></body></html>');
+			}
+			var x = window.dbgwnd.document.getElementById("main");
+			this.line=(this.line==null)?1:this.line+=1;
+			txt=this.line+': '+txt;
+			if (x.innerHTML == ""){
+				x.innerHTML = txt;
+			}
+			else {
+				x.innerHTML = txt + "<br/>" + x.innerHTML;
+			}
+		}
+	}
