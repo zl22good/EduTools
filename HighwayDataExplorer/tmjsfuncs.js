@@ -571,267 +571,265 @@ function updateMap()
 
 
 
-				// some variables to support our search with timers
-				var nextToCheck;
-				var northIndex = -1;
-				var southIndex = -1;
-				var eastIndex = -1;
-				var westIndex = -1;
+// some variables to support our search with timers
+var nextToCheck;
+var northIndex = -1;
+var southIndex = -1;
+var eastIndex = -1;
+var westIndex = -1;
 
-				// callback for when startSearch button is pressed
-				function startSearch() {
+// callback for when startSearch button is pressed
+function startSearch() {
 
-					var statusLine = document.getElementById("status");
-					statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
-					// in the future, make sure we have appropriate data in the system
-					// before executing anything here
+var statusLine = document.getElementById("status");
+statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
+// in the future, make sure we have appropriate data in the system
+// before executing anything here
 
-					// start by showing all existing markers, even hidden
-					for (var i = 0; i < waypoints.length; i++) {
-						markers[i].setMap(map);
-						markers[i].setIcon({path: google.maps.SymbolPath.CIRCLE,
-							scale: 2,
-							zIndex: google.maps.Marker.MAX_ZINDEX+1,
-							fillColor: 'white',
-							strokeColor: 'white'});
-						}
+// start by showing all existing markers, even hidden
+for (var i = 0; i < waypoints.length; i++) {
+markers[i].setMap(map);
+markers[i].setIcon({path: google.maps.SymbolPath.CIRCLE,
+scale: 2,
+zIndex: google.maps.Marker.MAX_ZINDEX+1,
+fillColor: 'white',
+strokeColor: 'white'});
+}
 
-						// we don't need edges here, so we remove those
-						for (var i = 0; i < connections.length; i++) {
-							connections[i].setMap(null);
-						}
-						connections = new Array();
+// we don't need edges here, so we remove those
+for (var i = 0; i < connections.length; i++) {
+connections[i].setMap(null);
+}
+connections = new Array();
 
-						// start the search by initializing with the value at pos 0
-						markers[0].setIcon({path: google.maps.SymbolPath.CIRCLE,
-							scale: 4,
-							zIndex: google.maps.Marker.MAX_ZINDEX+3,
-							fillColor: 'yellow',
-							strokeColor: 'yellow'});
-							document.getElementById('waypoint0').style.backgroundColor = "yellow";
-							nextToCheck = 0;
-							statusLine.innerHTML = 'Checking: <span style="color:yellow">0</span>';
-							// enable pause button
-							//document.getElementById("pauseRestart").disabled = false;
-							setTimeout(continueSearch, delay);
-						}
+// start the search by initializing with the value at pos 0
+markers[0].setIcon({path: google.maps.SymbolPath.CIRCLE,
+scale: 4,
+zIndex: google.maps.Marker.MAX_ZINDEX+3,
+fillColor: 'yellow',
+strokeColor: 'yellow'});
+document.getElementById('waypoint0').style.backgroundColor = "yellow";
+nextToCheck = 0;
+statusLine.innerHTML = 'Checking: <span style="color:yellow">0</span>';
+// enable pause button
+//document.getElementById("pauseRestart").disabled = false;
+setTimeout(continueSearch, delay);
+}
 
-						// do an iteration of search
-						function continueSearch() {
+// do an iteration of search
+function continueSearch() {
 
-							//DBG.write("continueSearch: " + nextToCheck + " N: " + northIndex + " S:" + southIndex + " E: " + eastIndex + " W:" + westIndex);
-							// first we finish the previous point to see if it's a new winner,
-							// and if necessary downgrade anyone who was beaten by this one
-							// special case of first checked
-							if (nextToCheck == 0) {
-								// this was our first check, so this point wins all to start
-								northIndex = 0;
-								southIndex = 0;
-								eastIndex = 0;
-								westIndex = 0;
-								// it's red as our leader
-								markers[0].setIcon({path: google.maps.SymbolPath.CIRCLE,
-									scale: 4,
-									zIndex: google.maps.Marker.MAX_ZINDEX+2,
-									fillColor: 'red',
-									strokeColor: 'red'});
-									document.getElementById('waypoint0').style.backgroundColor = "red";
-								}
-								// we have to do real work to see if we have new winners
-								else {
-									// keep track of whether this point is a new leader
-									var foundNewLeader = false;
-									// keep track of points that were leaders but got beaten to be
-									// colored grey if they are no longer a leader in any direction
-									var defeated = new Array();
+//DBG.write("continueSearch: " + nextToCheck + " N: " + northIndex + " S:" + southIndex + " E: " + eastIndex + " W:" + westIndex);
+// first we finish the previous point to see if it's a new winner,
+// and if necessary downgrade anyone who was beaten by this one
+// special case of first checked
+if (nextToCheck == 0) {
+// this was our first check, so this point wins all to start
+northIndex = 0;
+southIndex = 0;
+eastIndex = 0;
+westIndex = 0;
+// it's red as our leader
+markers[0].setIcon({path: google.maps.SymbolPath.CIRCLE,
+scale: 4,
+zIndex: google.maps.Marker.MAX_ZINDEX+2,
+fillColor: 'red',
+strokeColor: 'red'});
+document.getElementById('waypoint0').style.backgroundColor = "red";
+}
+// we have to do real work to see if we have new winners
+else {
+// keep track of whether this point is a new leader
+var foundNewLeader = false;
+// keep track of points that were leaders but got beaten to be
+// colored grey if they are no longer a leader in any direction
+var defeated = new Array();
 
-									// check north
-									if (waypoints[nextToCheck].lat > waypoints[northIndex].lat) {
-										foundNewLeader = true;
-										defeated.push(northIndex);
-										northIndex = nextToCheck;
-										//DBG.write("new northIndex: " + northIndex);
-									}
-									// check south
-									if (waypoints[nextToCheck].lat < waypoints[southIndex].lat) {
-										foundNewLeader = true;
-										defeated.push(southIndex);
-										southIndex = nextToCheck;
-										//DBG.write("new southIndex: " + southIndex);
-									}
-									// check east
-									if (waypoints[nextToCheck].lon > waypoints[eastIndex].lon) {
-										foundNewLeader = true;
-										defeated.push(eastIndex);
-										eastIndex = nextToCheck;
-										//DBG.write("new eastIndex: " + eastIndex);
-									}
-									// check west
-									if (waypoints[nextToCheck].lon < waypoints[westIndex].lon) {
-										foundNewLeader = true;
-										defeated.push(westIndex);
-										westIndex = nextToCheck;
-										//DBG.write("new westIndex: " + westIndex);
-									}
+// check north
+if (waypoints[nextToCheck].lat > waypoints[northIndex].lat) {
+foundNewLeader = true;
+defeated.push(northIndex);
+northIndex = nextToCheck;
+//DBG.write("new northIndex: " + northIndex);
+}
+// check south
+if (waypoints[nextToCheck].lat < waypoints[southIndex].lat) {
+foundNewLeader = true;
+defeated.push(southIndex);
+southIndex = nextToCheck;
+//DBG.write("new southIndex: " + southIndex);
+}
+// check east
+if (waypoints[nextToCheck].lon > waypoints[eastIndex].lon) {
+foundNewLeader = true;
+defeated.push(eastIndex);
+eastIndex = nextToCheck;
+//DBG.write("new eastIndex: " + eastIndex);
+}
+// check west
+if (waypoints[nextToCheck].lon < waypoints[westIndex].lon) {
+foundNewLeader = true;
+defeated.push(westIndex);
+westIndex = nextToCheck;
+//DBG.write("new westIndex: " + westIndex);
+}
 
-									if (foundNewLeader) {
-										//DBG.write("a new leader becoming red: " + nextToCheck);
-										// this one's a new winner, make it red and big
-										markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
-											scale: 4,
-											zIndex: google.maps.Marker.MAX_ZINDEX+2,
-											fillColor: 'red',
-											strokeColor: 'red'});
-											document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "red";
-											// any that was just defeated should stop being red unless it's
-											// still a leader in some other direction (will happen especially
-											// early in searches)
-											while (defeated.length > 0) {
-												var toCheck = defeated.pop();
-												//DBG.write("a former leader to check: " + toCheck);
-												if ((toCheck != northIndex) &&
-												(toCheck != southIndex) &&
-												(toCheck != eastIndex) &&
-												(toCheck != westIndex)) {
-													//DBG.write("a former leader no longer, going grey: " + toCheck);
-													markers[toCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
-														scale: 2,
-														zIndex: google.maps.Marker.MAX_ZINDEX+1,
-														fillColor: 'grey',
-														strokeColor: 'grey'});
-														document.getElementById('waypoint'+toCheck).style.backgroundColor = "grey";
-													}
-												}
-											}
-											else {
-												// if this one's not a new winner, make it grey, it's done
-												markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
-													scale: 2,
-													zIndex: google.maps.Marker.MAX_ZINDEX+1,
-													fillColor: 'grey',
-													strokeColor: 'grey'});
-													document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "grey";
-												}
-											}
-											var statusLine = document.getElementById("status");
-											var line = 'Checking : <span style="color:yellow"> ' + nextToCheck + "</span> N: ";
-											if (northIndex == nextToCheck) {
-												line = line + '<span style="color:red">' + northIndex + '</span>';
-											}
-											else {
-												line = line + northIndex;
-											}
-											line = line + " S: ";
-											if (southIndex == nextToCheck) {
-												line = line + '<span style="color:red">' + southIndex + '</span>';
-											}
-											else {
-												line = line + southIndex;
-											}
-											line = line + " E: ";
-											if (eastIndex == nextToCheck) {
-												line = line + '<span style="color:red">' + eastIndex + '</span>';
-											}
-											else {
-												line = line + eastIndex;
-											}
-											line = line + " W: ";
-											if (westIndex == nextToCheck) {
-												line = line + '<span style="color:red">' + westIndex + '</span>';
-											}
-											else {
-												line = line + westIndex;
-											}
-											statusLine.innerHTML = line;
-											nextToCheck++;
-											if (nextToCheck < markers.length) {
-												markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
-													scale: 4,
-													zIndex: google.maps.Marker.MAX_ZINDEX+3,
-													fillColor: 'yellow',
-													strokeColor: 'yellow'});
-													document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "yellow";
-													//if (!paused) {
-													setTimeout(continueSearch, delay);
-													//	}
-												}
-												else {
-													statusLine.innerHTML = "Done! Results: N: " + northIndex + " S:" + southIndex + " E: " + eastIndex + " W:" + westIndex;
-												}
-											}
+if (foundNewLeader) {
+//DBG.write("a new leader becoming red: " + nextToCheck);
+// this one's a new winner, make it red and big
+markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
+scale: 4,
+zIndex: google.maps.Marker.MAX_ZINDEX+2,
+fillColor: 'red',
+strokeColor: 'red'});
+document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "red";
+// any that was just defeated should stop being red unless it's
+// still a leader in some other direction (will happen especially
+// early in searches)
+while (defeated.length > 0) {
+	var toCheck = defeated.pop();
+	//DBG.write("a former leader to check: " + toCheck);
+	if ((toCheck != northIndex) &&
+	(toCheck != southIndex) &&
+	(toCheck != eastIndex) &&
+	(toCheck != westIndex)) {
+		//DBG.write("a former leader no longer, going grey: " + toCheck);
+		markers[toCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			scale: 2,
+			zIndex: google.maps.Marker.MAX_ZINDEX+1,
+			fillColor: 'grey',
+			strokeColor: 'grey'});
+			document.getElementById('waypoint'+toCheck).style.backgroundColor = "grey";
+		}
+	}
+}
+else {
+	// if this one's not a new winner, make it grey, it's done
+	markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
+		scale: 2,
+		zIndex: google.maps.Marker.MAX_ZINDEX+1,
+		fillColor: 'grey',
+		strokeColor: 'grey'});
+		document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "grey";
+	}
+}
+var statusLine = document.getElementById("status");
+var line = 'Checking : <span style="color:yellow"> ' + nextToCheck + "</span> N: ";
+if (northIndex == nextToCheck) {
+	line = line + '<span style="color:red">' + northIndex + '</span>';
+}
+else {
+	line = line + northIndex;
+}
+line = line + " S: ";
+if (southIndex == nextToCheck) {
+	line = line + '<span style="color:red">' + southIndex + '</span>';
+}
+else {
+	line = line + southIndex;
+}
+line = line + " E: ";
+if (eastIndex == nextToCheck) {
+	line = line + '<span style="color:red">' + eastIndex + '</span>';
+}
+else {
+	line = line + eastIndex;
+}
+line = line + " W: ";
+if (westIndex == nextToCheck) {
+	line = line + '<span style="color:red">' + westIndex + '</span>';
+}
+else {
+	line = line + westIndex;
+}
+statusLine.innerHTML = line;
+nextToCheck++;
+if (nextToCheck < markers.length) {
+	markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
+		scale: 4,
+		zIndex: google.maps.Marker.MAX_ZINDEX+3,
+		fillColor: 'yellow',
+		strokeColor: 'yellow'});
+		document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "yellow";
+		//if (!paused) {
+		setTimeout(continueSearch, delay);
+		//	}
+	}
+	else {
+		statusLine.innerHTML = "Done! Results: N: " + northIndex + " S:" + southIndex + " E: " + eastIndex + " W:" + westIndex;
+	}
+}
 
-											var min = 9999999;
-											var maxDistance = -999999;
-											var edgeMin = null;
-											var edgeMax = null;
+var min = 9999999;
+var maxDistance = -999999;
+var edgeMin = null;
+var edgeMax = null;
 
-											function startEdgeSearch() {
+function startEdgeSearch() {
 
-												var statusLine = document.getElementById("status");
-												statusLine.innerHTML = "Preparing for Extreme Edge Search Visualization";
-												// we don't need edges here, so we remove those
-												for (var i = 0; i < connections.length; i++) {
-													connections[i].setMap(null);
-												}
-												//we don't need waypoints table here, so we remove those
-												Table.innerHTML = "";
-												statusLine.innerHTML = 'Checking: <span style="color:yellow">0</span>';
-											setTimeout(continueEdgeSearch, delay,0,0);
+	var statusLine = document.getElementById("status");
+	statusLine.innerHTML = "Preparing for Extreme Edge Search Visualization";
+	// we don't need edges here, so we remove those
+	for (var i = 0; i < connections.length; i++) {
+		connections[i].setMap(null);
+	}
+	//we don't need waypoints table here, so we remove those
+	Table.innerHTML = "";
+	statusLine.innerHTML = 'Checking: <span style="color:yellow">0</span>';
+	setTimeout(continueEdgeSearch, delay,0,0);
 
-											}
+}
 
-											function continueEdgeSearch(i,j){
-												if(i == waypoints.length){
-													var maxEdgePoints = new Array(2);
-													maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
-													maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
-													new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
-													var firstNode = Math.min(edgeMax.v1, edgeMax.v2);
-													var secondNode = Math.max(edgeMax.v1, edgeMax.v2);
-													document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
-													var minEdgePoints = new Array(2);
-													minEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
-													minEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
-													new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
-													var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
-													var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
-													document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
-													return;
-												}
-												if (j == waypoints[i].edgeList.length){
-													setTimeout(continueEdgeSearch, delay, i + 1, 0);
-													return;
-												}
-											 	var edge = waypoints[i].edgeList[j];
-												var adjucentIndex;
-												if (edge.v1==i) {
-													adjucentIndex = edge.v2;
-												} else {
-													adjucentIndex = edge.v1;
-												}
-												var distance = Feet(waypoints[i].lat, waypoints[i].lon,
-													waypoints[adjucentIndex].lat, waypoints[adjucentIndex].lon);
-													if ( distance < min){
-														min = distance;
-														edgeMin = edge;
-													}
+function continueEdgeSearch(i,j){
+	if(i == waypoints.length){
+		var maxEdgePoints = new Array(2);
+		maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
+		maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
+		new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+		var firstNode = Math.min(edgeMax.v1, edgeMax.v2);
+		var secondNode = Math.max(edgeMax.v1, edgeMax.v2);
+		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
+		var minEdgePoints = new Array(2);
+		minEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
+		minEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
+		new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+		var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
+		var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
+		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
+		return;
+	}
+	if (j == waypoints[i].edgeList.length){
+		setTimeout(continueEdgeSearch, delay, i + 1, 0);
+		return;
+	}
+	var edge = waypoints[i].edgeList[j];
+	var adjucentIndex;
+	if (edge.v1==i) {
+		adjucentIndex = edge.v2;
+	} else {
+		adjucentIndex = edge.v1;
+	}
+	var distance = Feet(waypoints[i].lat, waypoints[i].lon,
+		waypoints[adjucentIndex].lat, waypoints[adjucentIndex].lon);
+		if ( distance < min){
+			min = distance;
+			edgeMin = edge;
+		}
 
-													if (distance > maxDistance){
-														maxDistance = distance;
-														edgeMax =edge;
+		if (distance > maxDistance){
+			maxDistance = distance;
+			edgeMax =edge;
 
-													}
-														var initEdgePoints = new Array(2);
-														 initEdgePoints [0] = new google.maps.LatLng( waypoints[edge.v1].lat, waypoints[edge.v1].lon);
-														 initEdgePoints [1] = new google.maps.LatLng( waypoints[edge.v2].lat, waypoints[edge.v2].lon);
-														new google.maps.Polyline({path: initEdgePoints, strokeColor: '#FFFF00', strokeWeight: 10, strokeOpacity: 1, map: map});
-														var firstNode = Math.min(edge.v1, edge.v2);
-														var secondNode = Math.max(edge.v1, edge.v2);
-														document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "grey";
-														setTimeout(continueEdgeSearch, delay,i, j + 1);
-
-
-												}
+		}
+		var initEdgePoints = new Array(2);
+		initEdgePoints [0] = new google.maps.LatLng( waypoints[edge.v1].lat, waypoints[edge.v1].lon);
+		initEdgePoints [1] = new google.maps.LatLng( waypoints[edge.v2].lat, waypoints[edge.v2].lon);
+		new google.maps.Polyline({path: initEdgePoints, strokeColor: '#FFFF00', strokeWeight: 10, strokeOpacity: 1, map: map});
+		var firstNode = Math.min(edge.v1, edge.v2);
+		var secondNode = Math.max(edge.v1, edge.v2);
+		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "grey";
+		setTimeout(continueEdgeSearch, delay,i, j + 1);
+	}
 
 var queue = [];
 var visited =[];
@@ -843,7 +841,7 @@ var maxEdgeBfs;
 function startBfsSearch() {
 		visited = new Array(waypoints.length).fill(false);
 		queue.push(0);
-		document.getElementById('waypoint0').style.backgroundColor="yellow";
+		document.getElementById('waypoint' + 0).style.backgroundColor="yellow";
 		markers[0].setMap(map);
 		markers[0].setIcon({path: google.maps.SymbolPath.CIRCLE,
 			scale: 8,
@@ -959,7 +957,130 @@ function processQueue() {
 			}
 		}
 
+		var stack = [];
+		var visitedDfs =[];
+		var minDistanceDfs;
+		var maxDistanceDfs;
+		var minEdgeDfs;
+		var maxEdgeDfs;
+		var maxEdgePolylineDFS;
+		var minEdgePolylineDFS;
 
+	function startDfsSearch() {
+	// Reset previous state
+	minDistanceDfs =  99999999;
+	maxDistanceDfs = -99999999;
+	minEdgeDfs = null;
+	maxEdgeDfs = null;
+	maxEdgePolyline = null;
+	minEdgePolyline = null;
+	visitedDfs = new Array(waypoints.length).fill(false)
+
+	// put frist point into the stack and start processing the stack
+	stack.push(0);
+
+	setTimeout(processStack, delay);
+	}
+
+	function processStack() {
+	// If stack is empty, nothing to do any more and we are done.
+	if (stack.length == 0) {
+		console.log("Done with DFS search");
+		return;
+	}
+
+	// get top of stack
+	var top = stack[stack.length - 1];
+
+
+	if (visitedDfs[top] == true) {
+		document.getElementById('waypoint' + top).style.backgroundColor="grey";
+		markers[top].setMap(map);
+		markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			scale: 3,
+			zIndex: google.maps.Marker.MAX_ZINDEX + 1,
+			fillColor: 'grey',
+			strokeColor: 'grey'});
+
+		var adjacentList = getAdjacentPoints(top);
+
+		// Find the first adjacent of the top node which is not visited yet, and push it to the stack,
+		// and continue processing the stack again.
+		for (var i = 0; i < adjacentList.length; i++) {
+			if (visitedDfs[adjacentList[i]] == false) {
+				stack.push(adjacentList[i]);
+
+				// Update related mins and maxs (minDistanceDfs, minEdgeDfs, maxDistanceBfs, maxEdgeDfs)
+				var distance = Feet(waypoints[adjacentList[i]].lat, waypoints[adjacentList[i]].lon, waypoints[top].lat, waypoints[top].lon);
+				if (distance < minDistanceDfs) {
+
+					if (minEdgePolylineDFS != null) {
+						// if we already draw a polyline for minEdge, since we found a smaller edge, just remove previous one
+						minEdgePolylineDFS.setMap(null);
+					}
+
+					minDistanceDfs = distance;
+					minEdgeDfs = waypoints[top].edgeList[i];
+
+
+					// Change ui elements regarding min edge
+					var minEdgePoints = new Array(2);
+					minEdgePoints [0] = new google.maps.LatLng(waypoints[minEdgeDfs.v1].lat, waypoints[minEdgeDfs.v1].lon);
+					minEdgePoints [1] = new google.maps.LatLng(waypoints[minEdgeDfs.v2].lat, waypoints[minEdgeDfs.v2].lon);
+					minEdgePolylineDFS = new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+					var firstNode = Math.min(minEdgeDfs.v1, minEdgeDfs.v2);
+					var secondNode = Math.max(minEdgeDfs.v1, minEdgeDfs.v2);
+					document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
+
+				}
+
+				if (distance > maxDistanceDfs) {
+
+					if (maxEdgePolylineDFS != null) {
+						// if we already draw a polyline for maxEdge, since we found a larger edge, just remove previous one
+						maxEdgePolylineDFS.setMap(null);
+					}
+
+					maxDistanceDfs = distance;
+					maxEdgeDfs  = waypoints[top].edgeList[i];
+
+					// Change ui elements regarding max edge
+					var maxEdgePoints = new Array(2);
+					maxEdgePoints [0] = new google.maps.LatLng(waypoints[maxEdgeDfs.v1].lat, waypoints[maxEdgeDfs.v1].lon);
+					maxEdgePoints [1] = new google.maps.LatLng(waypoints[maxEdgeDfs.v2].lat, waypoints[maxEdgeDfs.v2].lon);
+					maxEdgePolylineDFS = new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+					var firstNode = Math.min(maxEdgeDfs.v1, maxEdgeDfs.v2);
+					var secondNode = Math.max(maxEdgeDfs.v1, maxEdgeDfs.v2);
+					document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
+				}
+
+
+				printList(stack);
+				setTimeout(processStack, delay);
+				return;
+			}
+		}
+		// being here means that we didn't find any adjacent of top node that is not visited,
+		// so we are done with the top node, and we have to remove it from the top of stack, and coninute processing the stack.
+
+
+
+		stack.pop();
+		printList(stack);
+		setTimeout(processStack, delay);
+	} else {
+		document.getElementById('waypoint' + top).style.backgroundColor="yellow";
+		markers[top].setMap(map);
+		markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			scale: 6,
+			zIndex: google.maps.Marker.MAX_ZINDEX + 1,
+			fillColor: 'yellow',
+			strokeColor: 'yellow'});
+
+		visitedDfs[top] = true;
+		setTimeout(processStack, delay);
+	}
+	}
 
 	// JS debug window by Mike Maddox from
 	// http://javascript-today.blogspot.com/2008/07/how-about-quick-debug-output-window.html
