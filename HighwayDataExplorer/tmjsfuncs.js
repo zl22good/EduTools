@@ -195,379 +195,379 @@ function Waypoint(label, lat, lon, elabel, edgeList) {
 // update the map to the current set of waypoints and connections
 function updateMap()
 {
-	// remove any existing google.maps.Polyline connections shown
-	for (var i = 0; i < connections.length; i++) {
-		connections[i].setMap(null);
-	}
-	connections = new Array();
+// remove any existing google.maps.Polyline connections shown
+for (var i = 0; i < connections.length; i++) {
+connections[i].setMap(null);
+}
+connections = new Array();
 
-	var minlat = 999;
-	var maxlat = -999;
-	var minlon = 999;
-	var maxlon = -999;
+var minlat = 999;
+var maxlat = -999;
+var minlon = 999;
+var maxlon = -999;
 
-	polypoints = new Array();
-	for (var i = 0; i < markers.length; i++) {
-		markers[i].setMap(null);
+polypoints = new Array();
+for (var i = 0; i < markers.length; i++) {
+markers[i].setMap(null);
+}
+
+var showHidden = false;
+if (document.getElementById('showHidden') != null) {
+showHidden = document.getElementById('showHidden').checked;
+}
+var showMarkers = true;
+if (document.getElementById('showMarkers') != null) {
+showMarkers = document.getElementById('showMarkers').checked;
+}
+
+markers = new Array();
+markerinfo = new Array();
+var bounds = new google.maps.LatLngBounds();
+for (var i = 0; i < waypoints.length; i++) {
+minlat = Math.min(minlat, waypoints[i].lat);
+maxlat = Math.max(maxlat, waypoints[i].lat);
+minlon = Math.min(minlon, waypoints[i].lon);
+maxlon = Math.max(maxlon, waypoints[i].lon);
+
+polypoints[i] = new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon);
+
+markerinfo[i] = MarkerInfo(i, waypoints[i]);
+markers[i] = new google.maps.Marker({
+position: polypoints[i],
+//map: map,
+title: waypoints[i].label,
+icon: intersectionimage
+});
+if (showMarkers && (showHidden || waypoints[i].visible)) {
+AddMarker(markers[i], markerinfo[i], i);
+}
+bounds.extend(polypoints[i]);
+}
+
+var midlat = (minlat + maxlat)/2;
+var midlon = (minlon + maxlon)/2;
+
+var nsdist = Mileage(minlat, midlon, maxlat, midlon);
+var ewdist = Mileage(midlat, minlon, midlat, maxlon);
+var maxdist = Math.max(nsdist, ewdist);
+
+//var zoom = 17 - (12 + Math.floor(Math.log(maxdist/800)/Math.log(2.0)));
+//zoom = Math.max(zoom, 0);
+//zoom = Math.min(zoom, 17);
+//map.setZoom(zoom);
+map.fitBounds(bounds);
+
+// if this is a graph in HDX, we draw edges as connections,
+// otherwise we may be connecting waypoints in order to plot a
+// path
+if (graphEdges.length > 0) {
+for (var i = 0; i < graphEdges.length; i++) {
+var numPoints;
+if (graphEdges[i].via == null) {
+numPoints = 2;
+}
+else {
+numPoints = graphEdges[i].via.length/2 + 2;
+}
+var edgePoints = new Array(numPoints);
+var v1 = graphEdges[i].v1;
+var v2 = graphEdges[i].v2;
+//	    DBG.write("Adding edge " + i + " from " + v1 + "(" + waypoints[v1].lat + "," + waypoints[v1].lon + ") to " + v2 + "(" + waypoints[v2].lat + "," + waypoints[v2].lon + ")");
+edgePoints[0] = new google.maps.LatLng(waypoints[v1].lat, waypoints[v1].lon);
+nextPoint = 1;
+if (graphEdges[i].via != null) {
+for (var j = 0; j < graphEdges[i].via.length; j+=2) {
+	edgePoints[nextPoint] = new google.maps.LatLng(graphEdges[i].via[j], graphEdges[i].via[j+1]);
+	nextPoint++;
+}
+}
+edgePoints[nextPoint] = new google.maps.LatLng(waypoints[v2].lat, waypoints[v2].lon);
+connections[i] = new google.maps.Polyline({path: edgePoints, strokeColor: "#0000FF", strokeWeight: 10, strokeOpacity: 0.4, map: map});
+//map.addOverlay(connections[i]);
+}
+}
+else if (usingAdjacencyLists) {
+var edgeNum = 0;
+for (var i = 0; i < waypoints.length; i++) {
+for (var j = 0; j < waypoints[i].edgeList.length; j++) {
+var thisEdge = waypoints[i].edgeList[j];
+// avoid double plot by only plotting those with v1 as i
+if (thisEdge.v1 == i) {
+	var numPoints;
+	if (thisEdge.via == null) {
+		numPoints = 2;
 	}
+	else {
+		numPoints = thisEdge.via.length/2 + 2;
+	}
+	var edgePoints = new Array(numPoints);
+	edgePoints[0] = new google.maps.LatLng(waypoints[thisEdge.v1].lat, waypoints[thisEdge.v1].lon);
+	nextPoint = 1;
+	if (thisEdge.via != null) {
+		for (var p = 0; p < thisEdge.via.length; p+=2) {
+			edgePoints[nextPoint] = new google.maps.LatLng(thisEdge.via[p], thisEdge.via[p+1]);
+			nextPoint++;
+		}
+	}
+	edgePoints[nextPoint] = new google.maps.LatLng(waypoints[thisEdge.v2].lat, waypoints[thisEdge.v2].lon);
+	// count the commas, which tell us how many
+	// concurrent routes are represented, as they will
+	// be comma-separated, then use that to choose a
+	// color to indicate the number of routes
+	// following the edge
+	concurrent = thisEdge.label.split(",").length;
+	color = "";
+	switch (concurrent) {
+		case 1:
+		color = "#0000FF";
+		break;
+		case 2:
+		color = "#00FF00";
+		break;
+		case 3:
+		color = "#FF00FF";
+		break;
+		case 4:
+		color = "#FFFF00";
+		break;
+		default:
+		color = "#FF0000";
+		break;
+	}
+	connections[edgeNum] = new google.maps.Polyline({path: edgePoints, strokeColor: color, strokeWeight: 10, strokeOpacity: 0.4, map: map});
+	edgeNum++;
+}
+}
+}
+}
+// connecting waypoints in order to plot a path
+else if (mapClinched) {
+// clinched vs unclinched segments mapped with different colors
+var nextClinchedCheck = 0;
+var totalMiles = 0.0;
+var clinchedMiles = 0.0;
+var level = map.getZoom();
+var weight = 2;
+if (newRouteIndices.length > 0) {
+// if newRouteIndices is not empty, we're plotting multiple routes
+//DBG.write("Multiple clinched routes!");
+var nextSegment = 0;
+for (var route = 0; route < newRouteIndices.length; route++) {
+var start = newRouteIndices[route];
+var end;
+if (route == newRouteIndices.length-1) {
+	end = waypoints.length-1;
+}
+else {
+	end = newRouteIndices[route+1]-1;
+}
+//DBG.write("route = " + route + ", start = " + start + ", end = " + end);
+// support for clinch colors from systems.csv
+var unclinchedColor = "rgb(200,200,200)"; //"#cccccc";
+var clinchedColor = "rgb(255,128,128)"; //"#ff8080";
+for (var c = 0; c<colorCodes.length; c++) {
+	if (colorCodes[c].name == routeColor[route]) {
+		unclinchedColor = colorCodes[c].unclinched;
+		clinchedColor = colorCodes[c].clinched;
+	}
+}
+// override with tier or system colors given in query string if they match
+for (var c = 0; c<customColorCodes.length; c++) {
+	if (customColorCodes[c].name == ("tier"+routeTier[route])) {
+		unclinchedColor = customColorCodes[c].unclinched;
+		clinchedColor = customColorCodes[c].clinched;
+	}
+	if (customColorCodes[c].name == routeSystem[route]) {
+		unclinchedColor = customColorCodes[c].unclinched;
+		clinchedColor = customColorCodes[c].clinched;
+	}
+}
+for (var i=start; i<end; i++) {
+	var zIndex = 10 - routeTier[route];
+	var edgePoints = new Array(2);
+	edgePoints[0] = new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon);
+	edgePoints[1] = new google.maps.LatLng(waypoints[i+1].lat, waypoints[i+1].lon);
+	var segmentLength = Mileage(waypoints[i].lat,
+		waypoints[i].lon,
+		waypoints[i+1].lat,
+		waypoints[i+1].lon);
+		totalMiles += segmentLength;
+		//DBG.write("i = " + i);
+		var color = unclinchedColor;
+		var opacity = 0.3;
+		if (segments[nextSegment] == clinched[nextClinchedCheck]) {
+			//DBG.write("Clinched!");
+			color = clinchedColor;
+			zIndex = zIndex + 10;
+			nextClinchedCheck++;
+			clinchedMiles += segmentLength;
+			opacity = 0.85;
+		}
+		connections[nextSegment] = new google.maps.Polyline(
+			{path: edgePoints, strokeColor: color, strokeWeight: weight, strokeOpacity: opacity,
+				zIndex : zIndex, map: map});
+				nextSegment++;
+			}
+		}
+		// set up listener for changes to zoom level and adjust strokeWeight in response
+		//DBG.write("Setting up zoom_changed");
+		google.maps.event.clearListeners(map, 'zoom_changed');
+		google.maps.event.addListener(map, 'zoom_changed', zoomChange);
+		//	    google.maps.event.addListener(map, 'zoom_changed', function() {
+		//		var level = map.getZoom();
+		//		var weight = Math.floor(level);
+		//		DBG.write("Zoom level " + level + ", weight = " + weight);
+		//		for (var i=0; i<connections.length; i++) {
+		//		    connections[i].setOptions({strokeWeight: weight});
+		//		}
+		//	    });
+	}
+	else {
+		// single route
+		for (var i=0; i<segments.length; i++) {
+			var edgePoints = new Array(2);
+			edgePoints[0] = new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon);
+			edgePoints[1] = new google.maps.LatLng(waypoints[i+1].lat, waypoints[i+1].lon);
+			var segmentLength = Mileage(waypoints[i].lat,
+				waypoints[i].lon,
+				waypoints[i+1].lat,
+				waypoints[i+1].lon);
+				totalMiles += segmentLength;
+				var color = "#cccccc";
+				if (segments[i] == clinched[nextClinchedCheck]) {
+					color = "#ff8080";
+					nextClinchedCheck++;
+					clinchedMiles += segmentLength;
+				}
+				connections[i] = new google.maps.Polyline({path: edgePoints, strokeColor: color, strokeWeight: 10, strokeOpacity: 0.75, map: map});
+			}
+		}
+		if (document.getElementById('controlboxinfo') != null) {
+			document.getElementById('controlboxinfo').innerHTML = ""; //clinchedMiles.toFixed(2) + " of " + totalMiles.toFixed(2) + " miles (" + (clinchedMiles/totalMiles*100).toFixed(1) + "%) clinched by " + traveler + ".";
+		}
+	}
+	else if (genEdges) {
+		connections[0] = new google.maps.Polyline({path: polypoints, strokeColor: "#0000FF", strokeWeight: 10, strokeOpacity: 0.75, map: map});
+		//map.addOverlay(connections[0]);
+	}
+	// don't think this should not be needed, but an attempt to get
+	// hidden waypoints to be hidden when first created
+	showHiddenClicked();
+}
+
+function zoomChange() {
+
+	var level = map.getZoom();
+	var newWeight;
+	if (level < 9) newWeight = 2;
+	else if (level < 12) newWeight = 6;
+	else if (level < 15) newWeight = 10;
+	else newWeight = 16;
+	//DBG.write("zoomChange: Zoom level " + level + ", newWeight = " + newWeight);
+	for (var i=0; i<connections.length; i++) {
+		//connections[i].setMap(null);
+		connections[i].setOptions({strokeWeight: newWeight});
+	}
+}
+
+function AddMarker(marker, markerinfo, i) {
+
+	marker.setMap(map);
+	google.maps.event.addListener(marker, 'click', function() {
+		infowindow.setContent(markerinfo);
+		infowindow.open(map, marker);
+	});
+}
+
+function LabelClick(i, label, lat, lon, errors) {
+
+	map.panTo(new google.maps.LatLng(lat, lon));
+	//infowindow.setContent(info);
+	infowindow.setContent(markerinfo[i]);
+	infowindow.open(map, markers[i]);
+}
+
+function MarkerInfo(i, wpt) {
+
+	return '<p style="line-height:160%;"><span style="font-size:24pt;">' + wpt.label + '</span><br><b>Waypoint ' + (i+1) + '<\/b><br><b>Coords.:<\/b> ' + wpt.lat + '&deg;, ' + wpt.lon + '&deg;<\/p>';
+
+}
+
+// compute distance in miles between two lat/lon points
+function Mileage(lat1, lon1, lat2, lon2) {
+	if(lat1 == lat2 && lon1 == lon2)
+	return 0.;
+
+	var rad = 3963.;
+	var deg2rad = Math.PI/180.;
+	var ang = Math.cos(lat1 * deg2rad) * Math.cos(lat2 * deg2rad) * Math.cos((lon1 - lon2)*deg2rad) + Math.sin(lat1 * deg2rad) * Math.sin(lat2 * deg2rad);
+	return Math.acos(ang) * 1.02112 * rad;
+}
+
+// compute distance in feet between two lat/lon points
+function Feet(lat1, lon1, lat2, lon2) {
+	if(lat1 == lat2 && lon1 == lon2)
+	return 0.;
+
+	var rad = 3963.;
+	var deg2rad = Math.PI/180.;
+	var ang = Math.cos(lat1 * deg2rad) * Math.cos(lat2 * deg2rad) * Math.cos((lon1 - lon2)*deg2rad) + Math.sin(lat1 * deg2rad) * Math.sin(lat2 * deg2rad);
+	return Math.acos(ang) * 1.02112 * rad * 5280;
+}
+
+// callback for when the showHidden checkbox is clicked
+function showHiddenClicked() {
 
 	var showHidden = false;
 	if (document.getElementById('showHidden') != null) {
 		showHidden = document.getElementById('showHidden').checked;
 	}
-	var showMarkers = true;
-	if (document.getElementById('showMarkers') != null) {
-		showMarkers = document.getElementById('showMarkers').checked;
-	}
-
-	markers = new Array();
-	markerinfo = new Array();
-	var bounds = new google.maps.LatLngBounds();
-	for (var i = 0; i < waypoints.length; i++) {
-		minlat = Math.min(minlat, waypoints[i].lat);
-		maxlat = Math.max(maxlat, waypoints[i].lat);
-		minlon = Math.min(minlon, waypoints[i].lon);
-		maxlon = Math.max(maxlon, waypoints[i].lon);
-
-		polypoints[i] = new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon);
-
-		markerinfo[i] = MarkerInfo(i, waypoints[i]);
-		markers[i] = new google.maps.Marker({
-			position: polypoints[i],
-			//map: map,
-			title: waypoints[i].label,
-			icon: intersectionimage
-		});
-		if (showMarkers && (showHidden || waypoints[i].visible)) {
-			AddMarker(markers[i], markerinfo[i], i);
-		}
-		bounds.extend(polypoints[i]);
-	}
-
-	var midlat = (minlat + maxlat)/2;
-	var midlon = (minlon + maxlon)/2;
-
-	var nsdist = Mileage(minlat, midlon, maxlat, midlon);
-	var ewdist = Mileage(midlat, minlon, midlat, maxlon);
-	var maxdist = Math.max(nsdist, ewdist);
-
-	//var zoom = 17 - (12 + Math.floor(Math.log(maxdist/800)/Math.log(2.0)));
-	//zoom = Math.max(zoom, 0);
-	//zoom = Math.min(zoom, 17);
-	//map.setZoom(zoom);
-	map.fitBounds(bounds);
-
-	// if this is a graph in HDX, we draw edges as connections,
-	// otherwise we may be connecting waypoints in order to plot a
-	// path
-	if (graphEdges.length > 0) {
-		for (var i = 0; i < graphEdges.length; i++) {
-			var numPoints;
-			if (graphEdges[i].via == null) {
-				numPoints = 2;
-			}
-			else {
-				numPoints = graphEdges[i].via.length/2 + 2;
-			}
-			var edgePoints = new Array(numPoints);
-			var v1 = graphEdges[i].v1;
-			var v2 = graphEdges[i].v2;
-			//	    DBG.write("Adding edge " + i + " from " + v1 + "(" + waypoints[v1].lat + "," + waypoints[v1].lon + ") to " + v2 + "(" + waypoints[v2].lat + "," + waypoints[v2].lon + ")");
-			edgePoints[0] = new google.maps.LatLng(waypoints[v1].lat, waypoints[v1].lon);
-			nextPoint = 1;
-			if (graphEdges[i].via != null) {
-				for (var j = 0; j < graphEdges[i].via.length; j+=2) {
-					edgePoints[nextPoint] = new google.maps.LatLng(graphEdges[i].via[j], graphEdges[i].via[j+1]);
-					nextPoint++;
-				}
-			}
-			edgePoints[nextPoint] = new google.maps.LatLng(waypoints[v2].lat, waypoints[v2].lon);
-			connections[i] = new google.maps.Polyline({path: edgePoints, strokeColor: "#0000FF", strokeWeight: 10, strokeOpacity: 0.4, map: map});
-			//map.addOverlay(connections[i]);
-		}
-	}
-	else if (usingAdjacencyLists) {
-		var edgeNum = 0;
+	//DBG.write("showHiddenClicked: showHidden is " + showHidden);
+	if (showHidden) {
+		// add in the hidden markers
 		for (var i = 0; i < waypoints.length; i++) {
-			for (var j = 0; j < waypoints[i].edgeList.length; j++) {
-				var thisEdge = waypoints[i].edgeList[j];
-				// avoid double plot by only plotting those with v1 as i
-				if (thisEdge.v1 == i) {
-					var numPoints;
-					if (thisEdge.via == null) {
-						numPoints = 2;
-					}
-					else {
-						numPoints = thisEdge.via.length/2 + 2;
-					}
-					var edgePoints = new Array(numPoints);
-					edgePoints[0] = new google.maps.LatLng(waypoints[thisEdge.v1].lat, waypoints[thisEdge.v1].lon);
-					nextPoint = 1;
-					if (thisEdge.via != null) {
-						for (var p = 0; p < thisEdge.via.length; p+=2) {
-							edgePoints[nextPoint] = new google.maps.LatLng(thisEdge.via[p], thisEdge.via[p+1]);
-							nextPoint++;
-						}
-					}
-					edgePoints[nextPoint] = new google.maps.LatLng(waypoints[thisEdge.v2].lat, waypoints[thisEdge.v2].lon);
-					// count the commas, which tell us how many
-					// concurrent routes are represented, as they will
-					// be comma-separated, then use that to choose a
-					// color to indicate the number of routes
-					// following the edge
-					concurrent = thisEdge.label.split(",").length;
-					color = "";
-					switch (concurrent) {
-						case 1:
-						color = "#0000FF";
-						break;
-						case 2:
-						color = "#00FF00";
-						break;
-						case 3:
-						color = "#FF00FF";
-						break;
-						case 4:
-						color = "#FFFF00";
-						break;
-						default:
-						color = "#FF0000";
-						break;
-					}
-					connections[edgeNum] = new google.maps.Polyline({path: edgePoints, strokeColor: color, strokeWeight: 10, strokeOpacity: 0.4, map: map});
-					edgeNum++;
-				}
+			if (!waypoints[i].visible) {
+				AddMarker(markers[i], markerinfo[i], i);
 			}
 		}
 	}
-	// connecting waypoints in order to plot a path
-	else if (mapClinched) {
-		// clinched vs unclinched segments mapped with different colors
-		var nextClinchedCheck = 0;
-		var totalMiles = 0.0;
-		var clinchedMiles = 0.0;
-		var level = map.getZoom();
-		var weight = 2;
-		if (newRouteIndices.length > 0) {
-			// if newRouteIndices is not empty, we're plotting multiple routes
-			//DBG.write("Multiple clinched routes!");
-			var nextSegment = 0;
-			for (var route = 0; route < newRouteIndices.length; route++) {
-				var start = newRouteIndices[route];
-				var end;
-				if (route == newRouteIndices.length-1) {
-					end = waypoints.length-1;
-				}
-				else {
-					end = newRouteIndices[route+1]-1;
-				}
-				//DBG.write("route = " + route + ", start = " + start + ", end = " + end);
-				// support for clinch colors from systems.csv
-				var unclinchedColor = "rgb(200,200,200)"; //"#cccccc";
-				var clinchedColor = "rgb(255,128,128)"; //"#ff8080";
-				for (var c = 0; c<colorCodes.length; c++) {
-					if (colorCodes[c].name == routeColor[route]) {
-						unclinchedColor = colorCodes[c].unclinched;
-						clinchedColor = colorCodes[c].clinched;
-					}
-				}
-				// override with tier or system colors given in query string if they match
-				for (var c = 0; c<customColorCodes.length; c++) {
-					if (customColorCodes[c].name == ("tier"+routeTier[route])) {
-						unclinchedColor = customColorCodes[c].unclinched;
-						clinchedColor = customColorCodes[c].clinched;
-					}
-					if (customColorCodes[c].name == routeSystem[route]) {
-						unclinchedColor = customColorCodes[c].unclinched;
-						clinchedColor = customColorCodes[c].clinched;
-					}
-				}
-				for (var i=start; i<end; i++) {
-					var zIndex = 10 - routeTier[route];
-					var edgePoints = new Array(2);
-					edgePoints[0] = new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon);
-					edgePoints[1] = new google.maps.LatLng(waypoints[i+1].lat, waypoints[i+1].lon);
-					var segmentLength = Mileage(waypoints[i].lat,
-						waypoints[i].lon,
-						waypoints[i+1].lat,
-						waypoints[i+1].lon);
-						totalMiles += segmentLength;
-						//DBG.write("i = " + i);
-						var color = unclinchedColor;
-						var opacity = 0.3;
-						if (segments[nextSegment] == clinched[nextClinchedCheck]) {
-							//DBG.write("Clinched!");
-							color = clinchedColor;
-							zIndex = zIndex + 10;
-							nextClinchedCheck++;
-							clinchedMiles += segmentLength;
-							opacity = 0.85;
-						}
-						connections[nextSegment] = new google.maps.Polyline(
-							{path: edgePoints, strokeColor: color, strokeWeight: weight, strokeOpacity: opacity,
-								zIndex : zIndex, map: map});
-								nextSegment++;
-							}
-						}
-						// set up listener for changes to zoom level and adjust strokeWeight in response
-						//DBG.write("Setting up zoom_changed");
-						google.maps.event.clearListeners(map, 'zoom_changed');
-						google.maps.event.addListener(map, 'zoom_changed', zoomChange);
-						//	    google.maps.event.addListener(map, 'zoom_changed', function() {
-						//		var level = map.getZoom();
-						//		var weight = Math.floor(level);
-						//		DBG.write("Zoom level " + level + ", weight = " + weight);
-						//		for (var i=0; i<connections.length; i++) {
-						//		    connections[i].setOptions({strokeWeight: weight});
-						//		}
-						//	    });
-					}
-					else {
-						// single route
-						for (var i=0; i<segments.length; i++) {
-							var edgePoints = new Array(2);
-							edgePoints[0] = new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon);
-							edgePoints[1] = new google.maps.LatLng(waypoints[i+1].lat, waypoints[i+1].lon);
-							var segmentLength = Mileage(waypoints[i].lat,
-								waypoints[i].lon,
-								waypoints[i+1].lat,
-								waypoints[i+1].lon);
-								totalMiles += segmentLength;
-								var color = "#cccccc";
-								if (segments[i] == clinched[nextClinchedCheck]) {
-									color = "#ff8080";
-									nextClinchedCheck++;
-									clinchedMiles += segmentLength;
-								}
-								connections[i] = new google.maps.Polyline({path: edgePoints, strokeColor: color, strokeWeight: 10, strokeOpacity: 0.75, map: map});
-							}
-						}
-						if (document.getElementById('controlboxinfo') != null) {
-							document.getElementById('controlboxinfo').innerHTML = ""; //clinchedMiles.toFixed(2) + " of " + totalMiles.toFixed(2) + " miles (" + (clinchedMiles/totalMiles*100).toFixed(1) + "%) clinched by " + traveler + ".";
-						}
-					}
-					else if (genEdges) {
-						connections[0] = new google.maps.Polyline({path: polypoints, strokeColor: "#0000FF", strokeWeight: 10, strokeOpacity: 0.75, map: map});
-						//map.addOverlay(connections[0]);
-					}
-					// don't think this should not be needed, but an attempt to get
-					// hidden waypoints to be hidden when first created
-					showHiddenClicked();
-				}
+	else {
+		// hide the ones that should no longer be visible
+		for (var i = 0; i < waypoints.length; i++) {
+			if (!waypoints[i].visible) {
+				markers[i].setMap(null);
+			}
+		}
+	}
+}
 
-				function zoomChange() {
+// callback for when the hideMarkers checkbox is clicked
+function showMarkersClicked() {
 
-					var level = map.getZoom();
-					var newWeight;
-					if (level < 9) newWeight = 2;
-					else if (level < 12) newWeight = 6;
-					else if (level < 15) newWeight = 10;
-					else newWeight = 16;
-					//DBG.write("zoomChange: Zoom level " + level + ", newWeight = " + newWeight);
-					for (var i=0; i<connections.length; i++) {
-						//connections[i].setMap(null);
-						connections[i].setOptions({strokeWeight: newWeight});
-					}
-				}
+	var showThem = document.getElementById('showMarkers').checked;
+	if (showThem) {
+		for (var i = 0; i < waypoints.length; i++) {
+			if (waypoints[i].visible) {
+				AddMarker(markers[i], markerinfo[i], i);
+			}
+		}
+	}
+	else {
+		for (var i = 0; i < waypoints.length; i++) {
+			markers[i].setMap(null);
+		}
+	}
+}
 
-				function AddMarker(marker, markerinfo, i) {
-
-					marker.setMap(map);
-					google.maps.event.addListener(marker, 'click', function() {
-						infowindow.setContent(markerinfo);
-						infowindow.open(map, marker);
-					});
-				}
-
-				function LabelClick(i, label, lat, lon, errors) {
-
-					map.panTo(new google.maps.LatLng(lat, lon));
-					//infowindow.setContent(info);
-					infowindow.setContent(markerinfo[i]);
-					infowindow.open(map, markers[i]);
-				}
-
-				function MarkerInfo(i, wpt) {
-
-					return '<p style="line-height:160%;"><span style="font-size:24pt;">' + wpt.label + '</span><br><b>Waypoint ' + (i+1) + '<\/b><br><b>Coords.:<\/b> ' + wpt.lat + '&deg;, ' + wpt.lon + '&deg;<\/p>';
-
-				}
-
-				// compute distance in miles between two lat/lon points
-				function Mileage(lat1, lon1, lat2, lon2) {
-					if(lat1 == lat2 && lon1 == lon2)
-					return 0.;
-
-					var rad = 3963.;
-					var deg2rad = Math.PI/180.;
-					var ang = Math.cos(lat1 * deg2rad) * Math.cos(lat2 * deg2rad) * Math.cos((lon1 - lon2)*deg2rad) + Math.sin(lat1 * deg2rad) * Math.sin(lat2 * deg2rad);
-					return Math.acos(ang) * 1.02112 * rad;
-				}
-
-				// compute distance in feet between two lat/lon points
-				function Feet(lat1, lon1, lat2, lon2) {
-					if(lat1 == lat2 && lon1 == lon2)
-					return 0.;
-
-					var rad = 3963.;
-					var deg2rad = Math.PI/180.;
-					var ang = Math.cos(lat1 * deg2rad) * Math.cos(lat2 * deg2rad) * Math.cos((lon1 - lon2)*deg2rad) + Math.sin(lat1 * deg2rad) * Math.sin(lat2 * deg2rad);
-					return Math.acos(ang) * 1.02112 * rad * 5280;
-				}
-
-				// callback for when the showHidden checkbox is clicked
-				function showHiddenClicked() {
-
-					var showHidden = false;
-					if (document.getElementById('showHidden') != null) {
-						showHidden = document.getElementById('showHidden').checked;
-					}
-					//DBG.write("showHiddenClicked: showHidden is " + showHidden);
-					if (showHidden) {
-						// add in the hidden markers
-						for (var i = 0; i < waypoints.length; i++) {
-							if (!waypoints[i].visible) {
-								AddMarker(markers[i], markerinfo[i], i);
-							}
-						}
-					}
-					else {
-						// hide the ones that should no longer be visible
-						for (var i = 0; i < waypoints.length; i++) {
-							if (!waypoints[i].visible) {
-								markers[i].setMap(null);
-							}
-						}
-					}
-				}
-
-				// callback for when the hideMarkers checkbox is clicked
-				function showMarkersClicked() {
-
-					var showThem = document.getElementById('showMarkers').checked;
-					if (showThem) {
-						for (var i = 0; i < waypoints.length; i++) {
-							if (waypoints[i].visible) {
-								AddMarker(markers[i], markerinfo[i], i);
-							}
-						}
-					}
-					else {
-						for (var i = 0; i < waypoints.length; i++) {
-							markers[i].setMap(null);
-						}
-					}
-				}
-
-				function redirect(url) {
-					var win = window.open(url);
-					win.focus();
-				}
-				var delay = 50;
-				function speedChanged() {
-					var speedChanger = document.getElementById("speedChanger");
-					delay = speedChanger.options[speedChanger.selectedIndex].value;
-				}
+function redirect(url) {
+	var win = window.open(url);
+	win.focus();
+}
+var delay = 50;
+function speedChanged() {
+	var speedChanger = document.getElementById("speedChanger");
+	delay = speedChanger.options[speedChanger.selectedIndex].value;
+}
 
 
 
@@ -958,174 +958,170 @@ function processQueue() {
 			}
 		}
 
-		var stack = [];
-		var visitedDfs =[];
-		var minDistanceDfs;
-		var maxDistanceDfs;
-		var minEdgeDfs;
-		var maxEdgeDfs;
-		var maxEdgePolylineDFS;
-		var minEdgePolylineDFS;
+var stack = [];
+var visitedDfs =[];
+var minDistanceDfs;
+var maxDistanceDfs;
+var minEdgeDfs;
+var maxEdgeDfs;
+var maxEdgePolylineDFS;
+var minEdgePolylineDFS;
 
-	function startDfsSearch() {
-	// Reset previous state
-	minDistanceDfs =  99999999;
-	maxDistanceDfs = -99999999;
-	minEdgeDfs = null;
-	maxEdgeDfs = null;
-	maxEdgePolyline = null;
-	minEdgePolyline = null;
-	visitedDfs = new Array(waypoints.length).fill(false)
+function startDfsSearch() {
+// Reset previous state
+minDistanceDfs =  99999999;
+maxDistanceDfs = -99999999;
+minEdgeDfs = null;
+maxEdgeDfs = null;
+maxEdgePolyline = null;
+minEdgePolyline = null;
+visitedDfs = new Array(waypoints.length).fill(false)
 
-	// put frist point into the stack and start processing the stack
-	stack.push(0);
+// put frist point into the stack and start processing the stack
+stack.push(0);
 
-	setTimeout(processStack, delay);
-	}
+setTimeout(processStack, delay);
+}
 
-	function processStack() {
-	// If stack is empty, nothing to do any more and we are done.
-	if (stack.length == 0) {
-		console.log("Done with DFS search");
-		return;
-	}
+function processStack() {
+// If stack is empty, nothing to do any more and we are done.
+if (stack.length == 0) {
+	console.log("Done with DFS search");
+	return;
+}
 
-	// get top of stack
-	var top = stack[stack.length - 1];
+// get top of stack
+var top = stack[stack.length - 1];
 
 
-	if (visitedDfs[top] == true) {
-		document.getElementById('waypoint' + top).style.backgroundColor="grey";
-		markers[top].setMap(map);
-		markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			scale: 3,
-			zIndex: google.maps.Marker.MAX_ZINDEX + 1,
-			fillColor: 'grey',
-			strokeColor: 'grey'});
+if (visitedDfs[top] == true) {
+	document.getElementById('waypoint' + top).style.backgroundColor="grey";
+	markers[top].setMap(map);
+	markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
+		scale: 3,
+		zIndex: google.maps.Marker.MAX_ZINDEX + 1,
+		fillColor: 'grey',
+		strokeColor: 'grey'});
 
 		var adjacentList = getAdjacentPoints(top);
 
 		// Find the first adjacent of the top node which is not visited yet, and push it to the stack,
 		// and continue processing the stack again.
-		for (var i = 0; i < adjacentList.length; i++) {
-			if (visitedDfs[adjacentList[i]] == false) {
-				stack.push(adjacentList[i]);
+for (var i = 0; i < adjacentList.length; i++) {
+if (visitedDfs[adjacentList[i]] == false) {
+	stack.push(adjacentList[i]);
 
-				// Update related mins and maxs (minDistanceDfs, minEdgeDfs, maxDistanceBfs, maxEdgeDfs)
-				var distance = Feet(waypoints[adjacentList[i]].lat, waypoints[adjacentList[i]].lon, waypoints[top].lat, waypoints[top].lon);
-				if (distance < minDistanceDfs) {
+	// Update related mins and maxs (minDistanceDfs, minEdgeDfs, maxDistanceBfs, maxEdgeDfs)
+	var distance = Feet(waypoints[adjacentList[i]].lat, waypoints[adjacentList[i]].lon, waypoints[top].lat, waypoints[top].lon);
+	if (distance < minDistanceDfs) {
 
-					if (minEdgePolylineDFS != null) {
-						// if we already draw a polyline for minEdge, since we found a smaller edge, just remove previous one
-						minEdgePolylineDFS.setMap(null);
-					}
-
-					minDistanceDfs = distance;
-					minEdgeDfs = waypoints[top].edgeList[i];
-
-
-					// Change ui elements regarding min edge
-					var minEdgePoints = new Array(2);
-					minEdgePoints [0] = new google.maps.LatLng(waypoints[minEdgeDfs.v1].lat, waypoints[minEdgeDfs.v1].lon);
-					minEdgePoints [1] = new google.maps.LatLng(waypoints[minEdgeDfs.v2].lat, waypoints[minEdgeDfs.v2].lon);
-					minEdgePolylineDFS = new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
-					var firstNode = Math.min(minEdgeDfs.v1, minEdgeDfs.v2);
-					var secondNode = Math.max(minEdgeDfs.v1, minEdgeDfs.v2);
-					document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
-
-				}
-
-				if (distance > maxDistanceDfs) {
-
-					if (maxEdgePolylineDFS != null) {
-						// if we already draw a polyline for maxEdge, since we found a larger edge, just remove previous one
-						maxEdgePolylineDFS.setMap(null);
-					}
-
-					maxDistanceDfs = distance;
-					maxEdgeDfs  = waypoints[top].edgeList[i];
-
-					// Change ui elements regarding max edge
-					var maxEdgePoints = new Array(2);
-					maxEdgePoints [0] = new google.maps.LatLng(waypoints[maxEdgeDfs.v1].lat, waypoints[maxEdgeDfs.v1].lon);
-					maxEdgePoints [1] = new google.maps.LatLng(waypoints[maxEdgeDfs.v2].lat, waypoints[maxEdgeDfs.v2].lon);
-					maxEdgePolylineDFS = new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
-					var firstNode = Math.min(maxEdgeDfs.v1, maxEdgeDfs.v2);
-					var secondNode = Math.max(maxEdgeDfs.v1, maxEdgeDfs.v2);
-					document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
-				}
-
-
-				printList(stack);
-				setTimeout(processStack, delay);
-				return;
-			}
+		if (minEdgePolylineDFS != null) {
+			// if we already draw a polyline for minEdge, since we found a smaller edge, just remove previous one
+			minEdgePolylineDFS.setMap(null);
 		}
-		// being here means that we didn't find any adjacent of top node that is not visited,
-		// so we are done with the top node, and we have to remove it from the top of stack, and coninute processing the stack.
 
-		stack.pop();
-		printList(stack);
-		setTimeout(processStack, delay);
-	} else {
-		document.getElementById('waypoint' + top).style.backgroundColor="yellow";
-		markers[top].setMap(map);
-		markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			scale: 6,
-			zIndex: google.maps.Marker.MAX_ZINDEX + 1,
-			fillColor: 'yellow',
-			strokeColor: 'yellow'});
+		minDistanceDfs = distance;
+		minEdgeDfs = waypoints[top].edgeList[i];
 
-		visitedDfs[top] = true;
-		setTimeout(processStack, delay);
+
+		// Change ui elements regarding min edge
+		var minEdgePoints = new Array(2);
+		minEdgePoints [0] = new google.maps.LatLng(waypoints[minEdgeDfs.v1].lat, waypoints[minEdgeDfs.v1].lon);
+		minEdgePoints [1] = new google.maps.LatLng(waypoints[minEdgeDfs.v2].lat, waypoints[minEdgeDfs.v2].lon);
+		minEdgePolylineDFS = new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+		var firstNode = Math.min(minEdgeDfs.v1, minEdgeDfs.v2);
+		var secondNode = Math.max(minEdgeDfs.v1, minEdgeDfs.v2);
+		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
+
 	}
+
+	if (distance > maxDistanceDfs) {
+
+		if (maxEdgePolylineDFS != null) {
+			// if we already draw a polyline for maxEdge, since we found a larger edge, just remove previous one
+			maxEdgePolylineDFS.setMap(null);
+		}
+
+		maxDistanceDfs = distance;
+		maxEdgeDfs  = waypoints[top].edgeList[i];
+
+		// Change ui elements regarding max edge
+		var maxEdgePoints = new Array(2);
+		maxEdgePoints [0] = new google.maps.LatLng(waypoints[maxEdgeDfs.v1].lat, waypoints[maxEdgeDfs.v1].lon);
+		maxEdgePoints [1] = new google.maps.LatLng(waypoints[maxEdgeDfs.v2].lat, waypoints[maxEdgeDfs.v2].lon);
+		maxEdgePolylineDFS = new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+		var firstNode = Math.min(maxEdgeDfs.v1, maxEdgeDfs.v2);
+		var secondNode = Math.max(maxEdgeDfs.v1, maxEdgeDfs.v2);
+		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
 	}
+
+
+	printList(stack);
+	setTimeout(processStack, delay);
+	return;
+}
+}
+// being here means that we didn't find any adjacent of top node that is not visited,
+// so we are done with the top node, and we have to remove it from the top of stack, and coninute processing the stack.
+
+stack.pop();
+printList(stack);
+setTimeout(processStack, delay);
+} else {
+document.getElementById('waypoint' + top).style.backgroundColor="yellow";
+markers[top].setMap(map);
+markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
+scale: 6,
+zIndex: google.maps.Marker.MAX_ZINDEX + 1,
+fillColor: 'yellow',
+strokeColor: 'yellow'});
+
+visitedDfs[top] = true;
+setTimeout(processStack, delay);
+}
+}
 
 	function startConvexHall(){
 		calculateConvexHull();
-		//setTimeout(calculateConvexHull, delay);
-		// console.log("caculate convex hull " +  calculateConvexHull);
 	}
 
 
-var polyline;
+	var polyline;
 
 	function calculateConvexHull() {
-	     if (polyline) polyline.setMap(null);
-	   	 	p = [];
-			for (var i=0; i < markers.length; i++) {
-	    	p.push(markers[i].getPosition());
-	  }
-	      p.sort(sortPointY);
-	      p.sort(sortPointX);
-
-	    //  DrawHull();
-				setTimeout(DrawHull, delay);
+		if (polyline) polyline.setMap(null);
+		p = [];
+		for (var i=0; i < markers.length; i++) {
+			p.push(markers[i].getPosition());
+		}
+		p.sort(sortPointY);
+		p.sort(sortPointX);
+		setTimeout(DrawHull, delay);
 	}
 
 	function DrawHull() {
-	     hullPoints = [];
-	     chainHull_2D(p, p.length, hullPoints );
-	      polyline = new google.maps.Polygon({
-	      map: map,
-	      paths:hullPoints,
-	      fillColor:"#FF0000",
-	      strokeWidth:2,
-	      fillOpacity:0.5,
-	      strokeColor:"#0000FF",
-	      strokeOpacity:0.5
-	     });
+		hullPoints = [];
+		chainHull_2D(p, p.length, hullPoints );
+		polyline = new google.maps.Polygon({
+			map: map,
+			paths:hullPoints,
+			fillColor:"#FF0000",
+			strokeWidth:2,
+			fillOpacity:0.5,
+			strokeColor:"#0000FF",
+			strokeOpacity:0.5
+		});
 	}
 
 	function sortPointX(a, b) {
-	    return a.lng() - b.lng();
+		return a.lng() - b.lng();
 	}
 	function sortPointY(a, b) {
-	    return a.lat() - b.lat();
+		return a.lat() - b.lat();
 	}
 
 	function isLeft(P0, P1, P2) {
-	    return (P1.lng() - P0.lng()) * (P2.lat() - P0.lat()) - (P2.lng() - P0.lng()) * (P1.lat() - P0.lat());
+		return (P1.lng() - P0.lng()) * (P2.lat() - P0.lat()) - (P2.lng() - P0.lng()) * (P1.lat() - P0.lat());
 	}
 	//===================================================================
 	// Copyright 2001, softSurfer (www.softsurfer.com)
@@ -1143,97 +1139,97 @@ var polyline;
 
 
 	function chainHull_2D(P, n, H) {
-	    // the output array H[] will be used as the stack
-	    var bot = 0,
-	    top = (-1); // indices for bottom and top of the stack
-	    var i; // array scan index
-	    // Get the indices of points with min x-coord and min|max y-coord
-	    var minmin = 0,
-	        minmax;
+		// the output array H[] will be used as the stack
+		var bot = 0,
+		top = (-1); // indices for bottom and top of the stack
+		var i; // array scan index
+		// Get the indices of points with min x-coord and min|max y-coord
+		var minmin = 0,
+		minmax;
 
-	    var xmin = P[0].lng();
-	    for (i = 1; i < n; i++) {
-	        if (P[i].lng() != xmin) {
-	            break;
-	        }
-	    }
+		var xmin = P[0].lng();
+		for (i = 1; i < n; i++) {
+			if (P[i].lng() != xmin) {
+				break;
+			}
+		}
 
-	    minmax = i - 1;
-	    if (minmax == n - 1) { // degenerate case: all x-coords == xmin
-	        H[++top] = P[minmin];
-	        if (P[minmax].lat() != P[minmin].lat()) // a nontrivial segment
-	            H[++top] = P[minmax];
-	        H[++top] = P[minmin]; // add polygon endpoint
-	        return top + 1;
-	    }
+		minmax = i - 1;
+		if (minmax == n - 1) { // degenerate case: all x-coords == xmin
+			H[++top] = P[minmin];
+			if (P[minmax].lat() != P[minmin].lat()) // a nontrivial segment
+			H[++top] = P[minmax];
+			H[++top] = P[minmin]; // add polygon endpoint
+			return top + 1;
+		}
 
-	    // Get the indices of points with max x-coord and min|max y-coord
-	    var maxmin, maxmax = n - 1;
-	    var xmax = P[n - 1].lng();
-	    for (i = n - 2; i >= 0; i--) {
-	        if (P[i].lng() != xmax) {
-	            break;
-	        }
-	    }
-	    maxmin = i + 1;
+		// Get the indices of points with max x-coord and min|max y-coord
+		var maxmin, maxmax = n - 1;
+		var xmax = P[n - 1].lng();
+		for (i = n - 2; i >= 0; i--) {
+			if (P[i].lng() != xmax) {
+				break;
+			}
+		}
+		maxmin = i + 1;
 
-	    // Compute the lower hull on the stack H
-	    H[++top] = P[minmin]; // push minmin point onto stack
-	    i = minmax;
-	    while (++i <= maxmin) {
-	        // the lower line joins P[minmin] with P[maxmin]
-	        if (isLeft(P[minmin], P[maxmin], P[i]) >= 0 && i < maxmin) {
-	            continue; // ignore P[i] above or on the lower line
-	        }
+		// Compute the lower hull on the stack H
+		H[++top] = P[minmin]; // push minmin point onto stack
+		i = minmax;
+		while (++i <= maxmin) {
+			// the lower line joins P[minmin] with P[maxmin]
+			if (isLeft(P[minmin], P[maxmin], P[i]) >= 0 && i < maxmin) {
+				continue; // ignore P[i] above or on the lower line
+			}
 
-	        while (top > 0) { // there are at least 2 points on the stack
-	            // test if P[i] is left of the line at the stack top
-	            if (isLeft(H[top - 1], H[top], P[i]) > 0) {
-	                break; // P[i] is a new hull vertex
-	            }
-	            else {
-	                top--; // pop top point off stack
-	            }
-	        }
+			while (top > 0) { // there are at least 2 points on the stack
+				// test if P[i] is left of the line at the stack top
+				if (isLeft(H[top - 1], H[top], P[i]) > 0) {
+					break; // P[i] is a new hull vertex
+				}
+				else {
+					top--; // pop top point off stack
+				}
+			}
 
-	        H[++top] = P[i]; // push P[i] onto stack
-	    }
+			H[++top] = P[i]; // push P[i] onto stack
+		}
 
-	    // Next, compute the upper hull on the stack H above the bottom hull
-	    if (maxmax != maxmin) { // if distinct xmax points
-	        H[++top] = P[maxmax]; // push maxmax point onto stack
-	    }
+		// Next, compute the upper hull on the stack H above the bottom hull
+		if (maxmax != maxmin) { // if distinct xmax points
+			H[++top] = P[maxmax]; // push maxmax point onto stack
+		}
 
-	    bot = top; // the bottom point of the upper hull stack
-	    i = maxmin;
-	    while (--i >= minmax) {
-	        // the upper line joins P[maxmax] with P[minmax]
-	        if (isLeft(P[maxmax], P[minmax], P[i]) >= 0 && i > minmax) {
-	            continue; // ignore P[i] below or on the upper line
-	        }
+		bot = top; // the bottom point of the upper hull stack
+		i = maxmin;
+		while (--i >= minmax) {
+			// the upper line joins P[maxmax] with P[minmax]
+			if (isLeft(P[maxmax], P[minmax], P[i]) >= 0 && i > minmax) {
+				continue; // ignore P[i] below or on the upper line
+			}
 
-	        while (top > bot) { // at least 2 points on the upper stack
-	            // test if P[i] is left of the line at the stack top
-	            if (isLeft(H[top - 1], H[top], P[i]) > 0) {
-	                break;  // P[i] is a new hull vertex
-	            }
-	            else {
-	                top--; // pop top point off stack
-	            }
-	        }
+			while (top > bot) { // at least 2 points on the upper stack
+				// test if P[i] is left of the line at the stack top
+				if (isLeft(H[top - 1], H[top], P[i]) > 0) {
+					break;  // P[i] is a new hull vertex
+				}
+				else {
+					top--; // pop top point off stack
+				}
+			}
 
-	        H[++top] = P[i]; // push P[i] onto stack
-	    }
+			H[++top] = P[i]; // push P[i] onto stack
+		}
 
-	    if (minmax != minmin) {
-	        H[++top] = P[minmin]; // push joining endpoint onto stack
-	    }
+		if (minmax != minmin) {
+			H[++top] = P[minmin]; // push joining endpoint onto stack
+		}
 
-	    return top + 1;
+		return top + 1;
 	}
 	function getObj(elementID){
-					return document.getElementById(elementID);
-				}
+		return document.getElementById(elementID);
+	}
 
 
 
