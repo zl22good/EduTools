@@ -1025,13 +1025,13 @@ if (visitedDfs[adjacentList[i]] == false) {
 
 
 		// Change ui elements regarding min edge
-		var minEdgePoints = new Array(2);
-		minEdgePoints [0] = new google.maps.LatLng(waypoints[minEdgeDfs.v1].lat, waypoints[minEdgeDfs.v1].lon);
-		minEdgePoints [1] = new google.maps.LatLng(waypoints[minEdgeDfs.v2].lat, waypoints[minEdgeDfs.v2].lon);
-		minEdgePolylineDFS = new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
-		var firstNode = Math.min(minEdgeDfs.v1, minEdgeDfs.v2);
-		var secondNode = Math.max(minEdgeDfs.v1, minEdgeDfs.v2);
-		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
+		// var minEdgePoints = new Array(2);
+		// minEdgePoints [0] = new google.maps.LatLng(waypoints[minEdgeDfs.v1].lat, waypoints[minEdgeDfs.v1].lon);
+		// minEdgePoints [1] = new google.maps.LatLng(waypoints[minEdgeDfs.v2].lat, waypoints[minEdgeDfs.v2].lon);
+		// minEdgePolylineDFS = new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+		// var firstNode = Math.min(minEdgeDfs.v1, minEdgeDfs.v2);
+		// var secondNode = Math.max(minEdgeDfs.v1, minEdgeDfs.v2);
+		// document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
 
 	}
 
@@ -1046,13 +1046,14 @@ if (visitedDfs[adjacentList[i]] == false) {
 		maxEdgeDfs  = waypoints[top].edgeList[i];
 
 		// Change ui elements regarding max edge
-		var maxEdgePoints = new Array(2);
-		maxEdgePoints [0] = new google.maps.LatLng(waypoints[maxEdgeDfs.v1].lat, waypoints[maxEdgeDfs.v1].lon);
-		maxEdgePoints [1] = new google.maps.LatLng(waypoints[maxEdgeDfs.v2].lat, waypoints[maxEdgeDfs.v2].lon);
-		maxEdgePolylineDFS = new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
-		var firstNode = Math.min(maxEdgeDfs.v1, maxEdgeDfs.v2);
-		var secondNode = Math.max(maxEdgeDfs.v1, maxEdgeDfs.v2);
-		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
+		// var maxEdgePoints = new Array(2);
+		// maxEdgePoints [0] = new google.maps.LatLng(waypoints[maxEdgeDfs.v1].lat, waypoints[maxEdgeDfs.v1].lon);
+		// maxEdgePoints [1] = new google.maps.LatLng(waypoints[maxEdgeDfs.v2].lat, waypoints[maxEdgeDfs.v2].lon);
+		// maxEdgePolylineDFS = new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+		// var firstNode = Math.min(maxEdgeDfs.v1, maxEdgeDfs.v2);
+		// var secondNode = Math.max(maxEdgeDfs.v1, maxEdgeDfs.v2);
+		// document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
+
 	}
 
 
