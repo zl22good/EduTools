@@ -596,6 +596,8 @@ fillColor: 'white',
 strokeColor: 'white'});
 }
 
+
+
 // we don't need edges here, so we remove those
 for (var i = 0; i < connections.length; i++) {
 connections[i].setMap(null);
@@ -608,6 +610,7 @@ scale: 4,
 zIndex: google.maps.Marker.MAX_ZINDEX+3,
 fillColor: 'yellow',
 strokeColor: 'yellow'});
+markers[0].setZIndex( 1E9 );
 document.getElementById('waypoint0').style.backgroundColor = "yellow";
 nextToCheck = 0;
 statusLine.innerHTML = 'Checking: <span style="color:yellow">0</span>';
@@ -750,6 +753,7 @@ if (nextToCheck < markers.length) {
 		zIndex: google.maps.Marker.MAX_ZINDEX+3,
 		fillColor: 'yellow',
 		strokeColor: 'yellow'});
+		markers[nextToCheck].setZIndex( 1E9 );
 		document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "yellow";
 		//if (!paused) {
 		setTimeout(continueSearch, delay);
@@ -841,6 +845,11 @@ var maxEdgeBfs;
 
 function startBfsSearch() {
 		visited = new Array(waypoints.length).fill(false);
+		// we don't need edges here, so we remove those
+		for (var i = 0; i < connections.length; i++) {
+		connections[i].setMap(null);
+		}
+		connections = new Array();
 		queue.push(0);
 		document.getElementById('waypoint' + 0).style.backgroundColor="yellow";
 		markers[0].setMap(map);
@@ -849,6 +858,7 @@ function startBfsSearch() {
 			zIndex: google.maps.Marker.MAX_ZINDEX+1,
 			fillColor: 'yellow',
 			strokeColor: 'yellow'});
+			markers[0].setZIndex( 1E9 );
 			setTimeout(processQueue, delay);
 	}
 
@@ -859,22 +869,22 @@ function processQueue() {
       console.log("Max distance: " + maxDistance);
 
 			// Change ui elements regarding max edge
-			var maxEdgePoints = new Array(2);
-			maxEdgePoints [0] = new google.maps.LatLng(waypoints[maxEdgeBfs.v1].lat, waypoints[maxEdgeBfs.v1].lon);
-			maxEdgePoints [1] = new google.maps.LatLng(waypoints[maxEdgeBfs.v2].lat, waypoints[maxEdgeBfs.v2].lon);
-			new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
-			var firstNode = Math.min(maxEdgeBfs.v1, maxEdgeBfs.v2);
-			var secondNode = Math.max(maxEdgeBfs.v1, maxEdgeBfs.v2);
-			document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
+			// var maxEdgePoints = new Array(2);
+			// maxEdgePoints [0] = new google.maps.LatLng(waypoints[maxEdgeBfs.v1].lat, waypoints[maxEdgeBfs.v1].lon);
+			// maxEdgePoints [1] = new google.maps.LatLng(waypoints[maxEdgeBfs.v2].lat, waypoints[maxEdgeBfs.v2].lon);
+			// new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+			// var firstNode = Math.min(maxEdgeBfs.v1, maxEdgeBfs.v2);
+			// var secondNode = Math.max(maxEdgeBfs.v1, maxEdgeBfs.v2);
+			// document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
 
 			// Change ui elements regarding min edge
-			var minEdgePoints = new Array(2);
-			minEdgePoints [0] = new google.maps.LatLng(waypoints[minEdgeBfs.v1].lat, waypoints[minEdgeBfs.v1].lon);
-			minEdgePoints [1] = new google.maps.LatLng(waypoints[minEdgeBfs.v2].lat, waypoints[minEdgeBfs.v2].lon);
-			new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
-			var firstNode = Math.min(minEdgeBfs.v1, minEdgeBfs.v2);
-			var secondNode = Math.max(minEdgeBfs.v1, minEdgeBfs.v2);
-			document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
+			// var minEdgePoints = new Array(2);
+			// minEdgePoints [0] = new google.maps.LatLng(waypoints[minEdgeBfs.v1].lat, waypoints[minEdgeBfs.v1].lon);
+			// minEdgePoints [1] = new google.maps.LatLng(waypoints[minEdgeBfs.v2].lat, waypoints[minEdgeBfs.v2].lon);
+			// new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+			// var firstNode = Math.min(minEdgeBfs.v1, minEdgeBfs.v2);
+			// var secondNode = Math.max(minEdgeBfs.v1, minEdgeBfs.v2);
+			// document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
 			return;
 		}
     if (visited[queue[0]]) {
@@ -901,6 +911,7 @@ function processQueue() {
 			zIndex: google.maps.Marker.MAX_ZINDEX+1,
 			fillColor: 'yellow',
 			strokeColor: 'yellow'});
+			// markers[[queue[0]].setZIndex( 1E9 );
 
 		var neighbors = getAdjacentPoints(queue[0]);
 		for (var i = 0; i < neighbors.length; i++) {
@@ -977,6 +988,15 @@ maxEdgePolyline = null;
 minEdgePolyline = null;
 visitedDfs = new Array(waypoints.length).fill(false)
 
+// we don't need edges here, so we remove those
+// for (var i = 0; i < connections.length; i++) {
+// connections[i].setMap(null);
+// }
+// connections = new Array();
+
+
+
+
 // put frist point into the stack and start processing the stack
 stack.push(0);
 
@@ -1002,6 +1022,7 @@ if (visitedDfs[top] == true) {
 		zIndex: google.maps.Marker.MAX_ZINDEX + 1,
 		fillColor: 'grey',
 		strokeColor: 'grey'});
+		markers[top].setZIndex( 1E9 );
 
 		var adjacentList = getAdjacentPoints(top);
 
