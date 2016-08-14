@@ -66,6 +66,9 @@ var traveler;
 var genEdges = false;
 // boolean to determine if graph edges are in vertex adjacency lists
 var usingAdjacencyLists = false;
+//boolean to determine pause value
+var pause = false;
+
 
 // array of objects that define color codes from names in the DB
 var colorCodes = new Array();
@@ -577,12 +580,19 @@ var northIndex = -1;
 var southIndex = -1;
 var eastIndex = -1;
 var westIndex = -1;
+var shortestVLabel;
+var longestVLabel;
 
 // callback for when startSearch button is pressed
 function startSearch() {
+if (pause == true){
+	pause = false;
+	continueSearch();
+return;
 
+}
 var statusLine = document.getElementById("status");
-statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
+// statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
 // in the future, make sure we have appropriate data in the system
 // before executing anything here
 
@@ -595,50 +605,70 @@ zIndex: google.maps.Marker.MAX_ZINDEX+1,
 fillColor: 'white',
 strokeColor: 'white'});
 }
-
-
-
 // we don't need edges here, so we remove those
 for (var i = 0; i < connections.length; i++) {
 connections[i].setMap(null);
 }
 connections = new Array();
+var startingPoint = document.getElementById("startPoint").value;
+
+shortestVLabel = waypoints[startingPoint].label;
+longestVLabel = waypoints[startingPoint].label;
 
 // start the search by initializing with the value at pos 0
-markers[0].setIcon({path: google.maps.SymbolPath.CIRCLE,
+markers[startingPoint].setIcon({path: google.maps.SymbolPath.CIRCLE,
 scale: 4,
 zIndex: google.maps.Marker.MAX_ZINDEX+3,
 fillColor: 'yellow',
 strokeColor: 'yellow'});
-markers[0].setZIndex( 1E9 );
-document.getElementById('waypoint0').style.backgroundColor = "yellow";
-nextToCheck = 0;
-statusLine.innerHTML = 'Checking: <span style="color:yellow">0</span>';
+markers[startingPoint].setZIndex( 1E9 );
+console.log("before");
+document.getElementById('waypoint'+ startingPoint).style.backgroundColor = "yellow";
+console.log("after");
+nextToCheck = startingPoint;
+queueOrStack.innerHTML = 'Checking: <span style="color:yellow">0</span>';
 // enable pause button
 //document.getElementById("pauseRestart").disabled = false;
 setTimeout(continueSearch, delay);
 }
 
+function resetMap(){
+	// remove any existing google.maps.Polyline connections shown
+    for (var i = 0; i < connections.length; i++) {
+	connections[i].setMap(null);
+    }
+    connections = new Array();
+    polypoints = new Array();
+    for (var i = 0; i < markers.length; i++) {
+	markers[i].setMap(null);
+    }
+    markers = new Array();
+    markerinfo = new Array();
+}
+
 // do an iteration of search
 function continueSearch() {
-
+if (pause == true){
+	return;
+}
+	var startingPoint = document.getElementById("startPoint").value;
 //DBG.write("continueSearch: " + nextToCheck + " N: " + northIndex + " S:" + southIndex + " E: " + eastIndex + " W:" + westIndex);
 // first we finish the previous point to see if it's a new winner,
 // and if necessary downgrade anyone who was beaten by this one
 // special case of first checked
-if (nextToCheck == 0) {
+if (nextToCheck == startingPoint) {
 // this was our first check, so this point wins all to start
-northIndex = 0;
-southIndex = 0;
-eastIndex = 0;
-westIndex = 0;
+northIndex = startingPoint;
+southIndex = startingPoint;
+eastIndex = startingPoint;
+westIndex = startingPoint;
 // it's red as our leader
-markers[0].setIcon({path: google.maps.SymbolPath.CIRCLE,
+markers[startingPoint].setIcon({path: google.maps.SymbolPath.CIRCLE,
 scale: 4,
 zIndex: google.maps.Marker.MAX_ZINDEX+2,
 fillColor: 'red',
 strokeColor: 'red'});
-document.getElementById('waypoint0').style.backgroundColor = "red";
+document.getElementById('waypoint'+ startingPoint).style.backgroundColor = "red";
 }
 // we have to do real work to see if we have new winners
 else {
@@ -745,7 +775,15 @@ if (westIndex == nextToCheck) {
 else {
 	line = line + westIndex;
 }
-statusLine.innerHTML = line;
+	document.getElementById('queueOrStack').innerHTML = line;
+if(shortestVLabel.length > waypoints[nextToCheck].label.length) {
+	shortestVLabel = waypoints[nextToCheck].label;
+}
+
+if (longestVLabel.length < waypoints[nextToCheck].label.length) {
+	longestVLabel = waypoints[nextToCheck].label;
+}
+
 nextToCheck++;
 if (nextToCheck < markers.length) {
 	markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
@@ -760,19 +798,31 @@ if (nextToCheck < markers.length) {
 		//	}
 	}
 	else {
-		statusLine.innerHTML = "Done! Results: N: " + northIndex + " S:" + southIndex + " E: " + eastIndex + " W:" + westIndex;
+		document.getElementById('queueOrStack').innerHTML = "Done! Results: N: " + northIndex + " S:" + southIndex + " E: " + eastIndex + " W:" + westIndex;
+		document.getElementById('shortestLongest').innerHTML = "shortest: " + shortestVLabel;
+		document.getElementById('shortestLongest').innerHTML = "longest: " + longestVLabel;
+		console.log("shortest: " + shortestVLabel);
+		console.log("longest: " + longestVLabel);
 	}
 }
 
-var min = 9999999;
+var minDistance = 9999999;
 var maxDistance = -999999;
 var edgeMin = null;
 var edgeMax = null;
-
+var currentEdgeIndex = 0;
+var shortestELabel;
+var longestELabel;
 function startEdgeSearch() {
 
+	if (pause == true){
+		pause = false;
+		continueEdgeSearch();
+		return;
+	}
+
 	var statusLine = document.getElementById("status");
-	statusLine.innerHTML = "Preparing for Extreme Edge Search Visualization";
+	// statusLine.innerHTML = "Preparing for Extreme Edge Search Visualization";
 	// we don't need edges here, so we remove those
 	for (var i = 0; i < connections.length; i++) {
 		connections[i].setMap(null);
@@ -780,13 +830,16 @@ function startEdgeSearch() {
 	//we don't need waypoints table here, so we remove those
 	var Table = document.getElementById("waypoints");
 	Table.innerHTML = "";
-	statusLine.innerHTML = 'Checking: <span style="color:yellow">0</span>';
-	setTimeout(continueEdgeSearch, delay,0,0);
+	// document.getElementById('queueOrStack').innerHTML = 'Checking: <span style="color:yellow">0</span>';
+	setTimeout(continueEdgeSearch, delay);
 
 }
 
-function continueEdgeSearch(i,j){
-	if(i == waypoints.length){
+function continueEdgeSearch(){
+	if (pause == true){
+		return;
+	}
+	if(currentEdgeIndex== graphEdges.length){
 		var maxEdgePoints = new Array(2);
 		maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
 		maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
@@ -801,31 +854,34 @@ function continueEdgeSearch(i,j){
 		var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
 		var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
 		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
+
+		document.getElementById('shortestLongest').innerHTML = "Shortest Edge label: " + shortestELabel + "  Longest Edge label: " + longestELabel;
+		console.log("shortest Edge label: " + shortestELabel);
+		console.log("Longest Edge label: " + longestELabel);
 		return;
 	}
-	if (j == waypoints[i].edgeList.length){
-		setTimeout(continueEdgeSearch, delay, i + 1, 0);
-		return;
-	}
-	var edge = waypoints[i].edgeList[j];
-	var adjucentIndex;
-	if (edge.v1==i) {
-		adjucentIndex = edge.v2;
-	} else {
-		adjucentIndex = edge.v1;
-	}
-	var distance = Feet(waypoints[i].lat, waypoints[i].lon,
-		waypoints[adjucentIndex].lat, waypoints[adjucentIndex].lon);
-		if ( distance < min){
-			min = distance;
+	var edge = graphEdges[currentEdgeIndex];
+	var distance = Feet(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
+		waypoints[edge.v2].lat, waypoints[edge.v2].lon);
+
+		if (distance < minDistance){
+			minDistance = distance;
 			edgeMin = edge;
 		}
 
-		if (distance > maxDistance){
+		if (distance > maxDistance) {
 			maxDistance = distance;
-			edgeMax =edge;
-
+			edgeMax = edge;
 		}
+
+		if (shortestELabel === undefined || shortestELabel.length > edge.label.length) {
+			shortestELabel = edge.label;
+		}
+
+		if (longestELabel === undefined || longestELabel.length < edge.label.length) {
+			longestELabel = edge.label;
+		}
+
 		var initEdgePoints = new Array(2);
 		initEdgePoints [0] = new google.maps.LatLng( waypoints[edge.v1].lat, waypoints[edge.v1].lon);
 		initEdgePoints [1] = new google.maps.LatLng( waypoints[edge.v2].lat, waypoints[edge.v2].lon);
@@ -833,7 +889,8 @@ function continueEdgeSearch(i,j){
 		var firstNode = Math.min(edge.v1, edge.v2);
 		var secondNode = Math.max(edge.v1, edge.v2);
 		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "grey";
-		setTimeout(continueEdgeSearch, delay,i, j + 1);
+		currentEdgeIndex += 1;
+		setTimeout(continueEdgeSearch, delay);
 	}
 
 var queue = [];
@@ -844,47 +901,39 @@ var minEdgeBfs;
 var maxEdgeBfs;
 
 function startBfsSearch() {
+	if (pause == true){
+		pause = false;
+		processQueue();
+	return;
+	}
 		visited = new Array(waypoints.length).fill(false);
 		// we don't need edges here, so we remove those
 		for (var i = 0; i < connections.length; i++) {
 		connections[i].setMap(null);
 		}
 		connections = new Array();
-		queue.push(0);
-		document.getElementById('waypoint' + 0).style.backgroundColor="yellow";
-		markers[0].setMap(map);
-		markers[0].setIcon({path: google.maps.SymbolPath.CIRCLE,
+var startingPoint = document.getElementById("startPoint").value;
+	queue.push(startingPoint);
+		document.getElementById('waypoint' + startingPoint).style.backgroundColor="yellow";
+		markers[startingPoint].setMap(map);
+		markers[startingPoint].setIcon({path: google.maps.SymbolPath.CIRCLE,
 			scale: 8,
 			zIndex: google.maps.Marker.MAX_ZINDEX+1,
 			fillColor: 'yellow',
 			strokeColor: 'yellow'});
-			markers[0].setZIndex( 1E9 );
+			markers[startingPoint].setZIndex( 1E9 );
 			setTimeout(processQueue, delay);
 	}
 
 function processQueue() {
+	if (pause == true){
+		return;
+	}
+
 		if (queue.length == 0) {
 			console.log("Done!");
       console.log("Min distance: " + minDistanceBfs);
       console.log("Max distance: " + maxDistance);
-
-			// Change ui elements regarding max edge
-			// var maxEdgePoints = new Array(2);
-			// maxEdgePoints [0] = new google.maps.LatLng(waypoints[maxEdgeBfs.v1].lat, waypoints[maxEdgeBfs.v1].lon);
-			// maxEdgePoints [1] = new google.maps.LatLng(waypoints[maxEdgeBfs.v2].lat, waypoints[maxEdgeBfs.v2].lon);
-			// new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
-			// var firstNode = Math.min(maxEdgeBfs.v1, maxEdgeBfs.v2);
-			// var secondNode = Math.max(maxEdgeBfs.v1, maxEdgeBfs.v2);
-			// document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
-
-			// Change ui elements regarding min edge
-			// var minEdgePoints = new Array(2);
-			// minEdgePoints [0] = new google.maps.LatLng(waypoints[minEdgeBfs.v1].lat, waypoints[minEdgeBfs.v1].lon);
-			// minEdgePoints [1] = new google.maps.LatLng(waypoints[minEdgeBfs.v2].lat, waypoints[minEdgeBfs.v2].lon);
-			// new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
-			// var firstNode = Math.min(minEdgeBfs.v1, minEdgeBfs.v2);
-			// var secondNode = Math.max(minEdgeBfs.v1, minEdgeBfs.v2);
-			// document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
 			return;
 		}
     if (visited[queue[0]]) {
@@ -898,20 +947,21 @@ function processQueue() {
 				fillColor: 'grey',
 				strokeColor: 'grey'});
 			printList(queue);
+			document.getElementById('queueOrStack').innerHTML = "Queue : " + listToString(queue);
 			setTimeout(processQueue, delay);
 			return;
 		}
 
 		visited[queue[0]] = true;
+		var currentRow = document.getElementById('waypoint' + queue[0]);
 
-		document.getElementById('waypoint' + queue[0]).style.backgroundColor="yellow";
+		currentRow.style.backgroundColor="yellow";
 		markers[queue[0]].setMap(map);
 		markers[queue[0]].setIcon({path: google.maps.SymbolPath.CIRCLE,
 			scale: 6,
 			zIndex: google.maps.Marker.MAX_ZINDEX+1,
 			fillColor: 'yellow',
 			strokeColor: 'yellow'});
-			// markers[[queue[0]].setZIndex( 1E9 );
 
 		var neighbors = getAdjacentPoints(queue[0]);
 		for (var i = 0; i < neighbors.length; i++) {
@@ -932,6 +982,7 @@ function processQueue() {
 			}
 		}
 		printList(queue);
+		document.getElementById('queueOrStack').innerHTML = "queue : " + listToString(queue);
 		setTimeout(processQueue, delay);
 	}
 
@@ -955,7 +1006,7 @@ function processQueue() {
 		if (items.length == 0) {
 			console.log("[]");
 		} else {
-			var line = `[`
+			var line = `[`;
 				for (var i = 0; i < items.length; i++) {
 					if (i == items.length - 1) {
 						line += items[i];
@@ -967,8 +1018,26 @@ function processQueue() {
 				line += `]`;
 				console.log(line);
 			}
-		}
 
+		}
+		function listToString(items) {
+			if (items.length == 0) {
+				return "[]";
+			} else {
+				var line = `[`;
+					for (var i = 0; i < items.length; i++) {
+						if (i == items.length - 1) {
+							line += items[i];
+						} else {
+							line += items[i] + `, `;
+						}
+
+					}
+					line += ` ]`;
+					return line;
+				}
+
+			}
 var stack = [];
 var visitedDfs =[];
 var minDistanceDfs;
@@ -979,6 +1048,14 @@ var maxEdgePolylineDFS;
 var minEdgePolylineDFS;
 
 function startDfsSearch() {
+	if (pause == true){
+		pause = false;
+		processStack();
+	return;
+	}
+
+
+
 // Reset previous state
 minDistanceDfs =  99999999;
 maxDistanceDfs = -99999999;
@@ -987,23 +1064,17 @@ maxEdgeDfs = null;
 maxEdgePolyline = null;
 minEdgePolyline = null;
 visitedDfs = new Array(waypoints.length).fill(false)
-
-// we don't need edges here, so we remove those
-// for (var i = 0; i < connections.length; i++) {
-// connections[i].setMap(null);
-// }
-// connections = new Array();
-
-
-
-
+var startingPoint = document.getElementById("startPoint").value;
 // put frist point into the stack and start processing the stack
-stack.push(0);
+stack.push(startingPoint);
 
 setTimeout(processStack, delay);
 }
 
 function processStack() {
+	if (pause == true){
+		return;
+	}
 // If stack is empty, nothing to do any more and we are done.
 if (stack.length == 0) {
 	console.log("Done with DFS search");
@@ -1044,16 +1115,6 @@ if (visitedDfs[adjacentList[i]] == false) {
 		minDistanceDfs = distance;
 		minEdgeDfs = waypoints[top].edgeList[i];
 
-
-		// Change ui elements regarding min edge
-		// var minEdgePoints = new Array(2);
-		// minEdgePoints [0] = new google.maps.LatLng(waypoints[minEdgeDfs.v1].lat, waypoints[minEdgeDfs.v1].lon);
-		// minEdgePoints [1] = new google.maps.LatLng(waypoints[minEdgeDfs.v2].lat, waypoints[minEdgeDfs.v2].lon);
-		// minEdgePolylineDFS = new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
-		// var firstNode = Math.min(minEdgeDfs.v1, minEdgeDfs.v2);
-		// var secondNode = Math.max(minEdgeDfs.v1, minEdgeDfs.v2);
-		// document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
-
 	}
 
 	if (distance > maxDistanceDfs) {
@@ -1066,19 +1127,12 @@ if (visitedDfs[adjacentList[i]] == false) {
 		maxDistanceDfs = distance;
 		maxEdgeDfs  = waypoints[top].edgeList[i];
 
-		// Change ui elements regarding max edge
-		// var maxEdgePoints = new Array(2);
-		// maxEdgePoints [0] = new google.maps.LatLng(waypoints[maxEdgeDfs.v1].lat, waypoints[maxEdgeDfs.v1].lon);
-		// maxEdgePoints [1] = new google.maps.LatLng(waypoints[maxEdgeDfs.v2].lat, waypoints[maxEdgeDfs.v2].lon);
-		// maxEdgePolylineDFS = new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
-		// var firstNode = Math.min(maxEdgeDfs.v1, maxEdgeDfs.v2);
-		// var secondNode = Math.max(maxEdgeDfs.v1, maxEdgeDfs.v2);
-		// document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
-
+		
 	}
 
 
 	printList(stack);
+	document.getElementById('queueOrStack').innerHTML = "Stack : " + listToString(stack);
 	setTimeout(processStack, delay);
 	return;
 }
@@ -1088,6 +1142,7 @@ if (visitedDfs[adjacentList[i]] == false) {
 
 stack.pop();
 printList(stack);
+document.getElementById('queueOrStack').innerHTML = "Stack : " + listToString(stack);
 setTimeout(processStack, delay);
 } else {
 document.getElementById('waypoint' + top).style.backgroundColor="yellow";

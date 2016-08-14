@@ -76,8 +76,8 @@ function startRead() {
 
     // force highway data box to be displayed
     var menu = document.getElementById("showHideMenu");
-    menu.options[2].selected = true;
-    toggleTable();
+    // menu.options[2].selected = true;
+    // toggleTable();
 
     if (file) {
 	//DBG.write("file: " + file.name);
@@ -91,7 +91,7 @@ function startRead() {
 	    pointboxErrorMsg("Unrecognized file type!");
 	    return;
 	}
-	pointboxErrorMsg("Loading... (" + file.size + " bytes)");
+	// pointboxErrorMsg("Loading... (" + file.size + " bytes)");
 	var reader;
 	try {
 	    reader = new FileReader();
@@ -122,8 +122,8 @@ function fileLoaded(event) {
 function processContents(fileContents) {
 
     // place the contents into the file contents area (will improve later)
-    document.getElementById('pointbox').innerHTML = "<pre>" + fileContents + "</pre>";
-    document.getElementById('selected').innerHTML = "<pre>" + fileContents + "</pre>";
+    // document.getElementById('pointbox').innerHTML = "<pre>" + fileContents + "</pre>";
+    // document.getElementById('selected').innerHTML = "<pre>" + fileContents + "</pre>";
 
     var pointboxContents = "";
 
@@ -156,8 +156,8 @@ function processContents(fileContents) {
 	pointboxContents = parseTMGContents(fileContents);
     }
 
-    document.getElementById('pointbox').innerHTML = pointboxContents;
-    document.getElementById('selected').innerHTML = pointboxContents;
+    // document.getElementById('pointbox').innerHTML = pointboxContents;
+    document.getElementById('contents_table').innerHTML = pointboxContents;
     updateMap();
 
 }
@@ -225,7 +225,7 @@ function parseTMGContents(fileContents) {
     vTable += '</tbody></table>';
 
     var eTable = '<table  id="connection" class="gratable"><thead><tr  ><th colspan="3">Connections</th></tr><tr><th>#</th><th>Route Name(s)</th><th>Endpoints</th></tr></thead><tbody>';
-    //graphEdges = new Array(numE);
+    graphEdges = new Array(numE);
     for (var i = 0; i < numE; i++) {
       var edgeInfo = lines[i+numV+2].split(' ');
       var newEdge;
@@ -245,6 +245,9 @@ function parseTMGContents(fileContents) {
       + edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label +
       ' &harr; ' + edgeInfo[1] + ':&nbsp;'
       + waypoints[newEdge.v2].label + '</td></tr>';
+
+      graphEdges[i] = newEdge;
+
     }
     eTable += '</tbody></table>';
     genEdges = false;
@@ -267,7 +270,7 @@ function parseGRAContents(fileContents) {
     var counts = lines[0].split(' ');
     var numV = parseInt(counts[0]);
     var numE = parseInt(counts[1]);
-    var sideInfo = '<table class="gratable"><thead><tr><th>' + numV + " waypoints, " + numE + " connections.</th></tr></table>";
+    var sideInfo = '<table  class="gratable"><thead><tr><th>' + numV + " waypoints, " + numE + " connections.</th></tr></table>";
 
     var vTable = '<table class="gratable"><thead><tr><th colspan="3">Waypoints</th></tr><tr><th>#</th><th>Coordinates</th><th>Waypoint Name</th></tr></thead><tbody>';
 
