@@ -617,14 +617,12 @@ longestVLabel = waypoints[startingPoint].label;
 
 // start the search by initializing with the value at pos 0
 markers[startingPoint].setIcon({path: google.maps.SymbolPath.CIRCLE,
-scale: 4,
+scale: 6,
 zIndex: google.maps.Marker.MAX_ZINDEX+3,
 fillColor: 'yellow',
 strokeColor: 'yellow'});
 markers[startingPoint].setZIndex( 1E9 );
-console.log("before");
 document.getElementById('waypoint'+ startingPoint).style.backgroundColor = "yellow";
-console.log("after");
 nextToCheck = startingPoint;
 queueOrStack.innerHTML = 'Checking: <span style="color:yellow">0</span>';
 // enable pause button
@@ -787,7 +785,7 @@ if (longestVLabel.length < waypoints[nextToCheck].label.length) {
 nextToCheck++;
 if (nextToCheck < markers.length) {
 	markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
-		scale: 4,
+		scale: 6,
 		zIndex: google.maps.Marker.MAX_ZINDEX+3,
 		fillColor: 'yellow',
 		strokeColor: 'yellow'});
@@ -1127,7 +1125,7 @@ if (visitedDfs[adjacentList[i]] == false) {
 		maxDistanceDfs = distance;
 		maxEdgeDfs  = waypoints[top].edgeList[i];
 
-		
+
 	}
 
 
