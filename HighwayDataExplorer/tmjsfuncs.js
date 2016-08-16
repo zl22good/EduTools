@@ -666,6 +666,7 @@ scale: 4,
 zIndex: google.maps.Marker.MAX_ZINDEX+2,
 fillColor: 'red',
 strokeColor: 'red'});
+markers[startingPoint].setZIndex( 1E9 );
 document.getElementById('waypoint'+ startingPoint).style.backgroundColor = "red";
 }
 // we have to do real work to see if we have new winners
@@ -713,6 +714,7 @@ scale: 4,
 zIndex: google.maps.Marker.MAX_ZINDEX+2,
 fillColor: 'red',
 strokeColor: 'red'});
+markers[startingPoint].setZIndex( 1E9 );
 document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "red";
 // any that was just defeated should stop being red unless it's
 // still a leader in some other direction (will happen especially
@@ -747,7 +749,7 @@ else {
 var statusLine = document.getElementById("status");
 var line = 'Checking : <span style="color:yellow"> ' + nextToCheck + "</span> N: ";
 if (northIndex == nextToCheck) {
-	line = line + '<span style="color:red">' + northIndex + '</span>';
+	line = line + '<span style="color:green">' + northIndex + '</span>';
 }
 else {
 	line = line + northIndex;
@@ -761,14 +763,14 @@ else {
 }
 line = line + " E: ";
 if (eastIndex == nextToCheck) {
-	line = line + '<span style="color:red">' + eastIndex + '</span>';
+	line = line + '<span style="color:blue">' + eastIndex + '</span>';
 }
 else {
 	line = line + eastIndex;
 }
 line = line + " W: ";
 if (westIndex == nextToCheck) {
-	line = line + '<span style="color:red">' + westIndex + '</span>';
+	line = line + '<span style="color:brown">' + westIndex + '</span>';
 }
 else {
 	line = line + westIndex;
