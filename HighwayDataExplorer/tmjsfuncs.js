@@ -609,7 +609,11 @@ strokeColor: 'white'});
 for (var i = 0; i < connections.length; i++) {
 connections[i].setMap(null);
 }
-connections = new Array();
+//we don't need connections table here, so we remove those
+var cTable = document.getElementById("connection");
+cTable.innerHTML = "";
+
+
 var startingPoint = document.getElementById("startPoint").value;
 
 shortestVLabel = waypoints[startingPoint].label;
@@ -773,7 +777,8 @@ while (defeated.length > 0) {
 			zIndex: google.maps.Marker.MAX_ZINDEX+1,
 			fillColor: 'grey',
 			strokeColor: 'grey'});
-			document.getElementById('waypoint'+toCheck).style.backgroundColor = "grey";
+			// document.getElementById('waypoint'+toCheck).style.backgroundColor = "grey";
+			document.getElementById('waypoint'+toCheck).style.display = "none";
 		}
 	}
 }
@@ -784,7 +789,9 @@ else {
 		zIndex: google.maps.Marker.MAX_ZINDEX+1,
 		fillColor: 'grey',
 		strokeColor: 'grey'});
-		document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "grey";
+		// document.getElementById('waypoint'+nextToCheck).style.backgroundColor = "grey";
+		document.getElementById('waypoint'+nextToCheck).style.display = "none";
+
 	}
 }
 var statusLine = document.getElementById("status");
