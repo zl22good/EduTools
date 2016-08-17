@@ -965,25 +965,25 @@ function startBfsSearch() {
 	if (pause == true){
 		pause = false;
 		processQueue();
-	return;
+		return;
 	}
-		visited = new Array(waypoints.length).fill(false);
-		// we don't need edges here, so we remove those
-		for (var i = 0; i < connections.length; i++) {
+	visited = new Array(waypoints.length).fill(false);
+	// we don't need edges here, so we remove those
+	for (var i = 0; i < connections.length; i++) {
 		connections[i].setMap(null);
-		}
-		connections = new Array();
-var startingPoint = document.getElementById("startPoint").value;
+	}
+	connections = new Array();
+	var startingPoint = document.getElementById("startPoint").value;
 	queue.push(startingPoint);
-		document.getElementById('waypoint' + startingPoint).style.backgroundColor="yellow";
-		markers[startingPoint].setMap(map);
-		markers[startingPoint].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			scale: 8,
-			zIndex: google.maps.Marker.MAX_ZINDEX+1,
-			fillColor: 'yellow',
-			strokeColor: 'yellow'});
-			markers[startingPoint].setZIndex( 1E9 );
-			setTimeout(processQueue, delay);
+	document.getElementById('waypoint' + startingPoint).style.backgroundColor="yellow";
+	markers[startingPoint].setMap(map);
+	markers[startingPoint].setIcon({path: google.maps.SymbolPath.CIRCLE,
+		scale: 8,
+		zIndex: google.maps.Marker.MAX_ZINDEX+1,
+		fillColor: 'yellow',
+		strokeColor: 'yellow'});
+		markers[startingPoint].setZIndex( 1E9 );
+		setTimeout(processQueue, delay);
 	}
 
 function processQueue() {
@@ -1028,6 +1028,13 @@ function processQueue() {
 		for (var i = 0; i < neighbors.length; i++) {
 			if (visited[neighbors[i]] == false) {
 				queue.push(neighbors[i]);
+				document.getElementById('waypoint'+ neighbors[i]).style.backgroundColor="purple";
+				markers[neighbors[i]].setMap(map);
+				markers[neighbors[i]].setIcon({path: google.maps.SymbolPath.CIRCLE,
+					scale: 4,
+					zIndex: google.maps.Marker.MAX_ZINDEX+1,
+					fillColor: 'purple',
+					strokeColor: 'purple'});
 
         var distance = Feet(waypoints[neighbors[i]].lat, waypoints[neighbors[i]].lon, waypoints[queue[0]].lat, waypoints[queue[0]].lon);
 				if (distance < minDistanceBfs) {
@@ -1058,8 +1065,8 @@ function processQueue() {
 				adjacentIndex = edgeList[i].v1;
 			}
 			resultArray.push(adjacentIndex);
-
 		}
+
 		return resultArray;
 	}
 
