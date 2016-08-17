@@ -89,9 +89,8 @@ height: 1px;
 }
 #pseudoTable{
   position: absolute;
-  left: 2px;
-  top: 570px;
-  bottom: 10px;
+  padding: 5px;
+  bottom: 150px;
   overflow-y: scroll;
   max-width: 33%;
   opacity: .95;
@@ -181,17 +180,27 @@ function showHiddenPseudocode(){
       " for each unmarked neighbor w\n " + " mark w\n " + " add it to end of list\n "+ " add edge vw to T\n ";
     }
 
+
     else if (value == "DFS"){
       document.getElementById('pseudoContent').innerHTML = "Algorithm DFS(graph G, Vertex v)\n" +
       " for all edges e in G.incidentEdges(v) do\n" + "if edge e is unexplored then\n" +
       "w = G.opposite(v, e)\n" + "if vertex w is unexplored then\n" +
       "label e as discovery edge\n" + "recursively call DFS(G, w)\n"
-      "else\n" + "label e a a back edge\n";}
+      "else\n" + "label e a a back edge\n";
     }
-    else{
-      document.getElementById('pseudoContent').innerHTML = "";
+
+    else if (value == "vertexSearch"){
+      document.getElementById('pseudoContent').innerHTML = "longest = 0 <br> shortest = 0 <br> north = 0 <br> south = 0 <br> east = 0 <br> west = 0 <br> for (i =1 to |V|-1) { <br> if (len(v[i].label) > len(v[longest]))) {<br>"
+      + "longest = i; <br>} <br> if (len(v[i].label) < len(v[shortest]))) { <br> shortest = i; <br> } <br> if (v[i].lat > v[north].lat) { <br> " +
+      "north = i; <br> } <br> } <br>" ;
+
     }
   }
+  else{
+    document.getElementById('pseudoContent').innerHTML = "";
+  }
+}
+
   function pauseSearch(){
     pause = true;
 
@@ -232,9 +241,14 @@ function selectAlgorithmAndCheckBoxes(){
 
   if (value == "vertexSearch"){
     document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
-    '<input id="showHiddenQueue" type="checkbox" name="Show selected algorithm status" onclick="showHiddenPseudocode()" checked="false">&nbsp;Status<br>' +
     '<input id="showHiddenShortestLongest" type="checkbox" name="Show shortes longest" onclick="showHiddenShortestLabel()" checked="false" >&nbsp;Longest & Shortest Label<br>'+
-    '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
+    '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>' +
+    '<input id="showExtremePoints" type="checkbox" name="Show extremes" onclick="showExtremePoints()" checked="false" >&nbsp;Extreme points (N/S/E/W)<br>' +
+    '<input id="showLatitude" type="checkbox" name="Show latitude" onclick="showlatitude()" checked="false" >&nbsp;Latitudes (N/S/E/W)<br>' +
+    // '<input id="showLongtitudes" type="checkbox" name="Show Longtitudes" onclick="showlong()" checked="false" >&nbsp;Longtitudes (N/S/E/W)<br>' +
+    '<input id="showLength" type="checkbox" name="Show length" onclick="showlength()" checked="false" >&nbsp;Length of lables: (N/S/E/W)<br>';
+    ;
+
   }
   else if (value == "EdgeSearch"){
     document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
@@ -317,10 +331,10 @@ function selectAlgorithmAndReset(){
         <button type="button" onclick="selectAlgorithmAndStart()"> Start</button>
         <button type="button" onclick="pauseSearch()"> Pause</button>
         <button type="button" onclick="resetSearch()"> Reset</button>
-        <button type="button" onclick="selectAlgorithmAndCheckBoxes()"> Choices</button>
+        <button type="button" onclick="selectAlgorithmAndCheckBoxes()"> Options</button>
 
       </td></tr>
-      <tr><th style=" font-size: 12px"> Starting Point <input id="startPoint" type="text" name="Starting Point" value="0">
+      <tr><th style="font-size: 12px"> Starting Point <input id="startPoint" type="text" name="Starting Point" value="0">
         <select id="speedChanger" onchange="speedChanged()">
           <option value="5">Extremely fast</option>
           <option value="20">Very fast</option>
@@ -335,6 +349,9 @@ function selectAlgorithmAndReset(){
         <tr><td id="queueOrStack"></td><tr>
           <tr><td id="shortestLongest"></td><tr>
             <tr><td id="legend"></td><tr>
+                <tr><td id="latitude"></td><tr>
+                  <tr><td id="length"></td><tr>
+                    <!-- <tr><td id="longitude"></td><tr> -->
             </tbody>
           </table>
         </div>
@@ -354,7 +371,7 @@ function selectAlgorithmAndReset(){
             <tr><th> Pseudocode</th></tr>
           </thead>
           <tbody>
-            <tr><td id="pseudoContent">
+            <tr><td style="border:none" id="pseudoContent">
             </td></tr>
           </div>
         </body></html>

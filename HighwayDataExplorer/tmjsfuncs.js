@@ -682,29 +682,70 @@ if (waypoints[nextToCheck].lat > waypoints[northIndex].lat) {
 foundNewLeader = true;
 defeated.push(northIndex);
 northIndex = nextToCheck;
-//DBG.write("new northIndex: " + northIndex);
+console.log(waypoints[northIndex].lat );
+var queueOrStack = document.getElementById('queueOrStack') ;
+queueOrStack.innerHTML = "N : " + '<span style="color:#8b0000">' + waypoints[northIndex].lat;
+var latitude = document.getElementById('latitude') ;
+latitude.innerHTML = "N : " + '<span style="color:#8b0000">' + waypoints[northIndex].lat;
+// var Longtitude = document.getElementById('Longtitude') ;
+// Longtitude.innerHTML = "N : " + '<span style="color:#8b0000">' + waypoints[northIndex].lon;
+//
+
 }
 // check south
 if (waypoints[nextToCheck].lat < waypoints[southIndex].lat) {
 foundNewLeader = true;
 defeated.push(southIndex);
 southIndex = nextToCheck;
-//DBG.write("new southIndex: " + southIndex);
+var queueOrStack = document.getElementById('queueOrStack') ;
+queueOrStack.innerHTML = "S : " + '<span style="color:#ff0000">' + waypoints[southIndex].lat;
+var latitude = document.getElementById('latitude') ;
+latitude.innerHTML = "S : " + '<span style="color:#ff0000">' + waypoints[southIndex].lat;
+// var Longtitude = document.getElementById('Longtitude') ;
+// Longtitude.innerHTML = "S : " + '<span style="color:#ff0000">' + waypoints[southIndex].lon;
+
 }
 // check east
 if (waypoints[nextToCheck].lon > waypoints[eastIndex].lon) {
 foundNewLeader = true;
 defeated.push(eastIndex);
 eastIndex = nextToCheck;
-//DBG.write("new eastIndex: " + eastIndex);
+var latitude = document.getElementById('latitude') ;
+latitude.innerHTML = "E : " + '<span style="color:#000080">' + waypoints[eastIndex].lat;
+var queueOrStack = document.getElementById('queueOrStack') ;
+queueOrStack.innerHTML = "E : " + '<span style="color:#000080">' + waypoints[eastIndex].lat;
+// var Longtitude = document.getElementById('Longtitude') ;
+// Longtitude.innerHTML = "E : " + '<span style="color:#000080">' + waypoints[eastIndex].lon;
+
 }
 // check west
 if (waypoints[nextToCheck].lon < waypoints[westIndex].lon) {
 foundNewLeader = true;
 defeated.push(westIndex);
 westIndex = nextToCheck;
-//DBG.write("new westIndex: " + westIndex);
+var latitude = document.getElementById('latitude') ;
+latitude.innerHTML = "W : " + '<span style="color:#4B0082>' + waypoints[westIndex].lat;
+var queueOrStack = document.getElementById('queueOrStack') ;
+queueOrStack.innerHTML = "W : " + '<span style="color:#4B0082>' + waypoints[westIndex].lat;
+// var Longtitude = document.getElementById('Longtitude') ;
+// Longtitude.innerHTML = "W : " + '<span style="color:#4B0082>' + waypoints[westIndex].lon;
 }
+if(shortestVLabel.length > waypoints[nextToCheck].label.length) {
+	shortestVLabel = waypoints[nextToCheck].label;
+	console.log(shortestVLabel);
+	var length = document.getElementById('length') ;
+	length.innerHTML = "Shortest : " + shortestVLabel.length;
+}
+
+if (longestVLabel.length < waypoints[nextToCheck].label.length) {
+	longestVLabel = waypoints[nextToCheck].label;
+	console.log(longestVLabel);
+	 length = document.getElementById('length') ;
+	length.innerHTML = "Longest : " + longestVLabel.length;
+
+}
+var shortestLongest = document.getElementById('shortestLongest') ;
+ shortestLongest.innerHTML = '<span style="color:#654321">' + "Shortest: " + shortestVLabel + '<span style="color:#006400">' + " " + "longest: " + longestVLabel ;
 
 if (foundNewLeader) {
 //DBG.write("a new leader becoming red: " + nextToCheck);
@@ -749,40 +790,52 @@ else {
 var statusLine = document.getElementById("status");
 var line = 'Checking : <span style="color:yellow"> ' + nextToCheck + "</span> N: ";
 if (northIndex == nextToCheck) {
-	line = line + '<span style="color:green">' + northIndex + '</span>';
+	line = line + '<span style="color:#8b0000">' + northIndex + '</span>';
 }
 else {
 	line = line + northIndex;
 }
 line = line + " S: ";
 if (southIndex == nextToCheck) {
-	line = line + '<span style="color:red">' + southIndex + '</span>';
+	line = line + '<span style="color:#ff0000">' + southIndex + '</span>';
 }
 else {
 	line = line + southIndex;
 }
 line = line + " E: ";
 if (eastIndex == nextToCheck) {
-	line = line + '<span style="color:blue">' + eastIndex + '</span>';
+	line = line + '<span style="color:#000080">' + eastIndex + '</span>';
 }
 else {
 	line = line + eastIndex;
 }
 line = line + " W: ";
 if (westIndex == nextToCheck) {
-	line = line + '<span style="color:brown">' + westIndex + '</span>';
+	line = line + '<span style="color:#add8e6">' + westIndex + '</span>';
 }
 else {
 	line = line + westIndex;
 }
+if (shortestVLabel == nextToCheck) {
+	shortestLongest = shortestLongest + '<span style="color:#00ff00">' + shortestVLabel + '</span>';
+}
+else {
+	shortestLongest = shortestLongest + shortestVLabel;
+}
+if (longestVLabel == nextToCheck) {
+	shortestLongest = shortestLongest + '<span style="color:#f4a460">' + longestVLabel + '</span>';
+}
+else {
+	shortestLongest = shortestLongest + longestVLabel;
+}
 	document.getElementById('queueOrStack').innerHTML = line;
-if(shortestVLabel.length > waypoints[nextToCheck].label.length) {
-	shortestVLabel = waypoints[nextToCheck].label;
-}
-
-if (longestVLabel.length < waypoints[nextToCheck].label.length) {
-	longestVLabel = waypoints[nextToCheck].label;
-}
+// if(shortestVLabel.length > waypoints[nextToCheck].label.length) {
+// 	shortestVLabel = waypoints[nextToCheck].label;
+// }
+//
+// if (longestVLabel.length < waypoints[nextToCheck].label.length) {
+// 	longestVLabel = waypoints[nextToCheck].label;
+// }
 
 nextToCheck++;
 if (nextToCheck < markers.length) {
@@ -798,11 +851,12 @@ if (nextToCheck < markers.length) {
 		//	}
 	}
 	else {
-		document.getElementById('queueOrStack').innerHTML = "Done! Results: N: " + northIndex + " S:" + southIndex + " E: " + eastIndex + " W:" + westIndex;
-		document.getElementById('shortestLongest').innerHTML = "shortest: " + shortestVLabel;
-		document.getElementById('shortestLongest').innerHTML = "longest: " + longestVLabel;
-		console.log("shortest: " + shortestVLabel);
-		console.log("longest: " + longestVLabel);
+		document.getElementById('queueOrStack').innerHTML = "Done! Results:" + '<span style="color:#8b0000">' + " N: " + northIndex + '<span style="color:#ff0000">' + " S:" + southIndex +  '<span style="color:#000080">' + " E: " + eastIndex  + '<span style="color:#4B0082">' + " W:" + westIndex;
+		document.getElementById('shortestLongest').innerHTML = "Done!"+ '<span style="color:#654321">' + " Shortest: " + shortestVLabel + " \t " +  '<span style="color:#006400">' + " Longest " + longestVLabel;
+		document.getElementById('latitude').innerHTML = "Done! Latitudes:" + '<span style="color:#8b0000">' + " N: " + waypoints[northIndex].lat + '<span style="color:#ff0000">' + " S:" +  waypoints[southIndex].lat + '<span style="color:#000080">' + " E: " + waypoints[eastIndex].lat +  '<span style="color:#4B0082">' + " W:" + waypoints[westIndex].lat;
+		document.getElementById('length').innerHTML = "Done! lengths:" + '<span style="color:#654321">' + " Shortest: " + shortestVLabel.length +  '<span style="color:#006400">' + " longest:" +  longestVLabel.length;
+		// document.getElementById('Longtitude').innerHTML = "Done! Longtitude:" + '<span style="color:#8b0000">' + " N: " + waypoints[northIndex].lon + '<span style="color:#ff0000">' + " S:" +  waypoints[southIndex].lon + '<span style="color:#000080">' + " E: " + waypoints[eastIndex].lon +  '<span style="color:#4B0082">' + " W:" + waypoints[westIndex].lon;
+
 	}
 }
 
