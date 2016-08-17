@@ -967,6 +967,8 @@ function startBfsSearch() {
 		processQueue();
 		return;
 	}
+	var cTable = document.getElementById("connection");
+	cTable.innerHTML = "";
 	visited = new Array(waypoints.length).fill(false);
 	// we don't need edges here, so we remove those
 	for (var i = 0; i < connections.length; i++) {
@@ -1000,7 +1002,8 @@ function processQueue() {
     if (visited[queue[0]]) {
 			var pop = queue.shift();
 			console.log("pop: " + pop);
-			document.getElementById('waypoint'+ pop).style.backgroundColor="grey";
+			// document.getElementById('waypoint'+ pop).style.backgroundColor="grey";
+			document.getElementById('waypoint'+ pop).style.display="none";
 			markers[pop].setMap(map);
 			markers[pop].setIcon({path: google.maps.SymbolPath.CIRCLE,
 				scale: 2,
@@ -1121,7 +1124,8 @@ function startDfsSearch() {
 		processStack();
 	return;
 	}
-
+	var cTable = document.getElementById("connection");
+	cTable.innerHTML = "";
 
 
 // Reset previous state
@@ -1151,10 +1155,9 @@ if (stack.length == 0) {
 
 // get top of stack
 var top = stack[stack.length - 1];
-
-
 if (visitedDfs[top] == true) {
 	document.getElementById('waypoint' + top).style.backgroundColor="grey";
+	document.getElementById('waypoint' + top).style.display="none";
 	markers[top].setMap(map);
 	markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
 		scale: 3,
@@ -1170,7 +1173,13 @@ if (visitedDfs[top] == true) {
 for (var i = 0; i < adjacentList.length; i++) {
 if (visitedDfs[adjacentList[i]] == false) {
 	stack.push(adjacentList[i]);
-
+	document.getElementById('waypoint'+ adjacentList[i]).style.backgroundColor="purple";
+	markers[adjacentList[i]].setMap(map);
+	markers[adjacentList[i]].setIcon({path: google.maps.SymbolPath.CIRCLE,
+		scale: 4,
+		zIndex: google.maps.Marker.MAX_ZINDEX+1,
+		fillColor: 'purple',
+		strokeColor: 'purple'});
 	// Update related mins and maxs (minDistanceDfs, minEdgeDfs, maxDistanceBfs, maxEdgeDfs)
 	var distance = Feet(waypoints[adjacentList[i]].lat, waypoints[adjacentList[i]].lon, waypoints[top].lat, waypoints[top].lon);
 	if (distance < minDistanceDfs) {
