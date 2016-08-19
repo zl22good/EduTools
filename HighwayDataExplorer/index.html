@@ -112,10 +112,10 @@ function toggleTable() {
   var index = menu.selectedIndex;
   var value = menu.options[index].value;
   //  var algoTable = menu.algorithmbased.value;
-  pointbox = document.getElementById("pointbox");
-  options = document.getElementById("options");
-  selected = document.getElementById("selected");
-  AlgorithmVisualization = document.getElementById("AlgorithmVisualization");
+  var pointbox = document.getElementById("pointbox");
+  var options = document.getElementById("options");
+  var selected = document.getElementById("selected");
+  var algorithmVisualization = document.getElementById("AlgorithmVisualization");
   // show only table (or no table) based on value
   if (value == "pointbox") {
     selected.innerHTML = pointbox.innerHTML;
@@ -124,14 +124,14 @@ function toggleTable() {
     selected.innerHTML = options.innerHTML;
   }
   else if (value =="AlgorithmVisualization"){
-    selected.innerHTML = AlgorithmVisualization.innerHTML;
+    selected.innerHTML = algorithmVisualization.innerHTML;
   }
   else {
     selected.innerHTML = "";
   }
 }
 
-function AlgorithmSelection(){
+function algorithmSelection(){
   var menuselction = document.getElementById("AlgorithmSelection");
   var selectionindex = menuselction.selectedIndex;
   var valueselection = menuselction.options[selectionindex].value;
@@ -366,7 +366,7 @@ function selectAlgorithmAndReset(){
             <option value="maponly">Map Only</option>
             <option value="options" >Show/Load Map Options</option>
             <option value="pointbox">Show Highway Data</option>
-            <option value= "AlgorithmVisualization" selected="selected"> Show Algorithm Visualization</option>
+            <option value= "AlgorithmVisualization" selected="selected">Show Algorithm Visualization</option>
           </select>
         </div>
         <div id="contents_table">
