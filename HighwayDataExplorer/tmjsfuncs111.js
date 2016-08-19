@@ -631,7 +631,7 @@ function startSearch() {
 		// start the search by initializing with the value at pos 0
 		markers[startingPoint].setIcon({path: google.maps.SymbolPath.CIRCLE,
 			scale: 6,
-			zIndex: google.maps.Marker.MAX_ZINDEX+3,
+			zIndex: google.maps.Marker.MAX_ZINDEX+ 4,
 			fillColor: 'yellow',
 			strokeColor: 'yellow'});
 			markers[startingPoint].setZIndex( 1E9 );
@@ -663,8 +663,8 @@ function startSearch() {
 				westIndex = startingPoint;
 				// it's red as our leader
 				markers[startingPoint].setIcon({path: google.maps.SymbolPath.CIRCLE,
-					scale: 4,
-					zIndex: google.maps.Marker.MAX_ZINDEX + 2,
+					scale: 6,
+					zIndex: google.maps.Marker.MAX_ZINDEX + 4,
 					fillColor: 'red',
 					strokeColor: 'red'});
 					markers[startingPoint].setZIndex(1E9);
@@ -684,7 +684,7 @@ function startSearch() {
 						defeated.push(northIndex);
 						northIndex = nextToCheck;
 						console.log(waypoints[northIndex].lat);
-						var queueOrStack = document.getElementById('queueOrStack') ;
+						// var queueOrStack = document.getElementById('shortestLongest') ;
             var shortestLongest = document.getElementById('shortestLongest') ;
             shortestLongest.innerHTML = "N : " + '<span style="color:#8b0000">' + "Lat: "  + waypoints[northIndex].lat + " Lon: " + '<span style="color:#8b0000">' + waypoints[northIndex].lon +
             "  Label: " + '<span style="color:#8b0000">' + waypoints[northIndex].label;
@@ -696,7 +696,7 @@ function startSearch() {
 						foundNewLeader = true;
 						defeated.push(southIndex);
 						southIndex = nextToCheck;
-						var queueOrStack = document.getElementById('queueOrStack') ;
+						// var queueOrStack = document.getElementById('queueOrStack') ;
             var legend = document.getElementById('legend') ;
             legend.innerHTML = "S : " + '<span style="color:#ff0000">' + "Lat: "  + waypoints[southIndex].lat + " Lon: " + '<span style="color:#ff0000">' + waypoints[southIndex].lon +
             "  Label: " + '<span style="color:#ff0000">' + waypoints[southIndex].label;
@@ -743,15 +743,15 @@ function startSearch() {
 
 					}
 
-					var shortestLongest = document.getElementById('shortestLongest') ;
-					shortestLongest.innerHTML = '<span style="color:#654321">' + "Shortest: " + shortestVLabel + '<span style="color:#006400">' + " " + "longest: " + longestVLabel ;
+					// var shortestLongest = document.getElementById('shortestLongest') ;
+					// shortestLongest.innerHTML = '<span style="color:#654321">' + "Shortest: " + shortestVLabel + '<span style="color:#006400">' + " " + "longest: " + longestVLabel ;
 
 					if (foundNewLeader) {
 						//DBG.write("a new leader becoming red: " + nextToCheck);
 						// this one's a new winner, make it red and big
 						markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
-							scale: 4,
-							zIndex: google.maps.Marker.MAX_ZINDEX + 2,
+							scale: 6,
+							zIndex: google.maps.Marker.MAX_ZINDEX + 4,
 							fillColor: 'red',
 							strokeColor: 'red'});
 							markers[startingPoint].setZIndex(1E9);
@@ -912,8 +912,8 @@ function startSearch() {
 							document.getElementById('waypoint' + indexOfShortesLabel).style.backgroundColor = shortestLableColorCode;
 							markers[indexOfShortesLabel].setIcon({
 								path: google.maps.SymbolPath.CIRCLE,
-								scale: 4,
-								zIndex: google.maps.Marker.MAX_ZINDEX + 1,
+								scale: 6,
+								zIndex: google.maps.Marker.MAX_ZINDEX + 9,
 								fillColor: shortestLableColorCode,
 								strokeColor: shortestLableColorCode
 							});
@@ -926,8 +926,8 @@ function startSearch() {
 							document.getElementById('waypoint' + IndexOfLongestLabel).style.backgroundColor = longestLabelColorCode;
 							markers[IndexOfLongestLabel].setIcon({
 								path: google.maps.SymbolPath.CIRCLE,
-								scale: 4,
-								zIndex: google.maps.Marker.MAX_ZINDEX + 1,
+								scale: 6,
+								zIndex: google.maps.Marker.MAX_ZINDEX + 9,
 								fillColor: longestLabelColorCode,
 								strokeColor: longestLabelColorCode
 							});
