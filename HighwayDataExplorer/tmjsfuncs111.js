@@ -729,7 +729,7 @@ function startSearch() {
 						console.log("shortest label: " + shortestVLabel + ", index: " + indexOfShortesLabel);
             var shortLabel = document.getElementById('shortLabel') ;
         		shortLabel.innerHTML = "Shortest Label : " + '<span style="color:#654321">' + "Lat: "  + waypoints[nextToCheck].lat + " Lon: " + '<span style="color:#654321">' + waypoints[nextToCheck].lon +
-        		"  Label: " + '<span style="color:#654321">' + waypoints[nextToCheck].label;
+        		"  Label: " + '<span style="color:#654321">' + waypoints[nextToCheck].label + '<span style="color:#654321">' +  " Size : " + waypoints[nextToCheck].label.length;
           }
 
 					if (longestVLabel.length < waypoints[nextToCheck].label.length) {
@@ -738,8 +738,8 @@ function startSearch() {
 						longestVLabel = waypoints[nextToCheck].label;
 						console.log("longest label: " + longestVLabel + ", index: " + IndexOfLongestLabel);
             var longLabel = document.getElementById('longLabel') ;
-      			longLabel.innerHTML = "Longest Label : " + '<span style="color:#006400">' + "Lat: "  + waypoints[westIndex].lat + " Lon: " + '<span style="color:#006400">' + waypoints[westIndex].lon +
-      			"  Label: " + '<span style="color:#006400">' + waypoints[westIndex].label;
+      			longLabel.innerHTML = "Longest Label : " + '<span style="color:#006400">' + "Lat: "  + waypoints[nextToCheck].lat + " Lon: " + '<span style="color:#006400">' + waypoints[nextToCheck].lon +
+      			"  Label: " + '<span style="color:#006400">' + waypoints[nextToCheck].label + '<span style="color:#006400">' + " Size : " + waypoints[nextToCheck].label.length ;
 
 					}
 
@@ -902,7 +902,7 @@ function startSearch() {
 								// document.getElementById('length').innerHTML = "Done! lengths:" + '<span style="color:#654321">' + " Shortest: " + shortestVLabel.length +  '<span style="color:#006400">' + " longest:" +  longestVLabel.length;
 								// // document.getElementById('Longtitude').innerHTML = "Done! Longtitude:" + '<span style="color:#8b0000">' + " N: " + waypoints[northIndex].lon + '<span style="color:#ff0000">' + " S:" +  waypoints[southIndex].lon + '<span style="color:#000080">' + " E: " + waypoints[eastIndex].lon +  '<span style="color:#4B0082">' + " W:" + waypoints[westIndex].lon;
 								document.getElementById('queueOrStack').innerHTML = "Done! Results:" + '<span style="color:#8b0000">' + " N: " + northIndex + '<span style="color:#ff0000">' + " S:" + southIndex +  '<span style="color:#000080">' + " E: " + eastIndex  + '<span style="color:#4B0082">' + " W:" + westIndex +
-						 +		'<span style="color:#654321">' + " Short:" + shortIndex + '<span style="color:#006400">' + " Long:" + longIndex;
+						 +		'<span style="color:#654321">' + " Shortest:" + shortIndex + '<span style="color:#006400">' + " Longest:" + longIndex;
 
 
 							}
