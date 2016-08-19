@@ -580,7 +580,8 @@ var northIndex = -1;
 var southIndex = -1;
 var eastIndex = -1;
 var westIndex = -1;
-var shortIndex =-1;
+var shortIndex = -1;
+var longIndex = -1;
 var shortestVLabel;
 var longestVLabel;
 
@@ -651,8 +652,8 @@ northIndex = startingPoint;
 southIndex = startingPoint;
 eastIndex = startingPoint;
 westIndex = startingPoint;
-shortIndex = startingPoint;
-longIndex = startingPoint;
+// shortIndex = startingPoint;
+// longIndex = startingPoint;
 
 // it's red as our leader
 markers[startingPoint].setIcon({path: google.maps.SymbolPath.CIRCLE,
@@ -679,7 +680,7 @@ northIndex = nextToCheck;
 console.log(waypoints[northIndex].lat );
 var shortestLongest = document.getElementById('shortestLongest') ;
 shortestLongest.innerHTML = "N : " + '<span style="color:#8b0000">' + "Lat: "  + waypoints[northIndex].lat + " Lon: " + '<span style="color:#8b0000">' + waypoints[northIndex].lon +
-"  Label: " + '<span style="color:#8b0000">' + waypoints[northIndex].label;
+"  Label: " + '<span style="color:#8b0000">' + waypoints[northIndex].label ;
 
 
 }
@@ -716,38 +717,27 @@ length.innerHTML = "W : " + '<span style="color:#551A8B">' + "Lat: "  + waypoint
 }
 if(shortestVLabel.length > waypoints[nextToCheck].label.length) {
 	foundNewLeader = true;
-	defeated.push(shortIndex);
-	// shortIndex = nextToCheck;
+	shortIndex = nextToCheck;
 	shortestVLabel = waypoints[nextToCheck].label;
-	// document.getElementById('waypoint'+ shortIndex).style.backgroundColor = "blue";
-	markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
-		scale: 8,
-		zIndex: google.maps.Marker.MAX_ZINDEX+2,
-		fillColor: '#654321',
-		strokeColor: '#654321'});
-		markers[startingPoint].setZIndex( 1E9 );
-		console.log(shortestVLabel);
-		var shortLabel = document.getElementById('shortLabel') ;
-		shortLabel.innerHTML = "Shortest Label : " + '<span style="color:#654321">' + "Lat: "  + waypoints[nextToCheck].lat + " Lon: " + '<span style="color:#654321">' + waypoints[nextToCheck].lon +
-		"  Label: " + '<span style="color:#654321">' + waypoints[nextToCheck].label;
+	console.log(shortestVLabel);
+	var shortLabel = document.getElementById('shortLabel') ;
+	shortLabel.innerHTML = "Shortest Label : " + '<span style="color:#654321">' + "Lat: "  + waypoints[nextToCheck].lat + " Lon: " + '<span style="color:#654321">' + waypoints[nextToCheck].lon +
+	"  Label: " + '<span style="color:#654321">' + waypoints[nextToCheck].label + '<span style="color:#654321">' + " Label Size :" + waypoints[nextToCheck].label.length;
 
-			}
+}
 
-	if (longestVLabel.length < waypoints[nextToCheck].label.length) {
-		longestVLabel = waypoints[nextToCheck].label;
-		markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			scale: 8,
-			zIndex: google.maps.Marker.MAX_ZINDEX+2,
-			fillColor: '#006400',
-			strokeColor: '#006400'});
-			markers[startingPoint].setZIndex( 1E9 );
-			console.log(longestVLabel);
-			var longLabel = document.getElementById('longLabel') ;
-			longLabel.innerHTML = "Longest Label : " + '<span style="color:#006400">' + "Lat: "  + waypoints[westIndex].lat + " Lon: " + '<span style="color:#006400">' + waypoints[westIndex].lon +
-			"  Label: " + '<span style="color:#006400">' + waypoints[westIndex].label;
+if (longestVLabel.length < waypoints[nextToCheck].label.length) {
+	foundNewLeader = true;
+	defeated.push(longIndex);
+	longIndex = nextToCheck;
+	longestVLabel = waypoints[nextToCheck].label;
+	console.log(longestVLabel);
+	var longLabel = document.getElementById('longLabel') ;
+	longLabel.innerHTML = "Longest Label : " + '<span style="color:#006400">' + "Lat: "  + waypoints[nextToCheck].lat + " Lon: " + '<span style="color:#006400">' + waypoints[nextToCheck].lon +
+	"  Label: " + '<span style="color:#006400">' + waypoints[nextToCheck].label + '<span style="color:#006400">' + " Label Size :" + waypoints[nextToCheck].label.length;;
 
 
-		}
+}
 // var shortestLongest = document.getElementById('shortestLongest') ;
 //  shortestLongest.innerHTML = '<span style="color:#654321">' + "Size : " + shortestVLabel.length + "  Shortest: " + shortestVLabel + '<span style="color:#006400">' + " " + "Size : " + longestVLabel.length + " longest: " + longestVLabel ;
 
@@ -755,7 +745,7 @@ if (foundNewLeader) {
 //DBG.write("a new leader becoming red: " + nextToCheck);
 // this one's a new winner, make it red and big
 markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
-scale: 4,
+scale: 6,
 zIndex: google.maps.Marker.MAX_ZINDEX+2,
 fillColor: 'red',
 strokeColor: 'red'});
@@ -771,6 +761,7 @@ while (defeated.length > 0) {
 	(toCheck != southIndex) &&
 	(toCheck != eastIndex) &&
 	(toCheck != shortIndex) &&
+	(toCheck != longIndex) &&
 	(toCheck != westIndex)) {
 		//DBG.write("a former leader no longer, going grey: " + toCheck);
 		markers[toCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
@@ -825,17 +816,24 @@ if (westIndex == nextToCheck) {
 else {
 	line = line + westIndex;
 }
-if (shortestVLabel == nextToCheck) {
-	shortestLongest = shortestLongest + '<span style="color:#00ff00">' + shortestVLabel + '</span>';
+line = line + " Short: ";
+if (shortIndex == nextToCheck) {
+	line = line + '<span style="color:#654321">' + shortIndex + '</span>';
+	// shortestLongest = shortestLongest + '<span style="color:#00ff00">' + shortestVLabel + '</span>';
 }
 else {
-	shortestLongest = shortestLongest + shortestVLabel;
+	line = line + shortIndex;
 }
-if (longestVLabel == nextToCheck) {
-	shortestLongest = shortestLongest + '<span style="color:#f4a460">' + longestVLabel + '</span>';
+line = line + " Long: ";
+
+if (longIndex == nextToCheck) {
+	line = line + '<span style="color:#006400">' + longIndex + '</span>';
+
+	// shortestLongest = shortestLongest + '<span style="color:#f4a460">' + longestVLabel + '</span>';
 }
 else {
-	shortestLongest = shortestLongest + longestVLabel;
+	line = line + longIndex;
+	// shortestLongest = shortestLongest + longestVLabel;
 }
 document.getElementById('queueOrStack').innerHTML = line;
 // }
@@ -854,7 +852,8 @@ if (nextToCheck < markers.length) {
 		//	}
 	}
 	else {
-		document.getElementById('queueOrStack').innerHTML = "Done! Results:" + '<span style="color:#8b0000">' + " N: " + northIndex + '<span style="color:#ff0000">' + " S:" + southIndex +  '<span style="color:#000080">' + " E: " + eastIndex  + '<span style="color:#4B0082">' + " W:" + westIndex;
+		document.getElementById('queueOrStack').innerHTML = "Done! Results:" + '<span style="color:#8b0000">' + " N: " + northIndex + '<span style="color:#ff0000">' + " S:" + southIndex +  '<span style="color:#000080">' + " E: " + eastIndex  + '<span style="color:#4B0082">' + " W:" + westIndex +
+		'<span style="color:#654321">' + " Short:" + shortIndex + '<span style="color:#006400">' + " Long:" + longIndex;
 	}
 }
 
