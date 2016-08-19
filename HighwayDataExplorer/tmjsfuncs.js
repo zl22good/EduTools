@@ -1327,7 +1327,7 @@ function processStack() {
     }
 }
 
-function startConvexHall(){
+function startConvexHull(){
     calculateConvexHull();
 }
 

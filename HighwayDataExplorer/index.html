@@ -131,34 +131,39 @@ function toggleTable() {
   }
 }
 
+
+// get the selected algorithm from the AlgorithmSelection menu
+// (factored out here to avoid repeated code)
+function getCurrentAlgorithm() {
+
+  var menuSelection = document.getElementById("AlgorithmSelection");
+  var selectionIndex = menuSelection.selectedIndex;
+  return menuSelection.options[selectionIndex].value;
+}
+
+
 function algorithmSelection(){
-  var menuselction = document.getElementById("AlgorithmSelection");
-  var selectionindex = menuselction.selectedIndex;
-  var valueselection = menuselction.options[selectionindex].value;
-  vertexSearch = document.getElementById("vertexSearch");
-  EdgeSearch = document.getElementById("EdgeSearch");
-  BFS = document.getElementById("BFS");
-  DFS = document.getElementById("DFS");
-  ConvexHull = document.getElementById("ConvexHull");
-  Dijkstra = document.getElementById("Dijkstra");
-  if (valueselection == "vertexSearch") {
+
+  var value = getCurrentAlgorithm();
+
+  if (value == "vertexSearch") {
     document.getElementById("AlgorithmsTable").rows[2].innerHTML= "some";
   }
-  else if (valueselection == "EdgeSearch") {
+  else if (value == "EdgeSearch") {
     var x=document.getElementById('AlgorithmsTable').rows;
     var y=x[3].cells
     y[0].innerHTML=	'<input id="sm" type="checkbox" name="SM" onclick="longEdge()" checked="false">&nbsp' + "long Edge";
   }
-  else if (valueselection == "BFS"){
+  else if (value == "BFS"){
     var x=document.getElementById('AlgorithmsTable').rows;
     var y=x[3].cells
     y[0].innerHTML=	'<input id="bfs pseudo" type="checkbox" name="SM" onclick="bfsPseudo()" checked="false">&nbsp' + "BFS Pseudocode";
   }
-  else if (valueselection =="DFS"){
+  else if (value == "DFS"){
     startBfsSearch();
   }
-  else if (valueselection =="ConvexHull"){
-    startConvexHall();
+  else if (value == "ConvexHull"){
+    startConvexHull();
   }
   else{
 
@@ -166,10 +171,8 @@ function algorithmSelection(){
 }
 
 function showHiddenPseudocode(){
-  var menuselction = document.getElementById("AlgorithmSelection");
   var show = document.getElementById("showHidden").checked;
-  var selectionindex = menuselction.selectedIndex;
-  var value = menuselction.options[selectionindex].value;
+  var value = getCurrentAlgorithm();
   if (show == true){
     if(value == "BFS"){
       document.getElementById('pseudoContent').innerHTML = " unmark all vertices\n " +
@@ -189,15 +192,36 @@ function showHiddenPseudocode(){
     }
 
     else if (value == "vertexSearch"){
-      document.getElementById('pseudoContent').innerHTML = "longest = 0 <br> shortest = 0 <br> north = 0 <br> south = 0 <br> east = 0 <br> west = 0 <br> for (i =1 to |V|-1) { <br> if (len(v[i].label) > len(v[longest]))) {<br>"
-      + "longest = i; <br>} <br> if (len(v[i].label) < len(v[shortest]))) { <br> shortest = i; <br> } <br> if (v[i].lat > v[north].lat) { <br> " +
-      "north = i; <br> } <br> } <br>" ;
-
+      document.getElementById('pseudoContent').innerHTML = 
+"<pre>longest = 0\n" +
+"shortest = 0\n" +
+"north = 0\n" +
+"south = 0\n" +
+"east = 0\n" +
+"west = 0\n" +
+"for (i=1 to |V|-1) {\n" +
+"  if (len(v[i].label) > len(v[longest]))) {\n" +
+"    longest = i\n" +
+"  }\n" +
+"  if (len(v[i].label) < len(v[shortest]))) {\n" +
+"    shortest = i\n" +
+"  }\n" +
+"  if (v[i].lat > v[north].lat) {\n" +
+"    north = i\n" +
+"  }\n" +
+"  if (v[i].lat < v[south].lat) {\n" +
+"    south = i\n" +
+"  }\n" +
+"  if (v[i].lng < v[west].lng) {\n" +
+"    west = i\n" +
+"  }\n" +
+"  if (v[i].lng > v[east].lng) {\n" +
+"    east = i\n" +
+"  }\n" +
+"}</pre>";
     }
     else if (value == "EdgeSearch"){
-      document.getElementById('pseudoContent').innerHTML = "longest = 0 <br> shortest = 0 <br> n = 0 <br> south = 0 <br> east = 0 <br> west = 0 <br> for (i =1 to |V|-1) { <br> if (len(v[i].label) > len(v[longest]))) {<br>"
-      + "longest = i; <br>} <br> if (len(v[i].label) < len(v[shortest]))) { <br> shortest = i; <br> } <br> if (v[i].lat > v[north].lat) { <br> " +
-      "north = i; <br> } <br> } <br>" ;
+      document.getElementById('pseudoContent').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
 
     }
 
@@ -214,9 +238,8 @@ function showHiddenPseudocode(){
 
 
 function selectAlgorithmAndStart(){
-  var menuselction = document.getElementById("AlgorithmSelection");
-  var selectionindex = menuselction.selectedIndex;
-  var value = menuselction.options[selectionindex].value;
+
+  var value = getCurrentAlgorithm();
 
   if(value == "vertexSearch"){
     startSearch();
@@ -231,7 +254,7 @@ function selectAlgorithmAndStart(){
     startDfsSearch();
   }
   else if(value =="ConvexHull"){
-    startConvexHall();
+    startConvexHull();
   }
   else if(value == "Dijkstra"){
 
@@ -241,9 +264,7 @@ function selectAlgorithmAndStart(){
   }
 }
 function selectAlgorithmAndCheckBoxes(){
-  var menuselction = document.getElementById("AlgorithmSelection");
-  var selectionindex = menuselction.selectedIndex;
-  var value = menuselction.options[selectionindex].value;
+  var value = getCurrentAlgorithm();
 
   if (value == "vertexSearch"){
         document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
