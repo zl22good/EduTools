@@ -586,7 +586,7 @@ var eastIndex = -1;
 var westIndex = -1;
 var shortestVLabel;
 var longestVLabel;
-var indexOfShortesLabel;
+var indexOfShortestLabel;
 var indexOfPreviousShortestLabel;
 var IndexOfLongestLabel;
 var indexOfPreviousLongestLabel;
@@ -626,7 +626,7 @@ function startSearch() {
 
     var startingPoint = document.getElementById("startPoint").value;
 
-    // indexOfShortesLabel = startPoint;
+    // indexOfShortestLabel = startPoint;
     // IndexOfLongestLabel = startPoint;
 
     shortestVLabel = waypoints[startingPoint].label;
@@ -727,10 +727,10 @@ function continueSearch() {
         }
 
 	if (shortestVLabel.length > waypoints[nextToCheck].label.length) {
-	    indexOfPreviousShortestLabel = indexOfShortesLabel;
-	    indexOfShortesLabel = nextToCheck;
+	    indexOfPreviousShortestLabel = indexOfShortestLabel;
+	    indexOfShortestLabel = nextToCheck;
 	    shortestVLabel = waypoints[nextToCheck].label;
-	    console.log("shortest label: " + shortestVLabel + ", index: " + indexOfShortesLabel);
+	    console.log("shortest label: " + shortestVLabel + ", index: " + indexOfShortestLabel);
             var shortLabel = document.getElementById('shortLabel') ;
             shortLabel.innerHTML = "Shortest Label : " + '<span style="color:#654321">' + "Lat: "  + waypoints[nextToCheck].lat + " Lon: " + '<span style="color:#654321">' + waypoints[nextToCheck].lon +
         	"  Label: " + '<span style="color:#654321">' + waypoints[nextToCheck].label;
@@ -770,7 +770,7 @@ function continueSearch() {
 		    (toCheck != southIndex) &&
 		    (toCheck != eastIndex) &&
 		    (toCheck != westIndex)) {
-		    if (toCheck == indexOfShortesLabel) {
+		    if (toCheck == indexOfShortestLabel) {
 			setColorsForShortestLabel();
 		    } else if (toCheck == IndexOfLongestLabel) {
 			setColorstForLongestLabel();
@@ -797,7 +797,7 @@ function continueSearch() {
 	    }
 	}
 	else {
-	    if (nextToCheck == indexOfShortesLabel) {
+	    if (nextToCheck == indexOfShortestLabel) {
 		setColorsForShortestLabel();
 
 		if (indexOfPreviousShortestLabel != undefined) {
@@ -857,15 +857,15 @@ function continueSearch() {
 	line = line + westIndex;
     }
     line = line + " Short: ";
-    // indexOfShortesLabel = shortestLongest + '<span style="color:#00ff00">' + shortestVLabel + '</span>';
-    if (indexOfShortesLabel == nextToCheck) {
-	line = line + '<span style="color:#654321">' + indexOfShortesLabel + '</span>';
+    // indexOfShortestLabel = shortestLongest + '<span style="color:#00ff00">' + shortestVLabel + '</span>';
+    if (indexOfShortestLabel == nextToCheck) {
+	line = line + '<span style="color:#654321">' + indexOfShortestLabel + '</span>';
 	// shortestLongest = shortestLongest + '<span style="color:#00ff00">' + shortestVLabel + '</span>';
     }
 
     else{
 	// shortestLongest = shortestLongest + shortestVLabel;
-	line = line + indexOfShortesLabel;
+	line = line + indexOfShortestLabel;
     }
     line = line + " Long: ";
     if (IndexOfLongestLabel == nextToCheck) {
@@ -913,8 +913,8 @@ function continueSearch() {
 }
 
 function setColorsForShortestLabel() {
-    document.getElementById('waypoint' + indexOfShortesLabel).style.backgroundColor = shortestLableColorCode;
-    markers[indexOfShortesLabel].setIcon({
+    document.getElementById('waypoint' + indexOfShortestLabel).style.backgroundColor = shortestLableColorCode;
+    markers[indexOfShortestLabel].setIcon({
 	path: google.maps.SymbolPath.CIRCLE,
 	scale: 6,
 	zIndex: google.maps.Marker.MAX_ZINDEX + 9,
