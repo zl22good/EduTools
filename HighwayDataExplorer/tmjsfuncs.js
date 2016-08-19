@@ -566,6 +566,10 @@ function redirect(url) {
     var win = window.open(url);
     win.focus();
 }
+
+// default delay 50 should match the selected option in the speedChanger
+// and delay should be used for the amount of time in the future to use
+// for setTimeout calls
 var delay = 50;
 function speedChanged() {
     var speedChanger = document.getElementById("speedChanger");
