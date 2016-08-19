@@ -312,28 +312,32 @@ function selectAlgorithmAndReset(){
 <div id ="AlgorithmVisualization">
   <table id="AlgorithmsTable" class="gratable">
     <thead>
-      <tr><th> Algorithms Options</th></tr>
+      <tr><th>Algorithm Simulation Control Panel</th></tr>
     </thead>
     <tbody>
       <tr><td>
         <input id="filesel" value="Start" type="file" onchange="startRead()">
       </td></tr>
       <tr><td>
+        Algorithm Selection: 
         <select id= "AlgorithmSelection">
-          <option value="vertexSearch"> Vertex Search </option>
-          <option value="EdgeSearch"> Edge Search </option>
-          <option value="BFS"> BFS </option>
-          <option value="DFS"> DFS </option>
-          <option value="ConvexHull"> Convex Hull </option>
-          <option value="Dijkstra"> Dijkstra </option>
+          <option value="vertexSearch">Search Vertices</option>
+          <option value="EdgeSearch">Search Edges </option>
+          <option value="BFS">Breadth-First Traversal</option>
+          <option value="DFS">Depth-First Traversal</option>
+          <!-- <option value="ConvexHull"> Convex Hull </option>
+          <option value="Dijkstra"> Dijkstra </option> -->
         </select>
+      </td></tr>
+      <tr><td>
+        Start Vertex <input id="startPoint" type="text" name="Starting Point" value="0" />
+        <button type="button" onclick="selectAlgorithmAndCheckBoxes()">Options</button>
+
+      </td></tr>
+      <tr><td>
         <button type="button" onclick="selectAlgorithmAndStart()"> Start</button>
         <button type="button" onclick="pauseSearch()"> Pause</button>
         <button type="button" onclick="resetSearch()"> Reset</button>
-        <button type="button" onclick="selectAlgorithmAndCheckBoxes()"> Options</button>
-
-      </td></tr>
-      <tr><th style="font-size: 12px"> Starting Point <input id="startPoint" type="text" name="Starting Point" value="0">
         <select id="speedChanger" onchange="speedChanged()">
           <option value="5">Extremely fast</option>
           <option value="20">Very fast</option>
@@ -343,15 +347,15 @@ function selectAlgorithmAndReset(){
           <option value="500">Slow</option>
           <option value="1000">Painfully slow</option>
         </select>
-      </th></tr>
+      </td></tr>
       <tr><td id="selection_checkboxes"></td><tr>
-        <tr><td id="queueOrStack"></td><tr>
-          <tr><td id="shortestLongest"></td><tr>
-            <tr><td id="legend"></td><tr>
-                <tr><td id="latitude"></td><tr>
-                  <tr><td id="length"></td><tr>
-                    <tr><td id="shortLabel"></td><tr>
-                      <tr><td id="longLabel"></td><tr>
+      <tr><td id="queueOrStack"></td><tr>
+      <tr><td id="shortestLongest"></td><tr>
+      <tr><td id="legend"></td><tr>
+      <tr><td id="latitude"></td><tr>
+      <tr><td id="length"></td><tr>
+      <tr><td id="shortLabel"></td><tr>
+      <tr><td id="longLabel"></td><tr>
 
             </tbody>
           </table>
@@ -369,7 +373,7 @@ function selectAlgorithmAndReset(){
         </div>
         <div id="pseudocode_section"><table id="pseudoTable" class="gratable">
           <thead>
-            <tr><th> Pseudocode</th></tr>
+            <tr><th>Pseudocode</th></tr>
           </thead>
           <tbody>
             <tr><td style="border:none" id="pseudoContent">
