@@ -1,12 +1,12 @@
 //
-// CHM Data Viewer-related Javascript functions
+// TM Data Viewer-related Javascript functions
 //
-// Load and view data files related to Clinched Highway Mapping (CHM)
-// related academic data sets.
+// Load and view data files related to Travel Mapping (TM), formerly
+// Clinched Highway Mapping (CHM), related academic data sets.
 //
 // Author: Jim Teresco, Siena College, The College of Saint Rose
 //
-// Code developed based on examples from 
+// Early versions of the code were developed based on examples from 
 // http://cmap.m-plex.com/tools/wptedit/wptedit.html
 // http://www.alecjacobson.com/weblog/?p=1645
 //
@@ -220,7 +220,7 @@ function parseTMGContents(fileContents) {
 	    + "<a onclick=\"javascript:LabelClick(" + i + ",'"
 	    + waypoints[i].label + "\',"
 	    + waypoints[i].lat + "," + waypoints[i].lon + ",0);\">"
-	    + waypoints[i].label + "</a></td></tr>"
+	    + waypoints[i].label + "</a></td></tr>";
     }
     vTable += '</tbody></table>';
 
@@ -454,22 +454,32 @@ function parseNMPContents(fileContents) {
 //
 function parseWPLContents(fileContents) {
 
-    var table = '<table class="nmptable"><thead /><tbody>';
+    var vTable = '<table class="gratable"><thead><tr><th colspan="2">Waypoints</th></tr><tr><th>Coordinates</th><th>Waypoint Name</th></tr></thead><tbody>';
+
     // all lines describe waypoints
     var lines = fileContents.replace(/\r\n/g,"\n").split('\n');
     waypoints = new Array();
     for (var i = 0; i < lines.length; i++) {
 	if (lines[i].length > 0) {
-	    var xline = lines[i].split(' ');
-	    if (xline.length == 3) {
-		waypoints[waypoints.length] = new Waypoint(xline[0], xline[1], xline[2], "", "");
+	    var vertexInfo = lines[i].split(' ');
+	    if (vertexInfo.length == 3) {
+		var w = new Waypoint(vertexInfo[0], vertexInfo[1], vertexInfo[2], "", "");
+		waypoints[waypoints.length] = w;
+		vTable += '<tr><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
+		    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
+		    + "<a onclick=\"javascript:LabelClick(" + i + ",'"
+		    + w.label + "\',"
+		    + w.lat + "," + w.lon + ",0);\">"
+		    + w.label + "</a></td></tr>"
 	    }
 	}
     }
+    vTable += '</tbody></table>';
     // no edges here
     graphEdges = new Array();
-    genEdges = false;
-    return "<h2>Raw file contents:</h2><pre>" + fileContents + "</pre>";
+    genEdges = false; 
+    var summaryInfo = '<table class="gratable"><thead><tr><th>' + waypoints.length + " waypoints.</th></tr></table>"; 
+    return summaryInfo + '<p />' + vTable;
 }
 
 function WPTLine2Waypoint(line) {
