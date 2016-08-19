@@ -1,0 +1,377 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<!--
+
+    Highway Data Examiner (HDX) page
+
+    Load and view data files related to Travel Mapping (TM) related
+    academic data sets. (Formerly used Clinched Highway Mapping (CHM)
+    data.)
+
+    Author: Jim Teresco, Siena College, The College of Saint Rose
+
+    Modification History:
+
+    2011-06-20 JDT  Initial implementation
+    2011-06-21 JDT  Added .gra support and checkbox for hidden marker display
+    2011-06-23 JDT  Added .nmp file styles
+    2011-08-30 JDT  Renamed to HDX, added more styles
+    2013-08-14 JDT  Completed update to Google Maps API V3
+    2016-06-27 JDT  Code reorganization, page design updated based on TM
+
+-->
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="http://tm.teresco.org/css/travelMapping.css" />
+
+<style type="text/css">
+#controlbox {
+  width: 25%;*/
+  position: fixed;
+  top:50px;
+  bottom:100px;
+  height:100%;
+  left:400px;
+  right:0px;
+  overflow:auto;
+  padding:5px;
+}
+#map {
+  position: absolute;
+  top:25px;
+  bottom:0px;
+  width: 100%;
+  overflow:hidden;
+}
+#map * {
+  cursor:crosshair;
+}
+#selected {
+  position: absolute;
+  left: 110px;
+  top: 70px;
+  bottom: 170px;
+  overflow-y: scroll;
+  max-width: 33%;
+  opacity: .95;  /* also forces stacking order */
+}
+#pointbox {
+  visibility: hidden;
+  left: 0px;
+  width: 1px;
+  height: 1px;
+}
+#options {
+  visibility: hidden;
+  left: 0px;
+  width: 1px;
+  height: 1px;
+}
+#showHideMenu {
+  position: fixed;
+  right: 10px;
+  opacity: .75;  /* also forces stacking order */
+}
+#AlgorithmVisualization{
+visibility: hidden;
+left: 0px;
+width: 1px;
+height: 1px;
+}
+#contents_table{
+  position: absolute;
+  right: 2px;
+  top: 70px;
+  bottom: 10px;
+  overflow-y: scroll;
+  max-width: 33%;
+  opacity: .95;
+}
+#pseudoTable{
+  position: absolute;
+  padding: 5px;
+  bottom: 150px;
+  overflow-y: scroll;
+  max-width: 33%;
+  opacity: .95;
+}
+
+</style>
+<script
+ src="http://maps.googleapis.com/maps/api/js?sensor=false"
+ type="text/javascript"></script>
+<!-- load in needed JS functions -->
+<script src="tmjsfuncs.js" type="text/javascript"></script>
+<script src="hdxjsfunc.js" type="text/javascript"></script>
+<title>Highway Data Examiner</title>
+</head>
+<body onload="loadmap(); toggleTable();">
+<script type="application/javascript">
+
+function toggleTable() {
+  var menu = document.getElementById("showHideMenu");
+  var index = menu.selectedIndex;
+  var value = menu.options[index].value;
+  //  var algoTable = menu.algorithmbased.value;
+  pointbox = document.getElementById("pointbox");
+  options = document.getElementById("options");
+  selected = document.getElementById("selected");
+  AlgorithmVisualization = document.getElementById("AlgorithmVisualization");
+  // show only table (or no table) based on value
+  if (value == "pointbox") {
+    selected.innerHTML = pointbox.innerHTML;
+  }
+  else if (value == "options") {
+    selected.innerHTML = options.innerHTML;
+  }
+  else if (value =="AlgorithmVisualization"){
+    selected.innerHTML = AlgorithmVisualization.innerHTML;
+  }
+  else {
+    selected.innerHTML = "";
+  }
+}
+
+function AlgorithmSelection(){
+  var menuselction = document.getElementById("AlgorithmSelection");
+  var selectionindex = menuselction.selectedIndex;
+  var valueselection = menuselction.options[selectionindex].value;
+  vertexSearch = document.getElementById("vertexSearch");
+  EdgeSearch = document.getElementById("EdgeSearch");
+  BFS = document.getElementById("BFS");
+  DFS = document.getElementById("DFS");
+  ConvexHull = document.getElementById("ConvexHull");
+  Dijkstra = document.getElementById("Dijkstra");
+  if (valueselection == "vertexSearch") {
+    document.getElementById("AlgoritmsTable").rows[2].innerHTML= "some";
+  }
+  else if (valueselection == "EdgeSearch") {
+    var x=document.getElementById('AlgoritmsTable').rows;
+    var y=x[3].cells
+    y[0].innerHTML=	'<input id="sm" type="checkbox" name="SM" onclick="longEdge()" checked="false">&nbsp' + "long Edge";
+  }
+  else if (valueselection == "BFS"){
+    var x=document.getElementById('AlgoritmsTable').rows;
+    var y=x[3].cells
+    y[0].innerHTML=	'<input id="bfs pseudo" type="checkbox" name="SM" onclick="bfsPseudo()" checked="false">&nbsp' + "BFS Pseudocode";
+  }
+  else if (valueselection =="DFS"){
+    startBfsSearch();
+  }
+  else if (valueselection =="ConvexHull"){
+    startConvexHall();
+  }
+  else{
+
+  }
+}
+
+function showHiddenPseudocode(){
+  var menuselction = document.getElementById("AlgorithmSelection");
+  var show = document.getElementById("showHidden").checked;
+  var selectionindex = menuselction.selectedIndex;
+  var value = menuselction.options[selectionindex].value;
+  if (show == true){
+    if(value == "BFS"){
+      document.getElementById('pseudoContent').innerHTML = " unmark all vertices\n " +
+      "  choose some starting vertex x \n" +" mark x \n" +
+      "list L = x\n " + " tree T = x\n " + "  while L nonempty\n  " +
+      " choose some vertex v from front of list\n " + " visit v\n " +
+      " for each unmarked neighbor w\n " + " mark w\n " + " add it to end of list\n "+ " add edge vw to T\n ";
+    }
+
+
+    else if (value == "DFS"){
+      document.getElementById('pseudoContent').innerHTML = "Algorithm DFS(graph G, Vertex v)\n" +
+      " for all edges e in G.incidentEdges(v) do\n" + "if edge e is unexplored then\n" +
+      "w = G.opposite(v, e)\n" + "if vertex w is unexplored then\n" +
+      "label e as discovery edge\n" + "recursively call DFS(G, w)\n"
+      "else\n" + "label e a a back edge\n";
+    }
+
+    else if (value == "vertexSearch"){
+      document.getElementById('pseudoContent').innerHTML = "longest = 0 <br> shortest = 0 <br> north = 0 <br> south = 0 <br> east = 0 <br> west = 0 <br> for (i =1 to |V|-1) { <br> if (len(v[i].label) > len(v[longest]))) {<br>"
+      + "longest = i; <br>} <br> if (len(v[i].label) < len(v[shortest]))) { <br> shortest = i; <br> } <br> if (v[i].lat > v[north].lat) { <br> " +
+      "north = i; <br> } <br> } <br>" ;
+
+    }
+  }
+  else{
+    document.getElementById('pseudoContent').innerHTML = "";
+  }
+}
+
+  function pauseSearch(){
+    pause = true;
+
+  }
+
+
+function selectAlgorithmAndStart(){
+  var menuselction = document.getElementById("AlgorithmSelection");
+  var selectionindex = menuselction.selectedIndex;
+  var value = menuselction.options[selectionindex].value;
+
+  if(value == "vertexSearch"){
+    startSearch();
+  }
+  else if (value == "EdgeSearch"){
+    startEdgeSearch();
+  }
+  else if(value == "BFS"){
+    startBfsSearch();
+  }
+  else if(value =="DFS"){
+    startDfsSearch();
+  }
+  else if(value =="ConvexHull"){
+    startConvexHall();
+  }
+  else if(value == "Dijkstra"){
+
+  }
+  else{
+
+  }
+}
+function selectAlgorithmAndCheckBoxes(){
+  var menuselction = document.getElementById("AlgorithmSelection");
+  var selectionindex = menuselction.selectedIndex;
+  var value = menuselction.options[selectionindex].value;
+
+  if (value == "vertexSearch"){
+    document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
+    '<input id="showHiddenShortestLongest" type="checkbox" name="Show shortes longest" onclick="showHiddenShortestLabel()" checked="false" >&nbsp;Longest & Shortest Label<br>'+
+    '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>' +
+    '<input id="showExtremePoints" type="checkbox" name="Show extremes" onclick="showExtremePoints()" checked="false" >&nbsp;Extreme points (N/S/E/W)<br>' +
+    '<input id="showLatitude" type="checkbox" name="Show latitude" onclick="showlatitude()" checked="false" >&nbsp;Latitudes (N/S/E/W)<br>' +
+    // '<input id="showLongtitudes" type="checkbox" name="Show Longtitudes" onclick="showlong()" checked="false" >&nbsp;Longtitudes (N/S/E/W)<br>' +
+    '<input id="showLength" type="checkbox" name="Show length" onclick="showlength()" checked="false" >&nbsp;Length of lables: (N/S/E/W)<br>';
+    ;
+
+  }
+  else if (value == "EdgeSearch"){
+    document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
+    '<input id="showHiddenQueue" type="checkbox" name="Show selected algorithm status" onclick="showHiddenPseudocode()" checked="false">&nbsp;Status<br>' +
+    '<input id="showHiddenShortestLongest" type="checkbox" name="Show shortes longest" onclick="showHiddenShortestLabel()" checked="false" >&nbsp;Longest & Shortest Label<br>'+
+    '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
+  }
+
+  else if (value == "BFS"){
+    document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
+    '<input id="showHiddenQueue" type="checkbox" name="Show selected Queue" onclick="showHiddenQueue()" checked="false">&nbsp;Queue<br>';
+
+  }
+  else if (value == "DFS"){
+    document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
+    '<input id="showHiddenQueue" type="checkbox" name="Show selected Queue" onclick="showHiddenQueue()" >&nbsp;Stack<br>';
+
+  }
+}
+function selectAlgorithmAndReset(){
+    for (var i = 0; i < connections.length; i++) {
+	connections[i].setMap(null);
+  document.getElementById('connection'+i).style.backgroundColor = "white";
+    }
+    connections = new Array();
+    polypoints = new Array();
+    for (var i = 0; i < markers.length; i++) {
+	markers[i].setMap(null);
+  document.getElementById('waypoint'+i).style.backgroundColor = "white";
+    }
+    markers = new Array();
+    markerinfo = new Array();
+}
+
+</script>
+<p class="menubar">
+  HDX: <span id="filename">Select a file to display</span>
+  <span id="status"></span>
+</p>
+
+<div id="map">
+</div>
+<div id="selected"></div>
+<div id="options">
+  <table id="optionsTable" class="gratable">
+    <thead>
+      <tr><th>Load/Map Options</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>
+        <input id="filesel" type="file"  value="Start" onclick="startRead()">
+      </td></tr>
+      <tr><td>
+        <input id="showHidden" type="checkbox" name="Show Hidden Markers" onclick="showHiddenClicked()" checked="false">&nbsp;Show Hidden Markers
+      </td></tr>
+    </tbody>
+  </table>
+</div>
+<div id="pointbox">
+  No data loaded....
+</div>
+<div id ="AlgorithmVisualization">
+  <table id="AlgoritmsTable" class="gratable">
+    <thead>
+      <tr><th> Algorithms Options</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>
+        <input id="filesel" value="Start" type="file" onchange="startRead()">
+      </td></tr>
+      <tr><td>
+        <select id= "AlgorithmSelection">
+          <option value="vertexSearch"> Vertex Search </option>
+          <option value="EdgeSearch"> Edge Search </option>
+          <option value="BFS"> BFS </option>
+          <option value="DFS"> DFS </option>
+          <option value="ConvexHull"> Convex Hull </option>
+          <option value="Dijkstra"> Dijkstra </option>
+        </select>
+        <button type="button" onclick="selectAlgorithmAndStart()"> Start</button>
+        <button type="button" onclick="pauseSearch()"> Pause</button>
+        <button type="button" onclick="resetSearch()"> Reset</button>
+        <button type="button" onclick="selectAlgorithmAndCheckBoxes()"> Options</button>
+
+      </td></tr>
+      <tr><th style="font-size: 12px"> Starting Point <input id="startPoint" type="text" name="Starting Point" value="0">
+        <select id="speedChanger" onchange="speedChanged()">
+          <option value="5">Extremely fast</option>
+          <option value="20">Very fast</option>
+          <option value="50" selected>Fast</option>
+          <option value="100">Medium speed</option>
+          <option value="250">Pretty slow</option>
+          <option value="500">Slow</option>
+          <option value="1000">Painfully slow</option>
+        </select>
+      </th></tr>
+      <tr><td id="selection_checkboxes"></td><tr>
+        <tr><td id="queueOrStack"></td><tr>
+          <tr><td id="shortestLongest"></td><tr>
+            <tr><td id="legend"></td><tr>
+                <tr><td id="latitude"></td><tr>
+                  <tr><td id="length"></td><tr>
+                    <!-- <tr><td id="longitude"></td><tr> -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="controlbox">
+          <select id="showHideMenu" onchange="toggleTable();">
+            <option value="maponly">Map Only</option>
+            <option value="options" >Show/Load Map Options</option>
+            <option value="pointbox">Show Highway Data</option>
+            <option value= "AlgorithmVisualization" selected="selected"> Show Algorithm Visualization</option>
+          </select>
+        </div>
+        <div id="contents_table">
+        </div>
+        <div id="pseudocode_section"><table id="pseudoTable" class="gratable">
+          <thead>
+            <tr><th> Pseudocode</th></tr>
+          </thead>
+          <tbody>
+            <tr><td style="border:none" id="pseudoContent">
+            </td></tr>
+          </div>
+        </body></html>
