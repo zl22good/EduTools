@@ -142,15 +142,15 @@ function AlgorithmSelection(){
   ConvexHull = document.getElementById("ConvexHull");
   Dijkstra = document.getElementById("Dijkstra");
   if (valueselection == "vertexSearch") {
-    document.getElementById("AlgoritmsTable").rows[2].innerHTML= "some";
+    document.getElementById("AlgorithmsTable").rows[2].innerHTML= "some";
   }
   else if (valueselection == "EdgeSearch") {
-    var x=document.getElementById('AlgoritmsTable').rows;
+    var x=document.getElementById('AlgorithmsTable').rows;
     var y=x[3].cells
     y[0].innerHTML=	'<input id="sm" type="checkbox" name="SM" onclick="longEdge()" checked="false">&nbsp' + "long Edge";
   }
   else if (valueselection == "BFS"){
-    var x=document.getElementById('AlgoritmsTable').rows;
+    var x=document.getElementById('AlgorithmsTable').rows;
     var y=x[3].cells
     y[0].innerHTML=	'<input id="bfs pseudo" type="checkbox" name="SM" onclick="bfsPseudo()" checked="false">&nbsp' + "BFS Pseudocode";
   }
@@ -310,7 +310,7 @@ function selectAlgorithmAndReset(){
   No data loaded....
 </div>
 <div id ="AlgorithmVisualization">
-  <table id="AlgoritmsTable" class="gratable">
+  <table id="AlgorithmsTable" class="gratable">
     <thead>
       <tr><th> Algorithms Options</th></tr>
     </thead>
