@@ -288,6 +288,9 @@ function updateMap()
 	    connections[i] = new google.maps.Polyline({path: edgePoints, strokeColor: "#0000FF", strokeWeight: 10, strokeOpacity: 0.4, map: map});
 	    //map.addOverlay(connections[i]);
 	}
+	google.maps.event.clearListeners(map, 'zoom_changed');
+	google.maps.event.addListener(map, 'zoom_changed', zoomChange);
+	zoomChange();
     }
     else if (usingAdjacencyLists) {
 	var edgeNum = 0;
@@ -342,6 +345,10 @@ function updateMap()
 		}
 	    }
 	}
+
+	google.maps.event.clearListeners(map, 'zoom_changed');
+	google.maps.event.addListener(map, 'zoom_changed', zoomChange);
+	zoomChange();
     }
     // connecting waypoints in order to plot a path
     else if (mapClinched) {
@@ -466,7 +473,7 @@ function zoomChange() {
     else if (level < 12) newWeight = 6;
     else if (level < 15) newWeight = 10;
     else newWeight = 16;
-    //DBG.write("zoomChange: Zoom level " + level + ", newWeight = " + newWeight);
+    DBG.write("zoomChange: Zoom level " + level + ", newWeight = " + newWeight);
     for (var i=0; i<connections.length; i++) {
 	//connections[i].setMap(null);
 	connections[i].setOptions({strokeWeight: newWeight});
