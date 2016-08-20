@@ -1181,7 +1181,7 @@ function continueGraphTraversal() {
 	}
 	else {
 	    // still in the list, make it blue
-	    document.getElementById('waypoint'+ lastVisitedVertex).style.color="blue";
+	    document.getElementById('waypoint'+ lastVisitedVertex).style.backgroundColor="blue";
 	    markers[lastVisitedVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
 			      scale: 4,
 			      zIndex: google.maps.Marker.MAX_ZINDEX+5,
@@ -1220,7 +1220,7 @@ function continueGraphTraversal() {
 	if (discoveredVertices.indexOf(nextToVisit) == -1) {
 	    // not there anymore, indicated by orange, will be turned
 	    // grey or blue on next iteration
-	    document.getElementById('waypoint'+ nextToVisit).style.color="orange";
+	    document.getElementById('waypoint'+ nextToVisit).style.backgroundColor="orange";
 	    markers[nextToVisit].setIcon({path: google.maps.SymbolPath.CIRCLE,
 			      scale: 4,
 			      zIndex: google.maps.Marker.MAX_ZINDEX+10,
@@ -1229,7 +1229,7 @@ function continueGraphTraversal() {
         }
 	else {
 	    // still to be seen again, so let's make it blue
-	    document.getElementById('waypoint'+ nextToVisit).style.color="blue";
+	    document.getElementById('waypoint'+ nextToVisit).style.backgroundColor="blue";
 	    markers[nextToVisit].setIcon({path: google.maps.SymbolPath.CIRCLE,
 			      scale: 4,
 			      zIndex: google.maps.Marker.MAX_ZINDEX+5,
@@ -1241,7 +1241,7 @@ function continueGraphTraversal() {
     else {
 
 	visited[nextToVisit] = true;
-	document.getElementById('waypoint'+ nextToVisit).style.color="yellow";
+	document.getElementById('waypoint'+ nextToVisit).style.backgroundColor="yellow";
 	markers[nextToVisit].setIcon({path: google.maps.SymbolPath.CIRCLE,
 			       scale: 6,
 			       zIndex: google.maps.Marker.MAX_ZINDEX+10,
