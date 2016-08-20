@@ -158,18 +158,18 @@ function showHiddenPseudocode(){
   var value = getCurrentAlgorithm();
   if (show == true){
     if(value == "BFS"){
-      document.getElementById('pseudoContent').innerHTML = " unmark all vertices\n " +
-      "  choose some starting vertex x \n" +" mark x \n" +
-      "list L = x\n " + " tree T = x\n " + "  while L nonempty\n  " +
-      " choose some vertex v from front of list\n " + " visit v\n " +
-      " for each unmarked neighbor w\n " + " mark w\n " + " add it to end of list\n "+ " add edge vw to T\n ";
+      document.getElementById('pseudoContent').innerHTML = "<pre> unmark all vertices\n "
+      + "  choose some starting vertex x \n" + "  mark x \n" +
+      " list L = x\n " + " tree T = x\n " + "  while L nonempty\n  " +
+      " choose some vertex v from front of list\n " + "  visit v\n " +
+      " for each unmarked neighbor w\n " + " mark w\n " + " add it to end of list\n "+ " add edge vw to T\n </pre>";
     }
     else if (value == "DFS"){
-      document.getElementById('pseudoContent').innerHTML = "Algorithm DFS(graph G, Vertex v)\n" +
-      " for all edges e in G.incidentEdges(v) do\n" + "if edge e is unexplored then\n" +
-      "w = G.opposite(v, e)\n" + "if vertex w is unexplored then\n" +
-      "label e as discovery edge\n" + "recursively call DFS(G, w)\n"
-      "else\n" + "label e a a back edge\n";
+      document.getElementById('pseudoContent').innerHTML = " <pre>Algorithm DFS(graph G, Vertex v)\n" +
+      " for all edges e in G.incidentEdges(v) do\n" + " if edge e is unexplored then\n" +
+      " w = G.opposite(v, e)\n" + " if vertex w is unexplored then\n" +
+      " label e as discovery edge\n" + " recursively call DFS(G, w)\n<pre>"
+      " else\n" + " label e a a back edge\n";
     }
     else if (value == "vertexSearch"){
       document.getElementById('pseudoContent').innerHTML =
