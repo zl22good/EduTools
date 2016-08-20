@@ -73,37 +73,21 @@ height: 1px;
 }
 #contents_table{
   position: absolute;
-<<<<<<< HEAD
   right: 42px;
   top: 70px;
   bottom: 10px;
   overflow-y: scroll;
   max-width: 22%;
-=======
-  right: 2px;
-  top: 70px;
-  bottom: 10px;
-  overflow-y: scroll;
-  max-width: 33%;
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
   opacity: .95;
 }
 #pseudoTable{
   position: absolute;
   padding: 5px;
-<<<<<<< HEAD
-  top: 350px;
-=======
   bottom: 150px;
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
   overflow-y: scroll;
   max-width: 33%;
   opacity: .95;
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
 </style>
 <script
  src="http://maps.googleapis.com/maps/api/js?sensor=false"
@@ -115,10 +99,6 @@ height: 1px;
 </head>
 <body onload="loadmap(); toggleTable();">
 <script type="application/javascript">
-<<<<<<< HEAD
-=======
-
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
 function toggleTable() {
   var menu = document.getElementById("showHideMenu");
   var index = menu.selectedIndex;
@@ -142,33 +122,15 @@ function toggleTable() {
     selected.innerHTML = "";
   }
 }
-<<<<<<< HEAD
 // get the selected algorithm from the AlgorithmSelection menu
 // (factored out here to avoid repeated code)
 function getCurrentAlgorithm() {
-=======
-
-
-// get the selected algorithm from the AlgorithmSelection menu
-// (factored out here to avoid repeated code)
-function getCurrentAlgorithm() {
-
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
   var menuSelection = document.getElementById("AlgorithmSelection");
   var selectionIndex = menuSelection.selectedIndex;
   return menuSelection.options[selectionIndex].value;
 }
-<<<<<<< HEAD
 function algorithmSelection(){
   var value = getCurrentAlgorithm();
-=======
-
-
-function algorithmSelection(){
-
-  var value = getCurrentAlgorithm();
-
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
   if (value == "vertexSearch") {
     document.getElementById("AlgorithmsTable").rows[2].innerHTML= "some";
   }
@@ -189,15 +151,8 @@ function algorithmSelection(){
     startConvexHull();
   }
   else{
-<<<<<<< HEAD
   }
 }
-=======
-
-  }
-}
-
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
 function showHiddenPseudocode(){
   var show = document.getElementById("showHidden").checked;
   var value = getCurrentAlgorithm();
@@ -208,7 +163,6 @@ function showHiddenPseudocode(){
       "list L = x\n " + " tree T = x\n " + "  while L nonempty\n  " +
       " choose some vertex v from front of list\n " + " visit v\n " +
       " for each unmarked neighbor w\n " + " mark w\n " + " add it to end of list\n "+ " add edge vw to T\n ";
-<<<<<<< HEAD
     }
     else if (value == "DFS"){
       document.getElementById('pseudoContent').innerHTML = "Algorithm DFS(graph G, Vertex v)\n" +
@@ -304,121 +258,6 @@ function selectAlgorithmAndReset(){
 	connections[i].setMap(null);
   document.getElementById('connection'+i).style.backgroundColor = "white";
     }
-=======
-    }
-
-
-    else if (value == "DFS"){
-      document.getElementById('pseudoContent').innerHTML = "Algorithm DFS(graph G, Vertex v)\n" +
-      " for all edges e in G.incidentEdges(v) do\n" + "if edge e is unexplored then\n" +
-      "w = G.opposite(v, e)\n" + "if vertex w is unexplored then\n" +
-      "label e as discovery edge\n" + "recursively call DFS(G, w)\n"
-      "else\n" + "label e a a back edge\n";
-    }
-
-    else if (value == "vertexSearch"){
-      document.getElementById('pseudoContent').innerHTML = 
-"<pre>longest = 0\n" +
-"shortest = 0\n" +
-"north = 0\n" +
-"south = 0\n" +
-"east = 0\n" +
-"west = 0\n" +
-"for (i=1 to |V|-1) {\n" +
-"  if (len(v[i].label) > len(v[longest]))) {\n" +
-"    longest = i\n" +
-"  }\n" +
-"  if (len(v[i].label) < len(v[shortest]))) {\n" +
-"    shortest = i\n" +
-"  }\n" +
-"  if (v[i].lat > v[north].lat) {\n" +
-"    north = i\n" +
-"  }\n" +
-"  if (v[i].lat < v[south].lat) {\n" +
-"    south = i\n" +
-"  }\n" +
-"  if (v[i].lng < v[west].lng) {\n" +
-"    west = i\n" +
-"  }\n" +
-"  if (v[i].lng > v[east].lng) {\n" +
-"    east = i\n" +
-"  }\n" +
-"}</pre>";
-    }
-    else if (value == "EdgeSearch"){
-      document.getElementById('pseudoContent').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
-
-    }
-
-  }
-  else{
-    document.getElementById('pseudoContent').innerHTML = "";
-  }
-}
-
-  function pauseSearch(){
-    pause = true;
-
-  }
-
-
-function selectAlgorithmAndStart(){
-
-  var value = getCurrentAlgorithm();
-
-  if(value == "vertexSearch"){
-    startSearch();
-  }
-  else if (value == "EdgeSearch"){
-    startEdgeSearch();
-  }
-  else if(value == "BFS"){
-    startBfsSearch();
-  }
-  else if(value =="DFS"){
-    startDfsSearch();
-  }
-  else if(value =="ConvexHull"){
-    startConvexHull();
-  }
-  else if(value == "Dijkstra"){
-
-  }
-  else{
-
-  }
-}
-function selectAlgorithmAndCheckBoxes(){
-  var value = getCurrentAlgorithm();
-
-  if (value == "vertexSearch"){
-        document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
-
-  }
-  else if (value == "EdgeSearch"){
-    document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
-    '<input id="showHiddenQueue" type="checkbox" name="Show selected algorithm status" onclick="showHiddenPseudocode()" checked="false">&nbsp;Status<br>' +
-    '<input id="showHiddenShortestLongest" type="checkbox" name="Show shortes longest" onclick="showHiddenShortestLabel()" checked="false" >&nbsp;Longest & Shortest Label<br>'+
-    '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
-  }
-
-  else if (value == "BFS"){
-    document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
-    '<input id="showHiddenQueue" type="checkbox" name="Show selected Queue" onclick="showHiddenQueue()" checked="false">&nbsp;Queue<br>';
-
-  }
-  else if (value == "DFS"){
-    document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
-    '<input id="showHiddenQueue" type="checkbox" name="Show selected Queue" onclick="showHiddenQueue()" >&nbsp;Stack<br>';
-
-  }
-}
-function selectAlgorithmAndReset(){
-    for (var i = 0; i < connections.length; i++) {
-	connections[i].setMap(null);
-  document.getElementById('connection'+i).style.backgroundColor = "white";
-    }
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
     connections = new Array();
     polypoints = new Array();
     for (var i = 0; i < markers.length; i++) {
@@ -428,10 +267,6 @@ function selectAlgorithmAndReset(){
     markers = new Array();
     markerinfo = new Array();
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
 </script>
 <p class="menubar">
   HDX: <span id="filename">Select a file to display</span>
@@ -469,20 +304,13 @@ function selectAlgorithmAndReset(){
         <input id="filesel" value="Start" type="file" onchange="startRead()">
       </td></tr>
       <tr><td>
-<<<<<<< HEAD
         Algorithm Selection:
-=======
-        Algorithm Selection: 
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
         <select id= "AlgorithmSelection">
           <option value="vertexSearch">Search Vertices</option>
           <option value="EdgeSearch">Search Edges </option>
           <option value="BFS">Breadth-First Traversal</option>
           <option value="DFS">Depth-First Traversal</option>
-<<<<<<< HEAD
           <option value="RFS">Random-First Traversal</option>
-=======
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
           <!-- <option value="ConvexHull"> Convex Hull </option>
           <option value="Dijkstra"> Dijkstra </option> -->
         </select>
@@ -493,15 +321,9 @@ function selectAlgorithmAndReset(){
 
       </td></tr>
       <tr><td>
-<<<<<<< HEAD
         <button type="button" onclick="selectAlgorithmAndStart()">Start</button>
         <button type="button" onclick="pauseSimulation()">Pause</button>
         <button type="button" onclick="resetSearch()">Reset</button>
-=======
-        <button type="button" onclick="selectAlgorithmAndStart()"> Start</button>
-        <button type="button" onclick="pauseSearch()"> Pause</button>
-        <button type="button" onclick="resetSearch()"> Reset</button>
->>>>>>> aa915587179b56890c95bc06671a1c55ceed8bdc
         <select id="speedChanger" onchange="speedChanged()">
           <option value="5">Extremely fast</option>
           <option value="20">Very fast</option>
