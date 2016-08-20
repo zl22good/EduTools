@@ -231,32 +231,26 @@ function showHiddenPseudocode(){
   }
 }
 
-  function pauseSearch(){
-    pause = true;
-
-  }
-
-
 function selectAlgorithmAndStart(){
 
   var value = getCurrentAlgorithm();
 
-  if(value == "vertexSearch"){
-    startSearch();
+  if (value == "vertexSearch"){
+    startVertexSearch();
   }
   else if (value == "EdgeSearch"){
     startEdgeSearch();
   }
-  else if(value == "BFS"){
+  else if (value == "BFS"){
     startBfsSearch();
   }
-  else if(value =="DFS"){
+  else if (value == "DFS"){
     startDfsSearch();
   }
-  else if(value =="ConvexHull"){
+  else if (value == "ConvexHull"){
     startConvexHull();
   }
-  else if(value == "Dijkstra"){
+  else if (value == "Dijkstra"){
 
   }
   else{
@@ -356,9 +350,9 @@ function selectAlgorithmAndReset(){
 
       </td></tr>
       <tr><td>
-        <button type="button" onclick="selectAlgorithmAndStart()"> Start</button>
-        <button type="button" onclick="pauseSearch()"> Pause</button>
-        <button type="button" onclick="resetSearch()"> Reset</button>
+        <button type="button" onclick="selectAlgorithmAndStart()">Start</button>
+        <button type="button" onclick="pauseSimulation()">Pause</button>
+        <button type="button" onclick="resetSearch()">Reset</button>
         <select id="speedChanger" onchange="speedChanged()">
           <option value="5">Extremely fast</option>
           <option value="20">Very fast</option>

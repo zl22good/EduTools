@@ -66,7 +66,7 @@ var traveler;
 var genEdges = false;
 // boolean to determine if graph edges are in vertex adjacency lists
 var usingAdjacencyLists = false;
-//boolean to determine pause value
+// boolean to indicate if a simulation in progress is paused
 var pause = false;
 
 
@@ -584,6 +584,12 @@ function speedChanged() {
 }
 
 
+// pause button callback, simply sets pause to true, other functions
+// deal with this as appropriate
+function pauseSimulation() {
+
+   pause = true;
+}
 
 // some variables to support our search with timers
 var nextToCheck;
@@ -600,11 +606,13 @@ var indexOfPreviousLongestLabel;
 var shortestLableColorCode = "#654321"
 var longestLabelColorCode = "#006400"
 
-// callback for when startSearch button is pressed
-function startSearch() {
-    if (pause == true) {
+// initialize a vertex-based search, called by the start button callback
+function startVertexSearch() {
+
+    // if we are paused and the start button is pressed, we "unpause"
+    if (pause) {
 	pause = false;
-	continueSearch();
+	continueVertexSearch();
 	return;
     }
 
@@ -651,13 +659,16 @@ function startSearch() {
     queueOrStack.innerHTML = 'Checking: <span style="color:yellow">0</span>';
     // enable pause button
     //document.getElementById("pauseRestart").disabled = false;
-    setTimeout(continueSearch, delay);
+    setTimeout(continueVertexSearch, delay);
 }
 
 
-// do an iteration of search
-function continueSearch() {
-    if (pause == true) {
+// do an iteration of vertex-based search
+function continueVertexSearch() {
+
+    // if the simulation is paused, we can do nothing, as this function
+    // will be called again when we restart
+    if (pause) {
 	return;
     }
 
@@ -901,7 +912,7 @@ function continueSearch() {
 	markers[nextToCheck].setZIndex(1E9);
 	document.getElementById('waypoint' + nextToCheck).style.backgroundColor = "yellow";
 	//if (!paused) {
-	setTimeout(continueSearch, delay);
+	setTimeout(continueVertexSearch, delay);
 	//	}
     }
     else {
@@ -967,7 +978,7 @@ var shortestELabel;
 var longestELabel;
 function startEdgeSearch() {
 
-    if (pause == true){
+    if (pause){
 	pause = false;
 	continueEdgeSearch();
 	return;
@@ -988,7 +999,7 @@ function startEdgeSearch() {
 }
 
 function continueEdgeSearch(){
-    if (pause == true){
+    if (pause){
 	return;
     }
     if(currentEdgeIndex== graphEdges.length){
@@ -1053,7 +1064,7 @@ var minEdgeBfs;
 var maxEdgeBfs;
 
 function startBfsSearch() {
-    if (pause == true){
+    if (pause){
 	pause = false;
 	processQueue();
 	return;
@@ -1080,7 +1091,7 @@ function startBfsSearch() {
 }
 
 function processQueue() {
-    if (pause == true){
+    if (pause){
 	return;
     }
 
@@ -1120,7 +1131,7 @@ function processQueue() {
 
     var neighbors = getAdjacentPoints(queue[0]);
     for (var i = 0; i < neighbors.length; i++) {
-	if (visited[neighbors[i]] == false) {
+	if (!visited[neighbors[i]]) {
 	    queue.push(neighbors[i]);
 	    document.getElementById('waypoint'+ neighbors[i]).style.backgroundColor="purple";
 	    markers[neighbors[i]].setMap(map);
@@ -1210,7 +1221,7 @@ var maxEdgePolylineDFS;
 var minEdgePolylineDFS;
 
 function startDfsSearch() {
-    if (pause == true){
+    if (pause){
 	pause = false;
 	processStack();
 	return;
@@ -1235,7 +1246,7 @@ function startDfsSearch() {
 }
 
 function processStack() {
-    if (pause == true){
+    if (pause){
 	return;
     }
     // If stack is empty, nothing to do any more and we are done.
@@ -1246,7 +1257,7 @@ function processStack() {
 
     // get top of stack
     var top = stack[stack.length - 1];
-    if (visitedDfs[top] == true) {
+    if (visitedDfs[top]) {
 	// document.getElementById('waypoint'+ top).style.backgroundColor="purple";
 	markers[top].setMap(map);
 	markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
@@ -1261,7 +1272,7 @@ function processStack() {
 	// Find the first adjacent of the top node which is not visited yet, and push it to the stack,
 	// and continue processing the stack again.
 	for (var i = 0; i < adjacentList.length; i++) {
-	    if (visitedDfs[adjacentList[i]] == false) {
+	    if (!visitedDfs[adjacentList[i]]) {
 		stack.push(adjacentList[i]);
 		// document.getElementById('waypoint'+ adjacentList[i]).style.backgroundColor="purple";
 		markers[adjacentList[i]].setMap(map);
