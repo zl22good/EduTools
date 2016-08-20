@@ -1056,107 +1056,216 @@ function continueEdgeSearch(){
     setTimeout(continueEdgeSearch, delay);
 }
 
-var queue = [];
-var visited =[];
-var minDistanceBfs =  99999999;
-var maxDistanceBfs = -99999999;
-var minEdgeBfs;
-var maxEdgeBfs;
+// ********************************************************************
+// graph traversals
+// ********************************************************************
 
-function startBfsSearch() {
+// this first variable is the stack for DFS, queue for BFS, could be other
+//  for future enhancements
+var discoveredVertices = [];
+
+// what will we call this structure?
+var discoveredVerticesName;
+
+// array of booleans to indicate if we've visited each vertex
+var visitedVertices = [];
+
+// vertex visited on the previous iteration to be updated
+var lastVisitedVertex;
+
+// where did we start?
+var startingVertex;
+
+// what is our traversal discipline, i.e., is discoveredVertices to be
+// treated as a stack, queue, or something else
+// values are currently "BFS" or "DFS" or "RFS"
+var traversalDiscipline;
+
+// initial color coding and zindex offsets for graph traversals:
+// start vertex: green/10
+// undiscovered: white/0
+// in discovered list and not visited: purple/5
+// in discovered list but already visited: blue/5
+// not in discovered list but already visited: grey/1
+// just removed from discovered list and visiting: yellow/10
+// just removed from discovered list but already visited: orange/10
+
+
+// initialize graph traversal process
+function startGraphTraversal(discipline) {
+
+    traversalDiscipline = discipline;
+    if (discipline == "BFS") {
+	discoveredVerticesName = "Queue";
+    }
+    else if (discipline == "DFS") {
+	discoveredVerticesName = "Stack";
+    }
+    else if (discipline == "RFS") {
+	discoveredVerticesName = "List";
+    }
+
+    // if we are paused
     if (pause){
 	pause = false;
-	processQueue();
+	continueGraphTraversal();
 	return;
     }
+
     var cTable = document.getElementById("connection");
     cTable.innerHTML = "";
+
+    // initialize our visited array
     visited = new Array(waypoints.length).fill(false);
-    // we don't need edges here, so we remove those
-    for (var i = 0; i < connections.length; i++) {
-	connections[i].setMap(null);
+
+    // we don't need edges here, so we remove those (JDT: actually we do!)
+    //for (var i = 0; i < connections.length; i++) {
+    //	connections[i].setMap(null);
+    //  }
+    //connections = new Array();
+
+    // replace all markers with white circles
+    for (var i = 0; i < markers.length; i++) {
+	markers[i].setIcon({path: google.maps.SymbolPath.CIRCLE,
+				    scale: 2,
+				    zIndex: google.maps.Marker.MAX_ZINDEX,
+				    fillColor: 'white',
+				    strokeColor: 'white'});
     }
-    connections = new Array();
-    var startingPoint = document.getElementById("startPoint").value;
-    queue.push(startingPoint);
-    document.getElementById('waypoint' + startingPoint).style.backgroundColor="yellow";
-    markers[startingPoint].setMap(map);
-    markers[startingPoint].setIcon({path: google.maps.SymbolPath.CIRCLE,
-				    scale: 8,
-				    zIndex: google.maps.Marker.MAX_ZINDEX+1,
-				    fillColor: 'yellow',
-				    strokeColor: 'yellow'});
-    markers[startingPoint].setZIndex( 1E9 );
-    setTimeout(processQueue, delay);
+
+    // vertex index to start the traversal
+    startingVertex = document.getElementById("startPoint").value;
+
+    // initialize the process with this value
+    discoveredVertices.push(startingVertex);
+    document.getElementById('waypoint' + startingVertex).style.backgroundColor="green";
+    markers[startingVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
+				    scale: 6,
+				    zIndex: google.maps.Marker.MAX_ZINDEX+10,
+				    fillColor: 'green',
+				    strokeColor: 'green'});
+
+    // nothing to update this first time
+    lastVisitedVertex = -1;
+    setTimeout(continueGraphTraversal, delay);
 }
 
-function processQueue() {
-    if (pause){
+// function to process one vertex from the discoveredVertices in the
+// graph traversal process
+function continueGraphTraversal() {
+
+    // if we're paused, do nothing for now
+    if (pause) {
 	return;
     }
 
-    if (queue.length == 0) {
-	console.log("Done!");
-	console.log("Min distance: " + minDistanceBfs);
-	console.log("Max distance: " + maxDistance);
-	return;
-    }
-    if (visited[queue[0]]) {
-	var pop = queue.shift();
-	console.log("pop: " + pop);
-	// document.getElementById('waypoint'+ pop).style.backgroundColor="grey";
-	document.getElementById('waypoint'+ pop).style.display="none";
-	markers[pop].setMap(map);
-	markers[pop].setIcon({path: google.maps.SymbolPath.CIRCLE,
+    // maybe we have a last visited vertex to update
+    if (lastVisitedVertex != -1) {
+	if (lastVisitedVertex == startingVertex) {
+	    // always leave the starting vertex green and in the table
+	    document.getElementById('waypoint' + startingVertex).style.backgroundColor="green";
+	    markers[startingVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
+					     scale: 6,
+					     zIndex: google.maps.Marker.MAX_ZINDEX+10,
+					     fillColor: 'green',
+					     strokeColor: 'green'});
+	}
+	else if (discoveredVertices.indexOf(lastVisitedVertex) == -1) {
+	    // not in the list, make it grey
+	    document.getElementById('waypoint'+ lastVisitedVertex).style.display="none";
+	    markers[lastVisitedVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
 			      scale: 2,
 			      zIndex: google.maps.Marker.MAX_ZINDEX+1,
 			      fillColor: 'grey',
 			      strokeColor: 'grey'});
-	printList(queue);
-	document.getElementById('queueOrStack').innerHTML = "Size : " + queue.length +", queue : " + listToString(queue);
-	setTimeout(processQueue, delay);
+	}
+	else {
+	    // still in the list, make it blue
+	    document.getElementById('waypoint'+ lastVisitedVertex).style.color="blue";
+	    markers[lastVisitedVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			      scale: 4,
+			      zIndex: google.maps.Marker.MAX_ZINDEX+5,
+			      fillColor: 'blue',
+			      strokeColor: 'blue'});
+	}
+    }
+    // maybe we're done
+    if (discoveredVertices.length == 0) {
+	console.log("Done!");
 	return;
     }
 
-    visited[queue[0]] = true;
-    var currentRow = document.getElementById('waypoint' + queue[0]);
+    // select the next vertex to visit and remove it from the
+    // discoveredVertices list
+    var nextToVisit;
+    if (traversalDiscipline == "BFS") {
+	nextToVisit = discoveredVertices.shift();
+    }
+    else if (traversalDiscipline == "DFS") {
+	nextToVisit = discoveredVertices.pop();
+    }
+    else if (traversalDiscipline == "RFS") {
+	var index = Math.floor(Math.random() * discoveredVertices.length);
+	nextToVisit = discoveredVertices[index];
+	discoveredVertices.splice(index, 1);
+    }
 
-    currentRow.style.backgroundColor="yellow";
-    markers[queue[0]].setMap(map);
-    markers[queue[0]].setIcon({path: google.maps.SymbolPath.CIRCLE,
+    lastVisitedVertex = nextToVisit;
+
+    // now decide what to do with this vertex -- depends on whether it
+    // had been previously visited
+    if (visited[nextToVisit]) {
+
+	// is it still in the list?
+	if (discoveredVertices.indexOf(nextToVisit) == -1) {
+	    // not there anymore, indicated by orange, will be turned
+	    // grey or blue on next iteration
+	    document.getElementById('waypoint'+ nextToVisit).style.color="orange";
+	    markers[nextToVisit].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			      scale: 4,
+			      zIndex: google.maps.Marker.MAX_ZINDEX+10,
+			      fillColor: 'orange',
+			      strokeColor: 'orange'});
+        }
+	else {
+	    // still to be seen again, so let's make it blue
+	    document.getElementById('waypoint'+ nextToVisit).style.color="blue";
+	    markers[nextToVisit].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			      scale: 4,
+			      zIndex: google.maps.Marker.MAX_ZINDEX+5,
+			      fillColor: 'blue',
+			      strokeColor: 'blue'});
+	}
+    }
+    // visiting for the first time
+    else {
+
+	visited[nextToVisit] = true;
+	document.getElementById('waypoint'+ nextToVisit).style.color="yellow";
+	markers[nextToVisit].setIcon({path: google.maps.SymbolPath.CIRCLE,
 			       scale: 6,
-			       zIndex: google.maps.Marker.MAX_ZINDEX+1,
+			       zIndex: google.maps.Marker.MAX_ZINDEX+10,
 			       fillColor: 'yellow',
 			       strokeColor: 'yellow'});
 
-    var neighbors = getAdjacentPoints(queue[0]);
-    for (var i = 0; i < neighbors.length; i++) {
-	if (!visited[neighbors[i]]) {
-	    queue.push(neighbors[i]);
-	    document.getElementById('waypoint'+ neighbors[i]).style.backgroundColor="purple";
-	    markers[neighbors[i]].setMap(map);
-	    markers[neighbors[i]].setIcon({path: google.maps.SymbolPath.CIRCLE,
-					   scale: 4,
-					   zIndex: google.maps.Marker.MAX_ZINDEX+1,
-					   fillColor: 'purple',
-					   strokeColor: 'purple'});
-
-            var distance = Feet(waypoints[neighbors[i]].lat, waypoints[neighbors[i]].lon, waypoints[queue[0]].lat, waypoints[queue[0]].lon);
-	    if (distance < minDistanceBfs) {
-        	minDistanceBfs = distance;
-		minEdgeBfs = waypoints[queue[0]].edgeList[i];
-            }
-
-            if (distance > maxDistanceBfs) {
-		maxDistanceBfs = distance;
-		maxEdgeBfs  = waypoints[queue[0]].edgeList[i];
-            }
-
+	var neighbors = getAdjacentPoints(nextToVisit);
+	for (var i = 0; i < neighbors.length; i++) {
+	    if (!visited[neighbors[i]]) {
+		discoveredVertices.push(neighbors[i]);
+		document.getElementById('waypoint'+ neighbors[i]).style.backgroundColor="purple";
+		markers[neighbors[i]].setIcon({path: google.maps.SymbolPath.CIRCLE,
+					       scale: 4,
+					       zIndex: google.maps.Marker.MAX_ZINDEX+5,
+					       fillColor: 'purple',
+					       strokeColor: 'purple'});
+	    }
 	}
     }
-    printList(queue);
-    document.getElementById('queueOrStack').innerHTML = "Size : " + queue.length +", queue : " + listToString(queue);
-    setTimeout(processQueue, delay);
+  
+    // update view of our list
+    //printList(queue);
+    document.getElementById('queueOrStack').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length +") " + listToString(discoveredVertices);
+    setTimeout(continueGraphTraversal, delay);
 }
 
 function getAdjacentPoints(pointIndex) {
@@ -1210,139 +1319,6 @@ function listToString(items) {
 	return line;
     }
 
-}
-var stack = [];
-var visitedDfs =[];
-var minDistanceDfs;
-var maxDistanceDfs;
-var minEdgeDfs;
-var maxEdgeDfs;
-var maxEdgePolylineDFS;
-var minEdgePolylineDFS;
-
-function startDfsSearch() {
-    if (pause){
-	pause = false;
-	processStack();
-	return;
-    }
-    var cTable = document.getElementById("connection");
-    cTable.innerHTML = "";
-
-
-    // Reset previous state
-    minDistanceDfs =  99999999;
-    maxDistanceDfs = -99999999;
-    minEdgeDfs = null;
-    maxEdgeDfs = null;
-    maxEdgePolyline = null;
-    minEdgePolyline = null;
-    visitedDfs = new Array(waypoints.length).fill(false)
-    var startingPoint = document.getElementById("startPoint").value;
-    // put frist point into the stack and start processing the stack
-    stack.push(startingPoint);
-
-    setTimeout(processStack, delay);
-}
-
-function processStack() {
-    if (pause){
-	return;
-    }
-    // If stack is empty, nothing to do any more and we are done.
-    if (stack.length == 0) {
-	console.log("Done with DFS search");
-	return;
-    }
-
-    // get top of stack
-    var top = stack[stack.length - 1];
-    if (visitedDfs[top]) {
-	// document.getElementById('waypoint'+ top).style.backgroundColor="purple";
-	markers[top].setMap(map);
-	markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			      scale: 4,
-			      zIndex: google.maps.Marker.MAX_ZINDEX+1,
-			      fillColor: 'purple',
-			      strokeColor: 'purple'});
-	// document.getElementById('waypoint' + top).style.backgroundColor="grey";
-	document.getElementById('waypoint' + top).style.display="none";
-	var adjacentList = getAdjacentPoints(top);
-
-	// Find the first adjacent of the top node which is not visited yet, and push it to the stack,
-	// and continue processing the stack again.
-	for (var i = 0; i < adjacentList.length; i++) {
-	    if (!visitedDfs[adjacentList[i]]) {
-		stack.push(adjacentList[i]);
-		// document.getElementById('waypoint'+ adjacentList[i]).style.backgroundColor="purple";
-		markers[adjacentList[i]].setMap(map);
-		markers[adjacentList[i]].setIcon({path: google.maps.SymbolPath.CIRCLE,
-						  scale: 4,
-						  zIndex: google.maps.Marker.MAX_ZINDEX+1,
-						  fillColor: 'purple',
-						  strokeColor: 'purple'});
-		// Update related mins and maxs (minDistanceDfs, minEdgeDfs, maxDistanceBfs, maxEdgeDfs)
-		var distance = Feet(waypoints[adjacentList[i]].lat, waypoints[adjacentList[i]].lon, waypoints[top].lat, waypoints[top].lon);
-		if (distance < minDistanceDfs) {
-
-		    if (minEdgePolylineDFS != null) {
-			// if we already draw a polyline for minEdge, since we found a smaller edge, just remove previous one
-			minEdgePolylineDFS.setMap(null);
-		    }
-
-		    minDistanceDfs = distance;
-		    minEdgeDfs = waypoints[top].edgeList[i];
-
-		}
-
-		if (distance > maxDistanceDfs) {
-
-		    if (maxEdgePolylineDFS != null) {
-			// if we already draw a polyline for maxEdge, since we found a larger edge, just remove previous one
-			maxEdgePolylineDFS.setMap(null);
-		    }
-
-		    maxDistanceDfs = distance;
-		    maxEdgeDfs  = waypoints[top].edgeList[i];
-
-
-		}
-
-
-		printList(stack);
-		document.getElementById('queueOrStack').innerHTML = "Stack : " + listToString(stack);
-		setTimeout(processStack, delay);
-		return;
-	    }
-	}
-	// being here means that we didn't find any adjacent of top node that is not visited,
-	// so we are done with the top node, and we have to remove it from the top of stack, and coninute processing the stack.
-
-	stack.pop();
-	markers[top].setMap(map);
-	markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			      scale: 3,
-			      zIndex: google.maps.Marker.MAX_ZINDEX + 1,
-			      fillColor: 'grey',
-			      strokeColor: 'grey'});
-	markers[top].setZIndex( 1E9 );
-
-
-	printList(stack);
-	document.getElementById('queueOrStack').innerHTML = "Stack : " + listToString(stack);
-	setTimeout(processStack, delay);
-    } else {
-	document.getElementById('waypoint' + top).style.backgroundColor="yellow";
-	// markers[top].setMap(map);
-	// markers[top].setIcon({path: google.maps.SymbolPath.CIRCLE,
-	// 	scale: 6,
-	// 	zIndex: google.maps.Marker.MAX_ZINDEX + 1,
-	// 	fillColor: 'yellow',
-	// 	strokeColor: 'yellow'});
-
-	visitedDfs[top] = true;
-	setTimeout(processStack, delay);
-    }
 }
 
 function startConvexHull(){

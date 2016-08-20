@@ -220,37 +220,40 @@ function showHiddenPseudocode(){
 "  }\n" +
 "}</pre>";
     }
-    else if (value == "EdgeSearch"){
+    else if (value == "EdgeSearch") {
       document.getElementById('pseudoContent').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
 
     }
 
   }
-  else{
+  else {
     document.getElementById('pseudoContent').innerHTML = "";
   }
 }
 
-function selectAlgorithmAndStart(){
+function selectAlgorithmAndStart() {
 
   var value = getCurrentAlgorithm();
 
-  if (value == "vertexSearch"){
+  if (value == "vertexSearch") {
     startVertexSearch();
   }
-  else if (value == "EdgeSearch"){
+  else if (value == "EdgeSearch") {
     startEdgeSearch();
   }
-  else if (value == "BFS"){
-    startBfsSearch();
+  else if (value == "BFS") {
+    startGraphTraversal("BFS");
   }
-  else if (value == "DFS"){
-    startDfsSearch();
+  else if (value == "DFS") {
+    startGraphTraversal("DFS");
   }
-  else if (value == "ConvexHull"){
+  else if (value == "RFS") {
+    startGraphTraversal("RFS");
+  }
+  else if (value == "ConvexHull") {
     startConvexHull();
   }
-  else if (value == "Dijkstra"){
+  else if (value == "Dijkstra") {
 
   }
   else{
@@ -340,6 +343,7 @@ function selectAlgorithmAndReset(){
           <option value="EdgeSearch">Search Edges </option>
           <option value="BFS">Breadth-First Traversal</option>
           <option value="DFS">Depth-First Traversal</option>
+          <option value="RFS">Random-First Traversal</option>
           <!-- <option value="ConvexHull"> Convex Hull </option>
           <option value="Dijkstra"> Dijkstra </option> -->
         </select>
