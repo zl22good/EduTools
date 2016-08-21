@@ -46,6 +46,7 @@
   top: 70px;
   overflow-y: scroll;
   max-width: 22%;
+  max-height: 82%;
   opacity: .95;  /* also forces stacking order */
 }
 #pointbox {
@@ -135,21 +136,21 @@ function showHiddenPseudocode(){
   var value = getCurrentAlgorithm();
   if (show == true){
     if(value == "BFS"){
-      document.getElementById('pseudoContent').innerHTML = "<pre> unmark all vertices\n "
+      document.getElementById('pseudo').innerHTML = "<pre> unmark all vertices\n "
       + "  choose some starting vertex x \n" + "  mark x \n" +
       " list L = x\n " + " tree T = x\n " + "  while L nonempty\n  " +
       " choose some vertex v from front of list\n " + "  visit v\n " +
       " for each unmarked neighbor w\n " + " mark w\n " + " add it to end of list\n "+ " add edge vw to T\n </pre>";
     }
     else if (value == "DFS"){
-      document.getElementById('pseudoContent').innerHTML = " <pre>Algorithm DFS(graph G, Vertex v)\n" +
+      document.getElementById('pseudo').innerHTML = " <pre>Algorithm DFS(graph G, Vertex v)\n" +
       " for all edges e in G.incidentEdges(v) do\n" + " if edge e is unexplored then\n" +
       " w = G.opposite(v, e)\n" + " if vertex w is unexplored then\n" +
       " label e as discovery edge\n" + " recursively call DFS(G, w)\n<pre>"
       " else\n" + " label e a a back edge\n";
     }
     else if (value == "vertexSearch"){
-      document.getElementById('pseudoContent').innerHTML =
+      document.getElementById('pseudo').innerHTML =
 "<pre>longest = 0\n" +
 "shortest = 0\n" +
 "north = 0\n" +
@@ -178,15 +179,15 @@ function showHiddenPseudocode(){
 "}</pre>";
     }
     else if (value == "EdgeSearch") {
-      document.getElementById('pseudoContent').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+      document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
     }
     else if (value == "RFS") {
-      document.getElementById('pseudoContent').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+      document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
     }
 
   }
   else {
-    document.getElementById('pseudoContent').innerHTML = "";
+    document.getElementById('pseudo').innerHTML = "";
   }
 }
 function selectAlgorithmAndStart() {
@@ -366,6 +367,7 @@ function selectAlgorithmAndReset(){
       <tr><td id="shortLabel"></td><tr>
       <tr><td id="longLabel"></td><tr>
       <tr><td id="legends"></td><tr>
+      <tr><td id="pseudo"></td><tr>
 
 
             </tbody>
@@ -382,12 +384,12 @@ function selectAlgorithmAndReset(){
         </div>
         <div id="contents_table">
         </div>
-        <div id="pseudocode_section"><table id="pseudoTable" class="gratable">
+        <!-- <div id="pseudocode_section"><table id="pseudoTable" class="gratable">
           <thead>
             <tr><th>Pseudocode</th></tr>
           </thead>
           <tbody>
             <tr><td style="border:none" id="pseudoContent">
             </td></tr>
-          </div>
+          </div> -->
         </body></html>
