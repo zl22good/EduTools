@@ -226,26 +226,19 @@ function showLegend() {
       " Current vertex in the table and map : yellow \n</pre>";
     }
     else if (value == "DFS"){
-      document.getElementById('legends').innerHTML = " <pre>Algorithm DFS(graph G, Vertex v)\n" +
-      " for all edges e in G.incidentEdges(v) do\n" + " if edge e is unexplored then\n" +
-      " w = G.opposite(v, e)\n" + " if vertex w is unexplored then\n" +
-      " label e as discovery edge\n" + " recursively call DFS(G, w)\n<pre>"
-      " else\n" + " label e a a back edge\n";
+      document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
+  " Neighbor edges and possible next candidate: purple\n" + " Vertex in the stack : blue\n" + " Vertex that no be in the stack anymore : gray\n </pre>";
     }
     else if (value == "BFS"){
-      document.getElementById('legends').innerHTML =
-  "<pre> Starting vertex : green\n" +
-  " Vertex visiting for the first time : yellow\n" +
-  " Edges got used before visiting the candidate : red\n" +
-  " Neighbor edges and possible next candidate: purple\n" +
-  " Vertex in the queue : blue\n" +
-  " Vertex that no be in the list anymore : gray\n </pre>";
+      document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
+  " Neighbor edges and possible next candidate: purple\n" + " Vertex in the queue : blue\n" + " Vertex that no be in the queue anymore : gray\n </pre>";
     }
     else if (value == "EdgeSearch") {
-      document.getElementById('legends').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+      document.getElementById('legends').innerHTML = "<pre>// fill in for real later \n</pre>";
     }
     else if (value == "RFS") {
-      document.getElementById('legends').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+      document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
+  " Neighbor edges and possible next candidate: purple\n" + " Vertex in the list : blue\n" + " Vertex that no be in the list anymore : gray\n </pre>";
     }
 
   }
