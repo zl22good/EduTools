@@ -234,32 +234,12 @@ function showLegend() {
     }
     else if (value == "BFS"){
       document.getElementById('legends').innerHTML =
-  "<pre> Current vertex in the map and table :green\n" +
-  "Items in the queue : purple\n" +
-  "\n" +
-  "south = 0\n" +
-  "east = 0\n" +
-  "west = 0\n" +
-  "for (i=1 to |V|-1) {\n" +
-  "  if (len(v[i].label) > len(v[longest]))) {\n" +
-  "    longest = i\n" +
-  "  }\n" +
-  "  if (len(v[i].label) < len(v[shortest]))) {\n" +
-  "    shortest = i\n" +
-  "  }\n" +
-  "  if (v[i].lat > v[north].lat) {\n" +
-  "    north = i\n" +
-  "  }\n" +
-  "  if (v[i].lat < v[south].lat) {\n" +
-  "    south = i\n" +
-  "  }\n" +
-  "  if (v[i].lng < v[west].lng) {\n" +
-  "    west = i\n" +
-  "  }\n" +
-  "  if (v[i].lng > v[east].lng) {\n" +
-  "    east = i\n" +
-  "  }\n" +
-  "}</pre>";
+  "<pre> Starting vertex : green\n" +
+  " Vertex visiting for the first time : yellow\n" +
+  " Edges got used before visiting the candidate : red\n" +
+  " Neighbor edges and possible next candidate: purple\n" +
+  " Vertex in the queue : blue\n" +
+  " Vertex that no be in the list anymore : gray\n </pre>";
     }
     else if (value == "EdgeSearch") {
       document.getElementById('legends').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
