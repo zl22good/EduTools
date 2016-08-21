@@ -129,30 +129,7 @@ function getCurrentAlgorithm() {
   var selectionIndex = menuSelection.selectedIndex;
   return menuSelection.options[selectionIndex].value;
 }
-function algorithmSelection(){
-  var value = getCurrentAlgorithm();
-  if (value == "vertexSearch") {
-    document.getElementById("AlgorithmsTable").rows[2].innerHTML= "some";
-  }
-  else if (value == "EdgeSearch") {
-    var x=document.getElementById('AlgorithmsTable').rows;
-    var y=x[3].cells
-    y[0].innerHTML=	'<input id="sm" type="checkbox" name="SM" onclick="longEdge()" checked="false">&nbsp' + "long Edge";
-  }
-  else if (value == "BFS"){
-    var x=document.getElementById('AlgorithmsTable').rows;
-    var y=x[3].cells
-    y[0].innerHTML=	'<input id="bfs pseudo" type="checkbox" name="SM" onclick="bfsPseudo()" checked="false">&nbsp' + "BFS Pseudocode";
-  }
-  else if (value == "DFS"){
-    startBfsSearch();
-  }
-  else if (value == "ConvexHull"){
-    startConvexHull();
-  }
-  else{
-  }
-}
+
 function showHiddenPseudocode(){
   var show = document.getElementById("showHidden").checked;
   var value = getCurrentAlgorithm();
@@ -203,6 +180,10 @@ function showHiddenPseudocode(){
     else if (value == "EdgeSearch") {
       document.getElementById('pseudoContent').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
     }
+    else if (value == "RFS") {
+      document.getElementById('pseudoContent').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+    }
+
   }
   else {
     document.getElementById('pseudoContent').innerHTML = "";
@@ -232,7 +213,67 @@ function selectAlgorithmAndStart() {
   }
   else{
   }
+
 }
+
+function showLegend() {
+  var show = document.getElementById("showLegend").checked;
+  var value = getCurrentAlgorithm();
+  if (show == true){
+    if(value == "vertexSearch"){
+      document.getElementById('legends').innerHTML = "<pre> Longest Label : green \n "
+      + "Shortest Label: brown \n" + " Vertex winners in the table and map: red \n" +
+      " Current vertex in the table and map : yellow \n</pre>";
+    }
+    else if (value == "DFS"){
+      document.getElementById('legends').innerHTML = " <pre>Algorithm DFS(graph G, Vertex v)\n" +
+      " for all edges e in G.incidentEdges(v) do\n" + " if edge e is unexplored then\n" +
+      " w = G.opposite(v, e)\n" + " if vertex w is unexplored then\n" +
+      " label e as discovery edge\n" + " recursively call DFS(G, w)\n<pre>"
+      " else\n" + " label e a a back edge\n";
+    }
+    else if (value == "BFS"){
+      document.getElementById('legends').innerHTML =
+  "<pre> Current vertex in the map and table :green\n" +
+  "Items in the queue : purple\n" +
+  "\n" +
+  "south = 0\n" +
+  "east = 0\n" +
+  "west = 0\n" +
+  "for (i=1 to |V|-1) {\n" +
+  "  if (len(v[i].label) > len(v[longest]))) {\n" +
+  "    longest = i\n" +
+  "  }\n" +
+  "  if (len(v[i].label) < len(v[shortest]))) {\n" +
+  "    shortest = i\n" +
+  "  }\n" +
+  "  if (v[i].lat > v[north].lat) {\n" +
+  "    north = i\n" +
+  "  }\n" +
+  "  if (v[i].lat < v[south].lat) {\n" +
+  "    south = i\n" +
+  "  }\n" +
+  "  if (v[i].lng < v[west].lng) {\n" +
+  "    west = i\n" +
+  "  }\n" +
+  "  if (v[i].lng > v[east].lng) {\n" +
+  "    east = i\n" +
+  "  }\n" +
+  "}</pre>";
+    }
+    else if (value == "EdgeSearch") {
+      document.getElementById('legends').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+    }
+    else if (value == "RFS") {
+      document.getElementById('legends').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+    }
+
+  }
+  else {
+    document.getElementById('legends').innerHTML = "";
+  }
+  }
+
 function selectAlgorithmAndCheckBoxes(){
   var value = getCurrentAlgorithm();
   if (value == "vertexSearch"){
@@ -342,6 +383,8 @@ function selectAlgorithmAndReset(){
       <tr><td id="length"></td><tr>
       <tr><td id="shortLabel"></td><tr>
       <tr><td id="longLabel"></td><tr>
+      <tr><td id="legends"></td><tr>
+
 
             </tbody>
           </table>
