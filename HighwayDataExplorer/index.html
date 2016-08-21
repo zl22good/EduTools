@@ -248,6 +248,8 @@ function showLegend() {
   }
 
 function selectAlgorithmAndCheckBoxes(){
+  var show = document.getElementById("showOptions").checked;
+  if (show == true){
   var value = getCurrentAlgorithm();
   if (value == "vertexSearch"){
         document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' +
@@ -265,6 +267,11 @@ function selectAlgorithmAndCheckBoxes(){
   else if (value == "DFS"){
     document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
     '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
+  }
+}
+  else{
+    document.getElementById('selection_checkboxes').innerHTML = "";
+
   }
 }
 function selectAlgorithmAndReset(){
@@ -331,7 +338,9 @@ function selectAlgorithmAndReset(){
       </td></tr>
       <tr><td>
         Start Vertex <input id="startPoint" type="text" name="Starting Point" value="0" />
-        <button type="button" onclick="selectAlgorithmAndCheckBoxes()">Options</button>
+        <input id="showOptions" type="checkbox" name="Options" onclick="selectAlgorithmAndCheckBoxes()" > Options<br>
+
+        <!-- <button type="button" onclick="selectAlgorithmAndCheckBoxes()">Options</button> -->
 
       </td></tr>
       <tr><td>
