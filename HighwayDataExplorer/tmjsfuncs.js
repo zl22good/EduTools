@@ -1272,11 +1272,9 @@ function continueGraphTraversal() {
 				     fillColor: 'blue',
 				     strokeColor: 'blue'});
 	}
-<<<<<<< HEAD
+
 	// in either case here, the edge that got us here is not
-=======
-	// in either case here, the edge that got us here is not 
->>>>>>> 45d01200f064efc28987ab854cd0152cc9f7e914
+	// in either case here, the edge that got us here is not
 	// part of the ultimate spanning tree, so it should be grey
 	if (nextToVisit.connection != null) {
 	    nextToVisit.connection.setOptions({strokeColor: "grey"});
@@ -1324,7 +1322,7 @@ function continueGraphTraversal() {
 	    }
 	}
     }
-  
+
     // update view of our list
     //printList(queue);
     document.getElementById('queueOrStack').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length +") " + listToVIndexString(discoveredVertices);
