@@ -286,7 +286,16 @@ function updateMap()
 	    }
 	    edgePoints[nextPoint] = new google.maps.LatLng(waypoints[v2].lat, waypoints[v2].lon);
 	    connections[i] = new google.maps.Polyline({path: edgePoints, strokeColor: "#0000FF", strokeWeight: 10, strokeOpacity: 0.4, map: map});
-	    //map.addOverlay(connections[i]);
+
+	    // if we have adjacency lists, let's also remember our Polyline
+	    // in the GraphEdge
+	    for (var edgeNum = 0; edgeNum < waypoints[v1].edgeList.length; edgeNum++) {
+		var thisEdge = waypoints[v1].edgeList[edgeNum];
+		if ((thisEdge.v1 == v2) || (thisEdge.v2 == v2)) {
+		    thisEdge.connection = connections[i];
+		    break;
+		}
+	    }
 	}
 	google.maps.event.clearListeners(map, 'zoom_changed');
 	google.maps.event.addListener(map, 'zoom_changed', zoomChange);
@@ -1062,6 +1071,9 @@ function continueEdgeSearch(){
 
 // this first variable is the stack for DFS, queue for BFS, could be other
 //  for future enhancements
+// elements here are objects with fields vIndex for the index of this vertex
+// and connection is the Polyline connection followed to get here (so it
+// can be colored appropriately when the element comes out)
 var discoveredVertices = [];
 
 // what will we call this structure?
@@ -1081,7 +1093,7 @@ var startingVertex;
 // values are currently "BFS" or "DFS" or "RFS"
 var traversalDiscipline;
 
-// initial color coding and zindex offsets for graph traversals:
+// initial vertex color coding and zindex offsets for graph traversals:
 // start vertex: green/10
 // undiscovered: white/0
 // in discovered list and not visited: purple/5
@@ -1090,6 +1102,11 @@ var traversalDiscipline;
 // just removed from discovered list and visiting: yellow/10
 // just removed from discovered list but already visited: orange/10
 
+// initial edge color coding for graph traversals:
+// undiscovered edge: white
+// edge leading to a vertex in the discovered list: purple
+// edge that is part of the spanning tree: red
+// edge that was discovered but ended up not in spanning tree: grey
 
 // initialize graph traversal process
 function startGraphTraversal(discipline) {
@@ -1133,11 +1150,18 @@ function startGraphTraversal(discipline) {
 				    strokeColor: 'white'});
     }
 
+    // color all edges white also
+    for (var i = 0; i < connections.length; i++) {
+	connections[i].setOptions({strokeColor: "white",
+				   strokeOpacity: 0.6 });
+    }
+
     // vertex index to start the traversal
     startingVertex = document.getElementById("startPoint").value;
 
     // initialize the process with this value
-    discoveredVertices.push(startingVertex);
+    discoveredVertices.push({vIndex: startingVertex,
+			     connection: null});
     document.getElementById('waypoint' + startingVertex).style.backgroundColor="green";
     markers[startingVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
 				    scale: 6,
@@ -1148,6 +1172,17 @@ function startGraphTraversal(discipline) {
     // nothing to update this first time
     lastVisitedVertex = -1;
     setTimeout(continueGraphTraversal, delay);
+}
+
+// function to see if a vertex with the given index is in discoveredVertices
+function discoveredVerticesContainsVertex(vIndex) {
+
+    for (var i = 0; i < discoveredVertices.length; i++) {
+	if (discoveredVertices[i].vIndex == vIndex) {
+	    return true;
+	}
+    }
+    return false;
 }
 
 // function to process one vertex from the discoveredVertices in the
@@ -1170,7 +1205,7 @@ function continueGraphTraversal() {
 					     fillColor: 'green',
 					     strokeColor: 'green'});
 	}
-	else if (discoveredVertices.indexOf(lastVisitedVertex) == -1) {
+	else if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
 	    // not in the list, make it grey
 	    document.getElementById('waypoint'+ lastVisitedVertex).style.display="none";
 	    markers[lastVisitedVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
@@ -1210,61 +1245,85 @@ function continueGraphTraversal() {
 	discoveredVertices.splice(index, 1);
     }
 
-    lastVisitedVertex = nextToVisit;
+    lastVisitedVertex = nextToVisit.vIndex;
+    var vIndex = nextToVisit.vIndex;
 
     // now decide what to do with this vertex -- depends on whether it
     // had been previously visited
-    if (visited[nextToVisit]) {
+    if (visited[vIndex]) {
 
 	// is it still in the list?
-	if (discoveredVertices.indexOf(nextToVisit) == -1) {
+	if (discoveredVerticesContainsVertex(vIndex)) {
 	    // not there anymore, indicated by orange, will be turned
 	    // grey or blue on next iteration
-	    document.getElementById('waypoint'+ nextToVisit).style.backgroundColor="orange";
-	    markers[nextToVisit].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			      scale: 4,
-			      zIndex: google.maps.Marker.MAX_ZINDEX+10,
-			      fillColor: 'orange',
-			      strokeColor: 'orange'});
+	    document.getElementById('waypoint'+ vIndex).style.backgroundColor="orange";
+	    markers[vIndex].setIcon({path: google.maps.SymbolPath.CIRCLE,
+				     scale: 4,
+				     zIndex: google.maps.Marker.MAX_ZINDEX+10,
+				     fillColor: 'orange',
+				     strokeColor: 'orange'});
         }
 	else {
 	    // still to be seen again, so let's make it blue
-	    document.getElementById('waypoint'+ nextToVisit).style.backgroundColor="blue";
-	    markers[nextToVisit].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			      scale: 4,
-			      zIndex: google.maps.Marker.MAX_ZINDEX+5,
-			      fillColor: 'blue',
-			      strokeColor: 'blue'});
+	    document.getElementById('waypoint' + vIndex).style.backgroundColor="blue";
+	    markers[vIndex].setIcon({path: google.maps.SymbolPath.CIRCLE,
+				     scale: 4,
+				     zIndex: google.maps.Marker.MAX_ZINDEX+5,
+				     fillColor: 'blue',
+				     strokeColor: 'blue'});
+	}
+	// in either case here, the edge that got us here is not
+	// part of the ultimate spanning tree, so it should be grey
+	if (nextToVisit.connection != null) {
+	    nextToVisit.connection.setOptions({strokeColor: "grey"});
 	}
     }
     // visiting for the first time
     else {
 
-	visited[nextToVisit] = true;
-	document.getElementById('waypoint'+ nextToVisit).style.backgroundColor="yellow";
-	markers[nextToVisit].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			       scale: 6,
-			       zIndex: google.maps.Marker.MAX_ZINDEX+10,
-			       fillColor: 'yellow',
-			       strokeColor: 'yellow'});
+	visited[vIndex] = true;
+	document.getElementById('waypoint'+ vIndex).style.backgroundColor="yellow";
+	markers[vIndex].setIcon({path: google.maps.SymbolPath.CIRCLE,
+				 scale: 6,
+				 zIndex: google.maps.Marker.MAX_ZINDEX+10,
+				 fillColor: 'yellow',
+				 strokeColor: 'yellow'});
 
-	var neighbors = getAdjacentPoints(nextToVisit);
+	// we used the edge to get here, so let's mark it as such
+	if (nextToVisit.connection != null) {
+	    nextToVisit.connection.setOptions({strokeColor: "red"});
+	}
+
+	// discover any new neighbors
+	var neighbors = getAdjacentPoints(vIndex);
 	for (var i = 0; i < neighbors.length; i++) {
 	    if (!visited[neighbors[i]]) {
-		discoveredVertices.push(neighbors[i]);
+		var connection = waypoints[vIndex].edgeList[i].connection;
+		discoveredVertices.push({vIndex: neighbors[i],
+					 connection: connection});
 		document.getElementById('waypoint'+ neighbors[i]).style.backgroundColor="purple";
 		markers[neighbors[i]].setIcon({path: google.maps.SymbolPath.CIRCLE,
 					       scale: 4,
 					       zIndex: google.maps.Marker.MAX_ZINDEX+5,
 					       fillColor: 'purple',
 					       strokeColor: 'purple'});
+		// also color the edge we followed to get to this
+		// neighbor as purple to indicate it's a candidate
+		// edge followed to find a current discovered but
+		// unvisited vertex
+		if (connection != null) {
+		    connection.setOptions({strokeColor: "purple"});
+		}
+		else {
+		    console.log("Unexpected null connection, vIndex=" + vIndex + ", i=" + i);
+		}
 	    }
 	}
     }
 
     // update view of our list
     //printList(queue);
-    document.getElementById('queueOrStack').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length +") " + listToString(discoveredVertices);
+    document.getElementById('queueOrStack').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length +") " + listToVIndexString(discoveredVertices);
     setTimeout(continueGraphTraversal, delay);
 }
 
@@ -1302,16 +1361,16 @@ function printList(items) {
     }
 
 }
-function listToString(items) {
+function listToVIndexString(items) {
     if (items.length == 0) {
 	return "[]";
     } else {
 	var line = `[`;
 		     for (var i = 0; i < items.length; i++) {
 			 if (i == items.length - 1) {
-			     line += items[i];
+			     line += items[i].vIndex;
 			 } else {
-			     line += items[i] + `, `;
+			     line += items[i].vIndex + `, `;
 			 }
 
 		     }
