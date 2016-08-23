@@ -817,42 +817,42 @@ function continueVertexSearch() {
 	updateMarkerAndTable(northIndex, visualSettings.northLeader, 
 			     4, false);
 	var infoBox = document.getElementById('info1');
-	infoBox.innerHTML = 'N : ' +
+	infoBox.innerHTML = 'North extreme:<br />' +
 	    extremePointLeaderString(northIndex, visualSettings.northLeader);
 	
 	// south
 	updateMarkerAndTable(southIndex, visualSettings.southLeader,
 			     4, false);
 	infoBox = document.getElementById('info2');
-	infoBox.innerHTML = "S : " +
+	infoBox.innerHTML = "South extreme:<br />" +
 	    extremePointLeaderString(southIndex, visualSettings.southLeader);
 	
 	// east
 	updateMarkerAndTable(eastIndex, visualSettings.eastLeader,
 			     4, false);
         infoBox = document.getElementById('info3');
-        infoBox.innerHTML = "E : " +
+        infoBox.innerHTML = "East extreme:<br />" +
 	    extremePointLeaderString(eastIndex, visualSettings.eastLeader);
 	
 	// west
 	updateMarkerAndTable(westIndex, visualSettings.westLeader,
 			     4, false);
         infoBox = document.getElementById('info4');
-        infoBox.innerHTML = "W : " +
+        infoBox.innerHTML = "West extreme:<br />" +
 	    extremePointLeaderString(westIndex, visualSettings.westLeader);
 	
 	// shortest
 	updateMarkerAndTable(shortIndex, visualSettings.shortLabelLeader,
 			     4, false);
         infoBox = document.getElementById('info5');
-        infoBox.innerHTML = "Shortest: " +
+        infoBox.innerHTML = "Shortest vertex label:<br />" +
 	    labelLeaderString(shortIndex, visualSettings.shortLabelLeader);
 	
 	// longest
 	updateMarkerAndTable(longIndex, visualSettings.longLabelLeader,
 			     4, false);
         infoBox = document.getElementById('info6');
-        infoBox.innerHTML = "Longest: " +
+        infoBox.innerHTML = "Longest vertex label:<br />" +
 	    labelLeaderString(longIndex, visualSettings.longLabelLeader);
     }
     else {
