@@ -270,10 +270,9 @@ function selectAlgorithmAndCheckBoxes(){
   else if (value == "RFS"){
         document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
   }
-
-//   else{
-//     document.getElementById('optionSection').innerHTML = "";
-//   }
+  else{
+     document.getElementById('optionSection').innerHTML = "";
+  }
 }
 function selectAlgorithmAndReset(){
     for (var i = 0; i < connections.length; i++) {
@@ -328,6 +327,7 @@ function selectAlgorithmAndReset(){
       <tr><td>
         Algorithm Selection:
         <select id= "AlgorithmSelection" onchange="selectAlgorithmAndCheckBoxes()">
+          <option value="NONE">Select an Algorithm</option>
           <option value="vertexSearch">Search Vertices</option>
           <option value="EdgeSearch">Search Edges </option>
           <option value="BFS">Breadth-First Traversal</option>
