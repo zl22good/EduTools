@@ -17,7 +17,6 @@
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" type="text/css" href="http://tm.teresco.org/css/travelMapping.css" />
-
 <style type="text/css">
 #controlbox {
   width: 25%;*/
@@ -90,6 +89,7 @@ height: 1px;
   max-width: 33%;
   opacity: .95;
 }
+
 </style>
 <script
  src="http://maps.googleapis.com/maps/api/js?sensor=false"
@@ -233,7 +233,7 @@ function showLegend() {
   " Neighbor edges and possible next candidate: purple\n" + " Vertex in the stack : blue\n" + " Vertex that no be in the stack anymore : gray\n </pre>";
     }
     else if (value == "BFS"){
-      document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
+      document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + "<i>show the yellow</i> \n" + "Edges got used before visiting the candidate : red\n" +
   " Neighbor edges and possible next candidate: purple\n" + " Vertex in the queue : blue\n" + " Vertex that no be in the queue anymore : gray\n </pre>";
     }
     else if (value == "EdgeSearch") {
@@ -251,31 +251,29 @@ function showLegend() {
   }
 
 function selectAlgorithmAndCheckBoxes(){
-  var show = document.getElementById("showOptions").checked;
-  if (show == true){
+  // var show = document.getElementById("selection_checkboxes").checked;
+  // if (show == true){
   var value = getCurrentAlgorithm();
   if (value == "vertexSearch"){
-        document.getElementById('selectionCheckboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' +
-        '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
-
+        document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
   }
   else if (value == "EdgeSearch"){
-    document.getElementById('selectionCheckboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
-    '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
+        document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
   }
   else if (value == "BFS"){
-    document.getElementById('selectionCheckboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
-    '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
+    document.getElementById('optionSection').innerHTML =  'Start Vertex <input id="startPoint" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
+               '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
   }
   else if (value == "DFS"){
-    document.getElementById('selectionCheckboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
-    '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
+        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" min="0" name="Starting Point" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
   }
-}
-  else{
-    document.getElementById('selectionCheckboxes').innerHTML = "";
+  else if (value == "RFS"){
+        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+  }
 
-  }
+//   else{
+//     document.getElementById('optionSection').innerHTML = "";
+//   }
 }
 function selectAlgorithmAndReset(){
     for (var i = 0; i < connections.length; i++) {
@@ -329,7 +327,7 @@ function selectAlgorithmAndReset(){
       </td></tr>
       <tr><td>
         Algorithm Selection:
-        <select id= "AlgorithmSelection">
+        <select id= "AlgorithmSelection" onchange="selectAlgorithmAndCheckBoxes()">
           <option value="vertexSearch">Search Vertices</option>
           <option value="EdgeSearch">Search Edges </option>
           <option value="BFS">Breadth-First Traversal</option>
@@ -339,13 +337,11 @@ function selectAlgorithmAndReset(){
           <option value="Dijkstra"> Dijkstra </option> -->
         </select>
       </td></tr>
-      <tr><td>
-        Start Vertex <input id="startPoint" type="text" name="Starting Point" value="0" size="7" />
-        <input id="showOptions" type="checkbox" name="Options" onclick="selectAlgorithmAndCheckBoxes()" > Options<br>
-
+      <tr><td id= "optionSection" > </td></tr>
+        <!-- Start Vertex <input id="startPoint" type="text" name="Starting Point" value="0" size="7" /> -->
+        <!-- <input id="showOptions" type="checkbox" name="Options" onclick="selectAlgorithmAndCheckBoxes()" > Options<br> -->
+        <!-- <input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br> -->
         <!-- <button type="button" onclick="selectAlgorithmAndCheckBoxes()">Options</button> -->
-
-      </td></tr>
       <tr><td>
         <button type="button" onclick="selectAlgorithmAndStart()">Start</button>
         <button type="button" onclick="pauseSimulation()">Pause</button>
