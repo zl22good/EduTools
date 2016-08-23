@@ -255,25 +255,25 @@ function selectAlgorithmAndCheckBoxes(){
   if (show == true){
   var value = getCurrentAlgorithm();
   if (value == "vertexSearch"){
-        document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' +
+        document.getElementById('selectionCheckboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' +
         '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
 
   }
   else if (value == "EdgeSearch"){
-    document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
+    document.getElementById('selectionCheckboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
     '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
   }
   else if (value == "BFS"){
-    document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
+    document.getElementById('selectionCheckboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
     '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
   }
   else if (value == "DFS"){
-    document.getElementById('selection_checkboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
+    document.getElementById('selectionCheckboxes').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+
     '<input id="showLegend" type="checkbox" name="Show legend" onclick="showLegend()"  >&nbsp;Legend<br>';
   }
 }
   else{
-    document.getElementById('selection_checkboxes').innerHTML = "";
+    document.getElementById('selectionCheckboxes').innerHTML = "";
 
   }
 }
@@ -360,14 +360,14 @@ function selectAlgorithmAndReset(){
           <option value="1000">Painfully slow</option>
         </select>
       </td></tr>
-      <tr><td id="selection_checkboxes"></td><tr>
-      <tr><td id="queueOrStack"></td><tr>
-      <tr><td id="shortestLongest"></td><tr>
-      <tr><td id="legend"></td><tr>
-      <tr><td id="latitude"></td><tr>
-      <tr><td id="length"></td><tr>
-      <tr><td id="shortLabel"></td><tr>
-      <tr><td id="longLabel"></td><tr>
+      <tr><td id="selectionCheckboxes"></td><tr>
+      <tr><td id="algorithmStatus"></td><tr>
+      <tr><td id="info1"></td><tr>
+      <tr><td id="info2"></td><tr>
+      <tr><td id="info3"></td><tr>
+      <tr><td id="info4"></td><tr>
+      <tr><td id="info5"></td><tr>
+      <tr><td id="info6"></td><tr>
       <tr><td id="legends"></td><tr>
       <tr><td id="pseudo"></td><tr>
 
