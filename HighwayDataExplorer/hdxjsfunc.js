@@ -6,7 +6,7 @@
 //
 // Author: Jim Teresco, Siena College, The College of Saint Rose
 //
-// Early versions of the code were developed based on examples from 
+// Early versions of the code were developed based on examples from
 // http://cmap.m-plex.com/tools/wptedit/wptedit.html
 // http://www.alecjacobson.com/weblog/?p=1645
 //
@@ -481,8 +481,8 @@ function parseWPLContents(fileContents) {
     vTable += '</tbody></table>';
     // no edges here
     graphEdges = new Array();
-    genEdges = false; 
-    var summaryInfo = '<table class="gratable"><thead><tr><th>' + waypoints.length + " waypoints.</th></tr></table>"; 
+    genEdges = false;
+    var summaryInfo = '<table class="gratable"><thead><tr><th>' + waypoints.length + " waypoints.</th></tr></table>";
     return summaryInfo + '<p />' + vTable;
 }
 

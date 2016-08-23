@@ -612,8 +612,9 @@ var indexOfShortestLabel;
 var indexOfPreviousShortestLabel;
 var IndexOfLongestLabel;
 var indexOfPreviousLongestLabel;
-var shortestLableColorCode = "#654321"
-var longestLabelColorCode = "#006400"
+var shortestLableColorCode = "#654321";
+var longestLabelColorCode = "#006400";
+
 
 // initialize a vertex-based search, called by the start button callback
 function startVertexSearch() {
@@ -711,33 +712,53 @@ function continueVertexSearch() {
 
 	// check north
 	if (waypoints[nextToCheck].lat > waypoints[northIndex].lat) {
-	    foundNewLeader = true;
-	    defeated.push(northIndex);
-	    northIndex = nextToCheck;
-	    console.log(waypoints[northIndex].lat);
-	    // var queueOrStack = document.getElementById('shortestLongest') ;
-            var shortestLongest = document.getElementById('shortestLongest') ;
-            shortestLongest.innerHTML = "N : " + '<span style="color:#8b0000">' + "Lat: "  + waypoints[northIndex].lat + " Lon: " + '<span style="color:#8b0000">' + waypoints[northIndex].lon +
-		"  Label: " + '<span style="color:#8b0000">' + waypoints[northIndex].label;
+		foundNewLeader = true;
+		defeated.push(northIndex);
+		northIndex = nextToCheck;
+		console.log(waypoints[northIndex].lat);
+		markers[northIndex].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			scale: 6,
+			zIndex: google.maps.Marker.MAX_ZINDEX + 4,
+			fillColor: '#8b0000',
+			strokeColor: '#8b0000'});
+			markers[northIndex].setZIndex(1E9);
+			document.getElementById('waypoint' + northIndex).style.backgroundColor = "#8b0000";
+			// var queueOrStack = document.getElementById('shortestLongest') ;
+			var shortestLongest = document.getElementById('shortestLongest') ;
+			shortestLongest.innerHTML = "N : " + '<span style="color:#8b0000">' + "Lat: "  + waypoints[northIndex].lat + " Lon: " + '<span style="color:#8b0000">' + waypoints[northIndex].lon +
+			"  Label: " + '<span style="color:#8b0000">' + waypoints[northIndex].label;
 
-
-	}
+		}
 	// check south
 	if (waypoints[nextToCheck].lat < waypoints[southIndex].lat) {
-	    foundNewLeader = true;
-	    defeated.push(southIndex);
-	    southIndex = nextToCheck;
-	    // var queueOrStack = document.getElementById('queueOrStack') ;
-            var legend = document.getElementById('legend') ;
-            legend.innerHTML = "S : " + '<span style="color:#ff0000">' + "Lat: "  + waypoints[southIndex].lat + " Lon: " + '<span style="color:#ff0000">' + waypoints[southIndex].lon +
-		"  Label: " + '<span style="color:#ff0000">' + waypoints[southIndex].label;
+		foundNewLeader = true;
+		defeated.push(southIndex);
+		southIndex = nextToCheck;
+		markers[southIndex].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			scale: 6,
+			zIndex: google.maps.Marker.MAX_ZINDEX + 4,
+			fillColor: '#ff0000',
+			strokeColor: '#ff0000'});
+			markers[southIndex].setZIndex(1E9);
+			document.getElementById('waypoint' + southIndex).style.backgroundColor = "#ff0000";
+			// var queueOrStack = document.getElementById('queueOrStack') ;
+			var legend = document.getElementById('legend') ;
+			legend.innerHTML = "S : " + '<span style="color:#ff0000">' + "Lat: "  + waypoints[southIndex].lat + " Lon: " + '<span style="color:#ff0000">' + waypoints[southIndex].lon +
+			"  Label: " + '<span style="color:#ff0000">' + waypoints[southIndex].label;
 
-	}
+		}
 	// check east
 	if (waypoints[nextToCheck].lon > waypoints[eastIndex].lon) {
 	    foundNewLeader = true;
 	    defeated.push(eastIndex);
 	    eastIndex = nextToCheck;
+			markers[eastIndex].setIcon({path: google.maps.SymbolPath.CIRCLE,
+				scale: 6,
+				zIndex: google.maps.Marker.MAX_ZINDEX + 4,
+				fillColor: '#000080',
+				strokeColor: '#000080'});
+				markers[eastIndex].setZIndex(1E9);
+				document.getElementById('waypoint' + eastIndex).style.backgroundColor = "#000080";
             var latitude = document.getElementById('latitude') ;
             latitude.innerHTML = "E : " + '<span style="color:#000080">' + "Lat: "  + waypoints[eastIndex].lat + " Lon: " + '<span style="color:#000080">' + waypoints[eastIndex].lon +
 		"  Label: " + '<span style="color:#000080">' + waypoints[eastIndex].label;
@@ -745,13 +766,21 @@ function continueVertexSearch() {
 	}
 	// check west
 	if (waypoints[nextToCheck].lon < waypoints[westIndex].lon) {
-	    foundNewLeader = true;
-	    defeated.push(westIndex);
-	    westIndex = nextToCheck;
-            var length = document.getElementById('length') ;
-            length.innerHTML = "W : " + '<span style="color:#551A8B">' + "Lat: "  + waypoints[westIndex].lat + " Lon: " + '<span style="color:#551A8B">' + waypoints[westIndex].lon +
-		"  Label: " + '<span style="color:#551A8B">' + waypoints[westIndex].label;
-        }
+		foundNewLeader = true;
+		defeated.push(westIndex);
+		westIndex = nextToCheck;
+		markers[westIndex].setIcon({path: google.maps.SymbolPath.CIRCLE,
+			scale: 6,
+			zIndex: google.maps.Marker.MAX_ZINDEX + 4,
+			fillColor: '#551A8B',
+			strokeColor: '#551A8B'});
+			markers[westIndex].setZIndex(1E9);
+			document.getElementById('waypoint' + westIndex).style.backgroundColor = "#551A8B";
+			var length = document.getElementById('length') ;
+			length.innerHTML = "W : " + '<span style="color:#551A8B">' + "Lat: "  + waypoints[westIndex].lat + " Lon: " + '<span style="color:#551A8B">' + waypoints[westIndex].lon +
+			"  Label: " + '<span style="color:#551A8B">' + waypoints[westIndex].label;
+
+		}
 
 	if (shortestVLabel.length > waypoints[nextToCheck].label.length) {
 	    indexOfPreviousShortestLabel = indexOfShortestLabel;
@@ -780,13 +809,14 @@ function continueVertexSearch() {
 	if (foundNewLeader) {
 	    //DBG.write("a new leader becoming red: " + nextToCheck);
 	    // this one's a new winner, make it red and big
-	    markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
+	    /*markers[nextToCheck].setIcon({path: google.maps.SymbolPath.CIRCLE,
 					  scale: 6,
 					  zIndex: google.maps.Marker.MAX_ZINDEX + 4,
 					  fillColor: 'red',
 					  strokeColor: 'red'});
 	    markers[startingPoint].setZIndex(1E9);
-	    document.getElementById('waypoint' + nextToCheck).style.backgroundColor = "red";
+	    document.getElementById('waypoint' + nextToCheck).style.backgroundColor = "red";*/
+
 	    // any that was just defeated should stop being red unless it's
 	    // still a leader in some other direction (will happen especially
 	    // early in searches)
@@ -854,7 +884,6 @@ function continueVertexSearch() {
 	    }
 	}
     }
-    var statusLine = document.getElementById("status");
     var line = 'Checking : <span style="color:yellow"> ' + nextToCheck + "</span> N: ";
     if (northIndex == nextToCheck) {
 	line = line + '<span style="color:#8b0000">' + northIndex + '</span>';
@@ -1272,7 +1301,9 @@ function continueGraphTraversal() {
 				     fillColor: 'blue',
 				     strokeColor: 'blue'});
 	}
-	// in either case here, the edge that got us here is not 
+
+	// in either case here, the edge that got us here is not
+	// in either case here, the edge that got us here is not
 	// part of the ultimate spanning tree, so it should be grey
 	if (nextToVisit.connection != null) {
 	    nextToVisit.connection.setOptions({strokeColor: "grey"});
@@ -1320,7 +1351,7 @@ function continueGraphTraversal() {
 	    }
 	}
     }
-  
+
     // update view of our list
     //printList(queue);
     document.getElementById('queueOrStack').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length +") " + listToVIndexString(discoveredVertices);
