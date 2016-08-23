@@ -86,10 +86,10 @@ var customColorCodes = new Array();
 // algorithm visualization color settings and other parameters
 var visualSettings = {
     // first, some used by many algorithms
-    undiscovered: { color: "white", textColor: "black", scale: 2 },
+    undiscovered: { color: "#202020", textColor: "#e0e0e0", scale: 2 },
     visiting: { color: "yellow", textColor: "black", scale: 6 },
     leader: { color: "red", textColor: "white", scale: 6 },
-    discarded: { color: "grey", textColor: "black", scale: 2 },
+    discarded: { color: "#a0a0a0", textColor: "black", scale: 2 },
     // specific to vertex search
     northLeader: { color: "#8b0000", textColor: "white", scale: 6 },
     southLeader: { color: "#ee0000", textColor: "white", scale: 6 },
@@ -97,6 +97,12 @@ var visualSettings = {
     westLeader: { color: "#551A8B", textColor: "white", scale: 6 },
     shortLabelLeader: { color: "#654321", textColor: "white", scale: 6 },
     longLabelLeader: { color: "#006400", textColor: "white", scale: 6 },
+    // specific to graph traversals
+    startVertex: { color: "purple", textColor: "white", scale: 6 },
+    discoveredEarlier: { color: "red", textColor: "white", scale: 4 },
+    visitedEarlier: { color: "orange", textColor: "black", scale: 4 },
+    spanningTree: { color: "#0000a0", textColor: "white", scale: 2 },
+    discovered: { color: "#00a000", textColor: "white", scale: 4 }
 };
 
 var infowindow = new google.maps.InfoWindow();
@@ -1036,19 +1042,9 @@ function startGraphTraversal(discipline) {
     // initialize our visited array
     visited = new Array(waypoints.length).fill(false);
 
-    // we don't need edges here, so we remove those (JDT: actually we do!)
-    //for (var i = 0; i < connections.length; i++) {
-    //	connections[i].setMap(null);
-    //  }
-    //connections = new Array();
-
     // replace all markers with white circles
     for (var i = 0; i < markers.length; i++) {
-	markers[i].setIcon({path: google.maps.SymbolPath.CIRCLE,
-				    scale: visualSettings.undiscovered.scale,
-				    zIndex: google.maps.Marker.MAX_ZINDEX,
-				    fillColor: visualSettings.undiscovered.color,
-				    strokeColor: visualSettings.undiscovered.color});
+	updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
     }
 
     // color all edges white also
@@ -1063,12 +1059,8 @@ function startGraphTraversal(discipline) {
     // initialize the process with this value
     discoveredVertices.push({vIndex: startingVertex,
 			     connection: null});
-    document.getElementById('waypoint' + startingVertex).style.backgroundColor="green";
-    markers[startingVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
-				    scale: 6,
-				    zIndex: google.maps.Marker.MAX_ZINDEX+10,
-				    fillColor: 'green',
-				    strokeColor: 'green'});
+
+    updateMarkerAndTable(startingVertex, visualSettings.startVertex, 10, false);
 
     // nothing to update this first time
     lastVisitedVertex = -1;
@@ -1098,36 +1090,25 @@ function continueGraphTraversal() {
     // maybe we have a last visited vertex to update
     if (lastVisitedVertex != -1) {
 	if (lastVisitedVertex == startingVertex) {
-	    // always leave the starting vertex green and in the table
-	    document.getElementById('waypoint' + startingVertex).style.backgroundColor="green";
-	    markers[startingVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
-					     scale: 6,
-					     zIndex: google.maps.Marker.MAX_ZINDEX+10,
-					     fillColor: 'green',
-					     strokeColor: 'green'});
+	    // always leave the starting vertex colored appropriately
+	    // and in the table
+	    updateMarkerAndTable(startingVertex, visualSettings.startVertex,
+				 10, false);
 	}
 	else if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
-	    // not in the list, make it grey
-	    document.getElementById('waypoint'+ lastVisitedVertex).style.display="none";
-	    markers[lastVisitedVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			      scale: 2,
-			      zIndex: google.maps.Marker.MAX_ZINDEX+1,
-			      fillColor: 'grey',
-			      strokeColor: 'grey'});
+	    // not in the list, this vertex gets marked as in the spanning tree
+	    updateMarkerAndTable(lastVisitedVertex, visualSettings.spanningTree,
+				 1, false);
 	}
 	else {
-	    // still in the list, make it blue
-	    document.getElementById('waypoint'+ lastVisitedVertex).style.backgroundColor="blue";
-	    markers[lastVisitedVertex].setIcon({path: google.maps.SymbolPath.CIRCLE,
-			      scale: 4,
-			      zIndex: google.maps.Marker.MAX_ZINDEX+5,
-			      fillColor: 'blue',
-			      strokeColor: 'blue'});
+	    // still in the list, color with the "discoveredEarlier"  style
+	    updateMarkerAndTable(lastVisitedVertex, visualSettings.discoveredEarlier,
+				 5, false);
 	}
     }
     // maybe we're done
     if (discoveredVertices.length == 0) {
-	console.log("Done!");
+	//console.log("Done!");
 	return;
     }
 
@@ -1153,48 +1134,41 @@ function continueGraphTraversal() {
     // had been previously visited
     if (visited[vIndex]) {
 
-	// is it still in the list?
+	// we've been here before, but is it still in the list?
 	if (discoveredVerticesContainsVertex(vIndex)) {
-	    // not there anymore, indicated by orange, will be turned
-	    // grey or blue on next iteration
-	    document.getElementById('waypoint'+ vIndex).style.backgroundColor="orange";
-	    markers[vIndex].setIcon({path: google.maps.SymbolPath.CIRCLE,
-				     scale: 4,
-				     zIndex: google.maps.Marker.MAX_ZINDEX+10,
-				     fillColor: 'orange',
-				     strokeColor: 'orange'});
+	    // not there anymore, indicated this as visitedEarlier, and
+	    // will be discarded or marked as discoveredEarlier on the
+	    // next iteration
+	    updateMarkerAndTable(vIndex, visualSettings.visitedEarlier,
+				 4, false);
         }
 	else {
-	    // still to be seen again, so let's make it blue
-	    document.getElementById('waypoint' + vIndex).style.backgroundColor="blue";
-	    markers[vIndex].setIcon({path: google.maps.SymbolPath.CIRCLE,
-				     scale: 4,
-				     zIndex: google.maps.Marker.MAX_ZINDEX+5,
-				     fillColor: 'blue',
-				     strokeColor: 'blue'});
+	    // still to be seen again, so mark is as discoveredEarlier
+	    updateMarkerAndTable(vIndex, visualSettings.discoveredEarlier,
+				 5, false);
 	}
 
 	// in either case here, the edge that got us here is not
-	// in either case here, the edge that got us here is not
-	// part of the ultimate spanning tree, so it should be grey
+	// part of the ultimate spanning tree, so it should be the
+	// "discoveredEarlier" color
 	if (nextToVisit.connection != null) {
-	    nextToVisit.connection.setOptions({strokeColor: "grey"});
+	    nextToVisit.connection.setOptions({
+		strokeColor: visualSettings.discoveredEarlier.color
+	    });
 	}
     }
     // visiting for the first time
     else {
 
 	visited[vIndex] = true;
-	document.getElementById('waypoint'+ vIndex).style.backgroundColor="yellow";
-	markers[vIndex].setIcon({path: google.maps.SymbolPath.CIRCLE,
-				 scale: 6,
-				 zIndex: google.maps.Marker.MAX_ZINDEX+10,
-				 fillColor: 'yellow',
-				 strokeColor: 'yellow'});
+	updateMarkerAndTable(vIndex, visualSettings.visiting,
+			     10, false);
 
 	// we used the edge to get here, so let's mark it as such
 	if (nextToVisit.connection != null) {
-	    nextToVisit.connection.setOptions({strokeColor: "red"});
+	    nextToVisit.connection.setOptions({
+		strokeColor: visualSettings.spanningTree.color
+	    });
 	}
 
 	// discover any new neighbors
@@ -1204,18 +1178,17 @@ function continueGraphTraversal() {
 		var connection = waypoints[vIndex].edgeList[i].connection;
 		discoveredVertices.push({vIndex: neighbors[i],
 					 connection: connection});
-		document.getElementById('waypoint'+ neighbors[i]).style.backgroundColor="purple";
-		markers[neighbors[i]].setIcon({path: google.maps.SymbolPath.CIRCLE,
-					       scale: 4,
-					       zIndex: google.maps.Marker.MAX_ZINDEX+5,
-					       fillColor: 'purple',
-					       strokeColor: 'purple'});
+		updateMarkerAndTable(neighbors[i], visualSettings.discovered,
+				     5, false);
+
 		// also color the edge we followed to get to this
-		// neighbor as purple to indicate it's a candidate
+		// neighbor as the same color to indicate it's a candidate
 		// edge followed to find a current discovered but
 		// unvisited vertex
 		if (connection != null) {
-		    connection.setOptions({strokeColor: "purple"});
+		    connection.setOptions({
+			strokeColor: visualSettings.discovered.color
+		    });
 		}
 		else {
 		    console.log("Unexpected null connection, vIndex=" + vIndex + ", i=" + i);
