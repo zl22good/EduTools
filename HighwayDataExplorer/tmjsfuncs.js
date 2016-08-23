@@ -260,6 +260,7 @@ function updateMap()
 	markers[i] = new google.maps.Marker({
 	    position: polypoints[i],
 	    //map: map,
+	    optimized: false, // attempt to deal with zIndex
 	    title: waypoints[i].label,
 	    icon: intersectionimage
 	});
@@ -629,9 +630,10 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 
     markers[waypointNum].setIcon({path: google.maps.SymbolPath.CIRCLE,
 				  scale: vs.scale,
-				  zIndex: google.maps.Marker.MAX_ZINDEX+zIndex,
 				  fillColor: vs.color,
 				  strokeColor: vs.color });
+    markers[waypointNum].setZIndex(google.maps.Marker.MAX_ZINDEX+zIndex);
+
     document.getElementById('waypoint' + waypointNum).style.backgroundColor = vs.color;
     document.getElementById('waypoint' + waypointNum).style.color = vs.textColor;
     if (hideTableLine) {
@@ -689,7 +691,7 @@ function startVertexSearch() {
     // start by showing all existing markers, even hidden
     for (var i = 0; i < waypoints.length; i++) {
 	markers[i].setMap(map);
-	updateMarkerAndTable(i, visualSettings.undiscovered, 1, false);
+	updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
     }
     // we don't need edges here, so we remove those
     for (var i = 0; i < connections.length; i++) {
@@ -705,7 +707,7 @@ function startVertexSearch() {
 
 
     // start the search by initializing with the value at pos 0
-    updateMarkerAndTable(0, visualSettings.visiting, 4, false);
+    updateMarkerAndTable(0, visualSettings.visiting, 40, false);
 
     nextToCheck = 0;
 
@@ -798,7 +800,7 @@ function continueVertexSearch() {
 	    toCheck != shortIndex) {
 
 	    updateMarkerAndTable(toCheck, visualSettings.discarded,
-				 2, true);
+				 20, true);
 	}
     }	    
 
@@ -815,42 +817,42 @@ function continueVertexSearch() {
 	
 	// north
 	updateMarkerAndTable(northIndex, visualSettings.northLeader, 
-			     4, false);
+			     40, false);
 	var infoBox = document.getElementById('info1');
 	infoBox.innerHTML = 'North extreme:<br />' +
 	    extremePointLeaderString(northIndex, visualSettings.northLeader);
 	
 	// south
 	updateMarkerAndTable(southIndex, visualSettings.southLeader,
-			     4, false);
+			     40, false);
 	infoBox = document.getElementById('info2');
 	infoBox.innerHTML = "South extreme:<br />" +
 	    extremePointLeaderString(southIndex, visualSettings.southLeader);
 	
 	// east
 	updateMarkerAndTable(eastIndex, visualSettings.eastLeader,
-			     4, false);
+			     40, false);
         infoBox = document.getElementById('info3');
         infoBox.innerHTML = "East extreme:<br />" +
 	    extremePointLeaderString(eastIndex, visualSettings.eastLeader);
 	
 	// west
 	updateMarkerAndTable(westIndex, visualSettings.westLeader,
-			     4, false);
+			     40, false);
         infoBox = document.getElementById('info4');
         infoBox.innerHTML = "West extreme:<br />" +
 	    extremePointLeaderString(westIndex, visualSettings.westLeader);
 	
 	// shortest
 	updateMarkerAndTable(shortIndex, visualSettings.shortLabelLeader,
-			     4, false);
+			     40, false);
         infoBox = document.getElementById('info5');
         infoBox.innerHTML = "Shortest vertex label:<br />" +
 	    labelLeaderString(shortIndex, visualSettings.shortLabelLeader);
 	
 	// longest
 	updateMarkerAndTable(longIndex, visualSettings.longLabelLeader,
-			     4, false);
+			     40, false);
         infoBox = document.getElementById('info6');
         infoBox.innerHTML = "Longest vertex label:<br />" +
 	    labelLeaderString(longIndex, visualSettings.longLabelLeader);
@@ -858,7 +860,7 @@ function continueVertexSearch() {
     else {
 	// we didn't have a new leader, just discard this one
 	updateMarkerAndTable(nextToCheck, visualSettings.discarded,
-			     2, true);
+			     20, true);
     }
 
     document.getElementById('algorithmStatus').innerHTML =
@@ -871,7 +873,7 @@ function continueVertexSearch() {
     nextToCheck++;
     if (nextToCheck < markers.length) {
 	updateMarkerAndTable(nextToCheck, visualSettings.visiting,
-			     3, false);
+			     30, false);
 
 	setTimeout(continueVertexSearch, delay);
     }
