@@ -1,6 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html><head>
-<!--
+<html>
+
+<head>
+    <!--
     Highway Data Examiner (HDX) page
     Load and view data files related to Travel Mapping (TM) related
     academic data sets. (Formerly used Clinched Highway Mapping (CHM)
@@ -15,7 +17,9 @@
     2016-06-27 JDT  Code reorganization, page design updated based on TM
 -->
 
+
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
 <link rel="stylesheet" type="text/css" href="http://tm.teresco.org/css/travelMapping.css" />
 <style type="text/css">
 #controlbox {
@@ -41,11 +45,12 @@
 }
 #selected {
   position: absolute;
-  left: 110px;
-  top: 70px;
-  overflow-y: scroll;
-  max-width: 22%;
-  max-height: 82%;
+  overflow: scroll;
+  display: inline-block;
+  max-width: 50%;
+  max-height: 85%;
+  width:auto;
+  height:auto;
   opacity: .95;  /* also forces stacking order */
 }
 #pointbox {
@@ -72,13 +77,14 @@ width: 1px;
 height: 1px;
 }
 #contents_table{
+  display: inline-block;
   position: absolute;
   right: 42px;
   top: 70px;
   bottom: 10px;
-  overflow-y: scroll;
-  max-width: 22%;
-  max-height: 82%;
+  overflow: scroll;
+  max-width: 50%;
+  max-height: 85%;
   opacity: .95;
 }
 #pseudoTable{
@@ -94,12 +100,14 @@ height: 1px;
 <script
  src="http://maps.googleapis.com/maps/api/js?sensor=false"
  type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <!-- load in needed JS functions -->
 <script src="tmjsfuncs.js" type="text/javascript"></script>
 <script src="hdxjsfunc.js" type="text/javascript"></script>
 <title>Highway Data Examiner</title>
 </head>
-<body onload="loadmap(); toggleTable();">
+<body onload="loadmap(); makeResize(); toggleTable();" ondragover="allowdrop(event)" ondrop="drop(event)">
 <script type="application/javascript">
 function toggleTable() {
   var menu = document.getElementById("showHideMenu");
@@ -112,16 +120,26 @@ function toggleTable() {
   var algorithmVisualization = document.getElementById("AlgorithmVisualization");
   // show only table (or no table) based on value
   if (value == "pointbox") {
-    selected.innerHTML = pointbox.innerHTML;
+	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
+	var newEle = document.createElement("div");
+	newEle.innerHTML = pointbox.innerHTML
+    selected.appendChild(newEle);
   }
   else if (value == "options") {
-    selected.innerHTML = options.innerHTML;
+	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
+	var newEle = document.createElement("div");
+	newEle.innerHTML = options.innerHTML
+    selected.appendChild(newEle);
   }
   else if (value =="AlgorithmVisualization"){
-    selected.innerHTML = algorithmVisualization.innerHTML;
+	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
+	var newEle = document.createElement("div");
+	newEle.innerHTML = algorithmVisualization.innerHTML
+    selected.appendChild(newEle);
   }
-  else {
-    selected.innerHTML = "";
+  else {  
+	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
+	makeResize();
   }
 }
 // get the selected algorithm from the AlgorithmSelection menu
@@ -131,124 +149,137 @@ function getCurrentAlgorithm() {
   var selectionIndex = menuSelection.selectedIndex;
   return menuSelection.options[selectionIndex].value;
 }
+        function showHiddenPseudocode() {
+            var show = document.getElementById("showHidden").checked;
+            var value = getCurrentAlgorithm();
+            if (show == true) {
+                if (value == "BFS") {
+                    document.getElementById('pseudo').innerHTML = "<pre> unmark all vertices\n " +
+                        "  choose some starting vertex x \n" + "  mark x \n" +
+                        " list L = x\n " + " tree T = x\n " + "  while L nonempty\n  " +
+                        " choose some vertex v from front of list\n " + "  visit v\n " +
+                        " for each unmarked neighbor w\n " + " mark w\n " + " add it to end of list\n " + " add edge vw to T\n </pre>";
+                } else if (value == "DFS") {
+                    document.getElementById('pseudo').innerHTML = " <pre>Algorithm DFS(graph G, Vertex v)\n" +
+                        " for all edges e in G.incidentEdges(v) do\n" + " if edge e is unexplored then\n" +
+                        " w = G.opposite(v, e)\n" + " if vertex w is unexplored then\n" +
+                        " label e as discovery edge\n" + " recursively call DFS(G, w)\n<pre>"
+                    " else\n" + " label e a a back edge\n";
+                } else if (value == "vertexSearch") {
+                    document.getElementById('pseudo').innerHTML =
+                        "<pre>longest = 0\n" +
+                        "shortest = 0\n" +
+                        "north = 0\n" +
+                        "south = 0\n" +
+                        "east = 0\n" +
+                        "west = 0\n" +
+                        "for (i=1 to |V|-1) {\n" +
+                        "  if (len(v[i].label) > len(v[longest]))) {\n" +
+                        "    longest = i\n" +
+                        "  }\n" +
+                        "  if (len(v[i].label) < len(v[shortest]))) {\n" +
+                        "    shortest = i\n" +
+                        "  }\n" +
+                        "  if (v[i].lat > v[north].lat) {\n" +
+                        "    north = i\n" +
+                        "  }\n" +
+                        "  if (v[i].lat < v[south].lat) {\n" +
+                        "    south = i\n" +
+                        "  }\n" +
+                        "  if (v[i].lng < v[west].lng) {\n" +
+                        "    west = i\n" +
+                        "  }\n" +
+                        "  if (v[i].lng > v[east].lng) {\n" +
+                        "    east = i\n" +
+                        "  }\n" +
+                        "}</pre>";
+                } else if (value == "EdgeSearch") {
+                    document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+                } else if (value == "RFS") {
+                    document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+                }
+            } else {
+                document.getElementById('pseudo').innerHTML = "";
+            }
+        }
 
-function showHiddenPseudocode(){
-  var show = document.getElementById("showHidden").checked;
-  var value = getCurrentAlgorithm();
-  if (show == true){
-    if(value == "BFS"){
-      document.getElementById('pseudo').innerHTML = "<pre> unmark all vertices\n "
-      + "  choose some starting vertex x \n" + "  mark x \n" +
-      " list L = x\n " + " tree T = x\n " + "  while L nonempty\n  " +
-      " choose some vertex v from front of list\n " + "  visit v\n " +
-      " for each unmarked neighbor w\n " + " mark w\n " + " add it to end of list\n "+ " add edge vw to T\n </pre>";
-    }
-    else if (value == "DFS"){
-      document.getElementById('pseudo').innerHTML = " <pre>Algorithm DFS(graph G, Vertex v)\n" +
-      " for all edges e in G.incidentEdges(v) do\n" + " if edge e is unexplored then\n" +
-      " w = G.opposite(v, e)\n" + " if vertex w is unexplored then\n" +
-      " label e as discovery edge\n" + " recursively call DFS(G, w)\n<pre>"
-      " else\n" + " label e a a back edge\n";
-    }
-    else if (value == "vertexSearch"){
-      document.getElementById('pseudo').innerHTML =
-"<pre>longest = 0\n" +
-"shortest = 0\n" +
-"north = 0\n" +
-"south = 0\n" +
-"east = 0\n" +
-"west = 0\n" +
-"for (i=1 to |V|-1) {\n" +
-"  if (len(v[i].label) > len(v[longest]))) {\n" +
-"    longest = i\n" +
-"  }\n" +
-"  if (len(v[i].label) < len(v[shortest]))) {\n" +
-"    shortest = i\n" +
-"  }\n" +
-"  if (v[i].lat > v[north].lat) {\n" +
-"    north = i\n" +
-"  }\n" +
-"  if (v[i].lat < v[south].lat) {\n" +
-"    south = i\n" +
-"  }\n" +
-"  if (v[i].lng < v[west].lng) {\n" +
-"    west = i\n" +
-"  }\n" +
-"  if (v[i].lng > v[east].lng) {\n" +
-"    east = i\n" +
-"  }\n" +
-"}</pre>";
-    }
-    else if (value == "EdgeSearch") {
-      document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
-    }
-    else if (value == "RFS") {
-      document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
-    }
+        function selectAlgorithmAndStart() {
+            var value = getCurrentAlgorithm();
+            if (value == "vertexSearch") {
+                startVertexSearch();
+            } else if (value == "EdgeSearch") {
+                startEdgeSearch();
+            } else if (value == "BFS") {
+                startGraphTraversal("BFS");
+            } else if (value == "DFS") {
+                startGraphTraversal("DFS");
+            } else if (value == "RFS") {
+                startGraphTraversal("RFS");
+            } else if (value == "ConvexHull") {
+                startConvexHull();
+            } else if (value == "Dijkstra") {} else {}
+        }
 
-  }
-  else {
-    document.getElementById('pseudo').innerHTML = "";
-  }
-}
-function selectAlgorithmAndStart() {
-  var value = getCurrentAlgorithm();
+        function showLegend() {
+            var show = document.getElementById("showLegend").checked;
+            var value = getCurrentAlgorithm();
+            if (show == true) {
+                if (value == "vertexSearch") {
+                    document.getElementById('legends').innerHTML = "<pre> Longest Label : green \n " +
+                        "Shortest Label: brown \n" + " Vertex winners in the table and map: red \n" +
+                        " Current vertex in the table and map : yellow \n</pre>";
+                } else if (value == "DFS") {
+                    document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
+                        " Neighbor edges and possible next candidate: purple\n" + " Vertex in the stack : blue\n" + " Vertex that no be in the stack anymore : gray\n </pre>";
+                } else if (value == "BFS") {
+                    document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + "<i>show the yellow</i> \n" + "Edges got used before visiting the candidate : red\n" +
+                        " Neighbor edges and possible next candidate: purple\n" + " Vertex in the queue : blue\n" + " Vertex that no be in the queue anymore : gray\n </pre>";
+                } else if (value == "EdgeSearch") {
+                    document.getElementById('legends').innerHTML = "<pre>// fill in for real later \n</pre>";
+                } else if (value == "RFS") {
+                    document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
+                        " Neighbor edges and possible next candidate: purple\n" + " Vertex in the list : blue\n" + " Vertex that no be in the list anymore : gray\n </pre>";
+                }
+            } else {
+                document.getElementById('legends').innerHTML = "";
+            }
+        }
 
-  if (value == "vertexSearch") {
-    startVertexSearch();
-  }
-  else if (value == "EdgeSearch") {
-    startEdgeSearch();
-  }
-  else if (value == "BFS") {
-    startGraphTraversal("BFS");
-  }
-  else if (value == "DFS") {
-    startGraphTraversal("DFS");
-  }
-  else if (value == "RFS") {
-    startGraphTraversal("RFS");
-  }
-  else if (value == "ConvexHull") {
-    startConvexHull();
-  }
-  else if (value == "Dijkstra") {
-  }
-  else{
-  }
+        function selectAlgorithmAndCheckBoxes() {
+            // var show = document.getElementById("selection_checkboxes").checked;
+            // if (show == true){
+            var value = getCurrentAlgorithm();
+            if (value == "vertexSearch") {
+                document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+            } else if (value == "EdgeSearch") {
+                document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+            } else if (value == "BFS") {
+                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
+                    '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+            } else if (value == "DFS") {
+                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" min="0" name="Starting Point" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+            } else if (value == "RFS") {
+                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+            } else {
+                document.getElementById('optionSection').innerHTML = "";
+            }
+        }
 
-}
+        function selectAlgorithmAndReset() {
+            for (var i = 0; i < connections.length; i++) {
+                connections[i].setMap(null);
+                document.getElementById('connection' + i).style.backgroundColor = "white";
+            }
+            connections = new Array();
+            polypoints = new Array();
+            for (var i = 0; i < markers.length; i++) {
+                markers[i].setMap(null);
+                document.getElementById('waypoint' + i).style.backgroundColor = "white";
+            }
+            markers = new Array();
+            markerinfo = new Array();
+        }
 
-function showLegend() {
-  var show = document.getElementById("showLegend").checked;
-  var value = getCurrentAlgorithm();
-  if (show == true){
-    if(value == "vertexSearch"){
-      document.getElementById('legends').innerHTML = "<pre> Longest Label : green \n "
-      + "Shortest Label: brown \n" + " Vertex winners in the table and map: red \n" +
-      " Current vertex in the table and map : yellow \n</pre>";
-    }
-    else if (value == "DFS"){
-      document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
-  " Neighbor edges and possible next candidate: purple\n" + " Vertex in the stack : blue\n" + " Vertex that no be in the stack anymore : gray\n </pre>";
-    }
-    else if (value == "BFS"){
-      document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + "<i>show the yellow</i> \n" + "Edges got used before visiting the candidate : red\n" +
-  " Neighbor edges and possible next candidate: purple\n" + " Vertex in the queue : blue\n" + " Vertex that no be in the queue anymore : gray\n </pre>";
-    }
-    else if (value == "EdgeSearch") {
-      document.getElementById('legends').innerHTML = "<pre>// fill in for real later \n</pre>";
-    }
-    else if (value == "RFS") {
-      document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
-  " Neighbor edges and possible next candidate: purple\n" + " Vertex in the list : blue\n" + " Vertex that no be in the list anymore : gray\n </pre>";
-    }
-
-  }
-  else {
-    document.getElementById('legends').innerHTML = "";
-  }
-  }
 
 function selectAlgorithmAndCheckBoxes(){
   // var show = document.getElementById("selection_checkboxes").checked;
@@ -261,14 +292,14 @@ function selectAlgorithmAndCheckBoxes(){
         document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
   }
   else if (value == "BFS"){
-    document.getElementById('optionSection').innerHTML =  'Start Vertex <input id="startPoint" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
+    document.getElementById('optionSection').innerHTML =  'Start Vertex <input id="startPoint" type="number" name="Starting Point" value="0"  min="0" size="7" /><br> ' +
                '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
   }
   else if (value == "DFS"){
-        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" min="0" name="Starting Point" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" min="0" name="Starting Point" value="0" size="7" /><br> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
   }
   else if (value == "RFS"){
-        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /><br> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
   }
   else{
      document.getElementById('optionSection').innerHTML = "";
@@ -288,15 +319,61 @@ function selectAlgorithmAndReset(){
     markers = new Array();
     markerinfo = new Array();
 }
+function drag(event) {
+	var x = event.target.style.left;
+	var y = event.target.style.top;
+	console.log(x);
+    event.dataTransfer.setData("id",event.target.id);
+	if (x == "70%"){		
+		event.dataTransfer.setData("x",document.documentElement.clientWidth*.7-event.clientX);
+	}
+	else		
+		event.dataTransfer.setData("x",parseInt(x.substring(0,x.length-2))-event.clientX);
+	event.dataTransfer.setData("y",parseInt(y.substring(0,y.length-2))-event.clientY);
+} 
+
+function drop(event) {
+	event.preventDefault();
+    var de = document.getElementById(event.dataTransfer.getData("id"));
+    de.style.left = (event.clientX+parseInt(event.dataTransfer.getData("x"))) + 'px';
+    de.style.top = (event.clientY+parseInt(event.dataTransfer.getData("y"))) + 'px';
+}
+
+function allowdrop(event){
+    event.preventDefault();
+}   
+
+function toggleUI(event){
+	var button = document.getElementById("toggleUI");
+	var panel1 = document.getElementById("selected");
+	var panel2 = document.getElementById("contents_table");
+	if (button.value == "Hide UI"){
+		button.value = "Show UI";
+		panel1.setAttribute("style","display:none; left:"+panel1.style.left+"; top:"+panel1.style.top+"; width:"+panel1.style.width+"; height:"+panel1.style.height+";");
+		panel2.setAttribute("style","display:none; left:"+panel2.style.left+"; top:"+panel2.style.top+"; width:"+panel2.style.width+"; height:"+panel2.style.height+";");
+	}
+	else{
+		button.value = "Hide UI";
+		panel1.setAttribute("style","display:inline-block; left:"+panel1.style.left+"; top:"+panel1.style.top+"; width:"+panel1.style.width+"; height:"+panel1.style.height+";");
+		panel2.setAttribute("style","display:inline-block; left:"+panel2.style.left+"; top:"+panel2.style.top+"; width:"+panel2.style.width+"; height:"+panel2.style.height+";");
+	}
+}
+function makeResize(){
+    $( "#selected" ).resizable();
+	document.getElementById("selected").appendChild(document.createElement("div"));
+	$( "#contents_table" ).resizable();
+}
+
 </script>
 <p class="menubar">
   HDX: <span id="filename">Select a file to display</span>
   <span id="status"></span>
 </p>
-
 <div id="map">
 </div>
-<div id="selected"></div>
+<input type="button" id="toggleUI" value="Hide UI" style="left:110px; opacity:.75; position:relative;" onclick="toggleUI()">
+<div id="selected" draggable="true"  ondragstart="drag(event)" style="left:110px; top:70px;">
+</div>
 <div id="options">
   <table id="optionsTable" class="gratable">
     <thead>
@@ -333,12 +410,13 @@ function selectAlgorithmAndReset(){
           <option value="BFS">Breadth-First Traversal</option>
           <option value="DFS">Depth-First Traversal</option>
           <option value="RFS">Random-First Traversal</option>
-          <!-- <option value="ConvexHull"> Convex Hull </option>
-          <option value="Dijkstra"> Dijkstra </option> -->
+          <!-- <option value="ConvexHull"> Convex Hull </option> -->
+         <!-- <option value="Dijkstra"> Dijkstra </option> -->
         </select>
+
       </td></tr>
       <tr><td id= "optionSection" > </td></tr>
-        <!-- Start Vertex <input id="startPoint" type="text" name="Starting Point" value="0" size="7" /> -->
+        <!--. Start Vertex <input id="startPoint" type="text" name="Starting Point" value="0" size="7" /> -->
         <!-- <input id="showOptions" type="checkbox" name="Options" onclick="selectAlgorithmAndCheckBoxes()" > Options<br> -->
         <!-- <input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br> -->
         <!-- <button type="button" onclick="selectAlgorithmAndCheckBoxes()">Options</button> -->
@@ -355,31 +433,35 @@ function selectAlgorithmAndReset(){
           <option value="500">Slow</option>
           <option value="1000">Painfully slow</option>
         </select>
+
       </td></tr>
-      <tr><td id="selectionCheckboxes"></td><tr>
+     <!-- <tr><td id="selectionCheckboxes"></td><tr>-->
       <tr><td id="algorithmStatus"></td><tr>
-      <tr><td id="info1"></td><tr>
+      <!--<tr><td id="info1"></td><tr>
       <tr><td id="info2"></td><tr>
       <tr><td id="info3"></td><tr>
       <tr><td id="info4"></td><tr>
       <tr><td id="info5"></td><tr>
-      <tr><td id="info6"></td><tr>
+      <tr><td id="info6"></td><tr>-->
       <tr><td id="legends"></td><tr>
       <tr><td id="pseudo"></td><tr>
 
-
             </tbody>
-          </table>
-        </div>
+        </table>
+    </div>
 
-        <div id="controlbox">
-          <select id="showHideMenu" onchange="toggleTable();">
+    <div id="controlbox">
+        <select id="showHideMenu" onchange="toggleTable();">
             <option value="maponly">Map Only</option>
             <option value="options" >Show/Load Map Options</option>
             <option value="pointbox">Show Highway Data</option>
             <option value= "AlgorithmVisualization" selected="selected">Show Algorithm Visualization</option>
           </select>
+
         </div>
-        <div id="contents_table">
+        <div id="contents_table" draggable="true"  ondragstart="drag(event)" style="top:70px; left:70%;">
         </div>
-        </body></html>
+        </body>
+		
+
+		</html>
