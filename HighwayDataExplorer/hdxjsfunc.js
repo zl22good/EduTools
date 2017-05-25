@@ -160,7 +160,6 @@ function processContents(fileContents) {
 	var newEle = document.createElement("div");
 	newEle.innerHTML = pointboxContents;
     document.getElementById('contents_table').appendChild(newEle);
-	makeResize();
     updateMap();
 
 }
