@@ -898,6 +898,21 @@ function startVertexSearch() {
     updateMarkerAndTable(0, visualSettings.visiting, 40, false);
 
     nextToCheck = 0;
+	
+	var algorithmsTable = document.getElementById('AlgorithmsTable');
+	var algorithmsTbody = algorithmsTable.children[1];
+	var infoBox;
+	var infoBoxtr;
+	var infoid = "";
+	for (var i = 1; i<7; i++){
+		infoBox = document.createElement('td');
+		infoBoxtr= document.createElement('tr');
+		infoid = "info"+i;
+		infoBox.setAttribute('id',infoid);
+		infoBoxtr.appendChild(infoBox);
+		algorithmsTbody.appendChild(infoBoxtr);
+	}
+	
 
     // enable pause button
     //document.getElementById("pauseRestart").disabled = false;
@@ -999,27 +1014,27 @@ function continueVertexSearch() {
     // becomes the leader in multiple categories, as right now
     // it just gets colored with the last in this list
     if (foundNewLeader) {
-
-        // this work will often be redundant but it's probably easier
-        // than trying to avoid it
-
-        // north
-        updateMarkerAndTable(northIndex, visualSettings.northLeader,
-            40, false);
-        var infoBox = document.getElementById('info1');
-        infoBox.innerHTML = 'North extreme:<br />' +
-            extremePointLeaderString(northIndex, visualSettings.northLeader);
-
-        // south
-        updateMarkerAndTable(southIndex, visualSettings.southLeader,
-            40, false);
-        infoBox = document.getElementById('info2');
-        infoBox.innerHTML = "South extreme:<br />" +
-            extremePointLeaderString(southIndex, visualSettings.southLeader);
-
-        // east
-        updateMarkerAndTable(eastIndex, visualSettings.eastLeader,
-            40, false);
+	
+	// this work will often be redundant but it's probably easier
+	// than trying to avoid it
+	
+	// north
+	updateMarkerAndTable(northIndex, visualSettings.northLeader, 
+			     40, false);
+	infoBox = document.getElementById('info1');
+	infoBox.innerHTML = 'North extreme:<br />' +
+	    extremePointLeaderString(northIndex, visualSettings.northLeader);
+	
+	// south
+	updateMarkerAndTable(southIndex, visualSettings.southLeader,
+			     40, false);
+	infoBox = document.getElementById('info2');
+	infoBox.innerHTML = "South extreme:<br />" +
+	    extremePointLeaderString(southIndex, visualSettings.southLeader);
+	
+	// east
+	updateMarkerAndTable(eastIndex, visualSettings.eastLeader,
+			     40, false);
         infoBox = document.getElementById('info3');
         infoBox.innerHTML = "East extreme:<br />" +
             extremePointLeaderString(eastIndex, visualSettings.eastLeader);
@@ -1098,6 +1113,14 @@ function startEdgeSearch() {
     //we don't need waypoints table here, so we remove those
     var Table = document.getElementById("waypoints");
     Table.innerHTML = "";
+	var algorithmsTable = document.getElementById('AlgorithmsTable');
+	var algorithmsTbody = algorithmsTable.children[1];
+	var infoid = "info1";
+	var infoBox = document.createElement('td');
+	var infoBoxtr= document.createElement('tr');
+	infoBox.setAttribute('id',infoid);
+	infoBoxtr.appendChild(infoBox);
+	algorithmsTbody.appendChild(infoBoxtr);
     // document.getElementById('algorithmStatus').innerHTML = 'Checking: <span style="color:yellow">0</span>';
     setTimeout(continueEdgeSearch, delay);
 
@@ -1107,38 +1130,27 @@ function continueEdgeSearch() {
     if (pause) {
         return;
     }
-    if (currentEdgeIndex == graphEdges.length) {
-        var maxEdgePoints = new Array(2);
-        maxEdgePoints[0] = new google.maps.LatLng(waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
-        maxEdgePoints[1] = new google.maps.LatLng(waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
-        new google.maps.Polyline({
-            path: maxEdgePoints,
-            strokeColor: '#0000FF',
-            strokeWeight: 10,
-            strokeOpacity: 1,
-            map: map
-        });
-        var firstNode = Math.min(edgeMax.v1, edgeMax.v2);
-        var secondNode = Math.max(edgeMax.v1, edgeMax.v2);
-        document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
-        var minEdgePoints = new Array(2);
-        minEdgePoints[0] = new google.maps.LatLng(waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
-        minEdgePoints[1] = new google.maps.LatLng(waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
-        new google.maps.Polyline({
-            path: minEdgePoints,
-            strokeColor: '#FF0000',
-            strokeWeight: 20,
-            strokeOpacity: 1,
-            map: map
-        });
-        var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
-        var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
-        document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
 
-        document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "  Longest Edge label: " + longestELabel;
-        console.log("shortest Edge label: " + shortestELabel);
-        console.log("Longest Edge label: " + longestELabel);
-        return;
+    if(currentEdgeIndex== graphEdges.length){
+	var maxEdgePoints = new Array(2);
+	maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
+	maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
+	new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+	var firstNode = Math.min(edgeMax.v1, edgeMax.v2);
+	var secondNode = Math.max(edgeMax.v1, edgeMax.v2);
+	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
+	var minEdgePoints = new Array(2);
+	minEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
+	minEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
+	new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+	var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
+	var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
+	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
+
+	document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br>  Longest Edge label: " + longestELabel;
+	console.log("shortest Edge label: " + shortestELabel);
+	console.log("Longest Edge label: " + longestELabel);
+	return;
     }
     var edge = graphEdges[currentEdgeIndex];
     var distance = Feet(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
