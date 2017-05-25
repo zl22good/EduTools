@@ -252,6 +252,21 @@ function getOpenStreetMapDEURL(point, zoom) {
     return 'http://tile.openstreetmap.de/tiles/osmde/' + zoom + '/' + point.x + '/' + point.y + '.png';
 }
 
+//HERE map tiles
+var HEREOptions = {
+    alt: "Show wego HERE road map tiles from https://wego.here.com",
+    getTileUrl: HEREURL,
+    maxZoom: 18,
+    minZoom: 0,
+    name: "HERE",
+    opacity: 1,
+    tileSize: new google.maps.Size(256, 256)
+};
+
+function HEREURL(point, zoom) {
+    return 'https://1.base.maps.cit.api.here.com/maptile/2.1/maptile/newest/normal.day/' + zoom + '/' + point.x + '/' + point.y + '/256/png8?app_id=VX6plk5zCW0wzrNcN64O&app_code=LcZFksQAhfg7rvZvcZ1lqw';
+}
+
 var MQOpenMapOptions = {
     alt: "Show Mapquest Open Map road map tiles based on OpenStreetMap.org data",
     getTileUrl: getMQOpenMapTileURL,
@@ -318,8 +333,9 @@ function loadmap() {
     var typeBlank = new google.maps.ImageMapType(BlankOptions);
     var typeOpenStreetMapDE = new google.maps.ImageMapType(OpenStreetMapDEOptions);
     var typeEsri = new google.maps.ImageMapType(EsriOptions);
+    var typeHERE = new google.maps.ImageMapType(HEREOptions);
 
-    var maptypelist = ['Mapnik', google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.HYBRID, google.maps.MapTypeId.TERRAIN, 'Blank', 'DE', 'Esri'];
+    var maptypelist = ['Mapnik', google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.HYBRID, google.maps.MapTypeId.TERRAIN, 'Blank', 'DE', 'Esri', 'HERE'];
     var maptypecontroloptions = {
         mapTypeIds: maptypelist,
         position: google.maps.TOP_RIGHT,
@@ -345,6 +361,7 @@ function loadmap() {
     map.mapTypes.set('Blank', typeBlank);
     map.mapTypes.set('DE', typeOpenStreetMapDE);
     map.mapTypes.set('Esri', typeEsri);
+    map.mapTypes.set('HERE', typeHERE);
     //}
 }
 

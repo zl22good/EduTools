@@ -19,11 +19,91 @@
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" type="text/css" href="http://tm.teresco.org/css/travelMapping.css" />
+    <style type="text/css">
+        #controlbox {
+            width: 25%;
+            */ position: fixed;
+            top: 50px;
+            bottom: 100px;
+            height: 100%;
+            left: 400px;
+            right: 0px;
+            overflow: auto;
+            padding: 5px;
+        }
+        
+        #map {
+            position: absolute;
+            top: 25px;
+            bottom: 0px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        #map * {
+            cursor: crosshair;
+        }
+        
+        #selected {
+            position: absolute;
+            left: 110px;
+            top: 70px;
+            overflow-y: scroll;
+            max-width: 22%;
+            max-height: 82%;
+            opacity: .95;
+            /* also forces stacking order */
+        }
+        
+        #pointbox {
+            visibility: hidden;
+            left: 0px;
+            width: 1px;
+            height: 1px;
+        }
+        
+        #options {
+            visibility: hidden;
+            left: 0px;
+            width: 1px;
+            height: 1px;
+        }
+        
+        #showHideMenu {
+            position: fixed;
+            right: 10px;
+            opacity: .75;
+            /* also forces stacking order */
+        }
+        
+        #AlgorithmVisualization {
+            visibility: hidden;
+            left: 0px;
+            width: 1px;
+            height: 1px;
+        }
+        
+        #contents_table {
+            position: absolute;
+            right: 42px;
+            top: 70px;
+            bottom: 10px;
+            overflow-y: scroll;
+            max-width: 22%;
+            max-height: 82%;
+            opacity: .95;
+        }
+        
+        #pseudoTable {
+            position: absolute;
+            padding: 5px;
+            bottom: 150px;
+            overflow-y: scroll;
+            max-width: 33%;
+            opacity: .95;
+        }
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
-
-    <link rel="stylesheet" href="style.css" />
-
+    </style>
     <script src="http://maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
     <!-- load in needed JS functions -->
     <script src="tmjsfuncs.js" type="text/javascript"></script>
@@ -110,7 +190,6 @@
                 } else if (value == "RFS") {
                     document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
                 }
-
             } else {
                 document.getElementById('pseudo').innerHTML = "";
             }
@@ -118,7 +197,6 @@
 
         function selectAlgorithmAndStart() {
             var value = getCurrentAlgorithm();
-
             if (value == "vertexSearch") {
                 startVertexSearch();
             } else if (value == "EdgeSearch") {
@@ -132,7 +210,6 @@
             } else if (value == "ConvexHull") {
                 startConvexHull();
             } else if (value == "Dijkstra") {} else {}
-
         }
 
         function showLegend() {
@@ -155,7 +232,6 @@
                     document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
                         " Neighbor edges and possible next candidate: purple\n" + " Vertex in the list : blue\n" + " Vertex that no be in the list anymore : gray\n </pre>";
                 }
-
             } else {
                 document.getElementById('legends').innerHTML = "";
             }
@@ -197,7 +273,6 @@
         }
 
     </script>
-    <script type='text/javascript' src='http://www.bing.com/api/maps/mapcontrol?callback=loadMapScenario' async defer></script>
     <p class="menubar">
         HDX: <span id="filename">Select a file to display</span>
         <span id="status"></span>
@@ -267,8 +342,8 @@
                 <!-- <button type="button" onclick="selectAlgorithmAndCheckBoxes()">Options</button> -->
                 <tr>
                     <td>
-                        <button type="button" id="startBTN" onclick="selectAlgorithmAndStart()">Start</button>
-                        <button type="button" id="pauseBTN" onclick="pauseSimulation()">Pause</button>
+                        <button type="button" onclick="selectAlgorithmAndStart()">Start</button>
+                        <button type="button" onclick="pauseSimulation()">Pause</button>
                         <!-- button type="button" onclick="resetSearch()">Reset</button -->
                         <select id="speedChanger" onchange="speedChanged()">
           <option value="5">Extremely fast</option>
