@@ -710,6 +710,21 @@ function startVertexSearch() {
     updateMarkerAndTable(0, visualSettings.visiting, 40, false);
 
     nextToCheck = 0;
+	
+	var algorithmsTable = document.getElementById('AlgorithmsTable');
+	var algorithmsTbody = algorithmsTable.children[1];
+	var infoBox;
+	var infoBoxtr;
+	var infoid = "";
+	for (var i = 1; i<7; i++){
+		infoBox = document.createElement('td');
+		infoBoxtr= document.createElement('tr');
+		infoid = "info"+i;
+		infoBox.setAttribute('id',infoid);
+		infoBoxtr.appendChild(infoBox);
+		algorithmsTbody.appendChild(infoBoxtr);
+	}
+	
 
     // enable pause button
     //document.getElementById("pauseRestart").disabled = false;
@@ -818,7 +833,7 @@ function continueVertexSearch() {
 	// north
 	updateMarkerAndTable(northIndex, visualSettings.northLeader, 
 			     40, false);
-	var infoBox = document.getElementById('info1');
+	infoBox = document.getElementById('info1');
 	infoBox.innerHTML = 'North extreme:<br />' +
 	    extremePointLeaderString(northIndex, visualSettings.northLeader);
 	
@@ -911,6 +926,14 @@ function startEdgeSearch() {
     //we don't need waypoints table here, so we remove those
     var Table = document.getElementById("waypoints");
     Table.innerHTML = "";
+	var algorithmsTable = document.getElementById('AlgorithmsTable');
+	var algorithmsTbody = algorithmsTable.children[1];
+	var infoid = "info1";
+	var infoBox = document.createElement('td');
+	var infoBoxtr= document.createElement('tr');
+	infoBox.setAttribute('id',infoid);
+	infoBoxtr.appendChild(infoBox);
+	algorithmsTbody.appendChild(infoBoxtr);
     // document.getElementById('algorithmStatus').innerHTML = 'Checking: <span style="color:yellow">0</span>';
     setTimeout(continueEdgeSearch, delay);
 
@@ -936,7 +959,7 @@ function continueEdgeSearch(){
 	var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
 	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
 
-	document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "  Longest Edge label: " + longestELabel;
+	document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br>  Longest Edge label: " + longestELabel;
 	console.log("shortest Edge label: " + shortestELabel);
 	console.log("Longest Edge label: " + longestELabel);
 	return;

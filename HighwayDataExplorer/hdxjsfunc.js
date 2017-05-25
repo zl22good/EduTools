@@ -157,7 +157,10 @@ function processContents(fileContents) {
     }
 
     // document.getElementById('pointbox').innerHTML = pointboxContents;
-    document.getElementById('contents_table').innerHTML = pointboxContents;
+	var newEle = document.createElement("div");
+	newEle.innerHTML = pointboxContents;
+    document.getElementById('contents_table').appendChild(newEle);
+	makeResize();
     updateMap();
 
 }
