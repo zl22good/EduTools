@@ -160,7 +160,6 @@ function processContents(fileContents) {
 	var newEle = document.createElement("div");
 	newEle.innerHTML = pointboxContents;
     document.getElementById('contents_table').appendChild(newEle);
-	makeResize();
     updateMap();
 
 }
@@ -217,7 +216,7 @@ function parseTMGContents(fileContents) {
     for (var i = 0; i < numV; i++) {
 	var vertexInfo = lines[i+2].split(' ');
 	waypoints[i] = new Waypoint(vertexInfo[0], vertexInfo[1], vertexInfo[2], "", new Array());
-	vTable += '<tr id="waypoint' + i +'"><td>' + i +
+	vTable += '<tr id="waypoint' + i +'" onmouseover = "hoverV(event,'+i+')" onmouseout = "hoverEndV(event,'+i+')" ><td>' + i +
 	    '</td><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
 	    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
 	    + "<a onclick=\"javascript:LabelClick(" + i + ",'"
