@@ -189,12 +189,28 @@ var visualSettings = {
         color: "#00a000",
         textColor: "white",
         scale: 4
-    }
+       },
+	hoverV: {
+		color: "#a0036b",
+		textColor: "white",
+		scale: 6
+	}
 };
 
-function hoverV (e, i){}
+function hoverV (e, i){
+	vicon = markers[i].getIcon();
+	vcolor = getObj("waypoint"+i).style.backgroundColor;
+	vtext = getObj("waypoint"+i).style.color;
+	updateMarkerAndTable(i, visualSettings.hoverV, 0, false);
+}
 
-function hoverEndV (e, i){}
+function hoverEndV (e, i){
+	markers[i].setIcon(vicon);
+	getObj("waypoint"+i).style.backgroundColor = vcolor;
+	getObj("waypoint"+i).style.color = vtext;
+}
+
+var vcolor, vtext, vicon;
 
 var infowindow = new google.maps.InfoWindow();
 
