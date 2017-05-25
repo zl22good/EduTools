@@ -192,6 +192,10 @@ var visualSettings = {
     }
 };
 
+function hoverV (e, i){}
+
+function hoverEndV (e, i){}
+
 var infowindow = new google.maps.InfoWindow();
 
 // some map options, from http://cmap.m-plex.com/hb/maptypes.js by Timothy Reichard
