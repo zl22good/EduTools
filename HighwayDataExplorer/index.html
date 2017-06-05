@@ -19,6 +19,7 @@
 
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css"/>
 <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
 <link rel="stylesheet" type="text/css" href="http://tm.teresco.org/css/travelMapping.css" />
 <style type="text/css">
@@ -95,6 +96,12 @@ height: 1px;
   max-width: 33%;
   opacity: .95;
 }
+#mapOptions{
+width:150px;
+}
+table.dataTable tbody td{
+padding:0px;
+}
 
 </style>
 <script
@@ -102,6 +109,9 @@ height: 1px;
  type="text/javascript"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script
+ src="http://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"
+ type="text/javascript"></script>
 <!-- load in needed JS functions -->
 <script src="tmjsfuncs.js" type="text/javascript"></script>
 <script src="hdxjsfunc.js" type="text/javascript"></script>
@@ -149,6 +159,7 @@ function getCurrentAlgorithm() {
   var selectionIndex = menuSelection.selectedIndex;
   return menuSelection.options[selectionIndex].value;
 }
+
         function showHiddenPseudocode() {
             var show = document.getElementById("showHidden").checked;
             var value = getCurrentAlgorithm();
@@ -322,7 +333,6 @@ function selectAlgorithmAndReset(){
 function drag(event) {
 	var x = event.target.style.left;
 	var y = event.target.style.top;
-	console.log(x);
     event.dataTransfer.setData("id",event.target.id);
 	if (x == "70%"){		
 		event.dataTransfer.setData("x",document.documentElement.clientWidth*.7-event.clientX);
@@ -363,7 +373,6 @@ function makeResize(){
 	document.getElementById("selected").appendChild(document.createElement("div"));
 	$( "#contents_table" ).resizable();
 }
-
 </script>
 <p class="menubar">
   HDX: <span id="filename">Select a file to display</span>
@@ -381,8 +390,34 @@ function makeResize(){
     </thead>
     <tbody>
       <tr><td>
-        <input id="filesel" type="file"  value="Start" onclick="startRead()">
+		Use local file: <br>
+        <input id="filesel" type="file"  value="Start" onchange="startRead()">
       </td></tr>
+	  <tr><td id="selects">
+		Or select dataset: <br>
+		Order by:
+		<select id = "orderOptions">
+			<option value = "alpha">Alphabetical</option>
+			<option value = "small">Size (small)</option>
+			<option value = "large">Size (large)</option>		
+		</select>
+		<br>
+		Restrict by:
+		<select id = "restrictOptions">
+			<option value = "collapsed">Collapsed</option>
+			<option value = "simple">Simple</option>
+			<option value = "all">All</option>		
+		</select>
+		<br>
+		(Choose "Collapsed" if unsure what this means)<br>
+		Size from
+		<input type="number" min="1" id="minVertices" style="width:6rem;">
+		to 
+		<input type="number" min="1" id="maxVertices" style="width:6rem;">
+		vertices
+		<br>
+		<input type="button" value="Get Graphs" onclick="mapOptions(event)">
+	  </td></tr>	  
       <tr><td>
         <input id="showHidden" type="checkbox" name="Show Hidden Markers" onclick="showHiddenClicked()" checked="false">&nbsp;Show Hidden Markers
       </td></tr>
@@ -399,8 +434,34 @@ function makeResize(){
     </thead>
     <tbody>
       <tr><td>
-        <input id="filesel" value="Start" type="file" onchange="startRead()">
+        Use local file: <br>
+        <input id="filesel" type="file"  value="Start" onchange="startRead()">
       </td></tr>
+	  <tr><td id="selects">
+		Or select dataset: <br>
+		Order by:
+		<select id = "orderOptions">
+			<option value = "alpha">Alphabetical</option>
+			<option value = "small">Size (small)</option>
+			<option value = "large">Size (large)</option>		
+		</select>
+		<br>
+		Restrict by:
+		<select id = "restrictOptions">
+			<option value = "collapsed">Collapsed</option>
+			<option value = "simple">Simple</option>
+			<option value = "all">All</option>		
+		</select>
+		<br>
+		(Choose "Collapsed" if unsure what this means)<br>
+		Size from
+		<input type="number" min="1" id="minVertices" style="width:6rem;">
+		to 
+		<input type="number" min="1" id="maxVertices" style="width:6rem;">
+		vertices
+		<br>
+		<input type="button" value="Get Graphs" onclick="mapOptions(event)">
+	  </td></tr>	
       <tr><td>
         Algorithm Selection:
         <select id= "AlgorithmSelection" onchange="selectAlgorithmAndCheckBoxes()">
@@ -462,6 +523,4 @@ function makeResize(){
         <div id="contents_table" draggable="true"  ondragstart="drag(event)" style="top:70px; left:70%;">
         </div>
         </body>
-		
-
-		</html>
+</html>
