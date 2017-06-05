@@ -215,10 +215,10 @@ function processContents(fileContents) {
     // document.getElementById('pointbox').innerHTML = pointboxContents;
 	var newEle = document.createElement("div");
 	newEle.innerHTML = pointboxContents;
-    document.getElementById('contents_table').appendChild(newEle);
+  document.getElementById('contents_table').appendChild(newEle);
 	createDataTable("#waypoints");
 	createDataTable("#connection");
-    updateMap();
+  updateMap();
 
 }
 function mapOptions(e){

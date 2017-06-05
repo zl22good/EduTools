@@ -109,7 +109,6 @@ padding:0px;
  type="text/javascript"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-<script
  src="http://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"
  type="text/javascript"></script>
 <!-- load in needed JS functions -->
@@ -159,6 +158,36 @@ function getCurrentAlgorithm() {
   var selectionIndex = menuSelection.selectedIndex;
   return menuSelection.options[selectionIndex].value;
 }
+</script>
+<body onload="loadmap(); toggleTable();">
+    <script type="application/javascript">
+        function toggleTable() {
+            var menu = document.getElementById("showHideMenu");
+            var index = menu.selectedIndex;
+            var value = menu.options[index].value;
+            //  var algoTable = menu.algorithmbased.value;
+            var pointbox = document.getElementById("pointbox");
+            var options = document.getElementById("options");
+            var selected = document.getElementById("selected");
+            var algorithmVisualization = document.getElementById("AlgorithmVisualization");
+            // show only table (or no table) based on value
+            if (value == "pointbox") {
+                selected.innerHTML = pointbox.innerHTML;
+            } else if (value == "options") {
+                selected.innerHTML = options.innerHTML;
+            } else if (value == "AlgorithmVisualization") {
+                selected.innerHTML = algorithmVisualization.innerHTML;
+            } else {
+                selected.innerHTML = "";
+            }
+        }
+        // get the selected algorithm from the AlgorithmSelection menu
+        // (factored out here to avoid repeated code)
+        function getCurrentAlgorithm() {
+            var menuSelection = document.getElementById("AlgorithmSelection");
+            var selectionIndex = menuSelection.selectedIndex;
+            return menuSelection.options[selectionIndex].value;
+        }
 
         function showHiddenPseudocode() {
             var show = document.getElementById("showHidden").checked;
@@ -524,3 +553,4 @@ function makeResize(){
         </div>
         </body>
 </html>
+
