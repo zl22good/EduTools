@@ -109,6 +109,62 @@ function startRead() {
     }
 }
 
+function readServer(event){
+	clearTables();
+	var index = document.getElementById("mapOptions").selectedIndex;
+ 	var value = document.getElementById("mapOptions").options[index].value;
+ 	
+ 	if(value != ""){
+ 		// document.getElementById("test").innerHTML = value;
+ 		
+ 		var xmlhttp = new XMLHttpRequest();
+ 		xmlhttp.onreadystatechange = function() {
+ 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+ 				
+ 				var file = new Blob([xmlhttp.responseText], {type : "text/plain"});
+ 				file.name = value;
+ 				
+ 				// force highway data box to be displayed
+ 				var menu = document.getElementById("showHideMenu");
+ 				// menu.options[2].selected = true;
+ 				// toggleTable();
+ 
+ 				if (file) {
+ 				//DBG.write("file: " + file.name);
+ 				document.getElementById('filename').innerHTML = file.name;
+ 				if ((file.name.indexOf(".wpt") == -1) &&
+ 					(file.name.indexOf(".pth") == -1) &&
+ 					(file.name.indexOf(".nmp") == -1) &&
+ 					(file.name.indexOf(".gra") == -1) &&
+ 					(file.name.indexOf(".tmg") == -1) &&
+ 					(file.name.indexOf(".wpl") == -1)) {
+ 					pointboxErrorMsg("Unrecognized file type!");
+ 					return;
+ 				}
+ 				// pointboxErrorMsg("Loading... (" + file.size + " bytes)");
+ 				var reader;
+ 				try {
+ 					reader = new FileReader();
+ 				}
+ 				catch(e) {
+ 					pointboxErrorMsg("Error: unable to access file (Perhaps no browser support?  Try recent Firefox or Chrome releases.).");
+ 					return;
+ 				}
+ 				reader.readAsText(file, "UTF-8");
+ 				reader.onload = fileLoaded;
+ 				//reader.onerror = fileLoadError;
+ 				}
+ 				else {
+ 				//DBG.write("file is null!");
+ 				}
+ 			}
+ 		};
+ 		xmlhttp.open("GET", "http://courses.teresco.org/metal/graphs/"+value, true);
+ 		xmlhttp.send();
+ 
+  	}
+}
+
 
 // when the FileReader created in startRead has finished, this will be called
 // to process the contents of the file
@@ -159,9 +215,72 @@ function processContents(fileContents) {
     // document.getElementById('pointbox').innerHTML = pointboxContents;
 	var newEle = document.createElement("div");
 	newEle.innerHTML = pointboxContents;
-    document.getElementById('contents_table').appendChild(newEle);
-    updateMap();
+  document.getElementById('contents_table').appendChild(newEle);
+	createDataTable("#waypoints");
+	createDataTable("#connection");
+  updateMap();
 
+}
+function mapOptions(e){
+	var sels = getObj("selects");
+	var orderSel = getObj("orderOptions").value;
+	var resSel = getObj("restrictOptions").value;
+	var min = getObj("minVertices").value;
+	var max = getObj("maxVertices").value;
+	if (max < 0 || min < 0 || min > max)
+		return;
+	if($("#mapOptions").length!=0)
+		sels.removeChild(getObj("mapOptions"));
+	var mapSel = document.createElement("select");
+	mapSel.setAttribute("id", "mapOptions");
+	mapSel.setAttribute("onchange", "readServer(event)");
+	var init = document.createElement("option");
+	init.innerHTML = "Choose Map";
+	init.value = "init";
+	mapSel.appendChild(init);		
+	sels.appendChild(mapSel);
+	var params = {order:orderSel, restrict:resSel, min:min, max:max};
+	var jsonParams = JSON.stringify(params);
+	 $.ajax({
+            type: "POST",
+            url: "./generateMaps.php",
+			datatype: "json",
+            data: {"params":jsonParams},
+            success: function(data){
+                var opts = $.parseJSON(data);
+				var text = opts['text'];
+				var values = opts['values'];
+				var vertices = opts['vertices'];
+				var opt;
+				var str = "";
+				for (var i=0; i<text.length; i++){
+					opt = document.createElement("option");
+					if (values[i].indexOf("simple") != -1)
+						str = text[i] + " (simple) vertices: " + vertices[i];
+					else 
+						str = text[i] + " vertices: " + vertices[i];
+					opt.innerHTML = str;
+					opt.value = values[i];
+					getObj("mapOptions").appendChild(opt);
+				}
+			}
+        });
+  }
+
+function clearTables(){
+	if ($("#waypoints").length!=0)
+		getObj("waypoints_wrapper").parentNode.parentNode.removeChild(getObj("waypoints_wrapper").parentNode);
+	if ($("#connection").length!=0)
+		getObj("connection_wrapper").parentNode.parentNode.removeChild(getObj("connection_wrapper").parentNode);
+}
+
+function createDataTable(id){
+	if($(id).length>0){
+		$(id).dataTable({"destroy":true,
+				"paging":false,
+				"searching":false
+				});
+	}	
 }
 
 // in case we get an error from the FileReader
