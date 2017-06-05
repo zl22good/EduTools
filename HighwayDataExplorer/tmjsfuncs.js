@@ -1664,3 +1664,15 @@ var DBG = {
         }
     }
 }
+
+//Creates the TOSLabel's for the different map tiles and appends them to a div which is returned
+function TOSLabel(){
+	var menubar = document.querySelector(".menubar");
+	
+	var label = document.createElement("a");
+	label.setAttribute("id", "ReferenceLink");
+	label.setAttribute("href", "TOSLinks.html");
+	label.innerHTML = "Reference Link";
+	
+	menubar.appendChild(label);
+}
