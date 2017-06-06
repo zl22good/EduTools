@@ -197,8 +197,17 @@ var visualSettings = {
 	}
 };
 
+//allows the user to click on the table to select a vertice to start at
+function vertexSelect(vertex){
+	var startVertex = document.querySelector("#startPoint");
+	if(startVertex != null){
+		startVertex.value = vertex;
+	}
+}
+
 function hoverV (e, i){
 	vicon = markers[i].getIcon();
+	vertexSelect(i);
 	vcolor = getObj("waypoint"+i).style.backgroundColor;
 	vtext = getObj("waypoint"+i).style.color;
 	updateMarkerAndTable(i, visualSettings.hoverV, 0, false);
@@ -725,11 +734,11 @@ function AddMarker(marker, markerinfo, i) {
     google.maps.event.addListener(marker, 'click', function () {
         infowindow.setContent(markerinfo);
         infowindow.open(map, marker);
+		vertexSelect(i);
     });
 }
 
 function LabelClick(i, label, lat, lon, errors) {
-
     map.panTo(new google.maps.LatLng(lat, lon));
     //infowindow.setContent(info);
     infowindow.setContent(markerinfo[i]);
@@ -737,8 +746,7 @@ function LabelClick(i, label, lat, lon, errors) {
 }
 
 function MarkerInfo(i, wpt) {
-
-    return '<p style="line-height:160%;"><span style="font-size:24pt;">' + wpt.label + '</span><br><b>Waypoint ' + (i + 1) + '<\/b><br><b>Coords.:<\/b> ' + wpt.lat + '&deg;, ' + wpt.lon + '&deg;<\/p>';
+    return '<p style="line-height:160%;"><span style="font-size:24pt;">' + wpt.label + '</span><br><b>Waypoint ' + (i) + '<\/b><br><b>Coords.:<\/b> ' + wpt.lat + '&deg;, ' + wpt.lon + '&deg;<\/p>';
 
 }
 
