@@ -1,7 +1,7 @@
 <?
 $jsonArr = json_decode($_POST['params'], true);
 
-$mysqli = new mysqli("XXXXX");
+$mysqli = new mysqli("XXXXXX");
 
 $response = array('text'=>array(), 'values'=>array(), 'vertices'=>array());
 
