@@ -1,16 +1,34 @@
 <?
+// read information about graphs from our DB
 $jsonArr = json_decode($_POST['params'], true);
 
-$mysqli = new mysqli("XXXXXX");
+// this should point to /home/www/courses/metal/lib/tm.conf on blizzard
+$tmconffile = fopen($_SERVER['DOCUMENT_ROOT']."/metal/lib/tm.conf", "r");
+$tmdbname = chop(fgets($tmconffile));
+$tmdbuser = chop(fgets($tmconffile));
+$tmdbpasswd = chop(fgets($tmconffile));
+$tmdbhost = chop(fgets($tmconffile));
+
+
+// make the connection
+//echo "<!-- mysqli connecting to database ".$tmdbname." on ".$tmdbhost." -->\n";
+mysqli_report(MYSQLI_REPORT_STRICT);
+try {
+    $tmdb = new mysqli($tmdbhost, $tmdbuser, $tmdbpasswd, $tmdbname);
+}
+catch ( Exception $e ) {
+   //echoecho "<h1 style='color: red'>Failed to connect to database ".$tmdbname." on ".$tmdbhost." Please try again later.</h1>";
+   exit;
+}
 
 $response = array('text'=>array(), 'values'=>array(), 'vertices'=>array());
 
 if($jsonArr['order'] == "alpha")
-	$result = $mysqli->query("SELECT * FROM graphs ORDER BY filename ASC");
+	$result = $tmdb->query("SELECT * FROM graphs ORDER BY filename ASC");
 else if($jsonArr['order'] == "small")
-	$result = $mysqli->query("SELECT * FROM graphs ORDER BY vertices ASC");	
+	$result = $tmdb->query("SELECT * FROM graphs ORDER BY vertices ASC");	
 else if($jsonArr['order'] == "large")
-	$result = $mysqli->query("SELECT * FROM graphs ORDER BY vertices DESC");
+	$result = $tmdb->query("SELECT * FROM graphs ORDER BY vertices DESC");
 
 	if ($jsonArr['restrict'] == "collapsed"){
 		while ($row = $result->fetch_array()) {
@@ -42,6 +60,6 @@ else if($jsonArr['order'] == "large")
 	} 
 
 	$result->close();
-	$mysqli->close();
+	$tmdb->close();
 	echo json_encode($response);
 ?>
