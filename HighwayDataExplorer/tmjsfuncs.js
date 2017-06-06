@@ -1671,8 +1671,8 @@ function TOSLabel(){
 	
 	var label = document.createElement("a");
 	label.setAttribute("id", "ReferenceLink");
-	label.setAttribute("href", "TOSLinks.html");
-	label.innerHTML = "Reference Link";
+	label.setAttribute("href", "http://tm.teresco.org/credits.php");
+	label.innerHTML = "Credits and Sources";
 	
 	menubar.appendChild(label);
 }
