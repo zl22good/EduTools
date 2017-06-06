@@ -841,12 +841,22 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
         strokeColor: vs.color
     });
     markers[waypointNum].setZIndex(google.maps.Marker.MAX_ZINDEX + zIndex);
-
-    document.getElementById('waypoint' + waypointNum).style.backgroundColor = vs.color;
-    document.getElementById('waypoint' + waypointNum).style.color = vs.textColor;
-    if (hideTableLine) {
-        document.getElementById('waypoint' + waypointNum).style.display = "none";
-    }
+	var row = getObj("waypoint"+waypointNum);
+    row.style.backgroundColor = vs.color;
+    row.style.color = vs.textColor;
+    if (hideTableLine) 
+        row.style.display = "none";
+	if (vs.color == "#0000a0"){
+		var clone = row.cloneNode(true);
+		clone.className = "blueRow";
+		row.parentNode.appendChild(clone);
+		row.parentNode.removeChild(row);		
+	}
+	if (vs.color == "#00a000"){
+		var clone = row.cloneNode(true);
+		row.parentNode.insertBefore(clone, row.parentNode.childNodes[1]);
+		row.parentNode.removeChild(row);		
+	}
 }
 
 // function to create the table entry for the leader for extreme points
