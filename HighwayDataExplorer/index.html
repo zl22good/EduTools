@@ -263,16 +263,16 @@ function getCurrentAlgorithm() {
             // if (show == true){
             var value = getCurrentAlgorithm();
             if (value == "vertexSearch") {
-                document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+                document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+'<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
             } else if (value == "EdgeSearch") {
-                document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+                document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
             } else if (value == "BFS") {
                 document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
-                    '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+                    '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+ '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
             } else if (value == "DFS") {
-                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" min="0" name="Starting Point" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" min="0" name="Starting Point" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
             } else if (value == "RFS") {
-                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
             } else {
                 document.getElementById('optionSection').innerHTML = "";
             }
@@ -460,15 +460,15 @@ function makeResize(){
 
       </td></tr>
      <!-- <tr><td id="selectionCheckboxes"></td><tr>-->
-      <tr><td id="algorithmStatus"></td><tr>
+		<tr><td id="algorithmStatus"></td></tr>
       <!--<tr><td id="info1"></td><tr>
       <tr><td id="info2"></td><tr>
       <tr><td id="info3"></td><tr>
       <tr><td id="info4"></td><tr>
       <tr><td id="info5"></td><tr>
       <tr><td id="info6"></td><tr>-->
-      <tr><td id="legends"></td><tr>
-      <tr><td id="pseudo"></td><tr>
+		<tr><td id="legends"></td></tr>
+		<tr><td id="pseudo"></td></tr>
 
             </tbody>
         </table>
