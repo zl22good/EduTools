@@ -68,7 +68,7 @@ function pointboxErrorMsg(msg) {
 
 // when a file is selected, this will be called
 function startRead() {
-
+	clearTables();
     // first, retrieve the selected file (as a File object)
     // which must be done before we toggle the table to force
     // the pointbox to be displayed
@@ -169,13 +169,41 @@ function readServer(event){
 // when the FileReader created in startRead has finished, this will be called
 // to process the contents of the file
 function fileLoaded(event) {
-
     // file done loading, read the contents
     processContents(event.target.result);
 }
 
+function undoCollapse(event){
+	var clss = "."+event.target.className;
+	var elems = document.querySelectorAll(clss);
+	for(var i=0; i<elems.length; i++)
+		elems[i].style.display = "";
+	event.target.parentNode.parentNode.removeChild(event.target.parentNode);	
+}
+
+function collapseElements(clss, str, td){
+	var elems = document.querySelectorAll("."+clss);
+	for(var i=0; i<elems.length; i++)
+		elems[i].style.display = "none";
+	var btn = document.createElement("input");
+	btn.setAttribute("type", "button");
+	btn.setAttribute("value", str);
+	btn.setAttribute("onclick", "undoCollapse(event)");
+	btn.setAttribute("class", clss);
+	if(td){
+		var wrap = document.createElement("td");
+		wrap.appendChild(btn);
+	}
+	else{
+		var wrap = document.createElement("div");
+		wrap.appendChild(btn)
+	}
+	elems[0].parentNode.appendChild(wrap);
+}
+
 // process the contents of a String which came from a file or elsewhere
 function processContents(fileContents) {
+	collapseElements("loadcollapse", "Show load options", true);
 
     // place the contents into the file contents area (will improve later)
     // document.getElementById('pointbox').innerHTML = "<pre>" + fileContents + "</pre>";
