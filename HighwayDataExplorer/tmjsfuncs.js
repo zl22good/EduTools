@@ -1444,8 +1444,18 @@ function continueGraphTraversal() {
 
     // update view of our list
     //printList(queue);
-    document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
+   /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
+    setTimeout(continueGraphTraversal, delay);*/
+      if(document.getElementById("showDataStructure").checked){
+        var testing123 = makeTable();
+        if(testing123 == null){
+            //alert("NULL");
+        }
+       else{  document.getElementById('algorithmStatus').appendChild(testing123);
+    }
+}
     setTimeout(continueGraphTraversal, delay);
+
 }
 
 function getAdjacentPoints(pointIndex) {
@@ -1683,4 +1693,86 @@ function TOSLabel(){
 	label.innerHTML = "Credits and Sources";
 	
 	menubar.appendChild(label);
+}
+
+
+var createTable = false;
+var showAll = false;
+
+function makeTable(){ 
+    var size = discoveredVertices.length-1;
+    var showAllSymbol = "-";
+    if(size > 10 && !showAll){
+        size = 10;
+        showAllSymbol="+";
+    }
+    if(createTable == true){
+        var new_tbody = document.createElement("tbody");
+        if(discoveredVerticesName == "Stack"){
+            for (var i = 0; i <= size ; i++) {      
+                var row = document.createElement("tr");
+                row.setAttribute("id", "l" + i);
+                row.innerHTML = discoveredVertices[discoveredVertices.length-(1+i)].vIndex;
+                new_tbody.appendChild(row);
+            }
+            var row = document.createElement("tr");
+            row.setAttribute("id", "l" + i);
+            row.innerHTML = showAllSymbol;  
+            new_tbody.appendChild(row);
+        }
+        else if(discoveredVerticesName == "Queue"){
+            for (var i = 0; i <= size ; i++) { 
+                var col = document.createElement("td");
+                col.setAttribute("id", "l" + i);
+                if(size>=10 && i == size/2){
+                    col.innerHTML = showAllSymbol;
+                    if(!showAll){
+                        size = discoveredVertices.length-1;
+                        i = size-5;
+                    }
+                }
+                else{
+                    col.innerHTML = discoveredVertices[i].vIndex;
+                }
+                new_tbody.appendChild(col);
+            }
+        }
+        var tableBody = document.getElementById("tablebody");
+        tableBody.innerHTML = new_tbody.innerHTML;
+    }
+        else{
+            createTable = true;
+            var div = document.createElement("div");
+            div.setAttribute("id", "makeTable");
+    
+            var table = document.createElement("table");
+            table.setAttribute("id", "table");
+            var tableBody = document.createElement("tbody");
+            tableBody.setAttribute("id","tablebody");
+    
+            if(discoveredVerticesName == "Stack"){
+            for (var i = discoveredVertices.length-1; i >= 0 ; i--) {
+                var row = document.createElement("tr");
+                row.setAttribute("id", "l" + i);
+                row.innerHTML = discoveredVertices[i].vIndex;
+                tableBody.appendChild(row);
+                }   
+            }
+            else if(discoveredVerticesName == "Queue"){
+            for (var i = 0; i <= size ; i++) {
+                var row = document.createElement("td");
+                row.setAttribute("id", "l" + i);
+                row.innerHTML = discoveredVertices[i].vIndex;
+                tableBody.appendChild(row);
+            }
+        
+        }
+            table.appendChild(tableBody);
+            table.setAttribute("border", "2");
+            div.appendChild(table);
+            
+        
+        }
+    return div;      
+        
 }
