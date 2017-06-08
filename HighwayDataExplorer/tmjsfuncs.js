@@ -924,9 +924,7 @@ function startVertexSearch() {
         connections[i].setMap(null);
     }
     //we don't need connections table here, so we remove those
-    var cTable = document.getElementById("connection");
-    cTable.innerHTML = "";
-
+    getObj("connection").style.display = "none";
 
     // this doesn't really make sense for this search...
     // var startingPoint = document.getElementById("startPoint").value;
@@ -1291,8 +1289,7 @@ function startGraphTraversal(discipline) {
         return;
     }
 
-    var cTable = document.getElementById("connection");
-    cTable.innerHTML = "";
+    getObj("connection").style.display = "none";
 
     // initialize our visited array
     visited = new Array(waypoints.length).fill(false);
@@ -1465,6 +1462,204 @@ function continueGraphTraversal() {
     }
 }
     setTimeout(continueGraphTraversal, delay);
+
+}
+
+function startConnectedPieces(vert, visitarr, red, green, blue) {
+
+   traversalDiscipline = "BFS";
+   discoveredVerticesName = "Queue";
+
+    // if we are paused
+    if (pause) {
+        pause = false;
+        continueGraphTraversal();
+        return;
+    }
+
+    getObj("connection").style.display = "none";
+
+    // initialize our visited array, define start vertex, recolor if necessary
+	if(vert == -1){
+		visited = new Array(waypoints.length).fill(false);
+		startingVertex = document.getElementById("startPoint").value;
+		 // replace all markers with white circles
+    for (var i = 0; i < markers.length; i++) {
+        updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
+    }
+
+    // color all edges white also
+    for (var i = 0; i < connections.length; i++) {
+        connections[i].setOptions({
+            strokeColor: visualSettings.undiscovered.color,
+            strokeOpacity: 0.6
+        });
+    }	
+	}
+	else{
+		visited = visitarr;
+		startingVertex = vert;
+	}
+
+    // initialize the process with this value
+    discoveredVertices.push({
+        vIndex: startingVertex,
+        connection: null
+    });
+
+    updateMarkerAndTable(startingVertex, visualSettings.startVertex, 10, false);
+
+    // nothing to update this first time
+    lastVisitedVertex = -1;
+    setTimeout(function(){continueConnectedPieces(red, green, blue)}, delay);
+}
+
+function continueConnectedPieces(red, green, blue) {
+	
+    // if we're paused, do nothing for now
+    if (pause) {
+        return;
+    }
+
+    // maybe we have a last visited vertex to update
+    if (lastVisitedVertex != -1) {
+        if (lastVisitedVertex == startingVertex) {
+            // always leave the starting vertex colored appropriately
+            // and in the table
+            updateMarkerAndTable(startingVertex, visualSettings.startVertex,
+                10, false);
+        } else if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
+            // not in the list, this vertex gets marked as in the spanning tree
+            updateMarkerAndTable(lastVisitedVertex, { color: "rgb("+red+","+green+","+blue+")",
+        textColor: "black",
+        scale: 2},
+                1, false);
+        } else {
+            // still in the list, color with the "discoveredEarlier"  style
+            updateMarkerAndTable(lastVisitedVertex, visualSettings.discoveredEarlier,
+                5, false);
+        }
+    }
+	
+	var vleft = false;
+	var index = -1;
+	for(var i=0; i<visited.length; i++){
+		if(!visited[i]){
+			vleft = true;
+			index = i;
+		}
+	}
+	
+    // maybe we're done
+    if (discoveredVertices.length == 0 && !vleft) {
+        //console.log("Done!");
+        return;
+    }
+	
+	if (discoveredVertices.length == 0 && vleft) {
+		if (green <= 215){
+			green = green+40;
+		}
+		else if (red >= 40){
+			red-=40;
+		}	
+		else if (green > 215 && blue <= 215){
+			green -= 40;
+			blue += 40;
+		}		
+        startConnectedPieces(index, visited, red, green, blue);
+		return;
+    }
+
+    // select the next vertex to visit and remove it from the
+    // discoveredVertices list
+   
+    var nextToVisit = discoveredVertices.shift();
+    
+
+    lastVisitedVertex = nextToVisit.vIndex;
+    var vIndex = nextToVisit.vIndex;
+
+    // now decide what to do with this vertex -- depends on whether it
+    // had been previously visited
+    if (visited[vIndex]) {
+
+        // we've been here before, but is it still in the list?
+        if (discoveredVerticesContainsVertex(vIndex)) {
+            // not there anymore, indicated this as visitedEarlier, and
+            // will be discarded or marked as discoveredEarlier on the
+            // next iteration
+            updateMarkerAndTable(vIndex, visualSettings.visitedEarlier,
+                4, false);
+        } else {
+            // still to be seen again, so mark is as discoveredEarlier
+            updateMarkerAndTable(vIndex, visualSettings.discoveredEarlier,
+                5, false);
+        }
+
+        // in either case here, the edge that got us here is not
+        // part of the ultimate spanning tree, so it should be the
+        // "discoveredEarlier" color
+        if (nextToVisit.connection != null) {
+            nextToVisit.connection.setOptions({
+                strokeColor: visualSettings.discoveredEarlier.color
+            });
+        }
+    }
+    // visiting for the first time
+    else {
+
+        visited[vIndex] = true;
+        updateMarkerAndTable(vIndex, visualSettings.visiting,
+            10, false);
+
+        // we used the edge to get here, so let's mark it as such
+        if (nextToVisit.connection != null) {
+            nextToVisit.connection.setOptions({
+                strokeColor: visualSettings.spanningTree.color
+            });
+        }
+
+        // discover any new neighbors
+        var neighbors = getAdjacentPoints(vIndex);
+        for (var i = 0; i < neighbors.length; i++) {
+            if (!visited[neighbors[i]]) {
+                var connection = waypoints[vIndex].edgeList[i].connection;
+                discoveredVertices.push({
+                    vIndex: neighbors[i],
+                    connection: connection
+                });
+                updateMarkerAndTable(neighbors[i], visualSettings.discovered,
+                    5, false);
+
+                // also color the edge we followed to get to this
+                // neighbor as the same color to indicate it's a candidate
+                // edge followed to find a current discovered but
+                // unvisited vertex
+                if (connection != null) {
+                    connection.setOptions({
+                        strokeColor: visualSettings.discovered.color
+                    });
+                } else {
+                    console.log("Unexpected null connection, vIndex=" + vIndex + ", i=" + i);
+                }
+            }
+        }
+    }
+
+    // update view of our list
+    //printList(queue);
+   /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
+    setTimeout(continueGraphTraversal, delay);*/
+      if(document.getElementById("showDataStructure").checked){
+        var testing123 = makeTable();
+        if(testing123 == null){
+            //alert("NULL");
+        }
+       else{  document.getElementById('algorithmStatus').appendChild(testing123);
+    }
+}
+    setTimeout(function(){continueConnectedPieces(red, green, blue)}, delay);
 
 }
 
