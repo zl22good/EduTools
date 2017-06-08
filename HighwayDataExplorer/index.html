@@ -135,25 +135,38 @@ function toggleTable() {
   if (value == "pointbox") {
 	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
 	var newEle = document.createElement("div");
-	newEle.innerHTML = pointbox.innerHTML
+	newEle.innerHTML = pointbox.innerHTML;
+	if($("#connection").length != 0 || $("#waypoints").length != 0)
+		getObj("connection").parentNode.parentNode.style.display = "";
     selected.appendChild(newEle);
   }
   else if (value == "options") {
 	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
 	var newEle = document.createElement("div");
-	newEle.innerHTML = options.innerHTML
+	newEle.innerHTML = options.innerHTML;
     selected.appendChild(newEle);
+	if($("#connection").length != 0 || $("#waypoints").length != 0)
+		getObj("connection").parentNode.parentNode.style.display = "";
+	if(document.querySelector(".loadcollapse").style.display == "none")
+		getObj("loadcollapsebtn").style.display = "";
   }
   else if (value =="AlgorithmVisualization"){
 	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
 	var newEle = document.createElement("div");
-	newEle.innerHTML = algorithmVisualization.innerHTML
+	newEle.innerHTML = algorithmVisualization.innerHTML;
     selected.appendChild(newEle);
+	if($("#connection").length != 0 || $("#waypoints").length != 0)
+		getObj("connection").parentNode.parentNode.style.display = "";
+	if(document.querySelector(".loadcollapse").style.display == "none")
+		getObj("loadcollapsebtn").style.display = "";
   }
   else {  
-	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
-	makeResize();
-  }
+  selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
+  var newEle = document.createElement("div");
+  selected.appendChild(newEle);
+ if($("#connection").length != 0 || $("#waypoints").length != 0)
+		getObj("connection").parentNode.parentNode.style.display = "none";
+		}
 }
 // get the selected algorithm from the AlgorithmSelection menu
 // (factored out here to avoid repeated code)
@@ -372,6 +385,13 @@ function makeResize(){
 			<option value = "all">All</option>		
 		</select>
 		<br>
+		Category:
+		<select id = "categoryOptions">
+			<option value = "region">Region</option>
+			<option value = "system">System</option>
+			<option value = "all">All</option>		
+		</select>
+		<br>
 		(Choose "Collapsed" if unsure what this means)<br>
 		Size from
 		<input type="number" min="1" value="1" id="minVertices" style="width:6rem;">
@@ -380,7 +400,11 @@ function makeResize(){
 		vertices
 		<br>
 		<input type="button" value="Get Graph List" onclick="mapOptions(event)">
-	  </td></tr>	  
+	  </td>
+	  <td id="loadcollapsebtn" style="display:none;">
+		<input type="button" onclick="undoCollapse(event)" value="Show Load Options">
+	  </td>
+	  </tr>	  
       <tr><td>
         <input id="showHidden" type="checkbox" name="Show Hidden Markers" onclick="showHiddenClicked()" checked="false">&nbsp;Show Hidden Markers
       </td></tr>
@@ -416,6 +440,13 @@ function makeResize(){
 			<option value = "all">All</option>		
 		</select>
 		<br>
+		Category:
+		<select id = "categoryOptions">
+			<option value = "region">Region</option>
+			<option value = "system">System</option>
+			<option value = "all">All</option>		
+		</select>
+		<br>
 		(Choose "Collapsed" if unsure what this means)<br>
 		Size from
 		<input type="number" min="1" value="1" id="minVertices" style="width:6rem;">
@@ -423,7 +454,11 @@ function makeResize(){
 		<input type="number" min="1" value="5000" id="maxVertices" style="width:6rem;">
 		vertices
 		<br>
+		
 		<input type="button" value="Get Graph List" onclick="mapOptions(event)">
+	  </td>
+	  <td id="loadcollapsebtn" style="display:none;">
+		<input type="button" onclick="undoCollapse(event)" value="Show Load Options">
 	  </td></tr>	
       <tr><td>
         Algorithm Selection:
