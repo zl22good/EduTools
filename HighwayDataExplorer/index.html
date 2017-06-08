@@ -243,7 +243,10 @@ function getCurrentAlgorithm() {
                 startGraphTraversal("RFS");
             } else if (value == "ConvexHull") {
                 startConvexHull();
-            } else if (value == "Dijkstra") {} else {}
+			}else if (value == "connected") {
+                startConnectedPieces(-1, null, 255, 50, 0);
+            }
+             else if (value == "Dijkstra") {} else {}
         }
 
         function showLegend() {
@@ -274,6 +277,7 @@ function getCurrentAlgorithm() {
         function selectAlgorithmAndCheckBoxes() {
             // var show = document.getElementById("selection_checkboxes").checked;
             // if (show == true){
+			console.log("here");
             var value = getCurrentAlgorithm();
             if (value == "vertexSearch") {
                 document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+'<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
@@ -286,12 +290,14 @@ function getCurrentAlgorithm() {
                 document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" min="0" name="Starting Point" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
             } else if (value == "RFS") {
                 document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
-            } else {
+            } else if (value == "connected") {
+                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
+            }else {
                 document.getElementById('optionSection').innerHTML = "";
             }
         }
 
-        function selectAlgorithmAndReset() {
+function selectAlgorithmAndReset() {
             for (var i = 0; i < connections.length; i++) {
                 connections[i].setMap(null);
                 document.getElementById('connection' + i).style.backgroundColor = "white";
@@ -469,6 +475,7 @@ function makeResize(){
           <option value="BFS">Breadth-First Traversal</option>
           <option value="DFS">Depth-First Traversal</option>
           <option value="RFS">Random-First Traversal</option>
+		  <option value="connected">Connected Paths</option>
           <!-- <option value="ConvexHull"> Convex Hull </option> -->
          <!-- <option value="Dijkstra"> Dijkstra </option> -->
         </select>

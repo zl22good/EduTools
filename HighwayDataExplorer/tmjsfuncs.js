@@ -1465,7 +1465,7 @@ function continueGraphTraversal() {
 
 }
 
-function startConnectedPieces() {
+function startConnectedPieces(vert, visitarr, red, green, blue) {
 
    traversalDiscipline = "BFS";
    discoveredVerticesName = "Queue";
@@ -1479,10 +1479,11 @@ function startConnectedPieces() {
 
     getObj("connection").style.display = "none";
 
-    // initialize our visited array
-    visited = new Array(waypoints.length).fill(false);
-
-    // replace all markers with white circles
+    // initialize our visited array, define start vertex, recolor if necessary
+	if(vert == -1){
+		visited = new Array(waypoints.length).fill(false);
+		startingVertex = document.getElementById("startPoint").value;
+		 // replace all markers with white circles
     for (var i = 0; i < markers.length; i++) {
         updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
     }
@@ -1493,10 +1494,12 @@ function startConnectedPieces() {
             strokeColor: visualSettings.undiscovered.color,
             strokeOpacity: 0.6
         });
-    }
-
-    // vertex index to start the traversal
-    startingVertex = document.getElementById("startPoint").value;
+    }	
+	}
+	else{
+		visited = visitarr;
+		startingVertex = vert;
+	}
 
     // initialize the process with this value
     discoveredVertices.push({
@@ -1508,11 +1511,11 @@ function startConnectedPieces() {
 
     // nothing to update this first time
     lastVisitedVertex = -1;
-    setTimeout(continueConnectedPieces, delay);
+    setTimeout(function(){continueConnectedPieces(red, green, blue)}, delay);
 }
 
-function continueConnectedPieces() {
-
+function continueConnectedPieces(red, green, blue) {
+	
     // if we're paused, do nothing for now
     if (pause) {
         return;
@@ -1527,7 +1530,9 @@ function continueConnectedPieces() {
                 10, false);
         } else if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
             // not in the list, this vertex gets marked as in the spanning tree
-            updateMarkerAndTable(lastVisitedVertex, visualSettings.spanningTree,
+            updateMarkerAndTable(lastVisitedVertex, { color: "rgb("+red+","+green+","+blue+")",
+        textColor: "black",
+        scale: 2},
                 1, false);
         } else {
             // still in the list, color with the "discoveredEarlier"  style
@@ -1535,15 +1540,35 @@ function continueConnectedPieces() {
                 5, false);
         }
     }
+	
+	var vleft = false;
+	var index = -1;
+	for(var i=0; i<visited.length; i++){
+		if(!visited[i]){
+			vleft = true;
+			index = i;
+		}
+	}
+	
     // maybe we're done
-    if (discoveredVertices.length == 0 && ) {
+    if (discoveredVertices.length == 0 && !vleft) {
         //console.log("Done!");
         return;
     }
 	
-	if (discoveredVertices.length == 0) {
-        //console.log("Done!");
-        return;
+	if (discoveredVertices.length == 0 && vleft) {
+		if (green <= 215){
+			green = green+40;
+		}
+		else if (red >= 40){
+			red-=40;
+		}	
+		else if (green > 215 && blue <= 215){
+			green -= 40;
+			blue += 40;
+		}		
+        startConnectedPieces(index, visited, red, green, blue);
+		return;
     }
 
     // select the next vertex to visit and remove it from the
@@ -1634,7 +1659,7 @@ function continueConnectedPieces() {
        else{  document.getElementById('algorithmStatus').appendChild(testing123);
     }
 }
-    setTimeout(continueGraphTraversal, delay);
+    setTimeout(function(){continueConnectedPieces(red, green, blue)}, delay);
 
 }
 
