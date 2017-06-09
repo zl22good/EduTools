@@ -135,25 +135,38 @@ function toggleTable() {
   if (value == "pointbox") {
 	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
 	var newEle = document.createElement("div");
-	newEle.innerHTML = pointbox.innerHTML
+	newEle.innerHTML = pointbox.innerHTML;
+	if($("#connection").length != 0 || $("#waypoints").length != 0)
+		getObj("connection").parentNode.parentNode.style.display = "";
     selected.appendChild(newEle);
   }
   else if (value == "options") {
 	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
 	var newEle = document.createElement("div");
-	newEle.innerHTML = options.innerHTML
+	newEle.innerHTML = options.innerHTML;
     selected.appendChild(newEle);
+	if($("#connection").length != 0 || $("#waypoints").length != 0)
+		getObj("connection").parentNode.parentNode.style.display = "";
+	if(document.querySelector(".loadcollapse").style.display == "none")
+		getObj("loadcollapsebtn").style.display = "";
   }
   else if (value =="AlgorithmVisualization"){
 	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
 	var newEle = document.createElement("div");
-	newEle.innerHTML = algorithmVisualization.innerHTML
+	newEle.innerHTML = algorithmVisualization.innerHTML;
     selected.appendChild(newEle);
+	if($("#connection").length != 0 || $("#waypoints").length != 0)
+		getObj("connection").parentNode.parentNode.style.display = "";
+	if(document.querySelector(".loadcollapse").style.display == "none")
+		getObj("loadcollapsebtn").style.display = "";
   }
   else {  
-	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
-	makeResize();
-  }
+  selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
+  var newEle = document.createElement("div");
+  selected.appendChild(newEle);
+ if($("#connection").length != 0 || $("#waypoints").length != 0)
+		getObj("connection").parentNode.parentNode.style.display = "none";
+		}
 }
 // get the selected algorithm from the AlgorithmSelection menu
 // (factored out here to avoid repeated code)
@@ -162,37 +175,6 @@ function getCurrentAlgorithm() {
   var selectionIndex = menuSelection.selectedIndex;
   return menuSelection.options[selectionIndex].value;
 }
-</script>
-<body onload="loadmap(); toggleTable();">
-    <script type="application/javascript">
-        function toggleTable() {
-            var menu = document.getElementById("showHideMenu");
-            var index = menu.selectedIndex;
-            var value = menu.options[index].value;
-            //  var algoTable = menu.algorithmbased.value;
-            var pointbox = document.getElementById("pointbox");
-            var options = document.getElementById("options");
-            var selected = document.getElementById("selected");
-            var algorithmVisualization = document.getElementById("AlgorithmVisualization");
-            // show only table (or no table) based on value
-            if (value == "pointbox") {
-                selected.innerHTML = pointbox.innerHTML;
-            } else if (value == "options") {
-                selected.innerHTML = options.innerHTML;
-            } else if (value == "AlgorithmVisualization") {
-                selected.innerHTML = algorithmVisualization.innerHTML;
-            } else {
-                selected.innerHTML = "";
-            }
-        }
-        // get the selected algorithm from the AlgorithmSelection menu
-        // (factored out here to avoid repeated code)
-        function getCurrentAlgorithm() {
-            var menuSelection = document.getElementById("AlgorithmSelection");
-            var selectionIndex = menuSelection.selectedIndex;
-            return menuSelection.options[selectionIndex].value;
-        }
-
         function showHiddenPseudocode() {
             var show = document.getElementById("showHidden").checked;
             var value = getCurrentAlgorithm();
@@ -261,7 +243,10 @@ function getCurrentAlgorithm() {
                 startGraphTraversal("RFS");
             } else if (value == "ConvexHull") {
                 startConvexHull();
-            } else if (value == "Dijkstra") {} else {}
+			}else if (value == "connected") {
+                startConnectedPieces(-1, null, 255, 50, 0);
+            }
+             else if (value == "Dijkstra") {} else {}
         }
 
         function showLegend() {
@@ -292,6 +277,7 @@ function getCurrentAlgorithm() {
         function selectAlgorithmAndCheckBoxes() {
             // var show = document.getElementById("selection_checkboxes").checked;
             // if (show == true){
+			console.log("here");
             var value = getCurrentAlgorithm();
             if (value == "vertexSearch") {
                 document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+'<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
@@ -301,15 +287,17 @@ function getCurrentAlgorithm() {
                 document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
                     '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+ '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
             } else if (value == "DFS") {
-                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" min="0" name="Starting Point" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
+                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" min="0" name="Starting Point" value="0" size="7" /> <br>' + 'End &nbspVertex <input id="endPoint" onfocus="endPointInput()" type="number" min="0" name="End Point" value="0" size="7" /> <br>' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
             } else if (value == "RFS") {
                 document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
-            } else {
+            } else if (value == "connected") {
+                document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
+            }else {
                 document.getElementById('optionSection').innerHTML = "";
             }
         }
 
-        function selectAlgorithmAndReset() {
+function selectAlgorithmAndReset() {
             for (var i = 0; i < connections.length; i++) {
                 connections[i].setMap(null);
                 document.getElementById('connection' + i).style.backgroundColor = "white";
@@ -325,20 +313,6 @@ function getCurrentAlgorithm() {
         }
 
 
-function selectAlgorithmAndReset(){
-    for (var i = 0; i < connections.length; i++) {
-	connections[i].setMap(null);
-  document.getElementById('connection'+i).style.backgroundColor = "white";
-    }
-    connections = new Array();
-    polypoints = new Array();
-    for (var i = 0; i < markers.length; i++) {
-	markers[i].setMap(null);
-  document.getElementById('waypoint'+i).style.backgroundColor = "white";
-    }
-    markers = new Array();
-    markerinfo = new Array();
-}
 function drag(event) {
 	var x = event.target.style.left;
 	var y = event.target.style.top;
@@ -398,11 +372,11 @@ function makeResize(){
       <tr><th>Load/Map Options</th></tr>
     </thead>
     <tbody>
-      <tr><td>
+      <tr><td class="loadcollapse">
 		Use local file: <br>
         <input id="filesel" type="file"  value="Start" onchange="startRead()">
       </td></tr>
-	  <tr><td id="selects">
+	  <tr><td id="selects" class="loadcollapse">
 		Or select dataset: <br>
 		Order by:
 		<select id = "orderOptions">
@@ -418,6 +392,13 @@ function makeResize(){
 			<option value = "all">All</option>		
 		</select>
 		<br>
+		Category:
+		<select id = "categoryOptions">
+			<option value = "region">Region</option>
+			<option value = "system">System</option>
+			<option value = "all">All</option>		
+		</select>
+		<br>
 		(Choose "Collapsed" if unsure what this means)<br>
 		Size from
 		<input type="number" min="1" value="1" id="minVertices" style="width:6rem;">
@@ -426,7 +407,11 @@ function makeResize(){
 		vertices
 		<br>
 		<input type="button" value="Get Graph List" onclick="mapOptions(event)">
-	  </td></tr>	  
+	  </td>
+	  <td id="loadcollapsebtn" style="display:none;">
+		<input type="button" onclick="undoCollapse(event)" value="Show Load Options">
+	  </td>
+	  </tr>	  
       <tr><td>
         <input id="showHidden" type="checkbox" name="Show Hidden Markers" onclick="showHiddenClicked()" checked="false">&nbsp;Show Hidden Markers
       </td></tr>
@@ -442,11 +427,11 @@ function makeResize(){
       <tr><th>Algorithm Simulation Control Panel</th></tr>
     </thead>
     <tbody>
-      <tr><td>
+      <tr><td class="loadcollapse">
         Use local file: <br>
         <input id="filesel" type="file"  value="Start" onchange="startRead()">
       </td></tr>
-	  <tr><td id="selects">
+	  <tr><td id="selects" class="loadcollapse">
 		Or select dataset: <br>
 		Order by:
 		<select id = "orderOptions">
@@ -462,6 +447,15 @@ function makeResize(){
 			<option value = "all">All</option>		
 		</select>
 		<br>
+		Category:
+		<select id = "categoryOptions">
+			<option value = "region">Region</option>
+			<option value = "system">System</option>
+			<option value = "country">Country</option>
+			<option value = "continent">Continent</option>
+			<option value = "all">All</option>		
+		</select>
+		<br>
 		(Choose "Collapsed" if unsure what this means)<br>
 		Size from
 		<input type="number" min="1" value="1" id="minVertices" style="width:6rem;">
@@ -469,7 +463,11 @@ function makeResize(){
 		<input type="number" min="1" value="5000" id="maxVertices" style="width:6rem;">
 		vertices
 		<br>
+		
 		<input type="button" value="Get Graph List" onclick="mapOptions(event)">
+	  </td>
+	  <td id="loadcollapsebtn" style="display:none;">
+		<input type="button" onclick="undoCollapse(event)" value="Show Load Options">
 	  </td></tr>	
       <tr><td>
         Algorithm Selection:
@@ -480,6 +478,7 @@ function makeResize(){
           <option value="BFS">Breadth-First Traversal</option>
           <option value="DFS">Depth-First Traversal</option>
           <option value="RFS">Random-First Traversal</option>
+		  <option value="connected">Connected Paths</option>
           <!-- <option value="ConvexHull"> Convex Hull </option> -->
          <!-- <option value="Dijkstra"> Dijkstra </option> -->
         </select>
