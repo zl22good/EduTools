@@ -1034,6 +1034,7 @@ function continueVertexSearch() {
             southIndex = nextToCheck;
         }
         // check east
+
         if (parseFloat(waypoints[nextToCheck].lon) > parseFloat(waypoints[eastIndex].lon)) {
             foundNewLeader = true;
             defeated.push(eastIndex);
@@ -1348,6 +1349,7 @@ function startGraphTraversal(discipline) {
         vIndex: startingVertex,
         connection: null
     });
+    numVisited++;
 
     updateMarkerAndTable(startingVertex, visualSettings.startVertex, 10, false);
 
@@ -1369,8 +1371,11 @@ function discoveredVerticesContainsVertex(vIndex) {
 
 // function to process one vertex from the discoveredVertices in the
 // graph traversal process
+var numVisited = 0;
+var numVisitedComingOut = 0;
+var numAlreadyVisited = 0;
 function continueGraphTraversal() {
-
+    
     // if we're paused, do nothing for now
     if (pause) {
         return;
@@ -1404,21 +1409,24 @@ function continueGraphTraversal() {
     var nextToVisit;
     if (traversalDiscipline == "BFS") {
         nextToVisit = discoveredVertices.shift();
+        numVisitedComingOut++;
     } else if (traversalDiscipline == "DFS") {
         nextToVisit = discoveredVertices.pop();
+        numVisitedComingOut++;
     } else if (traversalDiscipline == "RFS") {
         var index = Math.floor(Math.random() * discoveredVertices.length);
         nextToVisit = discoveredVertices[index];
         discoveredVertices.splice(index, 1);
+        numVisitedComingOut++;
     }
 
     lastVisitedVertex = nextToVisit.vIndex;
     var vIndex = nextToVisit.vIndex;
-
+    numVisited++;
     // now decide what to do with this vertex -- depends on whether it
     // had been previously visited
     if (visited[vIndex]) {
-
+        numAlreadyVisited++;
         // we've been here before, but is it still in the list?
         if (discoveredVerticesContainsVertex(vIndex)) {
             // not there anymore, indicated this as visitedEarlier, and
@@ -1955,8 +1963,12 @@ function TOSLabel(){
 
 var createTable = false;
 var showAll = false;
-
+var numVisitedString = document.createTextNode("Number of Visited Vertices: " + numVisited);
+var numVisitedComingOutString = document.createTextNode("Number of Vertices Visited Coming out: " + numVisitedComingOut);
+var numAlreadyVisitedString = document.createTextNode("Number of Vertices already Visited: " + numAlreadyVisited);
+var nameAndSize = document.createTextNode(discoveredVerticesName + " Size: " + discoveredVertices.length);
 function makeTable(){ 
+
     var size = discoveredVertices.length-1;
     var showAllSymbol = "-";
     if(size > 10 && !showAll){
@@ -1964,6 +1976,10 @@ function makeTable(){
         showAllSymbol="+";
     }
     if(createTable == true){
+        numVisitedString.nodeValue = "Number of Visited Vertices: " + numVisited;
+        numVisitedComingOutString.nodeValue = "Number of Vertices Visited Coming out: " + numVisitedComingOut;
+        numAlreadyVisitedString.nodeValue = "Number of Vertices already Visited: " + numAlreadyVisited;
+        nameAndSize.nodeValue = discoveredVerticesName + " Size: " + discoveredVertices.length;
         var new_tbody = document.createElement("tbody");
         if(discoveredVerticesName == "Stack"){
             for (var i = 0; i <= size ; i++) {      
@@ -1999,21 +2015,35 @@ function makeTable(){
     }
         else{
             createTable = true;
+            
             var div = document.createElement("div");
             div.setAttribute("id", "makeTable");
-    
+            
+            numVisitedString.nodeValue = "Number of Visited Vertices: " + numVisited ;
+            numVisitedComingOutString.nodeValue = "Number of Vertices Visited Coming out: " + numVisitedComingOut ;
+            numAlreadyVisitedString.nodeValue = "Number of Vertices already Visited: " + numAlreadyVisited;
+            nameAndSize.nodeValue = discoveredVerticesName + " Size: " + discoveredVertices.length;
+            
+            div.appendChild(numVisitedString);
+            div.appendChild(document.createElement("br"));
+            div.appendChild(numVisitedComingOutString);
+             div.appendChild(document.createElement("br"));
+            div.appendChild(numAlreadyVisitedString);
+             div.appendChild(document.createElement("br"));
+            div.appendChild(nameAndSize);
+            
             var table = document.createElement("table");
             table.setAttribute("id", "table");
             var tableBody = document.createElement("tbody");
             tableBody.setAttribute("id","tablebody");
-    
+            
             if(discoveredVerticesName == "Stack"){
-            for (var i = discoveredVertices.length-1; i >= 0 ; i--) {
-                var row = document.createElement("tr");
-                row.setAttribute("id", "l" + i);
-                row.innerHTML = discoveredVertices[i].vIndex;
-                tableBody.appendChild(row);
-                }   
+                for (var i = discoveredVertices.length-1; i >= 0 ; i--) {
+                    var row = document.createElement("tr");
+                    row.setAttribute("id", "l" + i);
+                    row.innerHTML = discoveredVertices[i].vIndex;
+                    tableBody.appendChild(row);
+                    }   
             }
             else if(discoveredVerticesName == "Queue"){
             for (var i = 0; i <= size ; i++) {
@@ -2024,11 +2054,10 @@ function makeTable(){
             }
         
         }
+            
             table.appendChild(tableBody);
             table.setAttribute("border", "2");
             div.appendChild(table);
-            
-        
         }
     return div;      
         
