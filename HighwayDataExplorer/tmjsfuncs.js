@@ -198,16 +198,43 @@ var visualSettings = {
 };
 
 //allows the user to click on the table to select a vertice to start at
-function vertexSelect(vertex){
+/*function vertexSelect(vertex){
 	var startVertex = document.querySelector("#startPoint");
 	if(startVertex != null){
 		startVertex.value = vertex;
 	}
+}*/
+
+function vertexSelect(vertex){
+	if(endOrStart == true){
+		var startVertex = document.querySelector("#startPoint");
+		startVertex.value = vertex;
+		endOrStart = false;
+	}
+}
+
+function vertexSelectEnd(vertex){
+	if(endOrStart1 == true){
+		var endVertex = document.querySelector("#endPoint");
+		endVertex.value = vertex;
+		endOrStart1 = false;
+	}
+}
+
+var endOrStart;
+var endOrStart1;
+function startPointInput(){
+	endOrStart = true;
+}
+
+function endPointInput(){
+	endOrStart1 = true;
 }
 
 function hoverV (e, i){
 	vicon = markers[i].getIcon();
 	vertexSelect(i);
+	vertexSelectEnd(i);
 	vcolor = getObj("waypoint"+i).style.backgroundColor;
 	vtext = getObj("waypoint"+i).style.color;
 	updateMarkerAndTable(i, visualSettings.hoverV, 0, false);
@@ -343,7 +370,7 @@ function getBlankURL() {
 }
 
 var intersectionimage = {
-    url: 'smallintersection.png',
+    url: 'Intersection.png',
     // This marker is 16x16
     size: new google.maps.Size(16, 16),
     // The origin for this image is 0,0.
@@ -735,6 +762,7 @@ function AddMarker(marker, markerinfo, i) {
         infowindow.setContent(markerinfo);
         infowindow.open(map, marker);
 		vertexSelect(i);
+		vertexSelectEnd(i);
     });
 }
 
