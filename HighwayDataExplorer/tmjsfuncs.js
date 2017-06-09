@@ -973,26 +973,26 @@ function continueVertexSearch() {
         var foundNewLeader = false;
 
         // check north
-        if (waypoints[nextToCheck].lat < waypoints[northIndex].lat) {
+        if (waypoints[nextToCheck].lat > waypoints[northIndex].lat) {
             foundNewLeader = true;
             defeated.push(northIndex);
             northIndex = nextToCheck;
         }
         // check south
-        if (waypoints[nextToCheck].lat > waypoints[southIndex].lat) {
+        if (waypoints[nextToCheck].lat < waypoints[southIndex].lat) {
             foundNewLeader = true;
             defeated.push(southIndex);
             southIndex = nextToCheck;
         }
         // check east
-        if (waypoints[nextToCheck].lon < waypoints[eastIndex].lon) {
+        if (waypoints[nextToCheck].lon > waypoints[eastIndex].lon) {
             alert("Next to check:" + waypoints[nextToCheck].lon + "Current East" + waypoints[eastIndex].lon);
             foundNewLeader = true;
             defeated.push(eastIndex);
             eastIndex = nextToCheck;
         }
         // check west
-        if (waypoints[nextToCheck].lon > waypoints[westIndex].lon) {
+        if (waypoints[nextToCheck].lon < waypoints[westIndex].lon) {
             foundNewLeader = true;
             defeated.push(westIndex);
             westIndex = nextToCheck;
