@@ -68,6 +68,11 @@ var usingAdjacencyLists = false;
 // boolean to indicate if a simulation in progress is paused
 var pause = false;
 
+var red = 255;
+var green = 0;
+var blue = 0;
+var piecenum = 1;
+
 
 // array of objects that define color codes from names in the DB
 var colorCodes = new Array();
@@ -1493,14 +1498,14 @@ function continueGraphTraversal() {
 
 }
 
-function startConnectedPieces(vert, visitarr, red, green, blue, piecenum) {
+function startConnectedPieces(vert, visitarr) {
    traversalDiscipline = "BFS";
    discoveredVerticesName = "Queue";
 
     // if we are paused
     if (pause) {
         pause = false;
-        continueGraphTraversal();
+        continueConnectedPieces();
         return;
     }
 	
@@ -1551,10 +1556,10 @@ function startConnectedPieces(vert, visitarr, red, green, blue, piecenum) {
 
     // nothing to update this first time
     lastVisitedVertex = -1;
-    setTimeout(function(){continueConnectedPieces(red, green, blue, piecenum)}, delay);
+    setTimeout(function(){continueConnectedPieces()}, delay);
 }
 
-function continueConnectedPieces(red, green, blue, piecenum) {
+function continueConnectedPieces() {
 	
     // if we're paused, do nothing for now
     if (pause) {
@@ -1613,7 +1618,8 @@ function continueConnectedPieces(red, green, blue, piecenum) {
 			red += 35;
 			console.log("add red");
 		}		
-        startConnectedPieces(index, visited, red, green, blue, piecenum+1);
+		piecenum++;
+        startConnectedPieces(index, visited);
 		return;
     }
 
@@ -1705,7 +1711,7 @@ function continueConnectedPieces(red, green, blue, piecenum) {
        else{  document.getElementById('algorithmStatus').appendChild(testing123);
     }
 }
-    setTimeout(function(){continueConnectedPieces(red, green, blue, piecenum)}, delay);
+    setTimeout(function(){continueConnectedPieces()}, delay);
 
 }
 
