@@ -68,7 +68,7 @@ function pointboxErrorMsg(msg) {
 
 // when a file is selected, this will be called
 function startRead() {
-
+	clearTables();
     // first, retrieve the selected file (as a File object)
     // which must be done before we toggle the table to force
     // the pointbox to be displayed
@@ -169,13 +169,29 @@ function readServer(event){
 // when the FileReader created in startRead has finished, this will be called
 // to process the contents of the file
 function fileLoaded(event) {
-
     // file done loading, read the contents
     processContents(event.target.result);
 }
 
+function undoCollapse(event){
+	var clss = "."+event.target.parentNode.id.substring(0,12);
+	var elems = document.querySelectorAll(clss);
+	for(var i=0; i<elems.length; i++)
+		elems[i].style.display = "";
+	event.target.parentNode.style.display = "none";
+}
+
+function collapseElements(clss, str, td){
+	var elems = document.querySelectorAll("."+clss);
+	var btn = getObj(clss+"btn");
+	for(var i=0; i<elems.length; i++)
+		elems[i].style.display = "none";
+	btn.style.display = "";
+}
+
 // process the contents of a String which came from a file or elsewhere
 function processContents(fileContents) {
+	collapseElements("loadcollapse", "Show load options", true);
 
     // place the contents into the file contents area (will improve later)
     // document.getElementById('pointbox').innerHTML = "<pre>" + fileContents + "</pre>";
@@ -225,6 +241,7 @@ function mapOptions(e){
 	var sels = getObj("selects");
 	var orderSel = getObj("orderOptions").value;
 	var resSel = getObj("restrictOptions").value;
+	var cateSel = getObj("categoryOptions").value;
 	var min = getObj("minVertices").value;
 	var max = getObj("maxVertices").value;
 	if (max < 0 || min < 0 || min > max)
@@ -239,7 +256,7 @@ function mapOptions(e){
 	init.value = "init";
 	mapSel.appendChild(init);		
 	sels.appendChild(mapSel);
-	var params = {order:orderSel, restrict:resSel, min:min, max:max};
+	var params = {order:orderSel, restrict:resSel, category:cateSel, min:min, max:max};
 	var jsonParams = JSON.stringify(params);
 	 $.ajax({
             type: "POST",
@@ -248,17 +265,18 @@ function mapOptions(e){
             data: {"params":jsonParams},
             success: function(data){
                 var opts = $.parseJSON(data);
-				var text = opts['text'];
+				var txt = opts['text'];
 				var values = opts['values'];
 				var vertices = opts['vertices'];
+				var edges = opts['edges'];
 				var opt;
 				var str = "";
-				for (var i=0; i<text.length; i++){
+				for (var i=0; i<txt.length; i++){
 					opt = document.createElement("option");
 					if (values[i].indexOf("simple") != -1)
-						str = text[i] + " (simple) vertices: " + vertices[i];
+						str = txt[i] + " (simple), size: (" + vertices[i] + ", " + edges[i] + ")";
 					else 
-						str = text[i] + " vertices: " + vertices[i];
+						str = txt[i] + ", size: (" + vertices[i] + ", " + edges[i] + ")" ;
 					opt.innerHTML = str;
 					opt.value = values[i];
 					getObj("mapOptions").appendChild(opt);
@@ -278,7 +296,8 @@ function createDataTable(id){
 	if($(id).length>0){
 		$(id).dataTable({"destroy":true,
 				"paging":false,
-				"searching":false
+				"searching":false,
+				"info":false
 				});
 	}	
 }
