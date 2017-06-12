@@ -244,7 +244,7 @@ function getCurrentAlgorithm() {
             } else if (value == "ConvexHull") {
                 startConvexHull();
 			}else if (value == "connected") {
-                startConnectedPieces(-1, null, 255, 50, 0);
+                startConnectedPieces(-1, null);
             }
              else if (value == "Dijkstra") {} else {}
         }
@@ -277,7 +277,6 @@ function getCurrentAlgorithm() {
         function selectAlgorithmAndCheckBoxes() {
             // var show = document.getElementById("selection_checkboxes").checked;
             // if (show == true){
-			console.log("here");
             var value = getCurrentAlgorithm();
             if (value == "vertexSearch") {
                 document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+'<input id="showDataStructure" type="checkbox" name="Show Data Structure">Show Data Structure';
