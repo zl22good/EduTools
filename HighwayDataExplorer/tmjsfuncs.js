@@ -1676,7 +1676,7 @@ function continueConnectedPieces() {
         // we used the edge to get here, so let's mark it as such
         if (nextToVisit.connection != null) {
             nextToVisit.connection.setOptions({
-                strokeColor: visualSettings.spanningTree.color
+                strokeColor: "rgb("+red+","+green+","+blue+")"
             });
         }
 
