@@ -197,14 +197,44 @@ var visualSettings = {
 	}
 };
 
-//allows the user to click on the table to select a vertice to start at
-/*function vertexSelect(vertex){
-	var startVertex = document.querySelector("#startPoint");
-	if(startVertex != null){
-		startVertex.value = vertex;
+/*function startPause(){
+	var startPauseButton = document.getElementById("startButton");
+		if(startPauseButton.innerHTML == "Pause"){
+		alert("PAUSE!!");
+			startPauseButton.onclick = function() {
+				pauseSimulation();
+				startPauseButton.innerHTML = "Start";
+		};
+	}
+	else if(startPauseButton.innerHTML == "Start"){
+			startPauseButton.onclick = function() {
+				selectAlgorithmAndStart();
+				startPauseButton.innerHTML = "Pause";
+		};
+	}
+	else{
+		return;
 	}
 }*/
+// deteremines which button should be displayed pause or start
+function startPause(){
+	var startButton = document.getElementById("startButton");
+	var pauseButton = document.getElementById("pauseButton")
+	pauseButton.style.visibility = 'hidden';
+	
+	startButton.onclick = function() {
+			selectAlgorithmAndStart();
+			startButton.style.visibility = 'hidden';
+			pauseButton.style.visibility = 'visible';
+	};
+	pauseButton.onclick = function() {
+			pauseSimulation()
+			pauseButton.style.visibility = 'hidden';
+			startButton.style.visibility = 'visible';
+	}
+}
 
+//allows the user to click on the table to select a vertice to start at
 function vertexSelect(vertex){
 	if(endOrStart == true){
 		var startVertex = document.querySelector("#startPoint");
