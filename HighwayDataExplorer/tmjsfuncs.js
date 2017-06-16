@@ -68,6 +68,11 @@ var usingAdjacencyLists = false;
 // boolean to indicate if a simulation in progress is paused
 var pause = false;
 
+var red = 255;
+var green = 0;
+var blue = 0;
+var piecenum = 1;
+
 
 // array of objects that define color codes from names in the DB
 var colorCodes = new Array();
@@ -1511,42 +1516,54 @@ function continueGraphTraversal() {
 
 }
 
-function startConnectedPieces(vert, visitarr, red, green, blue) {
-
+function startConnectedPieces(vert, visitarr) {
    traversalDiscipline = "BFS";
    discoveredVerticesName = "Queue";
 
     // if we are paused
     if (pause) {
         pause = false;
-        continueGraphTraversal();
+        continueConnectedPieces();
         return;
     }
+	
+	var piecesTD = "";
 
     getObj("connection").style.display = "none";
 
     // initialize our visited array, define start vertex, recolor if necessary
 	if(vert == -1){
+		var piecesTR = document.createElement("tr");
+		piecesTD = document.createElement("td");
+		piecesTR.appendChild(piecesTD);
+		piecesTD.setAttribute("id","piecesTD");
+		$("#AlgorithmsTable > tbody").append(piecesTR);
+		piecesTD = getObj("piecesTD");
 		visited = new Array(waypoints.length).fill(false);
 		startingVertex = document.getElementById("startPoint").value;
 		 // replace all markers with white circles
-    for (var i = 0; i < markers.length; i++) {
-        updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
-    }
+		for (var i = 0; i < markers.length; i++) {
+			updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
+		}
 
     // color all edges white also
-    for (var i = 0; i < connections.length; i++) {
-        connections[i].setOptions({
-            strokeColor: visualSettings.undiscovered.color,
-            strokeOpacity: 0.6
-        });
-    }	
+		for (var i = 0; i < connections.length; i++) {
+			connections[i].setOptions({
+				strokeColor: visualSettings.undiscovered.color,
+				strokeOpacity: 0.6
+			});
+		}	
 	}
 	else{
+		piecesTD = getObj("piecesTD");
 		visited = visitarr;
 		startingVertex = vert;
 	}
-
+	
+	piecesTD.innerHTML = "Currently traversing component #"+ piecenum;
+	piecesTD.style.backgroundColor = "rgb("+red+","+green+","+blue+")";
+	
+	
     // initialize the process with this value
     discoveredVertices.push({
         vIndex: startingVertex,
@@ -1557,10 +1574,10 @@ function startConnectedPieces(vert, visitarr, red, green, blue) {
 
     // nothing to update this first time
     lastVisitedVertex = -1;
-    setTimeout(function(){continueConnectedPieces(red, green, blue)}, delay);
+    setTimeout(function(){continueConnectedPieces()}, delay);
 }
 
-function continueConnectedPieces(red, green, blue) {
+function continueConnectedPieces() {
 	
     // if we're paused, do nothing for now
     if (pause) {
@@ -1569,12 +1586,7 @@ function continueConnectedPieces(red, green, blue) {
 
     // maybe we have a last visited vertex to update
     if (lastVisitedVertex != -1) {
-        if (lastVisitedVertex == startingVertex) {
-            // always leave the starting vertex colored appropriately
-            // and in the table
-            updateMarkerAndTable(startingVertex, visualSettings.startVertex,
-                10, false);
-        } else if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
+       if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
             // not in the list, this vertex gets marked as in the spanning tree
             updateMarkerAndTable(lastVisitedVertex, { color: "rgb("+red+","+green+","+blue+")",
         textColor: "black",
@@ -1598,22 +1610,34 @@ function continueConnectedPieces(red, green, blue) {
 	
     // maybe we're done
     if (discoveredVertices.length == 0 && !vleft) {
-        //console.log("Done!");
+        getObj("piecesTD").innerHTML = "Done! Map contains "+piecenum+" unconnected pieces";
+		getObj("piecesTD").style.backgroundColor = "#ffffff";
         return;
     }
 	
 	if (discoveredVertices.length == 0 && vleft) {
-		if (green <= 215){
-			green = green+40;
+		if (green <= 220 && blue <=220){
+			green = green+35;
+			console.log("add green");
 		}
-		else if (red >= 40){
-			red-=40;
+		else if (red >= 35 && green > 220){
+			red-=35;
+			console.log("dec red");
 		}	
-		else if (green > 215 && blue <= 215){
-			green -= 40;
-			blue += 40;
+		else if (blue <= 220 && red <= 220){
+			blue += 35;
+			console.log("add blue");
 		}		
-        startConnectedPieces(index, visited, red, green, blue);
+		else if (blue > 220 && green >=35){
+			green -=35;
+			console.log("dec green");
+		}
+		else if (red <= 220 && green <= 220){
+			red += 35;
+			console.log("add red");
+		}		
+		piecenum++;
+        startConnectedPieces(index, visited);
 		return;
     }
 
@@ -1662,7 +1686,7 @@ function continueConnectedPieces(red, green, blue) {
         // we used the edge to get here, so let's mark it as such
         if (nextToVisit.connection != null) {
             nextToVisit.connection.setOptions({
-                strokeColor: visualSettings.spanningTree.color
+                strokeColor: "rgb("+red+","+green+","+blue+")"
             });
         }
 
@@ -1705,7 +1729,7 @@ function continueConnectedPieces(red, green, blue) {
        else{  document.getElementById('algorithmStatus').appendChild(testing123);
     }
 }
-    setTimeout(function(){continueConnectedPieces(red, green, blue)}, delay);
+    setTimeout(function(){continueConnectedPieces()}, delay);
 
 }
 
@@ -2106,7 +2130,7 @@ function makeTable(){
                     tableBody.appendChild(row);
                 }
             }
-            
+        }
             table.appendChild(tableBody);
             table.setAttribute("border", "2");
             div.appendChild(table);
