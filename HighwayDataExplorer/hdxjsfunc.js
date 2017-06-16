@@ -174,14 +174,15 @@ function fileLoaded(event) {
 }
 
 function undoCollapse(event){
-	var clss = "."+event.target.parentNode.id.substring(0,12);
+	var container = event.target.parentNode;
+	var clss = "."+container.id.substring(0,container.id.indexOf("btn"));
 	var elems = document.querySelectorAll(clss);
 	for(var i=0; i<elems.length; i++)
 		elems[i].style.display = "";
-	event.target.parentNode.style.display = "none";
+	container.style.display = "none";
 }
 
-function collapseElements(clss, str, td){
+function collapseElements(clss){
 	var elems = document.querySelectorAll("."+clss);
 	var btn = getObj(clss+"btn");
 	for(var i=0; i<elems.length; i++)
@@ -191,7 +192,7 @@ function collapseElements(clss, str, td){
 
 // process the contents of a String which came from a file or elsewhere
 function processContents(fileContents) {
-	collapseElements("loadcollapse", "Show load options", true);
+	collapseElements("loadcollapse");
 
     // place the contents into the file contents area (will improve later)
     // document.getElementById('pointbox').innerHTML = "<pre>" + fileContents + "</pre>";
@@ -354,13 +355,10 @@ function parseTMGContents(fileContents) {
     for (var i = 0; i < numV; i++) {
 	var vertexInfo = lines[i+2].split(' ');
 	waypoints[i] = new Waypoint(vertexInfo[0], vertexInfo[1], vertexInfo[2], "", new Array());
-	vTable += '<tr id="waypoint' + i +'" onmouseover = "hoverV(event,'+i+')" onmouseout = "hoverEndV(event,'+i+')" ><td>' + i +
+	vTable += '<tr id="waypoint' + i +'" onmouseover = "hoverV('+i+', false)" onmouseout = "hoverEndV('+i+', false)" onclick = "LabelClick('+i+')" ><td>' + i +
 	    '</td><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
 	    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
-	    + "<a onclick=\"javascript:LabelClick(" + i + ",'"
-	    + waypoints[i].label + "\',"
-	    + waypoints[i].lat + "," + waypoints[i].lon + ",0);\">"
-	    + waypoints[i].label + "</a></td></tr>";
+	    + waypoints[i].label + '</td></tr>';
     }
     vTable += '</tbody></table>';
 
@@ -381,7 +379,7 @@ function parseTMGContents(fileContents) {
       waypoints[newEdge.v1].edgeList.push(newEdge);
       waypoints[newEdge.v2].edgeList.push(newEdge);
 
-      eTable += '<tr id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
+      eTable += '<tr onmouseover="hoverE('+i+')" onmouseout="hoverEndE('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
       + edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label +
       ' &harr; ' + edgeInfo[1] + ':&nbsp;'
       + waypoints[newEdge.v2].label + '</td></tr>';
