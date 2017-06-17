@@ -120,7 +120,7 @@ padding:0px;
 <script src="hdxjsfunc.js" type="text/javascript"></script>
 <title>Highway Data Examiner</title>
 </head>
-<body onload="loadmap(); makeResize(); toggleTable(); TOSLabel();" ondragover="allowdrop(event)" ondrop="drop(event)">
+<body onload="loadmap(); makeResize(); toggleTable(); TOSLabel(); startPause();" ondragover="allowdrop(event)" ondrop="drop(event)">
 <script type="application/javascript">
 function toggleTable() {
   var menu = document.getElementById("showHideMenu");
@@ -543,4 +543,3 @@ function makeResize(){
         </div>
         </body>
 </html>
-
