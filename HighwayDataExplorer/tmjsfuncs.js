@@ -73,6 +73,14 @@ var green = 0;
 var blue = 0;
 var piecenum = 1;
 
+var rred = 255;
+var rgrn = 245;
+var rblu = 245;
+
+var gred = 245;
+var ggrn = 255;
+var gblu = 245;
+
 
 // array of objects that define color codes from names in the DB
 var colorCodes = new Array();
@@ -212,13 +220,7 @@ var visualSettings = {
     }
 };
 
-//allows the user to click on the table to select a vertice to start at
-/*function vertexSelect(vertex){
-	var startVertex = document.querySelector("#startPoint");
-	if(startVertex != null){
-		startVertex.value = vertex;
-	}
-}*/
+//allows the user to click on the table to select a vertex to start at
 
 function vertexSelect(vertex){
 	if(endOrStart == true){
@@ -246,22 +248,55 @@ function endPointInput(){
 	endOrStart1 = true;
 }
 
-function hoverV (e, i){
-	vicon = markers[i].getIcon();
-	vertexSelect(i);
-	vertexSelectEnd(i);
-	vcolor = getObj("waypoint"+i).style.backgroundColor;
-	vtext = getObj("waypoint"+i).style.color;
-	updateMarkerAndTable(i, visualSettings.hoverV, 0, false);
+function hoverV (i, bool){
+	if ((bool && pause) || !bool){
+		vicon = markers[i].getIcon();
+		vertexSelect(i);
+		vertexSelectEnd(i);
+		vcolor = getObj("waypoint"+i).style.backgroundColor;
+		vtext = getObj("waypoint"+i).style.color;
+		updateMarkerAndTable(i, visualSettings.hoverV, 0, false);
+	}
 }
 
-function hoverEndV (e, i){
-	markers[i].setIcon(vicon);
-	getObj("waypoint"+i).style.backgroundColor = vcolor;
-	getObj("waypoint"+i).style.color = vtext;
+function hoverEndV (i, bool){
+	if ((bool && pause) || !bool){
+		markers[i].setIcon(vicon);
+		getObj("waypoint"+i).style.backgroundColor = vcolor;
+		getObj("waypoint"+i).style.color = vtext;
+		if($("#l"+i).length > 0)
+			getObj("l"+i).style.backgroundColor = vcolor;
+		if($("#di"+i).length > 0){
+			getObj("di"+i).style.backgroundColor = vcolor;
+			getObj("di"+i).style.color = vtext;
+		}
+	}
+}
+
+function hoverE (i){
+	ecolor = getObj("connection"+i).style.backgroundColor;
+	etext = getObj("connection"+i).style.color;
+	getObj("connection"+i).style.color = visualSettings.hoverV.textColor;
+	getObj("connection"+i).style.backgroundColor = visualSettings.hoverV.color;
+	edge = connections[i].get("strokeColor");
+	edgew = connections[i].get("strokeOpacity");
+	connections[i].setOptions({
+        strokeColor: visualSettings.hoverV.color,
+		strokeOpacity: 0.7
+    });
+}
+
+function hoverEndE(i){
+	connections[i].setOptions({
+        strokeColor: edge,
+		strokeOpacity: edgew
+    });
+	getObj("connection"+i).style.color = etext;
+	getObj("connection"+i).style.backgroundColor = ecolor;
 }
 
 var vcolor, vtext, vicon;
+var ecolor, etext, edge, edgew;
 
 var infowindow = new google.maps.InfoWindow();
 
@@ -781,8 +816,8 @@ function AddMarker(marker, markerinfo, i) {
     });
 }
 
-function LabelClick(i, label, lat, lon, errors) {
-    map.panTo(new google.maps.LatLng(lat, lon));
+function LabelClick(i) {
+    map.panTo(new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon));
     //infowindow.setContent(info);
     infowindow.setContent(markerinfo[i]);
     infowindow.open(map, markers[i]);
@@ -895,6 +930,12 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 	var row = getObj("waypoint"+waypointNum);
     row.style.backgroundColor = vs.color;
     row.style.color = vs.textColor;
+	if($("#l"+waypointNum).length > 0)
+		getObj("l"+waypointNum).style.backgroundColor = vs.color;
+	if($("#di"+waypointNum).length > 0){
+		getObj("di"+waypointNum).style.backgroundColor = vs.color;
+		getObj("di"+waypointNum).style.color = vs.textColor;
+	}
     if (hideTableLine) 
         row.style.display = "none";
 	if (vs.color == "#0000a0"){
@@ -1191,8 +1232,7 @@ function startEdgeSearch() {
         connections[i].setMap(null);
     }
     //we don't need waypoints table here, so we remove those
-    var Table = document.getElementById("waypoints");
-    Table.innerHTML = "";
+    getObj("waypoints").style.display = "none";
 	var algorithmsTable = document.getElementById('AlgorithmsTable');
 	var algorithmsTbody = algorithmsTable.children[1];
 	var infoid = "info1";
@@ -1226,12 +1266,9 @@ function continueEdgeSearch() {
 	var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
 	var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
 	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
-
-	document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br>  Longest Edge label: " + longestELabel;
-	console.log("shortest Edge label: " + shortestELabel);
-	console.log("Longest Edge label: " + longestELabel);
+	document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br> Longest Edge label: " + longestELabel +	"<br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
 	return;
-    }
+    }	
     var edge = graphEdges[currentEdgeIndex];
     var distance = Feet(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
         waypoints[edge.v2].lat, waypoints[edge.v2].lon);
@@ -1253,6 +1290,8 @@ function continueEdgeSearch() {
     if (longestELabel === undefined || longestELabel.length < edge.label.length) {
         longestELabel = edge.label;
     }
+	
+	document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br> Longest Edge label: " + longestELabel +	"<br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
 
     var initEdgePoints = new Array(2);
     initEdgePoints[0] = new google.maps.LatLng(waypoints[edge.v1].lat, waypoints[edge.v1].lon);
@@ -1294,6 +1333,7 @@ var lastVisitedVertex;
 // where did we start?
 var startingVertex;
 
+var endingVertex;
 // what is our traversal discipline, i.e., is discoveredVertices to be
 // treated as a stack, queue, or something else
 // values are currently "BFS" or "DFS" or "RFS"
@@ -1482,8 +1522,16 @@ function continueGraphTraversal() {
                     vIndex: neighbors[i],
                     connection: connection
                 });
-                updateMarkerAndTable(neighbors[i], visualSettings.discovered,
+                updateMarkerAndTable(neighbors[i], { color: "rgb("+gred+","+ggrn+","+gblu+")",
+        textColor: "black",
+        scale: 4},
                     5, false);
+					if (gblu >=10){
+						gred-=10;
+						gblu-=10;
+					}
+					else
+						ggrn-=10;
 
                 // also color the edge we followed to get to this
                 // neighbor as the same color to indicate it's a candidate
@@ -1500,25 +1548,21 @@ function continueGraphTraversal() {
         }
     }
 
+	shiftColors();
     // update view of our list
     //printList(queue);
    /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
     setTimeout(continueGraphTraversal, delay);*/
-      if(document.getElementById("showDataStructure").checked){
-        var testing123 = makeTable();
-        if(testing123 == null){
-            //alert("NULL");
-        }
-       else{  document.getElementById('algorithmStatus').appendChild(testing123);
-    }
-}
+     var newDS = makeTable();
+	 if(newDS!=null)
+		 getObj("algorithmStatus").appendChild(newDS);
     setTimeout(continueGraphTraversal, delay);
 
 }
 
 function startConnectedPieces(vert, visitarr) {
-   traversalDiscipline = "BFS";
-   discoveredVerticesName = "Queue";
+	
+		discoveredVerticesName = "Queue";
 
     // if we are paused
     if (pause) {
@@ -1616,26 +1660,16 @@ function continueConnectedPieces() {
     }
 	
 	if (discoveredVertices.length == 0 && vleft) {
-		if (green <= 220 && blue <=220){
+		if (green <= 220 && blue <=220)
 			green = green+35;
-			console.log("add green");
-		}
-		else if (red >= 35 && green > 220){
-			red-=35;
-			console.log("dec red");
-		}	
-		else if (blue <= 220 && red <= 220){
-			blue += 35;
-			console.log("add blue");
-		}		
-		else if (blue > 220 && green >=35){
+		else if (red >= 35 && green > 220)
+			red-=35;	
+		else if (blue <= 220 && red <= 220)
+			blue += 35;	
+		else if (blue > 220 && green >=35)
 			green -=35;
-			console.log("dec green");
-		}
-		else if (red <= 220 && green <= 220){
-			red += 35;
-			console.log("add red");
-		}		
+		else if (red <= 220 && green <= 220)
+			red += 35;		
 		piecenum++;
         startConnectedPieces(index, visited);
 		return;
@@ -1721,16 +1755,298 @@ function continueConnectedPieces() {
     //printList(queue);
    /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
     setTimeout(continueGraphTraversal, delay);*/
-      if(document.getElementById("showDataStructure").checked){
-        var testing123 = makeTable();
-        if(testing123 == null){
-            //alert("NULL");
-        }
-       else{  document.getElementById('algorithmStatus').appendChild(testing123);
-    }
-}
+     var newDS = makeTable();
+	 if(newDS!=null)
+		 getObj("algorithmStatus").appendChild(newDS);
     setTimeout(function(){continueConnectedPieces()}, delay);
 
+}
+
+function startDijkstra() {
+	
+    // if we are paused
+    if (pause) {
+        pause = false;
+        continueDijkstra();
+        return;
+    }
+	else{
+		getObj("connection").style.display = "none";
+		getObj("waypoints").style.display = "none";
+		
+		var dijkstraTable = document.createElement("table");
+		dijkstraTable.id = "dijtable";
+		dijkstraTable.className = "gratable";
+		var dijthead = document.createElement("thead");
+				
+		var topRow = document.createElement("tr");
+		
+		var th = document.createElement("th");
+		th.innerHTML = "#";
+		topRow.appendChild(th);
+		
+		th = document.createElement("th");
+		th.innerHTML = "Distance(mi)";
+		topRow.appendChild(th);
+		
+		th = document.createElement("th");
+		th.innerHTML = "Name";
+		topRow.appendChild(th);
+		
+		th = document.createElement("th");
+		th.innerHTML = "Previous edge";
+		topRow.appendChild(th);
+		
+		dijthead.appendChild(topRow);
+		dijkstraTable.appendChild(dijthead);
+		var dijtbody = document.createElement("tbody");
+		dijtbody.id = "dijtbody";
+		dijkstraTable.appendChild(dijtbody);
+		
+		getObj("waypoints").parentNode.parentNode.appendChild(dijkstraTable);	
+	}
+	discoveredVerticesName = "PQueue";
+
+    // initialize our visited array
+    visited = new Array(waypoints.length).fill(false);
+
+    // replace all markers with white circles
+    for (var i = 0; i < markers.length; i++) {
+        updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
+    }
+
+    // color all edges white also
+    for (var i = 0; i < connections.length; i++) {
+        connections[i].setOptions({
+            strokeColor: visualSettings.undiscovered.color,
+            strokeOpacity: 0.6
+        });
+    }
+
+    // vertex index to start the traversal
+    startingVertex = document.getElementById("startPoint").value;
+	endingVertex = document.getElementById("endPoint").value;
+	
+
+    // initialize the process with this value
+    discoveredVertices.push({
+        vIndex: startingVertex,
+        connection: null,
+		dist: 0,
+		edge: null
+    });
+    numVisited++;
+
+    updateMarkerAndTable(startingVertex, visualSettings.startVertex, 10, false);
+
+    // nothing to update this first time
+    lastVisitedVertex = -1;
+    setTimeout(continueDijkstra, delay);
+}
+
+function comparePQ(a, b){
+	return a.dist-b.dist;
+}
+
+function continueDijkstra() {
+    // if we're paused, do nothing for now
+    if (pause) {
+        return;
+    }
+
+    // maybe we have a last visited vertex to update
+    if (lastVisitedVertex != -1) {
+        if (lastVisitedVertex == startingVertex) {
+            // always leave the starting vertex colored appropriately
+            // and in the table
+            updateMarkerAndTable(startingVertex, visualSettings.startVertex,
+                10, false);
+        } else if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
+            // not in the list, this vertex gets marked as in the spanning tree
+            updateMarkerAndTable(lastVisitedVertex, visualSettings.spanningTree,
+                1, false);
+        } else {
+            // still in the list, color with the "discoveredEarlier"  style
+            updateMarkerAndTable(lastVisitedVertex, visualSettings.discoveredEarlier,
+                5, false);
+        }
+    }
+    // maybe we're done
+    if (discoveredVertices.length == 0 || (visited[endingVertex] && startingVertex != endingVertex)) {
+		createDataTable("#dijtable");
+        //console.log("Done!");
+        return;
+    }
+
+    // select the next vertex to visit and remove it from the
+    // discoveredVertices list
+    var nextToVisit = discoveredVertices.shift();
+    numVisitedComingOut++;
+	
+	var tr = document.createElement("tr");
+	tr.id = "di"+nextToVisit.vIndex;
+	tr.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
+	tr.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
+	tr.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
+	var td = document.createElement("td");
+	td.innerHTML = nextToVisit.vIndex;
+	tr.appendChild(td);	
+	td = document.createElement("td");
+	td.innerHTML = Math.round(nextToVisit.dist*1000)/1000;
+	tr.appendChild(td);
+	td = document.createElement("td");
+	td.innerHTML = waypoints[nextToVisit.vIndex].label;
+	tr.appendChild(td);
+	td = document.createElement("td");
+	//td.setAttribute("onmouseover", "hoverE("+nextToVisit.connection+")");
+	//td.setAttribute("onmouseout", "hoverEndE("+nextToVisit.connection+")");
+	if(nextToVisit.edge!=null)
+		td.innerHTML = "("+nextToVisit.edge.v1+")"+waypoints[nextToVisit.edge.v1].label+"<br>"+"("+nextToVisit.edge.v2+")"+waypoints[nextToVisit.edge.v2].label;
+	else
+		td.innerHTML = "null";
+	tr.appendChild(td);
+	
+	getObj("dijtbody").appendChild(tr);
+
+    lastVisitedVertex = nextToVisit.vIndex;
+    var vIndex = nextToVisit.vIndex;
+    numVisited++;
+    // now decide what to do with this vertex -- depends on whether it
+    // had been previously visited
+    if (visited[vIndex]) {
+        numAlreadyVisited++;
+        // we've been here before, but is it still in the list?
+        if (discoveredVerticesContainsVertex(vIndex)) {
+            // not there anymore, indicated this as visitedEarlier, and
+            // will be discarded or marked as discoveredEarlier on the
+            // next iteration
+            updateMarkerAndTable(vIndex, visualSettings.visitedEarlier,
+                4, false);
+        } else {
+            // still to be seen again, so mark is as discoveredEarlier
+            updateMarkerAndTable(vIndex, visualSettings.discoveredEarlier,
+                5, false);
+        }
+
+        // in either case here, the edge that got us here is not
+        // part of the ultimate spanning tree, so it should be the
+        // "discoveredEarlier" color
+        if (nextToVisit.connection != null) {
+            nextToVisit.connection.setOptions({
+                strokeColor: visualSettings.discoveredEarlier.color
+            });
+        }
+    }
+    // visiting for the first time
+    else {
+        visited[vIndex] = true;
+        updateMarkerAndTable(vIndex, visualSettings.visiting,
+            10, false);
+
+        // we used the edge to get here, so let's mark it as such
+        if (nextToVisit.connection != null) {
+            nextToVisit.connection.setOptions({
+                strokeColor: visualSettings.spanningTree.color
+            });
+        }
+
+        // discover any new neighbors
+        var neighbors = getAdjacentPoints(vIndex);
+        for (var i = 0; i < neighbors.length; i++) {
+            if (!visited[neighbors[i]]) {
+                var connection = waypoints[vIndex].edgeList[i].connection;
+                discoveredVertices.push({
+                    vIndex: neighbors[i],
+                    connection: connection,
+					dist: Mileage(waypoints[vIndex].lat, waypoints[vIndex].lon, waypoints[neighbors[i]].lat, waypoints[neighbors[i]].lon)+nextToVisit.dist,
+					edge: waypoints[vIndex].edgeList[i]
+                });
+                updateMarkerAndTable(neighbors[i], { color: "rgb("+gred+","+ggrn+","+gblu+")",
+        textColor: "black",
+        scale: 4},
+                    5, false);
+					if (gblu >=10){
+						gred-=10;
+						gblu-=10;
+					}
+					else
+						ggrn-=10;
+
+                // also color the edge we followed to get to this
+                // neighbor as the same color to indicate it's a candidate
+                // edge followed to find a current discovered but
+                // unvisited vertex
+                if (connection != null) {
+                    connection.setOptions({
+                        strokeColor: visualSettings.discovered.color
+                    });
+                } else {
+                    console.log("Unexpected null connection, vIndex=" + vIndex + ", i=" + i);
+                }
+            }
+        }
+    }
+	discoveredVertices.sort(comparePQ);
+	shiftColors();
+
+    // update view of our list
+    //printList(queue);
+   /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
+    setTimeout(continueGraphTraversal, delay);*/
+	     var newDS = makeTable();
+	 if(newDS!=null)
+		 getObj("algorithmStatus").appendChild(newDS);
+
+    setTimeout(continueDijkstra, delay);
+
+}
+
+function shiftColors(){
+	var r = 245;
+	var g = 255;
+	var b = 245;
+	var inc;
+	if (discoveredVertices.length <= 6)
+		inc = 70;
+	else if (discoveredVertices.length <=10)
+		inc = 45;
+	else if (discoveredVertices.length <= 24)
+		inc = 20;
+	else if (discoveredVertices.length <= 49)
+		inc = 10;
+	else
+		inc = 9;
+	//works until 83 vertices in DS, then repeats cyan
+	for (var i=0; i<discoveredVertices.length; i++){
+		updateMarkerAndTable(discoveredVertices[i].vIndex, { color: "rgb("+r+","+g+","+b+")",
+        textColor: "black",
+        scale: 4},
+        5, false);
+		if (r>=inc && b>=inc && g>=inc){
+			r-=inc;
+			b-=inc;			
+		}
+		else if (g>=inc && b<inc && r<inc)
+			g-=inc;
+		else{
+			b+=inc;
+			g+=inc;
+		}
+	}
+	if(discoveredVertices.length>0){
+	var colors = getObj("waypoint"+discoveredVertices[discoveredVertices.length-1].vIndex).style.backgroundColor.split(",");
+	console.log(colors[0].substring(4, colors[0].length));
+	gred = parseInt(colors[0].substring(4, colors[0].length).trim());
+	console.log(colors[1].trim());
+	ggrn = parseInt(colors[1].trim());
+	console.log(colors[2].substring(0, colors[2].length-1).trim());
+	gblu = parseInt(colors[2].substring(0, colors[2].length-1).trim());
+	if(gred>=inc){
+			gred-=inc;
+	gblu-=inc;}
+		else
+			ggrn-=inc;
+	}
 }
 
 function getAdjacentPoints(pointIndex) {
@@ -2024,7 +2340,7 @@ var DBG = {
     }
 }
 
-//Creates the TOSLabel's for the different map tiles and appends them to a div which is returned
+//Creates the TOSLabels for the different map tiles and appends them to a div which is returned
 function TOSLabel(){
 	var menubar = document.querySelector(".menubar");
 	
@@ -2036,7 +2352,6 @@ function TOSLabel(){
 	menubar.appendChild(label);
 }
 
-
 var createTable = false;
 var showAll = false;
 var numVisitedString = document.createTextNode("Number of Visited Vertices: " + numVisited);
@@ -2044,50 +2359,13 @@ var numVisitedComingOutString = document.createTextNode("Number of Vertices Visi
 var numAlreadyVisitedString = document.createTextNode("Number of Vertices already Visited: " + numAlreadyVisited);
 var nameAndSize = document.createTextNode(discoveredVerticesName + " Size: " + discoveredVertices.length);
 function makeTable(){ 
-
     var size = discoveredVertices.length-1;
-    var showAllSymbol = "-";
-    if(size > 10 && !showAll){
-        size = 10;
-        showAllSymbol="+";
-    }
-    if(createTable == true){
-        numVisitedString.nodeValue = "Number of Visited Vertices: " + numVisited;
-        numVisitedComingOutString.nodeValue = "Number of Vertices Visited Coming out: " + numVisitedComingOut;
-        numAlreadyVisitedString.nodeValue = "Number of Vertices already Visited: " + numAlreadyVisited;
-        nameAndSize.nodeValue = discoveredVerticesName + " Size: " + discoveredVertices.length;
-        var new_tbody = document.createElement("tbody");
-        if(discoveredVerticesName == "Stack"){
-            for (var i = 0; i <= size ; i++) {      
-                var row = document.createElement("tr");
-                row.setAttribute("id", "l" + i);
-                row.innerHTML = discoveredVertices[discoveredVertices.length-(1+i)].vIndex;
-                new_tbody.appendChild(row);
-            }
-            var row = document.createElement("tr");
-            row.setAttribute("id", "l" + i);
-            row.innerHTML = showAllSymbol;  
-            new_tbody.appendChild(row);
-        }
-        else if(discoveredVerticesName == "Queue"){
-            for (var i = 0; i <= size ; i++) { 
-                var col = document.createElement("td");
-                col.setAttribute("id", "l" + i);
-                if(size>=10 && i == size/2){
-                    col.innerHTML = showAllSymbol;
-                    if(!showAll){
-                        size = discoveredVertices.length-1;
-                        i = size-5;
-                    }
-                }
-                else{
-                    col.innerHTML = discoveredVertices[i].vIndex;
-                }
-                new_tbody.appendChild(col);
-            }
-        }
-        var tableBody = document.getElementById("tablebody");
-        tableBody.innerHTML = new_tbody.innerHTML;
+    if(createTable){
+        var tableBody = dsTbody(size);
+        var oldtableBody = document.getElementById("tablebody");
+        oldtableBody.innerHTML = tableBody.innerHTML;
+		if (size >9 && !showAll)
+			collapseElements("collapseDataStructure");
     }
         else{
             createTable = true;
@@ -2095,18 +2373,34 @@ function makeTable(){
             var div = document.createElement("div");
             div.setAttribute("id", "makeTable");
             
-            numVisitedString.nodeValue = "Number of Visited Vertices: " + numVisited ;
-            numVisitedComingOutString.nodeValue = "Number of Vertices Visited Coming out: " + numVisitedComingOut ;
-            numAlreadyVisitedString.nodeValue = "Number of Vertices already Visited: " + numAlreadyVisited;
-            nameAndSize.nodeValue = discoveredVerticesName + " Size: " + discoveredVertices.length;
-            
             div.appendChild(numVisitedString);
             div.appendChild(document.createElement("br"));
             div.appendChild(numVisitedComingOutString);
-             div.appendChild(document.createElement("br"));
+            div.appendChild(document.createElement("br"));
             div.appendChild(numAlreadyVisitedString);
-             div.appendChild(document.createElement("br"));
+            div.appendChild(document.createElement("br"));
             div.appendChild(nameAndSize);
+			
+			var buttondiv = document.createElement("div");
+			buttondiv.id = "collapseDataStructurebtn";
+			buttondiv.style.display = "none";
+			var btn = document.createElement("input");
+			btn.type = "button";
+			btn.addEventListener("click", undoCollapse);
+			btn.addEventListener("click", function(){showAll = true;});
+			btn.value = "Expand";
+			buttondiv.appendChild(btn);
+			div.appendChild(buttondiv);
+			buttondiv = document.createElement("div");
+			buttondiv.className = "collapseDataStructure";
+			buttondiv.style.display = "none";
+			btn = document.createElement("input");
+			btn.addEventListener("click", function(){collapseElements("collapseDataStructure");
+			showAll = false;});
+			btn.value = "Collapse";
+			btn.type = "button";
+			buttondiv.appendChild(btn);
+			div.appendChild(buttondiv);
             
             var table = document.createElement("table");
             table.setAttribute("id", "table");
@@ -2135,7 +2429,52 @@ function makeTable(){
             table.setAttribute("border", "2");
             div.appendChild(table);
         }
-    return div;            
-}
 
 //Add gradient to points and corresponding table values 
+
+function dsElement(type, num){
+	var ele = document.createElement(type);
+	ele.className = "";
+	ele.setAttribute("onmouseover", "hoverV("+num+", true)");
+	ele.setAttribute("onmouseout", "hoverEndV("+num+", true)");
+	ele.setAttribute("onclick", "LabelClick("+num+")");
+	ele.setAttribute("id", "l" + num);
+	return ele;
+}
+
+function dsTbody(size){
+    numVisitedString.nodeValue = "Number of Visited Vertices: " + numVisited;
+    numVisitedComingOutString.nodeValue = "Number of Vertices Visited Coming out: " + numVisitedComingOut;
+    numAlreadyVisitedString.nodeValue = "Number of Vertices already Visited: " + numAlreadyVisited;
+    nameAndSize.nodeValue = discoveredVerticesName + " Size: " + discoveredVertices.length;
+	var tableBody = document.createElement("tbody");
+    if(discoveredVerticesName == "Stack"){
+        for (var i = 0; i <= size ; i++) { 
+			var point =  discoveredVertices[discoveredVertices.length-(1+i)].vIndex;
+            var row = dsElement("tr", point);
+			var col = document.createElement("td");
+			col.innerHTML = point;
+			row.appendChild(col);
+			if (i > 9){
+				row.className = "collapseDataStructure";
+			}
+            tableBody.appendChild(row);
+        }
+    }
+    else if(discoveredVerticesName == "Queue" || discoveredVerticesName == "PQueue"){
+		var row = document.createElement("tr");
+        for (var i = 0; i <= size ; i++) { 				
+            var col = dsElement("td", discoveredVertices[i].vIndex);
+            if (i > 9){
+				col.className = "collapseDataStructure";
+			}
+			if (discoveredVerticesName == "PQueue")
+				col.innerHTML = discoveredVertices[i].vIndex + " dist: " + Math.round(discoveredVertices[i].dist*100)/100;
+			else
+				col.innerHTML = discoveredVertices[i].vIndex;
+			row.appendChild(col);
+            tableBody.appendChild(row);
+        }
+	}
+	return tableBody;
+}
