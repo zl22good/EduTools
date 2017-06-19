@@ -207,7 +207,17 @@ var visualSettings = {
 		color: "#a0036b",
 		textColor: "white",
 		scale: 6
-	}
+	},
+    hullK: {
+        color: "#41f4c4",
+        textColor: "black",
+        scale: 3
+    },
+    hullI: {
+        color: "#0000aa",
+        textColor: "black",
+        scale: 6
+    }
 };
 
 //allows the user to click on the table to select a vertex to start at
@@ -1187,7 +1197,7 @@ function continueVertexSearch() {
     if (nextToCheck < markers.length) {
         updateMarkerAndTable(nextToCheck, visualSettings.visiting,
             30, false);
-
+        
         setTimeout(continueVertexSearch, delay);
     } else {
         document.getElementById('algorithmStatus').innerHTML =
@@ -2093,156 +2103,235 @@ function listToVIndexString(items) {
 
 }
 
-function startConvexHull() {
-    calculateConvexHull();
+
+
+//New Convex Hull 
+function addToHull(temp1, temp2){
+    hull[0] = temp1;
+    hull[1] = temp2;
 }
 
-
-var polyline;
-
-function calculateConvexHull() {
-    if (polyline) polyline.setMap(null);
-    p = [];
-    for (var i = 0; i < markers.length; i++) {
-        p.push(markers[i].getPosition());
-    }
-    p.sort(sortPointY);
-    p.sort(sortPointX);
-    setTimeout(DrawHull, delay);
+//Compute Squared Distance 
+function squaredDistance(o1, o2) {
+	var dx, dy;
+	dx = o1.lon - o2.lon;
+	dy = o1.lat - o2.lat;
+	return dx * dx + dy * dy;
 }
 
-function DrawHull() {
-    hullPoints = [];
-    chainHull_2D(p, p.length, hullPoints);
-    polyline = new google.maps.Polygon({
-        map: map,
-        paths: hullPoints,
-        fillColor: "#FF0000",
-        strokeWidth: 2,
-        fillOpacity: 0.5,
-        strokeColor: "#0000FF",
-        strokeOpacity: 0.5
-    });
+/**
+    Check if this point is directly in between the two given
+    points.  Note: the assumption is that they are colinear.
+
+    @param o1 one of the points
+    @param o2 the other point
+    @return whether this point is between the two given points
+    */
+
+function isBetween(o1, o2, o3) {
+	var sqDisto1o2 = squaredDistance(o1, o2);
+	alert("isBetween" + (squaredDistance(o3, o2) < sqDisto1o2) &&
+		(squaredDistance(o3, o2) < sqDisto1o2));
+	return (squaredDistance(o3, o2) < sqDisto1o2) &&
+		(squaredDistance(o3, o2) < sqDisto1o2);
 }
 
-function sortPointX(a, b) {
-    return a.lng() - b.lng();
+var hull = [];
+
+var hullI = 0;
+var hullJ = 0;
+//var k = 0;
+var hull = [];
+
+var convexLineHull = [];
+
+var visitingLine = [];
+
+function showConvexLines(lineHull) {
+	for (var i = 0; i < lineHull.length; i++) {
+		connections[i].setMap(null);
+		connections[i] = new google.maps.Polyline({
+			map: map,
+			path: lineHull,
+			strokeColor: '#aa0000',
+			strokeOpacity: 0.6,
+			strokeWeight: 4
+		});
+	}
 }
 
-function sortPointY(a, b) {
-    return a.lat() - b.lat();
+var currentSegment;
+
+function visitingLineHull(lineHull) {
+	//for (var i = 0; i < lineHull.length; i++) {
+	//currentSegment.setMap(null);
+	currentSegment = new google.maps.Polyline({
+		map: map,
+		path: lineHull,
+		strokeColor: '#0000aa',
+		strokeOpacity: 0.6,
+		strokeWeight: 4
+	});
+	//}
 }
 
-function isLeft(P0, P1, P2) {
-    return (P1.lng() - P0.lng()) * (P2.lat() - P0.lat()) - (P2.lng() - P0.lng()) * (P1.lat() - P0.lat());
+var point1;
+var point2;
+
+var a;
+var b;
+var c;
+
+var lookingForPositive;
+var foundProblem;
+var firstTestPoint;
+
+function bruteForceConvexHull() {
+	if(pause){
+		pause = false;
+		innerLoopConvexHull();
+		return;
+	}
+	for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
+		connections[outerLoop].setMap(null);
+	}
+	hullJ = 1;
+	hullI = 0;
+	setTimeout(innerLoopConvexHull, delay);
 }
-//===================================================================
-// Copyright 2001, softSurfer (www.softsurfer.com)
-// This code may be freely used and modified for any purpose
-// providing that this copyright notice is included with it.
 
-// chainHull_2D(): A.M. Andrew's monotone chain 2D convex hull algorithm
-// http://softsurfer.com/Archive/algorithm_0109/algorithm_0109.htm
-//
-//     Input:  P[] = an array of 2D points
-//                   presorted by increasing x- and y-coordinates
-//             n = the number of points in P[]
-//     Output: H[] = an array of the convex hull vertices (max is n)
-//     Return: the number of points in H[]
+function innerLoopConvexHull() {
+	
+	if(pause)
+		return;
+	
+	point1 = waypoints[hullI];
+	point2 = waypoints[hullJ];
 
+	//higlight the points being considered
+	//updateMarkerAndTable(i, visualSettings.leader, 30, false);
+	updateMarkerAndTable(hullJ, visualSettings.visiting, 30, false);
 
-function chainHull_2D(P, n, H) {
-    // the output array H[] will be used as the stack
-    var bot = 0,
-        top = (-1); // indices for bottom and top of the stack
-    var i; // array scan index
-    // Get the indices of points with min x-coord and min|max y-coord
-    var minmin = 0,
-        minmax;
+	// from here, we need to see if all other points are
+	// on the same side of the line connecting point1 and point2
+	a = point2.lat - point1.lat;
+	b = point1.lon - point2.lon;
+	c = point1.lon * point2.lat - point1.lat * point2.lon;
+	// now check all other points to see if they're on the
+	// same side -- stop as soon as we find they're not
+	lookingForPositive = false;
+	foundProblem = false;
+	firstTestPoint = true;
 
-    var xmin = P[0].lng();
-    for (i = 1; i < n; i++) {
-        if (P[i].lng() != xmin) {
-            break;
-        }
-    }
+	visitingLine[0] = new google.maps.LatLng(point1.lat, point1.lon);
+	visitingLine[1] = new google.maps.LatLng(point2.lat, point2.lon);
+	visitingLineHull(visitingLine);
 
-    minmax = i - 1;
-    if (minmax == n - 1) { // degenerate case: all x-coords == xmin
-        H[++top] = P[minmin];
-        if (P[minmax].lat() != P[minmin].lat()) // a nontrivial segment
-            H[++top] = P[minmax];
-        H[++top] = P[minmin]; // add polygon endpoint
-        return top + 1;
-    }
-
-    // Get the indices of points with max x-coord and min|max y-coord
-    var maxmin, maxmax = n - 1;
-    var xmax = P[n - 1].lng();
-    for (i = n - 2; i >= 0; i--) {
-        if (P[i].lng() != xmax) {
-            break;
-        }
-    }
-    maxmin = i + 1;
-
-    // Compute the lower hull on the stack H
-    H[++top] = P[minmin]; // push minmin point onto stack
-    i = minmax;
-    while (++i <= maxmin) {
-        // the lower line joins P[minmin] with P[maxmin]
-        if (isLeft(P[minmin], P[maxmin], P[i]) >= 0 && i < maxmin) {
-            continue; // ignore P[i] above or on the lower line
-        }
-
-        while (top > 0) { // there are at least 2 points on the stack
-            // test if P[i] is left of the line at the stack top
-            if (isLeft(H[top - 1], H[top], P[i]) > 0) {
-                break; // P[i] is a new hull vertex
-            } else {
-                top--; // pop top point off stack
-            }
-        }
-
-        H[++top] = P[i]; // push P[i] onto stack
-    }
-
-    // Next, compute the upper hull on the stack H above the bottom hull
-    if (maxmax != maxmin) { // if distinct xmax points
-        H[++top] = P[maxmax]; // push maxmax point onto stack
-    }
-
-    bot = top; // the bottom point of the upper hull stack
-    i = maxmin;
-    while (--i >= minmax) {
-        // the upper line joins P[maxmax] with P[minmax]
-        if (isLeft(P[maxmax], P[minmax], P[i]) >= 0 && i > minmax) {
-            continue; // ignore P[i] below or on the upper line
-        }
-
-        while (top > bot) { // at least 2 points on the upper stack
-            // test if P[i] is left of the line at the stack top
-            if (isLeft(H[top - 1], H[top], P[i]) > 0) {
-                break; // P[i] is a new hull vertex
-            } else {
-                top--; // pop top point off stack
-            }
-        }
-
-        H[++top] = P[i]; // push P[i] onto stack
-    }
-
-    if (minmax != minmin) {
-        H[++top] = P[minmin]; // push joining endpoint onto stack
-    }
-
-    return top + 1;
+	setTimeout(innerLoop2, delay);
 }
+
+function innerLoop2() {
+	
+	if(pause)
+		return;
+	
+	for (var k = 0; k < waypoints.length; k++) {
+
+		var point3 = waypoints[k];
+
+		if (point1 === point3 || point2 === point3) {
+			continue;
+		}
+		updateMarkerAndTable(k, visualSettings.hullK, 30, false);
+		var checkVal = a * point3.lon + b * point3.lat - c;
+
+		if (checkVal === 0) {
+			if (isBetween(point1, point2, point3)) {
+				continue;
+			} else {
+				foundProblem = true;
+				break;
+			}
+		}
+		if (firstTestPoint) {
+			lookingForPositive = (checkVal > 0);
+			firstTestPoint = false;
+		} else {
+			if ((lookingForPositive && (checkVal < 0) ||
+					(!lookingForPositive && (checkVal > 0)))) {
+				// segment not on hull, jump out of innermost loop
+				foundProblem = true;
+				break;
+				//possibly end 3rd for loop here
+			}
+		}
+	}
+
+	currentSegment.setMap(null);
+	if (!foundProblem) {
+
+		// purple line showing convex hull
+		hull[0] = new google.maps.LatLng(point1.lat, point1.lon);
+		hull[1] = new google.maps.LatLng(point2.lat, point2.lon);
+		polyline = new google.maps.Polyline({
+			map: map,
+			path: hull,
+			strokeColor: '#cc00ff',
+			strokeOpacity: 0.6,
+			strokeWeight: 6
+		});
+		updateMarkerAndTable(hullI, visualSettings.startVertex, 30, false);
+		updateMarkerAndTable(hullJ, visualSettings.startVertex, 30, false);
+	} else {
+		updateMarkerAndTable(hullJ, visualSettings.discarded, 30, false);
+	}
+	hullJ++;
+	if (hullJ == waypoints.length) {
+		updateMarkerAndTable(hullI, visualSettings.discarded, 30, false);
+		hullI++;
+		hullJ = hullI + 1;
+	}
+
+	if (hullI < waypoints.length - 1) {
+		updateMarkerAndTable(hullI, visualSettings.hullI, 30, false);
+		setTimeout(innerLoopConvexHull, delay);
+	} else {
+
+	}
+
+}
+
+//Compute Squared Distance 
+function squaredDistance(o1,o2) {
+        var dx, dy;
+        dx = o1.lon-o2.lon;
+        dy = o1.lat-o2.lat;
+        return dx*dx + dy*dy;
+}
+
+/**
+    Check if this point is directly in between the two given
+    points.  Note: the assumption is that they are colinear.
+
+    @param o1 one of the points
+    @param o2 the other point
+    @return whether this point is between the two given points
+    */
+
+function isBetween(o1, o2, o3) {
+        var sqDisto1o2 = squaredDistance(o1,o2);
+        alert("isBetween" + (squaredDistance(o3,o2) < sqDisto1o2) &&
+        (squaredDistance(o3,o2) < sqDisto1o2));
+        return (squaredDistance(o3,o2) < sqDisto1o2) &&
+        (squaredDistance(o3,o2) < sqDisto1o2);
+    }
+
+
+
 
 function getObj(elementID) {
     return document.getElementById(elementID);
 }
-
 
 
 // JS debug window by Mike Maddox from
@@ -2336,6 +2425,7 @@ function makeTable(){
         }
     return div;        
 }
+//Add gradient to points and corresponding table values 
 
 function dsElement(type, num){
 	var ele = document.createElement(type);
