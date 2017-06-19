@@ -2308,7 +2308,6 @@ function squaredDistance(o1,o2) {
         return dx*dx + dy*dy;
 }
 
-=======
 //New Convex Hull 
 function addToHull(temp1, temp2){
     hull[0] = temp1;
@@ -2607,28 +2606,9 @@ function makeTable(){
 			div.appendChild(buttondiv);
             
             var table = document.createElement("table");
-            table.setAttribute("id", "table");
-            var tableBody = document.createElement("tbody");
-            tableBody.setAttribute("id","tablebody");
-            
-            if(discoveredVerticesName == "Stack"){
-                for (var i = discoveredVertices.length-1; i >= 0 ; i--) {
-                    var row = document.createElement("tr");
-                    row.setAttribute("id", "l" + i);
-                    row.innerHTML = discoveredVertices[i].vIndex;
-                    tableBody.appendChild(row);
-                    }   
-            }
-            
-            else if(discoveredVerticesName == "Queue"){
-                for (var i = 0; i <= size ; i++) {
-                    var row = document.createElement("td");
-                    row.setAttribute("id", "l" + i);
-                    row.innerHTML = discoveredVertices[i].vIndex;
-                    tableBody.appendChild(row);
-                }
-            }
-        }
+            table.setAttribute("id", "dstable");
+            var tableBody = dsTbody(size);
+            tableBody.setAttribute("id","tablebody");            
             table.appendChild(tableBody);
             table.setAttribute("border", "2");
             div.appendChild(table);
