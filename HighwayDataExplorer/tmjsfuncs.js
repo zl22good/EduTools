@@ -67,6 +67,8 @@ var genEdges = false;
 var usingAdjacencyLists = false;
 // boolean to indicate if a simulation in progress is paused
 var pause = false;
+var done = false;
+var prevAlgVal = null;
 
 var red = 255;
 var green = 0;
@@ -1252,22 +1254,22 @@ function continueEdgeSearch() {
     }
 
     if(currentEdgeIndex== graphEdges.length){
-	var maxEdgePoints = new Array(2);
-	maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
-	maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
-	new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
-	var firstNode = Math.min(edgeMax.v1, edgeMax.v2);
-	var secondNode = Math.max(edgeMax.v1, edgeMax.v2);
-	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
-	var minEdgePoints = new Array(2);
-	minEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
-	minEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
-	new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
-	var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
-	var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
-	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
-	document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br> Longest Edge label: " + longestELabel +	"<br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
-	return;
+		var maxEdgePoints = new Array(2);
+		maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
+		maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
+		new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+		var firstNode = Math.min(edgeMax.v1, edgeMax.v2);
+		var secondNode = Math.max(edgeMax.v1, edgeMax.v2);
+		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
+		var minEdgePoints = new Array(2);
+		minEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
+		minEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
+		new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+		var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
+		var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
+		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
+		document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br> Longest Edge label: " + longestELabel +	"<br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
+		return;
     }	
     var edge = graphEdges[currentEdgeIndex];
     var distance = Feet(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
@@ -1881,32 +1883,33 @@ function continueDijkstra() {
     // select the next vertex to visit and remove it from the
     // discoveredVertices list
     var nextToVisit = discoveredVertices.shift();
-    numVisitedComingOut++;
 	
-	var tr = document.createElement("tr");
-	tr.id = "di"+nextToVisit.vIndex;
-	tr.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
-	tr.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
-	tr.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
-	var td = document.createElement("td");
-	td.innerHTML = nextToVisit.vIndex;
-	tr.appendChild(td);	
-	td = document.createElement("td");
-	td.innerHTML = Math.round(nextToVisit.dist*1000)/1000;
-	tr.appendChild(td);
-	td = document.createElement("td");
-	td.innerHTML = waypoints[nextToVisit.vIndex].label;
-	tr.appendChild(td);
-	td = document.createElement("td");
-	//td.setAttribute("onmouseover", "hoverE("+nextToVisit.connection+")");
-	//td.setAttribute("onmouseout", "hoverEndE("+nextToVisit.connection+")");
-	if(nextToVisit.edge!=null)
-		td.innerHTML = "("+nextToVisit.edge.v1+")"+waypoints[nextToVisit.edge.v1].label+"<br>"+"("+nextToVisit.edge.v2+")"+waypoints[nextToVisit.edge.v2].label;
-	else
-		td.innerHTML = "null";
-	tr.appendChild(td);
-	
-	getObj("dijtbody").appendChild(tr);
+	if($("#di"+nextToVisit.vIndex).length<=0){
+		var tr = document.createElement("tr");
+		tr.id = "di"+nextToVisit.vIndex;
+		tr.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
+		tr.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
+		tr.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
+		var td = document.createElement("td");
+		td.innerHTML = nextToVisit.vIndex;
+		tr.appendChild(td);	
+		td = document.createElement("td");
+		td.innerHTML = Math.round(nextToVisit.dist*1000)/1000;
+		tr.appendChild(td);
+		td = document.createElement("td");
+		td.innerHTML = waypoints[nextToVisit.vIndex].label;
+		tr.appendChild(td);
+		td = document.createElement("td");
+		//td.setAttribute("onmouseover", "hoverE("+nextToVisit.connection+")");
+		//td.setAttribute("onmouseout", "hoverEndE("+nextToVisit.connection+")");
+		if(nextToVisit.edge!=null)
+			td.innerHTML = "("+nextToVisit.edge.v1+")"+waypoints[nextToVisit.edge.v1].label+"<br>"+"("+nextToVisit.edge.v2+")"+waypoints[nextToVisit.edge.v2].label;
+		else
+			td.innerHTML = "null";
+		tr.appendChild(td);
+		
+		getObj("dijtbody").appendChild(tr);
+	}
 
     lastVisitedVertex = nextToVisit.vIndex;
     var vIndex = nextToVisit.vIndex;
@@ -1915,6 +1918,7 @@ function continueDijkstra() {
     // had been previously visited
     if (visited[vIndex]) {
         numAlreadyVisited++;
+		
         // we've been here before, but is it still in the list?
         if (discoveredVerticesContainsVertex(vIndex)) {
             // not there anymore, indicated this as visitedEarlier, and
@@ -1940,6 +1944,7 @@ function continueDijkstra() {
     // visiting for the first time
     else {
         visited[vIndex] = true;
+		numVisitedComingOut++;
         updateMarkerAndTable(vIndex, visualSettings.visiting,
             10, false);
 
@@ -2300,225 +2305,6 @@ function innerLoop2() {
 
 }
 
-//Compute Squared Distance 
-function squaredDistance(o1,o2) {
-        var dx, dy;
-        dx = o1.lon-o2.lon;
-        dy = o1.lat-o2.lat;
-        return dx*dx + dy*dy;
-}
-
-//New Convex Hull 
-function addToHull(temp1, temp2){
-    hull[0] = temp1;
-    hull[1] = temp2;
-}
-
-//Compute Squared Distance 
-function squaredDistance(o1, o2) {
-	var dx, dy;
-	dx = o1.lon - o2.lon;
-	dy = o1.lat - o2.lat;
-	return dx * dx + dy * dy;
-}
-
-/**
-    Check if this point is directly in between the two given
-    points.  Note: the assumption is that they are colinear.
-
-    @param o1 one of the points
-    @param o2 the other point
-    @return whether this point is between the two given points
-    */
-
-function isBetween(o1, o2, o3) {
-	var sqDisto1o2 = squaredDistance(o1, o2);
-	alert("isBetween" + (squaredDistance(o3, o2) < sqDisto1o2) &&
-		(squaredDistance(o3, o2) < sqDisto1o2));
-	return (squaredDistance(o3, o2) < sqDisto1o2) &&
-		(squaredDistance(o3, o2) < sqDisto1o2);
-}
-
-var hull = [];
-
-var hullI = 0;
-var hullJ = 0;
-//var k = 0;
-var hull = [];
-
-var convexLineHull = [];
-
-var visitingLine = [];
-
-function showConvexLines(lineHull) {
-	for (var i = 0; i < lineHull.length; i++) {
-		connections[i].setMap(null);
-		connections[i] = new google.maps.Polyline({
-			map: map,
-			path: lineHull,
-			strokeColor: '#aa0000',
-			strokeOpacity: 0.6,
-			strokeWeight: 4
-		});
-	}
-}
-
-var currentSegment;
-
-function visitingLineHull(lineHull) {
-	//for (var i = 0; i < lineHull.length; i++) {
-	//currentSegment.setMap(null);
-	currentSegment = new google.maps.Polyline({
-		map: map,
-		path: lineHull,
-		strokeColor: '#0000aa',
-		strokeOpacity: 0.6,
-		strokeWeight: 4
-	});
-	//}
-}
-
-var point1;
-var point2;
-
-var a;
-var b;
-var c;
-
-var lookingForPositive;
-var foundProblem;
-var firstTestPoint;
-
-function bruteForceConvexHull() {
-	for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
-		connections[outerLoop].setMap(null);
-	}
-	hullJ = 1;
-	hullI = 0;
-	setTimeout(innerLoopConvexHull, delay);
-}
-
-function innerLoopConvexHull() {
-	point1 = waypoints[hullI];
-	point2 = waypoints[hullJ];
-
-	//higlight the points being considered
-	//updateMarkerAndTable(i, visualSettings.leader, 30, false);
-	updateMarkerAndTable(hullJ, visualSettings.visiting, 30, false);
-
-	// from here, we need to see if all other points are
-	// on the same side of the line connecting point1 and point2
-	a = point2.lat - point1.lat;
-	b = point1.lon - point2.lon;
-	c = point1.lon * point2.lat - point1.lat * point2.lon;
-	// now check all other points to see if they're on the
-	// same side -- stop as soon as we find they're not
-	lookingForPositive = false;
-	foundProblem = false;
-	firstTestPoint = true;
-
-	visitingLine[0] = new google.maps.LatLng(point1.lat, point1.lon);
-	visitingLine[1] = new google.maps.LatLng(point2.lat, point2.lon);
-	visitingLineHull(visitingLine);
-
-	setTimeout(innerLoop2, delay);
-}
-
-function innerLoop2() {
-	for (var k = 0; k < waypoints.length; k++) {
-
-		var point3 = waypoints[k];
-
-		if (point1 === point3 || point2 === point3) {
-			continue;
-		}
-		updateMarkerAndTable(k, visualSettings.hullK, 30, false);
-		var checkVal = a * point3.lon + b * point3.lat - c;
-
-		if (checkVal === 0) {
-			if (isBetween(point1, point2, point3)) {
-				continue;
-			} else {
-				foundProblem = true;
-				break;
-			}
-		}
-		if (firstTestPoint) {
-			lookingForPositive = (checkVal > 0);
-			firstTestPoint = false;
-		} else {
-			if ((lookingForPositive && (checkVal < 0) ||
-					(!lookingForPositive && (checkVal > 0)))) {
-				// segment not on hull, jump out of innermost loop
-				foundProblem = true;
-				break;
-				//possibly end 3rd for loop here
-			}
-		}
-	}
-
-	currentSegment.setMap(null);
-	if (!foundProblem) {
-
-		// purple line showing convex hull
-		hull[0] = new google.maps.LatLng(point1.lat, point1.lon);
-		hull[1] = new google.maps.LatLng(point2.lat, point2.lon);
-		polyline = new google.maps.Polyline({
-			map: map,
-			path: hull,
-			strokeColor: '#cc00ff',
-			strokeOpacity: 0.6,
-			strokeWeight: 6
-		});
-		updateMarkerAndTable(hullI, visualSettings.startVertex, 30, false);
-		updateMarkerAndTable(hullJ, visualSettings.startVertex, 30, false);
-	} else {
-		updateMarkerAndTable(hullJ, visualSettings.discarded, 30, false);
-	}
-	hullJ++;
-	if (hullJ == waypoints.length) {
-		updateMarkerAndTable(hullI, visualSettings.discarded, 30, false);
-		hullI++;
-		hullJ = hullI + 1;
-	}
-
-	if (hullI < waypoints.length - 1) {
-		updateMarkerAndTable(hullI, visualSettings.hullI, 30, false);
-		setTimeout(innerLoopConvexHull, delay);
-	} else {
-
-	}
-
-}
-
-//Compute Squared Distance 
-function squaredDistance(o1,o2) {
-        var dx, dy;
-        dx = o1.lon-o2.lon;
-        dy = o1.lat-o2.lat;
-        return dx*dx + dy*dy;
-}
-
-/**
-    Check if this point is directly in between the two given
-    points.  Note: the assumption is that they are colinear.
-
-    @param o1 one of the points
-    @param o2 the other point
-    @return whether this point is between the two given points
-    */
-
-function isBetween(o1, o2, o3) {
-        var sqDisto1o2 = squaredDistance(o1,o2);
-        alert("isBetween" + (squaredDistance(o3,o2) < sqDisto1o2) &&
-        (squaredDistance(o3,o2) < sqDisto1o2));
-        return (squaredDistance(o3,o2) < sqDisto1o2) &&
-        (squaredDistance(o3,o2) < sqDisto1o2);
-    }
-
-
-
-
 function getObj(elementID) {
     return document.getElementById(elementID);
 }
@@ -2647,7 +2433,7 @@ function dsTbody(size){
             tableBody.appendChild(row);
         }
     }
-    else if(discoveredVerticesName == "Queue" || discoveredVerticesName == "PQueue"){
+    else if(discoveredVerticesName == "Queue" || discoveredVerticesName == "PQueue" || discoveredVerticesName == "List"){
 		var row = document.createElement("tr");
         for (var i = 0; i <= size ; i++) { 				
             var col = dsElement("td", discoveredVertices[i].vIndex);
@@ -2663,4 +2449,8 @@ function dsTbody(size){
         }
 	}
 	return tableBody;
+}
+
+function resetVars(){
+
 }
