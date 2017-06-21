@@ -994,7 +994,7 @@ function startVertexSearch() {
         continueVertexSearch();
         return;
     }
-
+	legendArea();
     var statusLine = document.getElementById("status");
     // statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
     // in the future, make sure we have appropriate data in the system
@@ -2152,23 +2152,6 @@ function squaredDistance(o1, o2) {
 	return dx * dx + dy * dy;
 }
 
-/**
-    Check if this point is directly in between the two given
-    points.  Note: the assumption is that they are colinear.
-
-    @param o1 one of the points
-    @param o2 the other point
-    @return whether this point is between the two given points
-    */
-
-function isBetween(o1, o2, o3) {
-	var sqDisto1o2 = squaredDistance(o1, o2);
-	alert("isBetween" + (squaredDistance(o3, o2) < sqDisto1o2) &&
-		(squaredDistance(o3, o2) < sqDisto1o2));
-	return (squaredDistance(o3, o2) < sqDisto1o2) &&
-		(squaredDistance(o3, o2) < sqDisto1o2);
-}
-
 var hull = [];
 
 var hullI = 0;
@@ -2265,8 +2248,7 @@ function innerLoopConvexHull() {
 
 function innerLoop2() {
 	
-	if(pause)
-		return;
+	if(pause)return;
 	
 	for (var k = 0; k < waypoints.length; k++) {
 
@@ -2334,6 +2316,23 @@ function innerLoop2() {
 
 }
 
+/**
+    Check if this point is directly in between the two given
+    points.  Note: the assumption is that they are colinear.
+
+    @param o1 one of the points
+    @param o2 the other point
+    @return whether this point is between the two given points
+    */
+
+function isBetween(o1, o2, o3) {
+        var sqDisto1o2 = squaredDistance(o1,o2);
+        alert("isBetween" + (squaredDistance(o3,o2) < sqDisto1o2) &&
+        (squaredDistance(o3,o2) < sqDisto1o2));
+        return (squaredDistance(o3,o2) < sqDisto1o2) &&
+        (squaredDistance(o3,o2) < sqDisto1o2);
+    }
+
 function getObj(elementID) {
     return document.getElementById(elementID);
 }
@@ -2365,9 +2364,10 @@ function TOSLabel(){
 	var label = document.createElement("a");
 	label.setAttribute("id", "ReferenceLink");
 	label.setAttribute("href", "http://tm.teresco.org/credits.php");
+	label.setAttribute("target", "_blank");
 	label.innerHTML = "Credits and Sources";
 	
-	menubar.appendChild(label);
+	return label;
 }
 
 var createTable = false;
@@ -2400,6 +2400,7 @@ function makeTable(){
             div.appendChild(nameAndSize);
 			
 			var buttondiv = document.createElement("div");
+			buttondiv.setAttribute("id", "buttondiv");
 			buttondiv.id = "collapseDataStructurebtn";
 			buttondiv.style.display = "none";
 			var btn = document.createElement("input");
@@ -2410,6 +2411,7 @@ function makeTable(){
 			buttondiv.appendChild(btn);
 			div.appendChild(buttondiv);
 			buttondiv = document.createElement("div");
+			buttondiv.setAttribute("id", "buttondiv");
 			buttondiv.className = "collapseDataStructure";
 			buttondiv.style.display = "none";
 			btn = document.createElement("input");
@@ -2478,6 +2480,82 @@ function dsTbody(size){
         }
 	}
 	return tableBody;
+}
+
+function createSidePanelBtn(){
+	//Creates the menu icon
+	var showPanel = document.createElement("button");
+	showPanel.setAttribute("id", "panelBtn");
+	showPanel.innerHTML = '<i id="menuIcon" class="material-icons">menu</i>';
+	showPanel.setAttribute("title", "Menu");
+	showPanel.addEventListener("click", openSidePanel);
+	document.body.appendChild(showPanel);
+}
+
+var sidePanelContent = ["Legend"];
+function sidePanel(){
+	var div = document.createElement("div");
+	div.setAttribute("id", "sidePanel");
+	var xButton = document.createElement("a");
+	xButton.setAttribute("id", "closeButton");
+	xButton.setAttribute("href", "javascript:void(0)");
+	xButton.innerHTML = "&times;";
+	xButton.addEventListener("click", closeSidePanel);
+	div.appendChild(xButton);
+	for(var i = 0; i < sidePanelContent.length; i++){
+		var contentArea = document.createElement("div");
+		contentArea.setAttribute("id", "contentArea_" + sidePanelContent[i]);
+		
+		var panelContentLabels = document.createElement("a");
+		panelContentLabels.setAttribute("id", sidePanelContent[i]);
+		panelContentLabels.innerHTML = sidePanelContent[i];
+		contentArea.appendChild(panelContentLabels);
+		div.appendChild(contentArea);
+	}
+	div.appendChild(TOSLabel());
+	document.body.appendChild(div);
+}
+
+function openSidePanel(){
+	if(document.getElementById("sidePanel") != null){
+		document.getElementById("sidePanel").style.width = "250px";
+		document.getElementById("main").style.marginLeft = "250px";
+	}
+}
+function closeSidePanel(){
+	document.getElementById("sidePanel").style.width = "0";
+	document.getElementById("main").style.marginLeft= "0";
+}
+
+function mainArea(){
+	var main = document.createElement("div");
+	main.setAttribute("id", "main");
+	main.appendChild(document.getElementById("map"));
+	main.appendChild(document.getElementById("toggleUI"));
+	main.appendChild(document.getElementById("selected"));
+	main.appendChild(document.getElementById("options"));
+	main.appendChild(document.getElementById("pointbox"));
+	main.appendChild(document.getElementById("AlgorithmVisualization"));
+	main.appendChild(document.getElementById("controlbox"));
+	main.appendChild(document.getElementById("contents_table"));
+	main.appendChild(document.getElementById("panelBtn"));
+	document.body.appendChild(main);
+}
+
+var legendArray = [];
+for(var i = 0; i<visualSettings.length; i++){
+	legendArray[i] = visualSettings[i].textColor;
+}
+function legendArea(){
+	//alert(visualSettings.textColor);
+	var legendDiv = document.getElementById("contentArea_Legend");
+	for(var i = 0; i < legendArray.length; i++){
+		//alert(legendArray[i]);
+		var label = document.createElement("label");
+		label.setAttribute("id", markers[i].value);
+		label.innerHTML = markers[i].value;
+		legendDiv.appendChild(label);
+	}
 }
 
 function resetVars(){
