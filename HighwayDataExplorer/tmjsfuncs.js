@@ -2502,7 +2502,7 @@ function mainArea(){
 	var main = document.createElement("div");
 	main.setAttribute("id", "main");
 	main.appendChild(document.getElementById("map"));
-	main.appendChild(document.getElementById("toggleUI"));
+	main.appendChild(document.getElementById("togglecontents_table"));
 	main.appendChild(document.getElementById("selected"));
 	main.appendChild(document.getElementById("options"));
 	main.appendChild(document.getElementById("pointbox"));
@@ -2510,6 +2510,7 @@ function mainArea(){
 	main.appendChild(document.getElementById("controlbox"));
 	main.appendChild(document.getElementById("contents_table"));
 	main.appendChild(document.getElementById("panelBtn"));
+	main.appendChild(document.getElementById("toggleselected"));
 	document.body.appendChild(main);
 }
 

@@ -160,8 +160,16 @@ padding:0px;
 }
 
 @media screen and (max-height: 450px) {
-  .sidenav {padding-top: 15px;}
-  .sidenav a {font-size: 18px;}
+  .sidePanel {padding-top: 15px;}
+  .sidePanel a {font-size: 18px;}
+}
+#togglecontents_table{
+	position: absolute;
+	top: 35px;
+}
+#toggleselected{
+	position: absolute;
+	top: 35px;
 }
 </style>
 <script
@@ -434,8 +442,8 @@ function makeResize(){
 </p>
 <div id="map">
 </div>
-<input type="button" id="togglecontents_table" value="Hide Table" style="left:110px; opacity:.75; position:relative;" onclick="toggleUI(event)">
-<input type="button" id="toggleselected" value="Hide Panel" style="left:120px; opacity:.75; position:relative;" onclick="toggleUI(event)">
+<input type="button" id="togglecontents_table" value="Hide Table" style="left:110px; opacity:.75;" onclick="toggleUI(event)">
+<input type="button" id="toggleselected" value="Hide Panel" style="left:200px; opacity:.75;" onclick="toggleUI(event)">
 <div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px;">
 </div>
 <div id="options">
