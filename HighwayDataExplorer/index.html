@@ -409,18 +409,15 @@ function allowdrop(event){
 }   
 
 function toggleUI(event){
-	var button = document.getElementById("toggleUI");
-	var panel1 = document.getElementById("selected");
-	var panel2 = document.getElementById("contents_table");
-	if (button.value == "Hide UI"){
-		button.value = "Show UI";
-		panel1.setAttribute("style","display:none; left:"+panel1.style.left+"; top:"+panel1.style.top+"; width:"+panel1.style.width+"; height:"+panel1.style.height+";");
-		panel2.setAttribute("style","display:none; left:"+panel2.style.left+"; top:"+panel2.style.top+"; width:"+panel2.style.width+"; height:"+panel2.style.height+";");
+	var button = event.target;
+	var panel1 = getObj(button.id.substring(6));
+	if (button.value.substring(0,4) == "Hide"){
+		button.value = "Show"+ button.value.substring(4);
+		panel1.style.display = "none";
 	}
 	else{
-		button.value = "Hide UI";
-		panel1.setAttribute("style","display:inline-block; left:"+panel1.style.left+"; top:"+panel1.style.top+"; width:"+panel1.style.width+"; height:"+panel1.style.height+";");
-		panel2.setAttribute("style","display:inline-block; left:"+panel2.style.left+"; top:"+panel2.style.top+"; width:"+panel2.style.width+"; height:"+panel2.style.height+";");
+		button.value = "Hide"+button.value.substring(4);
+		panel1.style.display = "";
 	}
 }
 function makeResize(){
@@ -437,8 +434,9 @@ function makeResize(){
 </p>
 <div id="map">
 </div>
-<input type="button" id="toggleUI" value="Hide UI" style="left:110px; opacity:.75; position:relative;" onclick="toggleUI()">
-<div id="selected" draggable="true"  ondragstart="drag(event)" style="left:110px; top:70px;">
+<input type="button" id="togglecontents_table" value="Hide Table" style="left:110px; opacity:.75; position:relative;" onclick="toggleUI(event)">
+<input type="button" id="toggleselected" value="Hide Panel" style="left:120px; opacity:.75; position:relative;" onclick="toggleUI(event)">
+<div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px;">
 </div>
 <div id="options">
   <table id="optionsTable" class="gratable">
@@ -468,9 +466,15 @@ function makeResize(){
 		<br>
 		Category:
 		<select id = "categoryOptions">
-			<option value = "region">Region</option>
-			<option value = "system">System</option>
-			<option value = "all">All</option>		
+				<option value="all">All</option>
+				<option value="region">Region</option>
+				<option value="area">Area</option>
+				<option value="continent">Continent</option>
+				<option value="multiregio">Multi Region</option>
+				<option value="multisyste">Multi System</option>
+				<option value="system">System</option>
+				<option value="master">Master</option>
+				<option value="country">Country</option>
 		</select>
 		<br>
 		(Choose "Collapsed" if unsure what this means)<br>
@@ -523,11 +527,15 @@ function makeResize(){
 		<br>
 		Category:
 		<select id = "categoryOptions">
-			<option value = "region">Region</option>
-			<option value = "system">System</option>
-			<option value = "country">Country</option>
-			<option value = "continent">Continent</option>
-			<option value = "all">All</option>		
+			<option value="all">All</option>
+				<option value="region">Region</option>
+				<option value="area">Area</option>
+				<option value="continent">Continent</option>
+				<option value="multiregio">Multi Region</option>
+				<option value="multisyste">Multi System</option>
+				<option value="system">System</option>
+				<option value="master">Master</option>
+				<option value="country">Country</option>	
 		</select>
 		<br>
 		(Choose "Collapsed" if unsure what this means)<br>

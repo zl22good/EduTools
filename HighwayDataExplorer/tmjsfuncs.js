@@ -67,6 +67,8 @@ var genEdges = false;
 var usingAdjacencyLists = false;
 // boolean to indicate if a simulation in progress is paused
 var pause = false;
+var done = false;
+var prevAlgVal = null;
 
 var red = 255;
 var green = 0;
@@ -1252,22 +1254,22 @@ function continueEdgeSearch() {
     }
 
     if(currentEdgeIndex== graphEdges.length){
-	var maxEdgePoints = new Array(2);
-	maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
-	maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
-	new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
-	var firstNode = Math.min(edgeMax.v1, edgeMax.v2);
-	var secondNode = Math.max(edgeMax.v1, edgeMax.v2);
-	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
-	var minEdgePoints = new Array(2);
-	minEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
-	minEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
-	new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
-	var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
-	var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
-	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
-	document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br> Longest Edge label: " + longestELabel +	"<br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
-	return;
+		var maxEdgePoints = new Array(2);
+		maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
+		maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
+		new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
+		var firstNode = Math.min(edgeMax.v1, edgeMax.v2);
+		var secondNode = Math.max(edgeMax.v1, edgeMax.v2);
+		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
+		var minEdgePoints = new Array(2);
+		minEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
+		minEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
+		new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
+		var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
+		var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
+		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
+		document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br> Longest Edge label: " + longestELabel +	"<br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
+		return;
     }	
     var edge = graphEdges[currentEdgeIndex];
     var distance = Feet(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
@@ -1881,32 +1883,33 @@ function continueDijkstra() {
     // select the next vertex to visit and remove it from the
     // discoveredVertices list
     var nextToVisit = discoveredVertices.shift();
-    numVisitedComingOut++;
 	
-	var tr = document.createElement("tr");
-	tr.id = "di"+nextToVisit.vIndex;
-	tr.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
-	tr.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
-	tr.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
-	var td = document.createElement("td");
-	td.innerHTML = nextToVisit.vIndex;
-	tr.appendChild(td);	
-	td = document.createElement("td");
-	td.innerHTML = Math.round(nextToVisit.dist*1000)/1000;
-	tr.appendChild(td);
-	td = document.createElement("td");
-	td.innerHTML = waypoints[nextToVisit.vIndex].label;
-	tr.appendChild(td);
-	td = document.createElement("td");
-	//td.setAttribute("onmouseover", "hoverE("+nextToVisit.connection+")");
-	//td.setAttribute("onmouseout", "hoverEndE("+nextToVisit.connection+")");
-	if(nextToVisit.edge!=null)
-		td.innerHTML = "("+nextToVisit.edge.v1+")"+waypoints[nextToVisit.edge.v1].label+"<br>"+"("+nextToVisit.edge.v2+")"+waypoints[nextToVisit.edge.v2].label;
-	else
-		td.innerHTML = "null";
-	tr.appendChild(td);
-	
-	getObj("dijtbody").appendChild(tr);
+	if($("#di"+nextToVisit.vIndex).length<=0){
+		var tr = document.createElement("tr");
+		tr.id = "di"+nextToVisit.vIndex;
+		tr.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
+		tr.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
+		tr.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
+		var td = document.createElement("td");
+		td.innerHTML = nextToVisit.vIndex;
+		tr.appendChild(td);	
+		td = document.createElement("td");
+		td.innerHTML = Math.round(nextToVisit.dist*1000)/1000;
+		tr.appendChild(td);
+		td = document.createElement("td");
+		td.innerHTML = waypoints[nextToVisit.vIndex].label;
+		tr.appendChild(td);
+		td = document.createElement("td");
+		//td.setAttribute("onmouseover", "hoverE("+nextToVisit.connection+")");
+		//td.setAttribute("onmouseout", "hoverEndE("+nextToVisit.connection+")");
+		if(nextToVisit.edge!=null)
+			td.innerHTML = "("+nextToVisit.edge.v1+")"+waypoints[nextToVisit.edge.v1].label+"<br>"+"("+nextToVisit.edge.v2+")"+waypoints[nextToVisit.edge.v2].label;
+		else
+			td.innerHTML = "null";
+		tr.appendChild(td);
+		
+		getObj("dijtbody").appendChild(tr);
+	}
 
     lastVisitedVertex = nextToVisit.vIndex;
     var vIndex = nextToVisit.vIndex;
@@ -1915,6 +1918,7 @@ function continueDijkstra() {
     // had been previously visited
     if (visited[vIndex]) {
         numAlreadyVisited++;
+		
         // we've been here before, but is it still in the list?
         if (discoveredVerticesContainsVertex(vIndex)) {
             // not there anymore, indicated this as visitedEarlier, and
@@ -1940,6 +1944,7 @@ function continueDijkstra() {
     // visiting for the first time
     else {
         visited[vIndex] = true;
+		numVisitedComingOut++;
         updateMarkerAndTable(vIndex, visualSettings.visiting,
             10, false);
 
@@ -2299,9 +2304,6 @@ function isBetween(o1, o2, o3) {
         (squaredDistance(o3,o2) < sqDisto1o2);
     }
 
-
-
-
 function getObj(elementID) {
     return document.getElementById(elementID);
 }
@@ -2433,7 +2435,7 @@ function dsTbody(size){
             tableBody.appendChild(row);
         }
     }
-    else if(discoveredVerticesName == "Queue" || discoveredVerticesName == "PQueue"){
+    else if(discoveredVerticesName == "Queue" || discoveredVerticesName == "PQueue" || discoveredVerticesName == "List"){
 		var row = document.createElement("tr");
         for (var i = 0; i <= size ; i++) { 				
             var col = dsElement("td", discoveredVertices[i].vIndex);
@@ -2525,4 +2527,8 @@ function legendArea(){
 		label.innerHTML = markers[i].value;
 		legendDiv.appendChild(label);
 	}
+}
+
+function resetVars(){
+
 }
