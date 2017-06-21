@@ -231,6 +231,7 @@ function processContents(fileContents) {
 
     // document.getElementById('pointbox').innerHTML = pointboxContents;
 	var newEle = document.createElement("div");
+	newEle.setAttribute("id", "newEle");
 	newEle.innerHTML = pointboxContents;
   document.getElementById('contents_table').appendChild(newEle);
 	createDataTable("#waypoints");

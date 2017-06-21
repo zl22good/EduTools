@@ -21,7 +21,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css"/>
 <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
-<link rel="stylesheet" type="text/css" href="http://tm.teresco.org/css/travelMapping.css" />
+<link rel="stylesheet" type="text/css" href="http://tm.teresco.org/css/travelMapping.css"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style type="text/css">
 #controlbox {
   width: 25%;*/
@@ -45,7 +46,7 @@
   cursor:crosshair;
 }
 #selected {
-  position: absolute;
+  position: relative;
   overflow: scroll;
   display: inline-block;
   max-width: 50%;
@@ -102,9 +103,65 @@ width:150px;
 table.dataTable tbody td{
 padding:0px;
 }
-#ReferenceLink {
-	position: absolute;
-	left: 108px;	
+#menuIcon{
+	padding: 0px;
+	margin: 0px;
+	top: 1px;
+	position: fixed;
+	display: inline-block;
+	border: none;
+	color: white;
+}
+#panelBtn {
+	padding: 0px;
+	margin: 0px;
+	top: 3px;
+	left: 10px;
+	position: fixed;
+	display: inline-block;
+	text-align: center;
+	border: none;
+	text-decoration: none;
+}
+#menuIcon:hover {
+		color: lightgrey;
+}
+#sidePanel {
+    height: 100%;
+    width: 0;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+}
+
+#sidePanel a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+#sidePanel a:hover, .offcanvas a:focus{
+    color: #f1f1f1;
+}
+
+.sidePanel .closeButton {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
 }
 </style>
 <script
@@ -120,7 +177,7 @@ padding:0px;
 <script src="hdxjsfunc.js" type="text/javascript"></script>
 <title>Highway Data Examiner</title>
 </head>
-<body onload="loadmap(); makeResize(); toggleTable(); TOSLabel(); startPause();" ondragover="allowdrop(event)" ondrop="drop(event)">
+<body onload="loadmap(); makeResize(); toggleTable(); createSidePanelBtn(); sidePanel(); mainArea()" ondragover="allowdrop(event)" ondrop="drop(event)">
 <script type="application/javascript">
 function toggleTable() {
   var menu = document.getElementById("showHideMenu");
@@ -135,6 +192,7 @@ function toggleTable() {
   if (value == "pointbox") {
 	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
 	var newEle = document.createElement("div");
+	newEle.setAttribute("id", "newEle");
 	newEle.innerHTML = pointbox.innerHTML;
 	if($("#connection").length != 0 || $("#waypoints").length != 0)
 		getObj("connection").parentNode.parentNode.style.display = "";
@@ -143,6 +201,7 @@ function toggleTable() {
   else if (value == "options") {
 	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
 	var newEle = document.createElement("div");
+	newEle.setAttribute("id", "newEle");
 	newEle.innerHTML = options.innerHTML;
     selected.appendChild(newEle);
 	if($("#connection").length != 0 || $("#waypoints").length != 0)
@@ -153,6 +212,7 @@ function toggleTable() {
   else if (value =="AlgorithmVisualization"){
 	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
 	var newEle = document.createElement("div");
+	newEle.setAttribute("id", "newEle");
 	newEle.innerHTML = algorithmVisualization.innerHTML;
     selected.appendChild(newEle);
 	if($("#connection").length != 0 || $("#waypoints").length != 0)
@@ -163,6 +223,7 @@ function toggleTable() {
   else {  
   selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
   var newEle = document.createElement("div");
+  newEle.setAttribute("id", "newEle");
   selected.appendChild(newEle);
  if($("#connection").length != 0 || $("#waypoints").length != 0)
 		getObj("connection").parentNode.parentNode.style.display = "none";
@@ -361,7 +422,9 @@ function toggleUI(event){
 }
 function makeResize(){
     $( "#selected" ).resizable();
-	document.getElementById("selected").appendChild(document.createElement("div"));
+	var div = document.createElement("div");
+	div.setAttribute("id", "resize");
+		document.getElementById("selected").appendChild(div);
 	$( "#contents_table" ).resizable();
 }
 </script>
@@ -436,7 +499,7 @@ function makeResize(){
 <div id="pointbox">
   No data loaded....
 </div>
-<div id ="AlgorithmVisualization">
+<div id="AlgorithmVisualization">
   <table id="AlgorithmsTable" class="gratable">
     <thead>
       <tr><th>Algorithm Simulation Control Panel</th></tr>
