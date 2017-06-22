@@ -2540,6 +2540,7 @@ function mainArea(){
 	main.appendChild(document.getElementById("controlbox"));
 	main.appendChild(document.getElementById("contents_table"));
 	main.appendChild(document.getElementById("panelBtn"));
+	main.appendChild(document.getElementById("toggleselected"));
 	document.body.appendChild(main);
 }
 
