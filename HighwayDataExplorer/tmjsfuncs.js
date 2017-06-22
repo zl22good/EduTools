@@ -2532,7 +2532,6 @@ function mainArea(){
 	main.setAttribute("id", "main");
 	main.appendChild(document.getElementById("map"));
 	main.appendChild(document.getElementById("togglecontents_table"));
-	main.appendChild(document.getElementById("toggleselected"));
 	main.appendChild(document.getElementById("selected"));
 	main.appendChild(document.getElementById("options"));
 	main.appendChild(document.getElementById("pointbox"));
