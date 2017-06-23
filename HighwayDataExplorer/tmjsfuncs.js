@@ -131,94 +131,112 @@ var visualSettings = {
     undiscovered: {
         color: "#202020",
         textColor: "#e0e0e0",
-        scale: 2
+        scale: 2,
+		name: "undiscovered"
     },
     visiting: {
         color: "yellow",
         textColor: "black",
-        scale: 6
+        scale: 6,
+		name: "visiting"
     },
     leader: {
         color: "red",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "leader"
     },
     discarded: {
         color: "#a0a0a0",
         textColor: "black",
-        scale: 2
+        scale: 2,
+		name: "discarded"
     },
     // specific to vertex search
     northLeader: {
         color: "#8b0000",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "northLeader"
     },
     southLeader: {
         color: "#ee0000",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "southLeader"
     },
     eastLeader: {
         color: "#000080",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "eastLeader"
     },
     westLeader: {
         color: "#551A8B",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "westLeader"
     },
     shortLabelLeader: {
         color: "#654321",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "shortLabelLeader"
     },
     longLabelLeader: {
         color: "#006400",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "longLabelLeader"
     },
     // specific to graph traversals
     startVertex: {
         color: "purple",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "startVertex"
     },
     discoveredEarlier: {
         color: "red",
         textColor: "white",
-        scale: 4
+        scale: 4,
+		name: "discoveredEarlier"
     },
     visitedEarlier: {
         color: "orange",
         textColor: "black",
-        scale: 4
+        scale: 4,
+		name: "visitedEarlier"
     },
     spanningTree: {
         color: "#0000a0",
         textColor: "white",
-        scale: 2
+        scale: 2,
+		name: "spanningTree"
     },
     discovered: {
         color: "#00a000",
         textColor: "white",
-        scale: 4
+        scale: 4,
+		name: "discovered"
        },
 	hoverV: {
 		color: "#a0036b",
 		textColor: "white",
-		scale: 6
+		scale: 6,
+		name: "hoverV"
 	},
     hullK: {
         color: "#41f4c4",
         textColor: "black",
-        scale: 3
+        scale: 3,
+		name: "hullK"
     },
     hullI: {
         color: "#0000aa",
         textColor: "black",
-        scale: 6
+        scale: 6,
+		name: "hullI"
     }
 };
 
@@ -921,7 +939,8 @@ function pauseSimulation() {
 // using an entry passed in from the visualSettings
 // optionally hide also by setting display to none
 function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
-
+	
+	legendArea(vs);
     markers[waypointNum].setIcon({
         path: google.maps.SymbolPath.CIRCLE,
         scale: vs.scale,
@@ -994,7 +1013,6 @@ function startVertexSearch() {
         continueVertexSearch();
         return;
     }
-	legendArea();
     var statusLine = document.getElementById("status");
     // statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
     // in the future, make sure we have appropriate data in the system
@@ -2514,19 +2532,25 @@ function mainArea(){
 	document.body.appendChild(main);
 }
 
-var legendArray = [];
-for(var i = 0; i<visualSettings.length; i++){
-	legendArray[i] = visualSettings[i].textColor;
-}
-function legendArea(){
-	//alert(visualSettings.textColor);
+var legendArray = ["undiscovered", "visiting", "leader", "discarded", "northLeader", "southLeader", "eastLeader", "westLeader", "shortLabelLeader", "longLabelLeader", "startVertex", "discoveredEarlier", "visitedEarlier", "spanningTree", "discovered", "hoverV", "hullK", "hullI"];
+
+function legendArea(vis){
+	//alert(vis.name);
 	var legendDiv = document.getElementById("contentArea_Legend");
 	for(var i = 0; i < legendArray.length; i++){
-		//alert(legendArray[i]);
-		var label = document.createElement("label");
-		label.setAttribute("id", markers[i].value);
-		label.innerHTML = markers[i].value;
-		legendDiv.appendChild(label);
+		if(vis.name == legendArray[i] && vis.name != null){
+			var boxContainer = document.createElement("div");
+			var box = document.createElement("div");
+			var label = document.createElement("span");
+			label.setAttribute("id", legendArray[i]);
+			label.innerHTML = legendArray[i];
+			box.setAttribute("class", "box");
+			box.style.backgroundColor =  vis.color;
+			boxContainer.appendChild(box);
+			boxContainer.appendChild(label);
+			
+			legendDiv.appendChild(boxContainer);
+		}
 	}
 }
 
