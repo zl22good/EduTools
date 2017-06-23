@@ -939,7 +939,6 @@ function pauseSimulation() {
 // using an entry passed in from the visualSettings
 // optionally hide also by setting display to none
 function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
-	
 	legendArea(vs);
     markers[waypointNum].setIcon({
         path: google.maps.SymbolPath.CIRCLE,
@@ -951,8 +950,9 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 	var row = getObj("waypoint"+waypointNum);
     row.style.backgroundColor = vs.color;
     row.style.color = vs.textColor;
-	if($("#l"+waypointNum).length > 0)
-		getObj("l"+waypointNum).style.backgroundColor = vs.color;
+	if($("#l"+waypointNum).length > 0){
+		getObj("l"+(waypointNum)).style.backgroundColor = vs.color;
+	}
 	if($("#di"+waypointNum).length > 0){
 		getObj("di"+waypointNum).style.backgroundColor = vs.color;
 		getObj("di"+waypointNum).style.color = vs.textColor;
@@ -1233,9 +1233,16 @@ var minDistance = 9999999;
 var maxDistance = -999999;
 var edgeMin = null;
 var edgeMax = null;
+var edgeshort = null;
+var edgelong = null;
 var currentEdgeIndex = 0;
 var shortestELabel;
 var longestELabel;
+var maxnum = -1;
+var minnum = -1;
+var shortnum = -1;
+var longnum = -1;
+var flag = "";
 
 function startEdgeSearch() {
 
@@ -1249,7 +1256,10 @@ function startEdgeSearch() {
     // statusLine.innerHTML = "Preparing for Extreme Edge Search Visualization";
     // we don't need edges here, so we remove those
     for (var i = 0; i < connections.length; i++) {
-        connections[i].setMap(null);
+        connections[i].setOptions({
+			strokeColor: visualSettings.undiscovered.color,
+            strokeOpacity: 0.3
+		});
     }
     //we don't need waypoints table here, so we remove those
     getObj("waypoints").style.display = "none";
@@ -1266,66 +1276,84 @@ function startEdgeSearch() {
 
 }
 
-function continueEdgeSearch() {
-    if (pause) {
-        return;
-    }
+function findEdge(edgeNum, color, op, weight){
+	var edge = graphEdges[edgeNum];
+	connections[edgeNum].setOptions({
+		strokeColor: color, 
+		strokeWeight: weight, 
+		strokeOpacity: op});
+	var firstNode = Math.min(edge.v1, edge.v2);
+	var secondNode = Math.max(edge.v1, edge.v2);
+	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = color;
+}
 
-    if(currentEdgeIndex== graphEdges.length){
-		var maxEdgePoints = new Array(2);
-		maxEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMax.v1].lat, waypoints[edgeMax.v1].lon);
-		maxEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMax.v2].lat, waypoints[edgeMax.v2].lon);
-		new google.maps.Polyline({path: maxEdgePoints, strokeColor: '#0000FF', strokeWeight: 10, strokeOpacity: 1, map: map});
-		var firstNode = Math.min(edgeMax.v1, edgeMax.v2);
-		var secondNode = Math.max(edgeMax.v1, edgeMax.v2);
-		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "blue";
-		var minEdgePoints = new Array(2);
-		minEdgePoints [0] = new google.maps.LatLng( waypoints[edgeMin.v1].lat, waypoints[edgeMin.v1].lon);
-		minEdgePoints [1] = new google.maps.LatLng( waypoints[edgeMin.v2].lat, waypoints[edgeMin.v2].lon);
-		new google.maps.Polyline({path: minEdgePoints, strokeColor: '#FF0000', strokeWeight: 20, strokeOpacity: 1, map: map});
-		var firstNode = Math.min(edgeMin.v1, edgeMin.v2);
-		var secondNode = Math.max(edgeMin.v1, edgeMin.v2);
-		document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "red";
-		document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br> Longest Edge label: " + longestELabel +	"<br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
-		return;
+function continueEdgeSearch() {
+	if (pause) {
+        return;
     }	
+	
+	if(flag != ""){
+		findEdge(maxnum, "#0000ff", 1, 15);
+		findEdge(minnum, "#FF0000", 1, 15);
+		findEdge(shortnum, "#00ffff", 1, 15);
+		findEdge(longnum, "#FF00ff", 1, 15);
+		var ids = flag.split(",");
+		for(var i=1; i<ids.length; i++){
+			var id = parseInt(ids[i]);
+			if (id != -1 && id != minnum && id != maxnum && id != shortnum && id != longnum){
+				findEdge(id, visualSettings.spanningTree.color, 0.6, 10);
+				document.getElementById("connection"+(id)).style.display = "none";
+			}
+		}
+	}
+	else
+		if (currentEdgeIndex>0){
+			document.getElementById("connection"+(currentEdgeIndex-1)).style.display = "none";
+			findEdge(currentEdgeIndex-1, visualSettings.spanningTree.color, 0.6, 10);
+		}
+		
+	if(currentEdgeIndex== graphEdges.length){
+		document.getElementById('info1').innerHTML = "<span style='background-color:cyan'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
+		return;
+    }
+		
+	flag = '';	
+	
     var edge = graphEdges[currentEdgeIndex];
+	findEdge(currentEdgeIndex, "#FFFF00", 1, 10);
+	
     var distance = Feet(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
         waypoints[edge.v2].lat, waypoints[edge.v2].lon);
 
     if (distance < minDistance) {
         minDistance = distance;
         edgeMin = edge;
+		flag += ","+minnum;
+		minnum = currentEdgeIndex;
     }
 
     if (distance > maxDistance) {
         maxDistance = distance;
         edgeMax = edge;
+		flag += ","+maxnum;
+		maxnum = currentEdgeIndex;
     }
 
-    if (shortestELabel === undefined || shortestELabel.length > edge.label.length) {
+    if (shortestELabel === undefined || shortestELabel == null  || shortestELabel.length > edge.label.length) {
         shortestELabel = edge.label;
+		edgeshort = edge;
+		flag += ","+shortnum;
+		shortnum = currentEdgeIndex;
     }
 
-    if (longestELabel === undefined || longestELabel.length < edge.label.length) {
+    if (longestELabel === undefined || longestELabel == null   || longestELabel.length < edge.label.length) {
         longestELabel = edge.label;
-    }
+		edgelong = edge;
+		flag += ","+longnum;
+		longnum = currentEdgeIndex;
+    }	
+	document.getElementById('info1').innerHTML = "<span style='background-color:cyan'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
 	
-	document.getElementById('info1').innerHTML = "Shortest Edge label: " + shortestELabel + "<br> Longest Edge label: " + longestELabel +	"<br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
-
-    var initEdgePoints = new Array(2);
-    initEdgePoints[0] = new google.maps.LatLng(waypoints[edge.v1].lat, waypoints[edge.v1].lon);
-    initEdgePoints[1] = new google.maps.LatLng(waypoints[edge.v2].lat, waypoints[edge.v2].lon);
-    new google.maps.Polyline({
-        path: initEdgePoints,
-        strokeColor: '#FFFF00',
-        strokeWeight: 10,
-        strokeOpacity: 1,
-        map: map
-    });
-    var firstNode = Math.min(edge.v1, edge.v2);
-    var secondNode = Math.max(edge.v1, edge.v2);
-    document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = "grey";
     currentEdgeIndex += 1;
     setTimeout(continueEdgeSearch, delay);
 }
@@ -1568,7 +1596,7 @@ function continueGraphTraversal() {
         }
     }
 
-	shiftColors();
+
     // update view of our list
     //printList(queue);
    /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
@@ -1576,6 +1604,7 @@ function continueGraphTraversal() {
      var newDS = makeTable();
 	 if(newDS!=null)
 		 getObj("algorithmStatus").appendChild(newDS);
+	shiftColors();
     setTimeout(continueGraphTraversal, delay);
 
 }
@@ -1779,7 +1808,6 @@ function continueConnectedPieces() {
 	 if(newDS!=null)
 		 getObj("algorithmStatus").appendChild(newDS);
     setTimeout(function(){continueConnectedPieces()}, delay);
-
 }
 
 function startDijkstra() {
@@ -1868,6 +1896,24 @@ function comparePQ(a, b){
 	return a.dist-b.dist;
 }
 
+var totalPath = Array();
+
+function findNextV(edge, vnum){
+	if(edge.v1 == vnum)
+		return edge.v2;
+	else 
+		return edge.v1;
+}
+
+function findNextPath(v1, v2){
+	var cur;
+	for(var i=0; i<totalPath.length; i++){
+		cur = totalPath[i].edge;
+		if(cur != null && (v1 == cur.v1 || v1 == cur.v2) && (v2 != cur.v1 && v2 != cur.v2))
+			return i;
+	}
+}
+
 function continueDijkstra() {
     // if we're paused, do nothing for now
     if (pause) {
@@ -1894,13 +1940,34 @@ function continueDijkstra() {
     // maybe we're done
     if (discoveredVertices.length == 0 || (visited[endingVertex] && startingVertex != endingVertex)) {
 		createDataTable("#dijtable");
-        //console.log("Done!");
+        if(startingVertex != endingVertex){
+			var curV = totalPath[totalPath.length-1];
+			var edgePath = curV.edge;
+			var curVnum = endingVertex;
+			var nextV;
+			while (curV != null){
+				edgePath = curV.edge;
+				curVnum = nextV;
+				if(curVnum == startingVertex)
+					break;
+				updateMarkerAndTable(curV.vIndex, {color: "#ffaa00", textColor: "black", scale: 5}, 5, false);
+				curV.connection.setOptions({
+					strokeColor: "#ffaa00"
+				});
+				
+				nextV = findNextV(edgePath, curVnum);
+				curV = totalPath[findNextPath(nextV, curVnum)];
+			}
+		}
+		done = true;
         return;
     }
 
     // select the next vertex to visit and remove it from the
     // discoveredVertices list
     var nextToVisit = discoveredVertices.shift();
+	if (startingVertex != endingVertex)
+		totalPath.push(nextToVisit);
 	
 	if($("#di"+nextToVisit.vIndex).length<=0){
 		var tr = document.createElement("tr");
@@ -2010,7 +2077,6 @@ function continueDijkstra() {
         }
     }
 	discoveredVertices.sort(comparePQ);
-	shiftColors();
 
     // update view of our list
     //printList(queue);
@@ -2019,7 +2085,7 @@ function continueDijkstra() {
 	     var newDS = makeTable();
 	 if(newDS!=null)
 		 getObj("algorithmStatus").appendChild(newDS);
-
+		shiftColors();
     setTimeout(continueDijkstra, delay);
 
 }
@@ -2058,11 +2124,8 @@ function shiftColors(){
 	}
 	if(discoveredVertices.length>0){
 	var colors = getObj("waypoint"+discoveredVertices[discoveredVertices.length-1].vIndex).style.backgroundColor.split(",");
-	console.log(colors[0].substring(4, colors[0].length));
 	gred = parseInt(colors[0].substring(4, colors[0].length).trim());
-	console.log(colors[1].trim());
 	ggrn = parseInt(colors[1].trim());
-	console.log(colors[2].substring(0, colors[2].length-1).trim());
 	gblu = parseInt(colors[2].substring(0, colors[2].length-1).trim());
 	if(gred>=inc){
 			gred-=inc;
@@ -2555,5 +2618,61 @@ function legendArea(vis){
 }
 
 function resetVars(){
+	if (done || prevAlgVal != getObj("AlgorithmSelection").value){
+		done = false;
+		updateMap();
+		northIndex = -1;
+		southIndex = -1;
+		eastIndex = -1;
+		westIndex = -1;
+		shortIndex = -1;
+		longIndex = -1;
+		
+  minDistance = 9999999;
+ maxDistance = -999999;
+ edgeMin = null;
+ edgeMax = null;
+ edgeshort = null;
+ edgelong = null;
+ currentEdgeIndex = 0;
+ shortestELabel = null;
+ longestELabel = null;
+ maxnum = -1;
+ minnum = -1;
+ shortnum = -1;
+ longnum = -1;
+ flag = "";
+ 
+  discoveredVertices = [];
+ visitedVertices = [];
 
+ numVisited = 0;
+numVisitedComingOut = 0;
+numAlreadyVisited = 0;
+
+ hull = [];
+ hullI = 0;
+ hullJ = 0;
+ hull = [];
+ convexLineHull = [];
+ visitingLine = [];
+ 
+  createTable = false;
+ showAll = false;
+ numVisitedString = document.createTextNode("Number of Visited Vertices: " + numVisited);
+ numVisitedComingOutString = document.createTextNode("Number of Vertices Visited Coming out: " + numVisitedComingOut);
+ numAlreadyVisitedString = document.createTextNode("Number of Vertices already Visited: " + numAlreadyVisited);
+ nameAndSize = document.createTextNode(discoveredVerticesName + " Size: " + discoveredVertices.length);
+ 
+  red = 255;
+ green = 0;
+ blue = 0;
+ piecenum = 1;
+ rred = 255;
+ rgrn = 245;
+ rblu = 245;
+ gred = 245;
+ ggrn = 255;
+ gblu = 245;
+	}
 }
