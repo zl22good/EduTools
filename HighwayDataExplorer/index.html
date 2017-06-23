@@ -301,21 +301,37 @@ function getCurrentAlgorithm() {
         function selectAlgorithmAndStart() {
             var value = getCurrentAlgorithm();
             if (value == "vertexSearch") {
+				resetVars();
+				prevAlgVal = value;
                 startVertexSearch();
             } else if (value == "EdgeSearch") {
+			resetVars();
+				prevAlgVal = value;
                 startEdgeSearch();
             } else if (value == "BFS") {
+			resetVars();
+				prevAlgVal = value;
                 startGraphTraversal("BFS");
             } else if (value == "DFS") {
+			resetVars();
+				prevAlgVal = value;
                 startGraphTraversal("DFS");
             } else if (value == "RFS") {
+			resetVars();
+				prevAlgVal = value;
                 startGraphTraversal("RFS");
             } else if (value == "ConvexHull") {
+			resetVars();
+				prevAlgVal = value;
                 bruteForceConvexHull();
 			}else if (value == "connected") {
+			resetVars();
+				prevAlgVal = value;
                 startConnectedPieces(-1, null);
             }
              else if (value == "Dijkstra") {
+			 resetVars();
+				prevAlgVal = value;
 				startDijkstra();
 			 
 			 } else {}
@@ -442,9 +458,10 @@ function makeResize(){
 </p>
 <div id="map">
 </div>
-<input type="button" id="togglecontents_table" value="Hide Table" style="left:110px; opacity:.75;" onclick="toggleUI(event)">
-<input type="button" id="toggleselected" value="Hide Panel" style="left:200px; opacity:.75;" onclick="toggleUI(event)">
-<div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px;">
+<input type="button" id="togglecontents_table" value="Hide Table" style="left:110px; opacity:.75; position:absolute;" onclick="toggleUI(event)">
+<input type="button" id="toggleselected" value="Hide Panel" style="left:200px; opacity:.75; position:absolute;" onclick="toggleUI(event)">
+<div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px; position:absolute;">
+
 </div>
 <div id="options">
   <table id="optionsTable" class="gratable">
