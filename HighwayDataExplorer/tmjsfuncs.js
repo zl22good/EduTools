@@ -210,11 +210,6 @@ var visualSettings = {
 		textColor: "white",
 		scale: 6
 	},
-    hullK: {
-        color: "#41f4c4",
-        textColor: "black",
-        scale: 3
-    },
     hullI: {
         color: "#0000aa",
         textColor: "black",
@@ -2245,6 +2240,9 @@ function bruteForceConvexHull() {
 	for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
 		connections[outerLoop].setMap(null);
 	}
+    for(var i = 0; i < waypoints.length; i++){
+        updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
+    }
 	hullJ = 1;
 	hullI = 0;
 	setTimeout(innerLoopConvexHull, delay);
@@ -2291,7 +2289,7 @@ function innerLoop2() {
 		if (point1 === point3 || point2 === point3) {
 			continue;
 		}
-		updateMarkerAndTable(k, visualSettings.hullK, 30, false);
+		//updateMarkerAndTable(k, visualSettings.hullK, 30, false);
 		var checkVal = a * point3.lon + b * point3.lat - c;
 
 		if (checkVal === 0) {
@@ -2338,6 +2336,14 @@ function innerLoop2() {
 	if (hullJ == waypoints.length) {
 		updateMarkerAndTable(hullI, visualSettings.discarded, 30, false);
 		hullI++;
+        for(var i = hullI; i >= 0; i--){
+            updateMarkerAndTable(i, visualSettings.discarded, 30, false);
+        }
+        for(var i = hullI + 1; i < waypoints.length; i++){
+            updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
+        }
+		var checkVal = a * point3.lon + b * point3.lat - c;
+		var checkVal = a * point3.lon + b * point3.lat - c;
 		hullJ = hullI + 1;
 	}
 
