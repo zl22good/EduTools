@@ -301,21 +301,37 @@ function getCurrentAlgorithm() {
         function selectAlgorithmAndStart() {
             var value = getCurrentAlgorithm();
             if (value == "vertexSearch") {
+				resetVars();
+				prevAlgVal = value;
                 startVertexSearch();
             } else if (value == "EdgeSearch") {
+			resetVars();
+				prevAlgVal = value;
                 startEdgeSearch();
             } else if (value == "BFS") {
+			resetVars();
+				prevAlgVal = value;
                 startGraphTraversal("BFS");
             } else if (value == "DFS") {
+			resetVars();
+				prevAlgVal = value;
                 startGraphTraversal("DFS");
             } else if (value == "RFS") {
+			resetVars();
+				prevAlgVal = value;
                 startGraphTraversal("RFS");
             } else if (value == "ConvexHull") {
+			resetVars();
+				prevAlgVal = value;
                 bruteForceConvexHull();
 			}else if (value == "connected") {
+			resetVars();
+				prevAlgVal = value;
                 startConnectedPieces(-1, null);
             }
              else if (value == "Dijkstra") {
+			 resetVars();
+				prevAlgVal = value;
 				startDijkstra();
 			 
 			 } else {}
