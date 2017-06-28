@@ -383,7 +383,7 @@ function parseTMGContents(fileContents) {
       waypoints[newEdge.v1].edgeList.push(newEdge);
       waypoints[newEdge.v2].edgeList.push(newEdge);
 
-      eTable += '<tr onmouseover="hoverE('+i+')" onmouseout="hoverEndE('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
+      eTable += '<tr onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="edgeClick('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
       + edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label +
       ' &harr; ' + edgeInfo[1] + ':&nbsp;'
       + waypoints[newEdge.v2].label + '</td></tr>';
