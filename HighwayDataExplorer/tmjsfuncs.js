@@ -129,94 +129,130 @@ var visualSettings = {
     undiscovered: {
         color: "#202020",
         textColor: "#e0e0e0",
-        scale: 2
+        scale: 2,
+		name: "undiscovered", 
+		value: 0
     },
     visiting: {
         color: "yellow",
         textColor: "black",
-        scale: 6
+        scale: 6,
+		name: "visiting",
+		value: 0
     },
     leader: {
         color: "red",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "leader",
+		value: 0
     },
     discarded: {
         color: "#a0a0a0",
         textColor: "black",
-        scale: 2
+        scale: 2,
+		name: "discarded",
+		value: 0
     },
     // specific to vertex search
     northLeader: {
         color: "#8b0000",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "northLeader",
+		value: 0
     },
     southLeader: {
         color: "#ee0000",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "southLeader",
+		value: 0
     },
     eastLeader: {
         color: "#000080",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "eastLeader",
+		value: 0
     },
     westLeader: {
         color: "#551A8B",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "westLeader",
+		value: 0
     },
     shortLabelLeader: {
         color: "#654321",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "shortLabelLeader",
+		value: 0
     },
     longLabelLeader: {
         color: "#006400",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "longLabelLeader",
+		value: 0
     },
     // specific to graph traversals
     startVertex: {
         color: "purple",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "startVertex",
+		value: 0
     },
     discoveredEarlier: {
         color: "red",
         textColor: "white",
-        scale: 4
+        scale: 4,
+		name: "discoveredEarlier",
+		value: 0
     },
     visitedEarlier: {
         color: "orange",
         textColor: "black",
-        scale: 4
+        scale: 4,
+		name: "visitedEarlier",
+		value: 0
     },
     spanningTree: {
         color: "#0000a0",
         textColor: "white",
-        scale: 2
+        scale: 2,
+		name: "spanningTree",
+		value: 0
     },
     discovered: {
         color: "#00a000",
         textColor: "white",
-        scale: 4
+        scale: 4,
+		name: "discovered",
+		value: 0
        },
 	hoverV: {
 		color: "#a0036b",
 		textColor: "white",
-		scale: 6
+		scale: 6,
+		name: "hoverV",
+		value: 0
 	},
     hullK: {
         color: "#41f4c4",
         textColor: "black",
-        scale: 3
+        scale: 3,
+		name: "hullK",
+		value: 0
     },
     hullI: {
         color: "#0000aa",
         textColor: "black",
-        scale: 6
+        scale: 6,
+		name: "hullI",
+		value: 0
     }
 };
 
@@ -982,6 +1018,7 @@ function pauseSimulation() {
 // using an entry passed in from the visualSettings
 // optionally hide also by setting display to none
 function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
+	legendArea(vs);
     markers[waypointNum].setIcon({
         path: google.maps.SymbolPath.CIRCLE,
         scale: vs.scale,
@@ -1055,8 +1092,6 @@ function startVertexSearch() {
         continueVertexSearch();
         return;
     }
-
-	legendArea();
     var statusLine = document.getElementById("status");
     // statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
     // in the future, make sure we have appropriate data in the system
@@ -2685,19 +2720,30 @@ function mainArea(){
 	document.body.appendChild(main);
 }
 
-var legendArray = [];
-for(var i = 0; i<visualSettings.length; i++){
-	legendArray[i] = visualSettings[i].textColor;
-}
-function legendArea(){
-	//alert(visualSettings.textColor);
+var legendArray = ["undiscovered", "visiting", "leader", "discarded", "northLeader", "southLeader", "eastLeader", "westLeader", "shortLabelLeader", "longLabelLeader", "startVertex", "discoveredEarlier", "visitedEarlier", "spanningTree", "discovered", "hoverV", "hullK", "hullI"];
+
+function legendArea(vis){
 	var legendDiv = document.getElementById("contentArea_Legend");
 	for(var i = 0; i < legendArray.length; i++){
-		//alert(legendArray[i]);
-		var label = document.createElement("label");
-		label.setAttribute("id", markers[i].value);
-		label.innerHTML = markers[i].value;
-		legendDiv.appendChild(label);
+		if(vis.name == legendArray[i] && vis.name != null){
+			if(vis.value == 1){
+				continue;
+			}
+			else{
+				vis.value = 1;
+				var boxContainer = document.createElement("div");
+				boxContainer.setAttribute("id", "boxContainer");
+				var box = document.createElement("div");
+				var label = document.createElement("span");
+				label.setAttribute("id", legendArray[i]);
+				label.innerHTML = legendArray[i];
+				box.setAttribute("class", "box");
+				box.style.backgroundColor =  vis.color;
+				boxContainer.appendChild(box);
+				boxContainer.appendChild(label);
+				legendDiv.appendChild(boxContainer);
+			}
+		}
 	}
 }
 
