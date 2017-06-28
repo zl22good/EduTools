@@ -132,111 +132,129 @@ var visualSettings = {
         color: "#202020",
         textColor: "#e0e0e0",
         scale: 2,
-		name: "undiscovered"
+		name: "undiscovered", 
+		value: 0
     },
     visiting: {
         color: "yellow",
         textColor: "black",
         scale: 6,
-		name: "visiting"
+		name: "visiting",
+		value: 0
     },
     leader: {
         color: "red",
         textColor: "white",
         scale: 6,
-		name: "leader"
+		name: "leader",
+		value: 0
     },
     discarded: {
         color: "#a0a0a0",
         textColor: "black",
         scale: 2,
-		name: "discarded"
+		name: "discarded",
+		value: 0
     },
     // specific to vertex search
     northLeader: {
         color: "#8b0000",
         textColor: "white",
         scale: 6,
-		name: "northLeader"
+		name: "northLeader",
+		value: 0
     },
     southLeader: {
         color: "#ee0000",
         textColor: "white",
         scale: 6,
-		name: "southLeader"
+		name: "southLeader",
+		value: 0
     },
     eastLeader: {
         color: "#000080",
         textColor: "white",
         scale: 6,
-		name: "eastLeader"
+		name: "eastLeader",
+		value: 0
     },
     westLeader: {
         color: "#551A8B",
         textColor: "white",
         scale: 6,
-		name: "westLeader"
+		name: "westLeader",
+		value: 0
     },
     shortLabelLeader: {
         color: "#654321",
         textColor: "white",
         scale: 6,
-		name: "shortLabelLeader"
+		name: "shortLabelLeader",
+		value: 0
     },
     longLabelLeader: {
         color: "#006400",
         textColor: "white",
         scale: 6,
-		name: "longLabelLeader"
+		name: "longLabelLeader",
+		value: 0
     },
     // specific to graph traversals
     startVertex: {
         color: "purple",
         textColor: "white",
         scale: 6,
-		name: "startVertex"
+		name: "startVertex",
+		value: 0
     },
     discoveredEarlier: {
         color: "red",
         textColor: "white",
         scale: 4,
-		name: "discoveredEarlier"
+		name: "discoveredEarlier",
+		value: 0
     },
     visitedEarlier: {
         color: "orange",
         textColor: "black",
         scale: 4,
-		name: "visitedEarlier"
+		name: "visitedEarlier",
+		value: 0
     },
     spanningTree: {
         color: "#0000a0",
         textColor: "white",
         scale: 2,
-		name: "spanningTree"
+		name: "spanningTree",
+		value: 0
     },
     discovered: {
         color: "#00a000",
         textColor: "white",
         scale: 4,
-		name: "discovered"
+		name: "discovered",
+		value: 0
        },
 	hoverV: {
 		color: "#a0036b",
 		textColor: "white",
 		scale: 6,
-		name: "hoverV"
+		name: "hoverV",
+		value: 0
 	},
     hullK: {
         color: "#41f4c4",
         textColor: "black",
         scale: 3,
-		name: "hullK"
+		name: "hullK",
+		value: 0
     },
     hullI: {
         color: "#0000aa",
         textColor: "black",
         scale: 6,
-		name: "hullI"
+		name: "hullI",
+		value: 0
     }
 };
 
@@ -2598,21 +2616,26 @@ function mainArea(){
 var legendArray = ["undiscovered", "visiting", "leader", "discarded", "northLeader", "southLeader", "eastLeader", "westLeader", "shortLabelLeader", "longLabelLeader", "startVertex", "discoveredEarlier", "visitedEarlier", "spanningTree", "discovered", "hoverV", "hullK", "hullI"];
 
 function legendArea(vis){
-	//alert(vis.name);
 	var legendDiv = document.getElementById("contentArea_Legend");
 	for(var i = 0; i < legendArray.length; i++){
 		if(vis.name == legendArray[i] && vis.name != null){
-			var boxContainer = document.createElement("div");
-			var box = document.createElement("div");
-			var label = document.createElement("span");
-			label.setAttribute("id", legendArray[i]);
-			label.innerHTML = legendArray[i];
-			box.setAttribute("class", "box");
-			box.style.backgroundColor =  vis.color;
-			boxContainer.appendChild(box);
-			boxContainer.appendChild(label);
-			
-			legendDiv.appendChild(boxContainer);
+			if(vis.value == 1){
+				continue;
+			}
+			else{
+				vis.value = 1;
+				var boxContainer = document.createElement("div");
+				boxContainer.setAttribute("id", "boxContainer");
+				var box = document.createElement("div");
+				var label = document.createElement("span");
+				label.setAttribute("id", legendArray[i]);
+				label.innerHTML = legendArray[i];
+				box.setAttribute("class", "box");
+				box.style.backgroundColor =  vis.color;
+				boxContainer.appendChild(box);
+				boxContainer.appendChild(label);
+				legendDiv.appendChild(boxContainer);
+			}
 		}
 	}
 }
