@@ -46,8 +46,6 @@ var routeColor = new Array();
 var routeSystem = new Array();
 // the markers at those waypoints
 var markers = new Array();
-// the info displayed when markers are clicked
-var markerinfo = new Array();
 // array of google.maps.LatLng representing the waypoint coordinates
 var polypoints = new Array();
 // array of connections on map as google.maps.Polyline overlays
@@ -131,89 +129,123 @@ var visualSettings = {
     undiscovered: {
         color: "#202020",
         textColor: "#e0e0e0",
-        scale: 2
+        scale: 2,
+		name: "undiscovered", 
+		value: 0
     },
     visiting: {
         color: "yellow",
         textColor: "black",
-        scale: 6
+        scale: 6,
+		name: "visiting",
+		value: 0
     },
     leader: {
         color: "red",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "leader",
+		value: 0
     },
     discarded: {
         color: "#a0a0a0",
         textColor: "black",
-        scale: 2
+        scale: 2,
+		name: "discarded",
+		value: 0
     },
     // specific to vertex search
     northLeader: {
         color: "#8b0000",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "northLeader",
+		value: 0
     },
     southLeader: {
         color: "#ee0000",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "southLeader",
+		value: 0
     },
     eastLeader: {
         color: "#000080",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "eastLeader",
+		value: 0
     },
     westLeader: {
         color: "#551A8B",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "westLeader",
+		value: 0
     },
     shortLabelLeader: {
         color: "#654321",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "shortLabelLeader",
+		value: 0
     },
     longLabelLeader: {
         color: "#006400",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "longLabelLeader",
+		value: 0
     },
     // specific to graph traversals
     startVertex: {
         color: "purple",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "startVertex",
+		value: 0
     },
     discoveredEarlier: {
         color: "red",
         textColor: "white",
-        scale: 4
+        scale: 4,
+		name: "discoveredEarlier",
+		value: 0
     },
     visitedEarlier: {
         color: "orange",
         textColor: "black",
-        scale: 4
+        scale: 4,
+		name: "visitedEarlier",
+		value: 0
     },
     spanningTree: {
         color: "#0000a0",
         textColor: "white",
-        scale: 2
+        scale: 2,
+		name: "spanningTree",
+		value: 0
     },
     discovered: {
         color: "#00a000",
         textColor: "white",
-        scale: 4
+        scale: 4,
+		name: "discovered",
+		value: 0
        },
 	hoverV: {
 		color: "#a0036b",
 		textColor: "white",
-		scale: 6
+		scale: 6,
+		name: "hoverV",
+		value: 0
 	},
     hullI: {
         color: "#0000aa",
         textColor: "black",
-        scale: 6
+        scale: 6,
+		name: "hullI",
+		value: 0
     }
 };
 
@@ -270,11 +302,11 @@ function hoverEndV (i, bool){
 	}
 }
 
-function hoverE (i){
-	ecolor = getObj("connection"+i).style.backgroundColor;
-	etext = getObj("connection"+i).style.color;
-	getObj("connection"+i).style.color = visualSettings.hoverV.textColor;
-	getObj("connection"+i).style.backgroundColor = visualSettings.hoverV.color;
+function hoverE (event, i){
+	ecolor = event.target.parentNode.style.backgroundColor;
+	etext = event.target.parentNode.style.color;
+	event.target.parentNode.style.color = visualSettings.hoverV.textColor;
+	event.target.parentNode.style.backgroundColor = visualSettings.hoverV.color
 	edge = connections[i].get("strokeColor");
 	edgew = connections[i].get("strokeOpacity");
 	connections[i].setOptions({
@@ -283,13 +315,13 @@ function hoverE (i){
     });
 }
 
-function hoverEndE(i){
+function hoverEndE(event, i){
 	connections[i].setOptions({
         strokeColor: edge,
 		strokeOpacity: edgew
     });
-	getObj("connection"+i).style.color = etext;
-	getObj("connection"+i).style.backgroundColor = ecolor;
+	event.target.parentNode.style.color = etext;
+	event.target.parentNode.style.backgroundColor = ecolor;
 }
 
 var vcolor, vtext, vicon;
@@ -511,7 +543,6 @@ function updateMap() {
     }
 
     markers = new Array();
-    markerinfo = new Array();
     var bounds = new google.maps.LatLngBounds();
     for (var i = 0; i < waypoints.length; i++) {
         minlat = Math.min(minlat, waypoints[i].lat);
@@ -521,7 +552,6 @@ function updateMap() {
 
         polypoints[i] = new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon);
 
-        markerinfo[i] = MarkerInfo(i, waypoints[i]);
         markers[i] = new google.maps.Marker({
             position: polypoints[i],
             //map: map,
@@ -530,7 +560,7 @@ function updateMap() {
             icon: intersectionimage
         });
         if (showMarkers && (showHidden || waypoints[i].visible)) {
-            AddMarker(markers[i], markerinfo[i], i);
+            AddMarker(markers[i], i);
         }
         bounds.extend(polypoints[i]);
     }
@@ -579,6 +609,7 @@ function updateMap() {
                 strokeOpacity: 0.4,
                 map: map
             });
+			google.maps.event.addListener(connections[i], 'click', connClick);
 
             // if we have adjacency lists, let's also remember our Polyline
             // in the GraphEdge
@@ -647,6 +678,7 @@ function updateMap() {
                         strokeOpacity: 0.4,
                         map: map
                     });
+					google.maps.event.addListener(connections[edgeNum], 'click', connClick);
                     edgeNum++;
                 }
             }
@@ -726,6 +758,7 @@ function updateMap() {
                         zIndex: zIndex,
                         map: map
                     });
+					google.maps.event.addListener(connections[nextSegment], 'click', connClick);
                     nextSegment++;
                 }
             }
@@ -765,6 +798,7 @@ function updateMap() {
                     strokeOpacity: 0.75,
                     map: map
                 });
+				google.maps.event.addListener(connections[i], 'click', connClick);
             }
         }
         if (document.getElementById('controlboxinfo') != null) {
@@ -778,8 +812,10 @@ function updateMap() {
             strokeOpacity: 0.75,
             map: map
         });
+		google.maps.event.addListener(connections[0], 'click', function(){edgeClick(0);});
         //map.addOverlay(connections[0]);
     }
+	
     // don't think this should not be needed, but an attempt to get
     // hidden waypoints to be hidden when first created
     showHiddenClicked();
@@ -802,11 +838,10 @@ function zoomChange() {
     }
 }
 
-function AddMarker(marker, markerinfo, i) {
-
+function AddMarker(marker, i) {
     marker.setMap(map);
     google.maps.event.addListener(marker, 'click', function () {
-        infowindow.setContent(markerinfo);
+        infowindow.setContent(MarkerInfo(i, waypoints[i]));
         infowindow.open(map, marker);
 		vertexSelect(i);
 		vertexSelectEnd(i);
@@ -816,13 +851,28 @@ function AddMarker(marker, markerinfo, i) {
 function LabelClick(i) {
     map.panTo(new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon));
     //infowindow.setContent(info);
-    infowindow.setContent(markerinfo[i]);
+    infowindow.setContent(MarkerInfo(i, waypoints[i]));
     infowindow.open(map, markers[i]);
+}
+
+function edgeClick(i){
+	console.log(i);
+	var v1 = waypoints[graphEdges[i].v1];
+	var v2 = waypoints[graphEdges[i].v2];
+	var midlat = (parseFloat(v1.lat) + parseFloat(v2.lat))/2.0;
+	var midlon = (parseFloat(v1.lon) + parseFloat(v2.lon))/2.0;
+	map.panTo(new google.maps.LatLng(midlat, midlon));
+	infowindow.setContent(edgeInfo(i));
+	infowindow.setPosition(new google.maps.LatLng(midlat, midlon));
+	infowindow.open(map);
 }
 
 function MarkerInfo(i, wpt) {
     return '<p style="line-height:160%;"><span style="font-size:24pt;">' + wpt.label + '</span><br><b>Waypoint ' + (i) + '<\/b><br><b>Coords.:<\/b> ' + wpt.lat + '&deg;, ' + wpt.lon + '&deg;<\/p>';
+}
 
+function edgeInfo(i){
+	return '<p style="line-height:160%;"><span style="font-size:24pt;">' + graphEdges[i].label + '</span><br><b>Edge Number: ' + (i) + '<\/b><br><b>Endpoints:<\/b> ' + waypoints[graphEdges[i].v1].label + ' - ' +waypoints[graphEdges[i].v2].label + '<br><b>Distance: </b><span class="miles">' +generateUnit(waypoints[graphEdges[i].v1].lat, waypoints[graphEdges[i].v1].lon, waypoints[graphEdges[i].v2].lat, waypoints[graphEdges[i].v2].lon)+ "</span>";
 }
 
 // compute distance in miles between two lat/lon points
@@ -847,6 +897,51 @@ function Feet(lat1, lon1, lat2, lon2) {
     return Math.acos(ang) * 1.02112 * rad * 5280;
 }
 
+function changeUnits(event){
+	if(event.target.value == "miles"){
+		changeUnitsInner("feet", "km", "meters", .000189394, .621371, .000621371, "miles");
+	}
+	else if(event.target.value == "feet"){
+		changeUnitsInner("miles", "km", "meters", 5280, 3280.84, 3.28084, "feet");
+	}
+	else if (event.target.value == "meters"){
+		changeUnitsInner("feet", "km", "miles", .3048, 1000, 1609.34, "meters");	
+	}
+	else if(event.target.value == "km"){
+		changeUnitsInner("feet", "meters", "miles", .0003048, .001, 1.60934, "km");
+	}
+}
+
+function changeUnitsInner(un1, un2, un3, mult1, mult2, mult3, newUnit){
+	loopChangeUnits(un1, newUnit, mult1);
+	loopChangeUnits(un2, newUnit, mult2);
+	loopChangeUnits(un3, newUnit, mult3);
+}
+
+function loopChangeUnits(oldUnit, newUnit, mult){
+	var arr = document.getElementsByClassName(oldUnit);
+	for(var i=0; i<arr.length; i++){
+		arr[i].innerHTML = Math.round(parseFloat(arr[i].innerHTML.substring(0, (arr[i].innerHTML.length-1-oldUnit.length)))*mult*1000)/1000+" "+newUnit;
+		arr[i].classList.add(newUnit);
+		arr[i].classList.remove(oldUnit);		
+	}	
+}
+
+function generateUnit(lat1, lon1, lat2, lon2){
+	if(getObj("distUnits").value == "miles"){
+		return Math.round(Mileage(lat1, lon1, lat2, lon2)*1000)/1000 + " miles";
+	}
+	else if(getObj("distUnits").value == "feet"){
+		return Math.round(Feet(lat1, lon1, lat2, lon2)*1000)/1000 + " feet";
+	}
+	else if(getObj("distUnits").value == "meters"){
+		return Math.round(Feet(lat1, lon1, lat2, lon2)*.3048*1000)/1000+ " meters";
+	}
+	else if(getObj("distUnits").value == "km"){
+		return Math.round(Feet(lat1, lon1, lat2, lon2)*.0003048*1000)/1000+ " km";
+	}
+}
+
 // callback for when the showHidden checkbox is clicked
 function showHiddenClicked() {
 
@@ -859,7 +954,7 @@ function showHiddenClicked() {
         // add in the hidden markers
         for (var i = 0; i < waypoints.length; i++) {
             if (!waypoints[i].visible) {
-                AddMarker(markers[i], markerinfo[i], i);
+                AddMarker(markers[i], i);
             }
         }
     } else {
@@ -879,7 +974,7 @@ function showMarkersClicked() {
     if (showThem) {
         for (var i = 0; i < waypoints.length; i++) {
             if (waypoints[i].visible) {
-                AddMarker(markers[i], markerinfo[i], i);
+                AddMarker(markers[i], i);
             }
         }
     } else {
@@ -916,6 +1011,7 @@ function pauseSimulation() {
 // using an entry passed in from the visualSettings
 // optionally hide also by setting display to none
 function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
+	legendArea(vs);
     markers[waypointNum].setIcon({
         path: google.maps.SymbolPath.CIRCLE,
         scale: vs.scale,
@@ -989,7 +1085,6 @@ function startVertexSearch() {
         continueVertexSearch();
         return;
     }
-	legendArea();
     var statusLine = document.getElementById("status");
     // statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
     // in the future, make sure we have appropriate data in the system
@@ -1006,6 +1101,11 @@ function startVertexSearch() {
     }
     //we don't need connections table here, so we remove those
     getObj("connection").style.display = "none";
+	
+	getObj("waypoints").style.display = "";
+	var pointRows = getObj("waypoints").getElementsByTagName("*");
+	for (var i=0; i<pointRows.length; i++)
+		pointRows[i].style.display = "";
 
     // this doesn't really make sense for this search...
     // var startingPoint = document.getElementById("startPoint").value;
@@ -1197,6 +1297,7 @@ function continueVertexSearch() {
         
         setTimeout(continueVertexSearch, delay);
     } else {
+		done = true;
         document.getElementById('algorithmStatus').innerHTML =
             "Done! Visited " + markers.length + " waypoints.";
     }
@@ -1240,6 +1341,12 @@ function startEdgeSearch() {
     }
     //we don't need waypoints table here, so we remove those
     getObj("waypoints").style.display = "none";
+	
+	getObj("connection").style.display = "";
+	var pointRows = getObj("connection").getElementsByTagName("*");
+	for (var i=0; i<pointRows.length; i++)
+		pointRows[i].style.display = "";
+	
 	var algorithmsTable = document.getElementById('AlgorithmsTable');
 	var algorithmsTbody = algorithmsTable.children[1];
 	var infoid = "info1";
@@ -1290,6 +1397,7 @@ function continueEdgeSearch() {
 		}
 		
 	if(currentEdgeIndex== graphEdges.length){
+		done = true;
 		document.getElementById('info1').innerHTML = "<span style='background-color:cyan'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
 		return;
     }
@@ -1398,7 +1506,12 @@ function startGraphTraversal(discipline) {
         return;
     }
 
+
     getObj("connection").style.display = "none";
+	getObj("waypoints").style.display = "";
+	var pointRows = getObj("waypoints").getElementsByTagName("*");
+	for (var i=0; i<pointRows.length; i++)
+		pointRows[i].style.display = "";
 
     // initialize our visited array
     visited = new Array(waypoints.length).fill(false);
@@ -1476,6 +1589,7 @@ function continueGraphTraversal() {
     // maybe we're done
     if (discoveredVertices.length == 0) {
         //console.log("Done!");
+		done = true;
         return;
     }
 
@@ -1547,6 +1661,7 @@ function continueGraphTraversal() {
                     vIndex: neighbors[i],
                     connection: connection
                 });
+				updateMarkerAndTable(neighbors[i], visualSettings.discovered, 5, false);
                 updateMarkerAndTable(neighbors[i], { color: "rgb("+gred+","+ggrn+","+gblu+")",
         textColor: "black",
         scale: 4},
@@ -1596,10 +1711,15 @@ function startConnectedPieces(vert, visitarr) {
         continueConnectedPieces();
         return;
     }
+
 	
 	var piecesTD = "";
 
     getObj("connection").style.display = "none";
+	getObj("waypoints").style.display = "";
+	var pointRows = getObj("waypoints").getElementsByTagName("*");
+	for (var i=0; i<pointRows.length; i++)
+		pointRows[i].style.display = "";
 
     // initialize our visited array, define start vertex, recolor if necessary
 	if(vert == -1){
@@ -1680,6 +1800,7 @@ function continueConnectedPieces() {
 	
     // maybe we're done
     if (discoveredVertices.length == 0 && !vleft) {
+		done = true;
         getObj("piecesTD").innerHTML = "Done! Map contains "+piecenum+" unconnected pieces";
 		getObj("piecesTD").style.backgroundColor = "#ffffff";
         return;
@@ -1705,6 +1826,7 @@ function continueConnectedPieces() {
     // discoveredVertices list
    
     var nextToVisit = discoveredVertices.shift();
+	numVisited++;
     
 
     lastVisitedVertex = nextToVisit.vIndex;
@@ -1713,7 +1835,7 @@ function continueConnectedPieces() {
     // now decide what to do with this vertex -- depends on whether it
     // had been previously visited
     if (visited[vIndex]) {
-
+		numAlreadyVisited++;
         // we've been here before, but is it still in the list?
         if (discoveredVerticesContainsVertex(vIndex)) {
             // not there anymore, indicated this as visitedEarlier, and
@@ -1738,7 +1860,7 @@ function continueConnectedPieces() {
     }
     // visiting for the first time
     else {
-
+		numVisitedComingOut++;
         visited[vIndex] = true;
         updateMarkerAndTable(vIndex, visualSettings.visiting,
             10, false);
@@ -1796,8 +1918,12 @@ function startDijkstra() {
         return;
     }
 	else{
+		
 		getObj("connection").style.display = "none";
 		getObj("waypoints").style.display = "none";
+		
+		if($("#dijtable").length > 0)
+			$("#dijtable").remove();
 		
 		var dijkstraTable = document.createElement("table");
 		dijkstraTable.id = "dijtable";
@@ -1949,21 +2075,29 @@ function continueDijkstra() {
 	if($("#di"+nextToVisit.vIndex).length<=0){
 		var tr = document.createElement("tr");
 		tr.id = "di"+nextToVisit.vIndex;
-		tr.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
-		tr.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
-		tr.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
 		var td = document.createElement("td");
 		td.innerHTML = nextToVisit.vIndex;
+		td.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
+		td.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
+		td.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
 		tr.appendChild(td);	
 		td = document.createElement("td");
 		td.innerHTML = Math.round(nextToVisit.dist*1000)/1000;
+		td.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
+		td.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
+		td.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
 		tr.appendChild(td);
 		td = document.createElement("td");
+		td.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
+		td.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
+		td.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
 		td.innerHTML = waypoints[nextToVisit.vIndex].label;
 		tr.appendChild(td);
 		td = document.createElement("td");
-		//td.setAttribute("onmouseover", "hoverE("+nextToVisit.connection+")");
-		//td.setAttribute("onmouseout", "hoverEndE("+nextToVisit.connection+")");
+		var ind = graphEdges.indexOf(nextToVisit.edge);
+		td.setAttribute("onmouseover", "hoverE(event,"+ind+")");
+		td.setAttribute("onmouseout", "hoverEndE(event,"+ind+")");
+		td.setAttribute("onclick", "edgeClick("+ind+")");
 		if(nextToVisit.edge!=null)
 			td.innerHTML = "("+nextToVisit.edge.v1+")"+waypoints[nextToVisit.edge.v1].label+"<br>"+"("+nextToVisit.edge.v2+")"+waypoints[nextToVisit.edge.v2].label;
 		else
@@ -2568,6 +2702,7 @@ function mainArea(){
 	main.setAttribute("id", "main");
 	main.appendChild(document.getElementById("map"));
 	main.appendChild(document.getElementById("togglecontents_table"));
+	main.appendChild(document.getElementById("distUnits"));
 	main.appendChild(document.getElementById("selected"));
 	main.appendChild(document.getElementById("options"));
 	main.appendChild(document.getElementById("pointbox"));
@@ -2579,19 +2714,30 @@ function mainArea(){
 	document.body.appendChild(main);
 }
 
-var legendArray = [];
-for(var i = 0; i<visualSettings.length; i++){
-	legendArray[i] = visualSettings[i].textColor;
-}
-function legendArea(){
-	//alert(visualSettings.textColor);
+var legendArray = ["undiscovered", "visiting", "leader", "discarded", "northLeader", "southLeader", "eastLeader", "westLeader", "shortLabelLeader", "longLabelLeader", "startVertex", "discoveredEarlier", "visitedEarlier", "spanningTree", "discovered", "hoverV", "hullK", "hullI"];
+
+function legendArea(vis){
 	var legendDiv = document.getElementById("contentArea_Legend");
 	for(var i = 0; i < legendArray.length; i++){
-		//alert(legendArray[i]);
-		var label = document.createElement("label");
-		label.setAttribute("id", markers[i].value);
-		label.innerHTML = markers[i].value;
-		legendDiv.appendChild(label);
+		if(vis.name == legendArray[i] && vis.name != null){
+			if(vis.value == 1){
+				continue;
+			}
+			else{
+				vis.value = 1;
+				var boxContainer = document.createElement("div");
+				boxContainer.setAttribute("id", "boxContainer");
+				var box = document.createElement("div");
+				var label = document.createElement("span");
+				label.setAttribute("id", legendArray[i]);
+				label.innerHTML = legendArray[i];
+				box.setAttribute("class", "box");
+				box.style.backgroundColor =  vis.color;
+				boxContainer.appendChild(box);
+				boxContainer.appendChild(label);
+				legendDiv.appendChild(boxContainer);
+			}
+		}
 	}
 }
 
@@ -2652,5 +2798,7 @@ numAlreadyVisited = 0;
  gred = 245;
  ggrn = 255;
  gblu = 245;
+ 
+ totalPath = Array();
 	}
 }
