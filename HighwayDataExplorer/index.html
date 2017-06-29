@@ -171,6 +171,17 @@ padding:0px;
 	position: absolute;
 	top: 35px;
 }
+
+/** Psudocode CSS */
+.highlight {
+    background-color: yellow;
+}
+.for1{}
+.for2{}
+.for3{}
+.if1{}
+.if2{}
+=======
 .box {
   	display: inline-block;
   	height: 20px;
@@ -309,11 +320,20 @@ function showHiddenPseudocode() {
                 } else if (value == "RFS") {
                     document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
                 }
-                
-            } else {
+                else if(value == "ConvexHull"){
+                   document.getElementById('pseudo').innerHTML =
+                       "<pre><div id='for1'>for(i=1 to n–1){ </div>" + 
+                       "<div id ='for2'>    for(j=i+1 to n){</div>" +
+                       "<div id ='drawLine'>        L=line through pointI and pointJ</div>" 
+                       +"           if( all other points lie on the same side of L){"+
+                        "<div id ='drawLine2'>              add pointI and pointJ to the boundary</div>"+
+                       "        }\n    }\n}\n</pre>";
+                }  
+             else {
                 document.getElementById('pseudo').innerHTML = "";
             }
         }
+}
 
         function selectAlgorithmAndStart() {
             var value = getCurrentAlgorithm();
@@ -414,7 +434,8 @@ function showHiddenPseudocode() {
                 document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" min="0" name="Starting Point" value="0" size="7" /> <br>' + 'End &nbspVertex <input id="endPoint" onfocus="endPointInput()" type="number" min="0" name="End Point" value="0" size="7" /> <br>' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
             }
             else if(value == "ConvexHull"){
-            alert("This is an n^3 algorithm. This means that it takes quite a while to execute fully so it would be most beneficial to use a small graph.");
+                alert("This is an n^3 algorithm. This means that it takes quite a while to execute fully so it would be most beneficial to use a small graph.");
+                document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
             }
             else {
                 document.getElementById('optionSection').innerHTML = "";
