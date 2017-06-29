@@ -2192,24 +2192,13 @@ var convexLineHull = [];
 
 var visitingLine = [];
 
-function showConvexLines(lineHull) {
-	for (var i = 0; i < lineHull.length; i++) {
-		connections[i].setMap(null);
-		connections[i] = new google.maps.Polyline({
-			map: map,
-			path: lineHull,
-			strokeColor: '#aa0000',
-			strokeOpacity: 0.6,
-			strokeWeight: 4
-		});
-	}
-}
-
 var currentSegment;
 
 function visitingLineHull(lineHull) {
 	//for (var i = 0; i < lineHull.length; i++) {
 	//currentSegment.setMap(null);
+    //document.getElementById("for2").className -= " highlight";
+    document.getElementById("drawLine").className += " highlight";
 	currentSegment = new google.maps.Polyline({
 		map: map,
 		path: lineHull,
@@ -2245,11 +2234,16 @@ function bruteForceConvexHull() {
     }
 	hullJ = 1;
 	hullI = 0;
+    document.getElementById("for1").className += " highlight";
 	setTimeout(innerLoopConvexHull, delay);
 }
 
 function innerLoopConvexHull() {
-	
+    document.getElementById("for2").className += " highlight";
+    document.getElementById("for1").className -= " highlight";
+    document.getElementById("drawLine").className -= " highlight";
+    document.getElementById("drawLine2").className -= " highlight";
+    updateMarkerAndTable(hullI, visualSettings.hullI, 30, false);
 	if(pause)
 		return;
 	
@@ -2279,7 +2273,6 @@ function innerLoopConvexHull() {
 }
 
 function innerLoop2() {
-	
 	if(pause)return;
 	
 	for (var k = 0; k < waypoints.length; k++) {
@@ -2313,10 +2306,12 @@ function innerLoop2() {
 			}
 		}
 	}
-
+    document.getElementById("drawLine").className -= " highlight";
 	currentSegment.setMap(null);
 	if (!foundProblem) {
-
+        document.getElementById("for2").className -= " highlight";
+        document.getElementById("drawLine").className -= " highlight";
+        document.getElementById("drawLine2").className += " highlight";
 		// purple line showing convex hull
 		hull[0] = new google.maps.LatLng(point1.lat, point1.lon);
 		hull[1] = new google.maps.LatLng(point2.lat, point2.lon);
@@ -2335,6 +2330,8 @@ function innerLoop2() {
 	hullJ++;
 	if (hullJ == waypoints.length) {
 		updateMarkerAndTable(hullI, visualSettings.discarded, 30, false);
+        document.getElementById("for1").className += " highlight";
+        document.getElementById("for2").className -= " highlight";
 		hullI++;
         for(var i = hullI; i >= 0; i--){
             updateMarkerAndTable(i, visualSettings.discarded, 30, false);
@@ -2348,7 +2345,6 @@ function innerLoop2() {
 	}
 
 	if (hullI < waypoints.length - 1) {
-		updateMarkerAndTable(hullI, visualSettings.hullI, 30, false);
 		setTimeout(innerLoopConvexHull, delay);
 	} else {
 

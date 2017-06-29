@@ -171,6 +171,15 @@ padding:0px;
 	position: absolute;
 	top: 35px;
 }
+/** Psudocode CSS */
+.highlight {
+    background-color: yellow;
+}
+.for1{}
+.for2{}
+.for3{}
+.if1{}
+.if2{}
 </style>
 <script
  src="http://maps.googleapis.com/maps/api/js?sensor=false"
@@ -296,12 +305,12 @@ function showHiddenPseudocode() {
                 }
                 else if(value == "ConvexHull"){
                    document.getElementById('pseudo').innerHTML =
-                       "<pre>for(i=1 to n–1){\n" + 
-                       "    for(j=i+1 to n){\n" +
-                       "        L=line through pointI and pointJ\n" 
-                       +"       if( all other points lie on the same side of L){\n"+
-                        "           add pointI and pointJ to the boundary\n"+
-                       "        }\n     }\n}\n</pre>";
+                       "<pre><div id='for1'>for(i=1 to n–1){ </div>" + 
+                       "<div id ='for2'>    for(j=i+1 to n){</div>" +
+                       "<div id ='drawLine'>        L=line through pointI and pointJ</div>" 
+                       +"           if( all other points lie on the same side of L){"+
+                        "<div id ='drawLine2'>              add pointI and pointJ to the boundary</div>"+
+                       "        }\n    }\n}\n</pre>";
                 }  
              else {
                 document.getElementById('pseudo').innerHTML = "";
