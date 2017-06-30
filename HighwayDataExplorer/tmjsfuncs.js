@@ -869,48 +869,69 @@ function Feet(lat1, lon1, lat2, lon2) {
 }
 
 function changeUnits(event){
+	prevUnit = curUnit;
+	curUnit = event.target.value;
 	if(event.target.value == "miles"){
-		changeUnitsInner("feet", "km", "meters", .000189394, .621371, .000621371, "miles");
+		changeUnitsInner("feet", "km", "meters", .000189394, .621371, .000621371);
 	}
 	else if(event.target.value == "feet"){
-		changeUnitsInner("miles", "km", "meters", 5280, 3280.84, 3.28084, "feet");
+		changeUnitsInner("miles", "km", "meters", 5280, 3280.84, 3.28084);
 	}
 	else if (event.target.value == "meters"){
-		changeUnitsInner("feet", "km", "miles", .3048, 1000, 1609.34, "meters");	
+		changeUnitsInner("feet", "km", "miles", .3048, 1000, 1609.34);	
 	}
 	else if(event.target.value == "km"){
-		changeUnitsInner("feet", "meters", "miles", .0003048, .001, 1.60934, "km");
+		changeUnitsInner("feet", "meters", "miles", .0003048, .001, 1.60934);
 	}
 }
 
-function changeUnitsInner(un1, un2, un3, mult1, mult2, mult3, newUnit){
-	loopChangeUnits(un1, newUnit, mult1);
-	loopChangeUnits(un2, newUnit, mult2);
-	loopChangeUnits(un3, newUnit, mult3);
+function changeUnitsInner(un1, un2, un3, mult1, mult2, mult3){
+	loopChangeUnits(un1, mult1);
+	loopChangeUnits(un2, mult2);
+	loopChangeUnits(un3, mult3);
 }
 
-function loopChangeUnits(oldUnit, newUnit, mult){
+function loopChangeUnits(oldUnit, mult){
 	var arr = document.getElementsByClassName(oldUnit);
-	for(var i=0; i<arr.length; i++){
-		arr[i].innerHTML = Math.round(parseFloat(arr[i].innerHTML.substring(0, (arr[i].innerHTML.length-1-oldUnit.length)))*mult*1000)/1000+" "+newUnit;
-		arr[i].classList.add(newUnit);
+	for(var i=arr.length-1; i>=0; i--){
+		if(arr[i].innerHTML.indexOf(oldUnit) == -1)
+			arr[i].innerHTML = Math.round(parseFloat(arr[i].innerHTML)*mult*1000)/1000;
+		else
+			arr[i].innerHTML = Math.round(parseFloat(arr[i].innerHTML.substring(0, (arr[i].innerHTML.length-1-oldUnit.length)))*mult*1000)/1000+" "+curUnit;
+		arr[i].classList.add(curUnit);
 		arr[i].classList.remove(oldUnit);		
 	}	
 }
+var curUnit = "miles";
+var prevUnit;
+
 
 function generateUnit(lat1, lon1, lat2, lon2){
-	if(getObj("distUnits").value == "miles"){
+	prevUnit = curUnit;
+	curUnit = getObj("distUnits").value;
+	if(curUnit == "miles"){
 		return Math.round(Mileage(lat1, lon1, lat2, lon2)*1000)/1000 + " miles";
 	}
-	else if(getObj("distUnits").value == "feet"){
+	else if(curUnit == "feet"){
 		return Math.round(Feet(lat1, lon1, lat2, lon2)*1000)/1000 + " feet";
 	}
-	else if(getObj("distUnits").value == "meters"){
+	else if(curUnit == "meters"){
 		return Math.round(Feet(lat1, lon1, lat2, lon2)*.3048*1000)/1000+ " meters";
 	}
-	else if(getObj("distUnits").value == "km"){
+	else if(curUnit == "km"){
 		return Math.round(Feet(lat1, lon1, lat2, lon2)*.0003048*1000)/1000+ " km";
 	}
+}
+
+function convertMiles(num){
+	if(curUnit == "feet")
+		return Math.round(num*5280*1000)/1000;
+	else if(curUnit == "meters")
+		return Math.round(num*1609.34*1000)/1000;
+	else if(curUnit == "km")
+		return Math.round(num*1.60934*1000)/1000;
+	else 
+		return Math.round(num*1000)/1000;
 }
 
 // callback for when the showHidden checkbox is clicked
@@ -1370,7 +1391,9 @@ function continueEdgeSearch() {
 		
 	if(currentEdgeIndex== graphEdges.length){
 		done = true;
-		document.getElementById('info1').innerHTML = "<span style='background-color:cyan'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
+		document.getElementById('info1').innerHTML = "<span style='background-color:cyan'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": <span id='minedgelength'>"  + generateUnit(waypoints[graphEdges[minnum].v1].lat, waypoints[graphEdges[minnum].v1].lon, waypoints[graphEdges[minnum].v2].lat, waypoints[graphEdges[minnum].v2].lon) + "</span></span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": <span id='maxedgelength'>" + generateUnit(waypoints[graphEdges[maxnum].v1].lat, waypoints[graphEdges[maxnum].v1].lon, waypoints[graphEdges[maxnum].v2].lat, waypoints[graphEdges[maxnum].v2].lon) + "</span></span>";
+		getObj("minedgelength").classList.add(curUnit);
+		getObj("maxedgelength").classList.add(curUnit);
 		return;
     }
 		
@@ -1379,7 +1402,7 @@ function continueEdgeSearch() {
     var edge = graphEdges[currentEdgeIndex];
 	findEdge(currentEdgeIndex, "#FFFF00", 1, 10);
 	
-    var distance = Feet(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
+    var distance = Mileage(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
         waypoints[edge.v2].lat, waypoints[edge.v2].lon);
 
     if (distance < minDistance) {
@@ -1409,7 +1432,10 @@ function continueEdgeSearch() {
 		flag += ","+longnum;
 		longnum = currentEdgeIndex;
     }	
-	document.getElementById('info1').innerHTML = "<span style='background-color:cyan'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
+	document.getElementById('info1').innerHTML = "<span style='background-color:cyan'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": <span id='minedgelength'>"  + generateUnit(waypoints[graphEdges[minnum].v1].lat, waypoints[graphEdges[minnum].v1].lon, waypoints[graphEdges[minnum].v2].lat, waypoints[graphEdges[minnum].v2].lon) + "</span></span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": <span id='maxedgelength'>" + generateUnit(waypoints[graphEdges[maxnum].v1].lat, waypoints[graphEdges[maxnum].v1].lon, waypoints[graphEdges[maxnum].v2].lat, waypoints[graphEdges[maxnum].v2].lon) + "</span></span>";
+	
+	getObj("maxedgelength").classList.add(curUnit);
+	getObj("minedgelength").classList.add(curUnit);
 	
     currentEdgeIndex += 1;
     setTimeout(continueEdgeSearch, delay);
@@ -1909,7 +1935,7 @@ function startDijkstra() {
 		topRow.appendChild(th);
 		
 		th = document.createElement("th");
-		th.innerHTML = "Distance(mi)";
+		th.innerHTML = "Distance";
 		topRow.appendChild(th);
 		
 		th = document.createElement("th");
@@ -2054,7 +2080,11 @@ function continueDijkstra() {
 		td.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
 		tr.appendChild(td);	
 		td = document.createElement("td");
-		td.innerHTML = Math.round(nextToVisit.dist*1000)/1000;
+		if(nextToVisit.edge!=null)
+			td.innerHTML = convertMiles(nextToVisit.dist);
+		else
+			td.innerHTML = 0;
+		td.classList.add(curUnit);
 		td.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
 		td.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
 		td.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
@@ -2612,8 +2642,10 @@ function dsTbody(size){
             if (i > 9){
 				col.className = "collapseDataStructure";
 			}
-			if (discoveredVerticesName == "PQueue")
-				col.innerHTML = discoveredVertices[i].vIndex + " dist: " + Math.round(discoveredVertices[i].dist*100)/100;
+			if (discoveredVerticesName == "PQueue"){
+				col.innerHTML = discoveredVertices[i].vIndex + " dist: <span class="+curUnit+" >"+convertMiles(discoveredVertices[i].dist)+" "
+				+curUnit+"</span>";
+			}
 			else
 				col.innerHTML = discoveredVertices[i].vIndex;
 			row.appendChild(col);
@@ -2703,6 +2735,7 @@ function legendArea(){
 
 function resetVars(){
 	if (done || prevAlgVal != getObj("AlgorithmSelection").value){
+		console.log("reset");
 		done = false;
 		updateMap();
 		northIndex = -1;
@@ -2760,5 +2793,14 @@ numAlreadyVisited = 0;
  gblu = 245;
  
  totalPath = Array();
+ 
+ if ($("#piecesTD").length >0)
+	 getObj("piecesTD").parentNode.parentNode.removeChild(getObj("piecesTD").parentNode);
+ for(var i=0; i<7; i++){
+  if ($("#info"+i).length >0)
+	 getObj("info"+i).parentNode.parentNode.removeChild(getObj("info"+i).parentNode);
+ }
+ getObj("algorithmStatus").innerHTML = "";
+	 
 	}
 }
