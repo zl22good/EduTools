@@ -129,94 +129,123 @@ var visualSettings = {
     undiscovered: {
         color: "#202020",
         textColor: "#e0e0e0",
-        scale: 2
+        scale: 2,
+		name: "undiscovered", 
+		value: 0
     },
     visiting: {
         color: "yellow",
         textColor: "black",
-        scale: 6
+        scale: 6,
+		name: "visiting",
+		value: 0
     },
     leader: {
         color: "red",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "leader",
+		value: 0
     },
     discarded: {
         color: "#a0a0a0",
         textColor: "black",
-        scale: 2
+        scale: 2,
+		name: "discarded",
+		value: 0
     },
     // specific to vertex search
     northLeader: {
         color: "#8b0000",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "northLeader",
+		value: 0
     },
     southLeader: {
         color: "#ee0000",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "southLeader",
+		value: 0
     },
     eastLeader: {
         color: "#000080",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "eastLeader",
+		value: 0
     },
     westLeader: {
         color: "#551A8B",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "westLeader",
+		value: 0
     },
     shortLabelLeader: {
         color: "#654321",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "shortLabelLeader",
+		value: 0
     },
     longLabelLeader: {
         color: "#006400",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "longLabelLeader",
+		value: 0
     },
     // specific to graph traversals
     startVertex: {
         color: "purple",
         textColor: "white",
-        scale: 6
+        scale: 6,
+		name: "startVertex",
+		value: 0
     },
     discoveredEarlier: {
         color: "red",
         textColor: "white",
-        scale: 4
+        scale: 4,
+		name: "discoveredEarlier",
+		value: 0
     },
     visitedEarlier: {
         color: "orange",
         textColor: "black",
-        scale: 4
+        scale: 4,
+		name: "visitedEarlier",
+		value: 0
     },
     spanningTree: {
         color: "#0000a0",
         textColor: "white",
-        scale: 2
+        scale: 2,
+		name: "spanningTree",
+		value: 0
     },
     discovered: {
         color: "#00a000",
         textColor: "white",
-        scale: 4
+        scale: 4,
+		name: "discovered",
+		value: 0
        },
 	hoverV: {
 		color: "#a0036b",
 		textColor: "white",
-		scale: 6
+		scale: 6,
+		name: "hoverV",
+		value: 0
 	},
-    hullK: {
-        color: "#41f4c4",
-        textColor: "black",
-        scale: 3
-    },
     hullI: {
         color: "#0000aa",
         textColor: "black",
-        scale: 6
+        scale: 6,
+		name: "hullI",
+		value: 0
     }
 };
 
@@ -1003,6 +1032,7 @@ function pauseSimulation() {
 // using an entry passed in from the visualSettings
 // optionally hide also by setting display to none
 function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
+	legendArea(vs);
     markers[waypointNum].setIcon({
         path: google.maps.SymbolPath.CIRCLE,
         scale: vs.scale,
@@ -1076,8 +1106,6 @@ function startVertexSearch() {
         continueVertexSearch();
         return;
     }
-
-	legendArea();
     var statusLine = document.getElementById("status");
     // statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
     // in the future, make sure we have appropriate data in the system
@@ -2328,30 +2356,13 @@ var convexLineHull = [];
 
 var visitingLine = [];
 
-function showConvexLines(lineHull) {
-	for (var i = 0; i < lineHull.length; i++) {
-		connections[i].setMap(null);
-		connections[i] = new google.maps.Polyline({
-			map: map,
-			path: lineHull,
-			strokeColor: '#aa0000',
-			strokeOpacity: 0.6,
-			strokeWeight: 4
-		});
-		google.maps.event.addListener(connections[i], 'click', connClick);
-	}
-}
-
-function connClick(event){
-	var ind = connections.indexOf(event.target);
-	edgeClick(ind);
-}
-
 var currentSegment;
 
 function visitingLineHull(lineHull) {
 	//for (var i = 0; i < lineHull.length; i++) {
 	//currentSegment.setMap(null);
+    //document.getElementById("for2").className -= " highlight";
+    document.getElementById("drawLine").className += " highlight";
 	currentSegment = new google.maps.Polyline({
 		map: map,
 		path: lineHull,
@@ -2382,13 +2393,21 @@ function bruteForceConvexHull() {
 	for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
 		connections[outerLoop].setMap(null);
 	}
+    for(var i = 0; i < waypoints.length; i++){
+        updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
+    }
 	hullJ = 1;
 	hullI = 0;
+    document.getElementById("for1").className += " highlight";
 	setTimeout(innerLoopConvexHull, delay);
 }
 
 function innerLoopConvexHull() {
-	
+    document.getElementById("for2").className += " highlight";
+    document.getElementById("for1").className -= " highlight";
+    document.getElementById("drawLine").className -= " highlight";
+    document.getElementById("drawLine2").className -= " highlight";
+    updateMarkerAndTable(hullI, visualSettings.hullI, 30, false);
 	if(pause)
 		return;
 	
@@ -2418,7 +2437,6 @@ function innerLoopConvexHull() {
 }
 
 function innerLoop2() {
-	
 	if(pause)return;
 	
 	for (var k = 0; k < waypoints.length; k++) {
@@ -2428,7 +2446,7 @@ function innerLoop2() {
 		if (point1 === point3 || point2 === point3) {
 			continue;
 		}
-		updateMarkerAndTable(k, visualSettings.hullK, 30, false);
+		//updateMarkerAndTable(k, visualSettings.hullK, 30, false);
 		var checkVal = a * point3.lon + b * point3.lat - c;
 
 		if (checkVal === 0) {
@@ -2452,10 +2470,12 @@ function innerLoop2() {
 			}
 		}
 	}
-
+    document.getElementById("drawLine").className -= " highlight";
 	currentSegment.setMap(null);
 	if (!foundProblem) {
-
+        document.getElementById("for2").className -= " highlight";
+        document.getElementById("drawLine").className -= " highlight";
+        document.getElementById("drawLine2").className += " highlight";
 		// purple line showing convex hull
 		hull[0] = new google.maps.LatLng(point1.lat, point1.lon);
 		hull[1] = new google.maps.LatLng(point2.lat, point2.lon);
@@ -2474,12 +2494,21 @@ function innerLoop2() {
 	hullJ++;
 	if (hullJ == waypoints.length) {
 		updateMarkerAndTable(hullI, visualSettings.discarded, 30, false);
+        document.getElementById("for1").className += " highlight";
+        document.getElementById("for2").className -= " highlight";
 		hullI++;
+        for(var i = hullI; i >= 0; i--){
+            updateMarkerAndTable(i, visualSettings.discarded, 30, false);
+        }
+        for(var i = hullI + 1; i < waypoints.length; i++){
+            updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
+        }
+		var checkVal = a * point3.lon + b * point3.lat - c;
+		var checkVal = a * point3.lon + b * point3.lat - c;
 		hullJ = hullI + 1;
 	}
 
 	if (hullI < waypoints.length - 1) {
-		updateMarkerAndTable(hullI, visualSettings.hullI, 30, false);
 		setTimeout(innerLoopConvexHull, delay);
 	} else {
 
@@ -2717,19 +2746,30 @@ function mainArea(){
 	document.body.appendChild(main);
 }
 
-var legendArray = [];
-for(var i = 0; i<visualSettings.length; i++){
-	legendArray[i] = visualSettings[i].textColor;
-}
-function legendArea(){
-	//alert(visualSettings.textColor);
+var legendArray = ["undiscovered", "visiting", "leader", "discarded", "northLeader", "southLeader", "eastLeader", "westLeader", "shortLabelLeader", "longLabelLeader", "startVertex", "discoveredEarlier", "visitedEarlier", "spanningTree", "discovered", "hoverV", "hullK", "hullI"];
+
+function legendArea(vis){
 	var legendDiv = document.getElementById("contentArea_Legend");
 	for(var i = 0; i < legendArray.length; i++){
-		//alert(legendArray[i]);
-		var label = document.createElement("label");
-		label.setAttribute("id", markers[i].value);
-		label.innerHTML = markers[i].value;
-		legendDiv.appendChild(label);
+		if(vis.name == legendArray[i] && vis.name != null){
+			if(vis.value == 1){
+				continue;
+			}
+			else{
+				vis.value = 1;
+				var boxContainer = document.createElement("div");
+				boxContainer.setAttribute("id", "boxContainer");
+				var box = document.createElement("div");
+				var label = document.createElement("span");
+				label.setAttribute("id", legendArray[i]);
+				label.innerHTML = legendArray[i];
+				box.setAttribute("class", "box");
+				box.style.backgroundColor =  vis.color;
+				boxContainer.appendChild(box);
+				boxContainer.appendChild(label);
+				legendDiv.appendChild(boxContainer);
+			}
+		}
 	}
 }
 
