@@ -517,13 +517,13 @@ function makeResize(){
 </div>
 <input type="button" id="togglecontents_table" value="Hide Table" style="left:100px; top:25px; opacity:.75; position:absolute; padding:0;" onclick="toggleUI(event)">
 <input type="button" id="toggleselected" value="Hide Panel" style="left:180px; top:25px; opacity:.75; position:absolute; padding:0;" onclick="toggleUI(event)">
-<select id="distUnits" style="position:absolute; left:100px; top:48px; width: 7rem; z-index:100;" onchange="changeUnits(event)">
+<select id="distUnits" style="position:absolute; left:100px; top:48px; width: 7rem; z-index:2;" onchange="changeUnits(event)">
 	<option value="miles">Miles</option>
 	<option value="km">Kilometers</option>
 	<option value="feet">Feet</option>
 	<option value="meters">Meters</option>
 </select>
-<div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px; position:absolute;">
+<div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px; position:absolute; z-index:3;">
 
 </div>
 <div id="options">
@@ -682,7 +682,7 @@ function makeResize(){
       <tr><td id="info4"></td><tr>
       <tr><td id="info5"></td><tr>
       <tr><td id="info6"></td><tr>-->
-		<tr><td id="legends"></td></tr>
+		<!--<tr><td id="legends"></td></tr>-->
 		<tr><td id="pseudo"></td></tr>
 
             </tbody>
@@ -698,7 +698,7 @@ function makeResize(){
           </select>
 
         </div>
-        <div id="contents_table" draggable="true"  ondragstart="drag(event)" style="top:70px; left:70%;">
+        <div id="contents_table" draggable="true"  ondragstart="drag(event)" style="top:70px; left:70%; z-index:3;">
         </div>
         </body>
 </html>

@@ -280,8 +280,6 @@ function endPointInput(){
 function hoverV (i, bool){
 	if ((bool && pause) || !bool){
 		vicon = markers[i].getIcon();
-		vertexSelect(i);
-		vertexSelectEnd(i);
 		vcolor = getObj("waypoint"+i).style.backgroundColor;
 		vtext = getObj("waypoint"+i).style.color;
 		updateMarkerAndTable(i, visualSettings.hoverV, 0, false);
@@ -609,7 +607,7 @@ function updateMap() {
                 strokeOpacity: 0.4,
                 map: map
             });
-			google.maps.event.addListener(connections[i], 'click', connClick);
+			edgeListener(i);
 
             // if we have adjacency lists, let's also remember our Polyline
             // in the GraphEdge
@@ -678,7 +676,7 @@ function updateMap() {
                         strokeOpacity: 0.4,
                         map: map
                     });
-					google.maps.event.addListener(connections[edgeNum], 'click', connClick);
+					edgeListener(edgeNum);
                     edgeNum++;
                 }
             }
@@ -758,7 +756,7 @@ function updateMap() {
                         zIndex: zIndex,
                         map: map
                     });
-					google.maps.event.addListener(connections[nextSegment], 'click', connClick);
+					edgeListener(nextSegment);
                     nextSegment++;
                 }
             }
@@ -798,7 +796,7 @@ function updateMap() {
                     strokeOpacity: 0.75,
                     map: map
                 });
-				google.maps.event.addListener(connections[i], 'click', connClick);
+				edgeListener(i);
             }
         }
         if (document.getElementById('controlboxinfo') != null) {
@@ -849,6 +847,8 @@ function AddMarker(marker, i) {
 }
 
 function LabelClick(i) {
+	vertexSelect(i);
+	vertexSelectEnd(i);
     map.panTo(new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon));
     //infowindow.setContent(info);
     infowindow.setContent(MarkerInfo(i, waypoints[i]));
@@ -856,7 +856,6 @@ function LabelClick(i) {
 }
 
 function edgeClick(i){
-	console.log(i);
 	var v1 = waypoints[graphEdges[i].v1];
 	var v2 = waypoints[graphEdges[i].v2];
 	var midlat = (parseFloat(v1.lat) + parseFloat(v2.lat))/2.0;
@@ -868,11 +867,11 @@ function edgeClick(i){
 }
 
 function MarkerInfo(i, wpt) {
-    return '<p style="line-height:160%;"><span style="font-size:24pt;">' + wpt.label + '</span><br><b>Waypoint ' + (i) + '<\/b><br><b>Coords.:<\/b> ' + wpt.lat + '&deg;, ' + wpt.lon + '&deg;<\/p>';
+    return '<p style="line-height:160%;"><span style="font-size:24pt; color:black;">' + wpt.label + '</span><br><b>Waypoint ' + (i) + '<\/b><br><b><a target="_blank" href="http://www.openstreetmap.org/#map=5/'+wpt.lat+'/'+wpt.lon+'">Coords.:<\a><\/b> ' + wpt.lat + '&deg;, ' + wpt.lon + '&deg;<\/p>';
 }
 
 function edgeInfo(i){
-	return '<p style="line-height:160%;"><span style="font-size:24pt;">' + graphEdges[i].label + '</span><br><b>Edge Number: ' + (i) + '<\/b><br><b>Endpoints:<\/b> ' + waypoints[graphEdges[i].v1].label + ' - ' +waypoints[graphEdges[i].v2].label + '<br><b>Distance: </b><span class="miles">' +generateUnit(waypoints[graphEdges[i].v1].lat, waypoints[graphEdges[i].v1].lon, waypoints[graphEdges[i].v2].lat, waypoints[graphEdges[i].v2].lon)+ "</span>";
+	return '<p style="line-height:160%;"><span style="font-size:24pt; color:black">' + graphEdges[i].label + '</span><br><b>Edge Number: ' + (i) + '<\/b><br><b>Endpoints:<\/b> ' + waypoints[graphEdges[i].v1].label + ' - ' +waypoints[graphEdges[i].v2].label + '<br><b>Distance: </b><span class="miles">' +generateUnit(waypoints[graphEdges[i].v1].lat, waypoints[graphEdges[i].v1].lon, waypoints[graphEdges[i].v2].lat, waypoints[graphEdges[i].v2].lon)+ "</span>";
 }
 
 // compute distance in miles between two lat/lon points
@@ -898,48 +897,69 @@ function Feet(lat1, lon1, lat2, lon2) {
 }
 
 function changeUnits(event){
+	prevUnit = curUnit;
+	curUnit = event.target.value;
 	if(event.target.value == "miles"){
-		changeUnitsInner("feet", "km", "meters", .000189394, .621371, .000621371, "miles");
+		changeUnitsInner("feet", "km", "meters", .000189394, .621371, .000621371);
 	}
 	else if(event.target.value == "feet"){
-		changeUnitsInner("miles", "km", "meters", 5280, 3280.84, 3.28084, "feet");
+		changeUnitsInner("miles", "km", "meters", 5280, 3280.84, 3.28084);
 	}
 	else if (event.target.value == "meters"){
-		changeUnitsInner("feet", "km", "miles", .3048, 1000, 1609.34, "meters");	
+		changeUnitsInner("feet", "km", "miles", .3048, 1000, 1609.34);	
 	}
 	else if(event.target.value == "km"){
-		changeUnitsInner("feet", "meters", "miles", .0003048, .001, 1.60934, "km");
+		changeUnitsInner("feet", "meters", "miles", .0003048, .001, 1.60934);
 	}
 }
 
-function changeUnitsInner(un1, un2, un3, mult1, mult2, mult3, newUnit){
-	loopChangeUnits(un1, newUnit, mult1);
-	loopChangeUnits(un2, newUnit, mult2);
-	loopChangeUnits(un3, newUnit, mult3);
+function changeUnitsInner(un1, un2, un3, mult1, mult2, mult3){
+	loopChangeUnits(un1, mult1);
+	loopChangeUnits(un2, mult2);
+	loopChangeUnits(un3, mult3);
 }
 
-function loopChangeUnits(oldUnit, newUnit, mult){
+function loopChangeUnits(oldUnit, mult){
 	var arr = document.getElementsByClassName(oldUnit);
-	for(var i=0; i<arr.length; i++){
-		arr[i].innerHTML = Math.round(parseFloat(arr[i].innerHTML.substring(0, (arr[i].innerHTML.length-1-oldUnit.length)))*mult*1000)/1000+" "+newUnit;
-		arr[i].classList.add(newUnit);
+	for(var i=arr.length-1; i>=0; i--){
+		if(arr[i].innerHTML.indexOf(oldUnit) == -1)
+			arr[i].innerHTML = Math.round(parseFloat(arr[i].innerHTML)*mult*1000)/1000;
+		else
+			arr[i].innerHTML = Math.round(parseFloat(arr[i].innerHTML.substring(0, (arr[i].innerHTML.length-1-oldUnit.length)))*mult*1000)/1000+" "+curUnit;
+		arr[i].classList.add(curUnit);
 		arr[i].classList.remove(oldUnit);		
 	}	
 }
+var curUnit = "miles";
+var prevUnit;
+
 
 function generateUnit(lat1, lon1, lat2, lon2){
-	if(getObj("distUnits").value == "miles"){
+	prevUnit = curUnit;
+	curUnit = getObj("distUnits").value;
+	if(curUnit == "miles"){
 		return Math.round(Mileage(lat1, lon1, lat2, lon2)*1000)/1000 + " miles";
 	}
-	else if(getObj("distUnits").value == "feet"){
+	else if(curUnit == "feet"){
 		return Math.round(Feet(lat1, lon1, lat2, lon2)*1000)/1000 + " feet";
 	}
-	else if(getObj("distUnits").value == "meters"){
+	else if(curUnit == "meters"){
 		return Math.round(Feet(lat1, lon1, lat2, lon2)*.3048*1000)/1000+ " meters";
 	}
-	else if(getObj("distUnits").value == "km"){
+	else if(curUnit == "km"){
 		return Math.round(Feet(lat1, lon1, lat2, lon2)*.0003048*1000)/1000+ " km";
 	}
+}
+
+function convertMiles(num){
+	if(curUnit == "feet")
+		return Math.round(num*5280*1000)/1000;
+	else if(curUnit == "meters")
+		return Math.round(num*1609.34*1000)/1000;
+	else if(curUnit == "km")
+		return Math.round(num*1.60934*1000)/1000;
+	else 
+		return Math.round(num*1000)/1000;
 }
 
 // callback for when the showHidden checkbox is clicked
@@ -1398,7 +1418,9 @@ function continueEdgeSearch() {
 		
 	if(currentEdgeIndex== graphEdges.length){
 		done = true;
-		document.getElementById('info1').innerHTML = "<span style='background-color:cyan'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
+		document.getElementById('info1').innerHTML = "<span style='background-color:cyan; color:black;' onclick='edgeClick("+shortnum+")'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta' onclick='edgeClick("+longnum+")'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red' onclick='edgeClick("+minnum+")'>Shortest Edge: " + edgeMin.label+ ": <span id='minedgelength'>"  + generateUnit(waypoints[graphEdges[minnum].v1].lat, waypoints[graphEdges[minnum].v1].lon, waypoints[graphEdges[minnum].v2].lat, waypoints[graphEdges[minnum].v2].lon) + "</span></span><br><span style = 'background-color:blue' onclick='edgeClick("+maxnum+")'>  Longest Edge: " + edgeMax.label + ": <span id='maxedgelength'>" + generateUnit(waypoints[graphEdges[maxnum].v1].lat, waypoints[graphEdges[maxnum].v1].lon, waypoints[graphEdges[maxnum].v2].lat, waypoints[graphEdges[maxnum].v2].lon) + "</span></span>";
+		getObj("minedgelength").classList.add(curUnit);
+		getObj("maxedgelength").classList.add(curUnit);
 		return;
     }
 		
@@ -1407,7 +1429,7 @@ function continueEdgeSearch() {
     var edge = graphEdges[currentEdgeIndex];
 	findEdge(currentEdgeIndex, "#FFFF00", 1, 10);
 	
-    var distance = Feet(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
+    var distance = Mileage(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
         waypoints[edge.v2].lat, waypoints[edge.v2].lon);
 
     if (distance < minDistance) {
@@ -1437,7 +1459,10 @@ function continueEdgeSearch() {
 		flag += ","+longnum;
 		longnum = currentEdgeIndex;
     }	
-	document.getElementById('info1').innerHTML = "<span style='background-color:cyan'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red'>Shortest Edge: " + edgeMin.label+ ": "  + Math.round(minDistance*100)/100 + " feet </span><br><span style = 'background-color:blue'>  Longest Edge: " + edgeMax.label + ": " + Math.round(maxDistance*100)/100 + " feet</span>";
+	document.getElementById('info1').innerHTML = "<span style='background-color:cyan; color:black;' onclick='edgeClick("+shortnum+")'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta' onclick='edgeClick("+longnum+")'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red' onclick='edgeClick("+minnum+")'>Shortest Edge: " + edgeMin.label+ ": <span id='minedgelength'>"  + generateUnit(waypoints[graphEdges[minnum].v1].lat, waypoints[graphEdges[minnum].v1].lon, waypoints[graphEdges[minnum].v2].lat, waypoints[graphEdges[minnum].v2].lon) + "</span></span><br><span style = 'background-color:blue' onclick='edgeClick("+maxnum+")'>  Longest Edge: " + edgeMax.label + ": <span id='maxedgelength'>" + generateUnit(waypoints[graphEdges[maxnum].v1].lat, waypoints[graphEdges[maxnum].v1].lon, waypoints[graphEdges[maxnum].v2].lat, waypoints[graphEdges[maxnum].v2].lon) + "</span></span>";
+	
+	getObj("maxedgelength").classList.add(curUnit);
+	getObj("minedgelength").classList.add(curUnit);
 	
     currentEdgeIndex += 1;
     setTimeout(continueEdgeSearch, delay);
@@ -1937,7 +1962,7 @@ function startDijkstra() {
 		topRow.appendChild(th);
 		
 		th = document.createElement("th");
-		th.innerHTML = "Distance(mi)";
+		th.innerHTML = "Distance";
 		topRow.appendChild(th);
 		
 		th = document.createElement("th");
@@ -2041,8 +2066,11 @@ function continueDijkstra() {
         }
     }
     // maybe we're done
+	//if there are no vertices left, or in the case that start/end are different, we've visited the end
     if (discoveredVertices.length == 0 || (visited[endingVertex] && startingVertex != endingVertex)) {
+		//make our table a sortable DataTable
 		createDataTable("#dijtable");
+		//if start/end different, construct path from start to end
         if(startingVertex != endingVertex){
 			var curV = totalPath[totalPath.length-1];
 			var edgePath = curV.edge;
@@ -2082,7 +2110,11 @@ function continueDijkstra() {
 		td.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
 		tr.appendChild(td);	
 		td = document.createElement("td");
-		td.innerHTML = Math.round(nextToVisit.dist*1000)/1000;
+		if(nextToVisit.edge!=null)
+			td.innerHTML = convertMiles(nextToVisit.dist);
+		else
+			td.innerHTML = 0;
+		td.classList.add(curUnit);
 		td.setAttribute("onclick", "LabelClick("+nextToVisit.vIndex+")");
 		td.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
 		td.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
@@ -2190,15 +2222,16 @@ function continueDijkstra() {
 	discoveredVertices.sort(comparePQ);
 
     // update view of our list
-    //printList(queue);
-   /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
-    setTimeout(continueGraphTraversal, delay);*/
 	     var newDS = makeTable();
 	 if(newDS!=null)
 		 getObj("algorithmStatus").appendChild(newDS);
 		shiftColors();
     setTimeout(continueDijkstra, delay);
 
+}
+
+function DSColor(id, color){
+	getObj(id).style.backgroundColor = color;
 }
 
 function shiftColors(){
@@ -2216,12 +2249,29 @@ function shiftColors(){
 		inc = 10;
 	else
 		inc = 9;
+	pts = Array(waypoints.length);
+	for(var i=0; i<pts.length; i++){
+		pts[i]=0;
+	}
 	//works until 83 vertices in DS, then repeats cyan
 	for (var i=0; i<discoveredVertices.length; i++){
+		if(pts[discoveredVertices[i].vIndex]>0){
+			if($("#di"+discoveredVertices[i].vIndex).length>0)
+				DSColor("l"+discoveredVertices[i].vIndex+"_"+pts[discoveredVertices[i].vIndex], "#0000a0");
+			else
+				DSColor("l"+discoveredVertices[i].vIndex+"_"+pts[discoveredVertices[i].vIndex], "red");
+		}
+		else if ($("#di"+discoveredVertices[i].vIndex).length>0){
+			DSColor("l"+discoveredVertices[i].vIndex, "#0000a0");
+			
+			updateMarkerAndTable(discoveredVertices[i].vIndex, visualSettings.spanningTree,
+				1, false);
+		}
+		else{
 		updateMarkerAndTable(discoveredVertices[i].vIndex, { color: "rgb("+r+","+g+","+b+")",
-        textColor: "black",
-        scale: 4},
-        5, false);
+		textColor: "black",
+		scale: 4},
+		5, false);
 		if (r>=inc && b>=inc && g>=inc){
 			r-=inc;
 			b-=inc;			
@@ -2232,6 +2282,8 @@ function shiftColors(){
 			b+=inc;
 			g+=inc;
 		}
+		}
+		pts[discoveredVertices[i].vIndex]++;
 	}
 	if(discoveredVertices.length>0){
 	var colors = getObj("waypoint"+discoveredVertices[discoveredVertices.length-1].vIndex).style.backgroundColor.split(",");
@@ -2549,8 +2601,9 @@ var nameAndSize = document.createTextNode(discoveredVerticesName + " Size: " + d
 function makeTable(){ 
     var size = discoveredVertices.length-1;
     if(createTable){
-        var tableBody = dsTbody(size);
-        var oldtableBody = document.getElementById("tablebody");
+		var oldtableBody = document.getElementById("tablebody");
+		oldtableBody.innerHTML = "";
+        var tableBody = dsTbody(size);        
         oldtableBody.innerHTML = tableBody.innerHTML;
 		if (size >9 && !showAll)
 			collapseElements("collapseDataStructure");
@@ -2611,9 +2664,18 @@ function dsElement(type, num){
 	ele.setAttribute("onmouseover", "hoverV("+num+", true)");
 	ele.setAttribute("onmouseout", "hoverEndV("+num+", true)");
 	ele.setAttribute("onclick", "LabelClick("+num+")");
-	ele.setAttribute("id", "l" + num);
+	if(pts[num] > 0)
+		ele.setAttribute("id", "l"+num+"_"+pts[num]);
+	else
+		ele.setAttribute("id", "l"+num);
 	return ele;
 }
+
+function edgeListener(i){
+	google.maps.event.addListener(connections[i], 'click', function(e){edgeClick(i);});
+}
+
+var pts;
 
 function dsTbody(size){
     numVisitedString.nodeValue = "Number of Visited Vertices: " + numVisited;
@@ -2621,16 +2683,21 @@ function dsTbody(size){
     numAlreadyVisitedString.nodeValue = "Number of Vertices already Visited: " + numAlreadyVisited;
     nameAndSize.nodeValue = discoveredVerticesName + " Size: " + discoveredVertices.length;
 	var tableBody = document.createElement("tbody");
+	pts = Array(waypoints.length);
+	for(var i=0; i<pts.length; i++){
+		pts[i] = 0;
+	}
     if(discoveredVerticesName == "Stack"){
         for (var i = 0; i <= size ; i++) { 
 			var point =  discoveredVertices[discoveredVertices.length-(1+i)].vIndex;
-            var row = dsElement("tr", point);
+            var row = dsElement("tr", point);			
 			var col = document.createElement("td");
 			col.innerHTML = point;
 			row.appendChild(col);
 			if (i > 9){
 				row.className = "collapseDataStructure";
 			}
+			pts[point]++;
             tableBody.appendChild(row);
         }
     }
@@ -2641,11 +2708,14 @@ function dsTbody(size){
             if (i > 9){
 				col.className = "collapseDataStructure";
 			}
-			if (discoveredVerticesName == "PQueue")
-				col.innerHTML = discoveredVertices[i].vIndex + " dist: " + Math.round(discoveredVertices[i].dist*100)/100;
+			if (discoveredVerticesName == "PQueue"){
+				col.innerHTML = discoveredVertices[i].vIndex + " dist: <span class="+curUnit+" style='color:black;' >"+convertMiles(discoveredVertices[i].dist)+" "
+				+curUnit+"</span>";
+			}
 			else
 				col.innerHTML = discoveredVertices[i].vIndex;
 			row.appendChild(col);
+			pts[discoveredVertices[i].vIndex]++;
             tableBody.appendChild(row);
         }
 	}
@@ -2800,5 +2870,14 @@ numAlreadyVisited = 0;
  gblu = 245;
  
  totalPath = Array();
+ 
+ if ($("#piecesTD").length >0)
+	 getObj("piecesTD").parentNode.parentNode.removeChild(getObj("piecesTD").parentNode);
+ for(var i=0; i<7; i++){
+  if ($("#info"+i).length >0)
+	 getObj("info"+i).parentNode.parentNode.removeChild(getObj("info"+i).parentNode);
+ }
+ getObj("algorithmStatus").innerHTML = "";
+	 
 	}
 }
