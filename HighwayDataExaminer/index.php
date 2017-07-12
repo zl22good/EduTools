@@ -205,9 +205,20 @@ span{
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script
  src="http://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"
- type="text/javascript"></script>
+  type="text/javascript"></script>
+<!-- config file to find libs from a TM installation -->
+<?php
+  $hdxconffile = fopen("hdx.conf", "r");
+  $tmliburl = chop(fgets($hdxconffile));
+  echo "<script type=\"application/javascript\">";
+  echo "var tmliburl = \"$tmliburl\";";
+  echo "</script>\n";
+  fclose($hdxconffile)
+  ?>
 <!-- load in needed JS functions -->
-<script src="http://tmtest.teresco.org/lib/tmjsfuncs.js" type="text/javascript"></script>
+<?php
+  echo "<script src=\"".$tmliburl."tmjsfuncs.js\" type=\"text/javascript\"></script>\n";
+?>
 <script src="hdxjsfuncs.js" type="text/javascript"></script>
 <title>Highway Data Examiner</title>
 </head>

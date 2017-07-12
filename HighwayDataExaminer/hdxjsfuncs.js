@@ -190,8 +190,8 @@ function endPointInput() {
 function hoverV(i, bool) {
     if ((bool && pause) || !bool) {
 	vicon = markers[i].getIcon();
-	vcolor = getObj("waypoint"+i).style.backgroundColor;
-	vtext = getObj("waypoint"+i).style.color;
+	vcolor = document.getElementById("waypoint"+i).style.backgroundColor;
+	vtext = document.getElementById("waypoint"+i).style.color;
 	updateMarkerAndTable(i, visualSettings.hoverV, 0, false);
     }
 }
@@ -199,13 +199,13 @@ function hoverV(i, bool) {
 function hoverEndV(i, bool) {
     if ((bool && pause) || !bool) {
 	markers[i].setIcon(vicon);
-	getObj("waypoint"+i).style.backgroundColor = vcolor;
-	getObj("waypoint"+i).style.color = vtext;
+	document.getElementById("waypoint"+i).style.backgroundColor = vcolor;
+	document.getElementById("waypoint"+i).style.color = vtext;
 	if ($("#l"+i).length > 0)
-	    getObj("l"+i).style.backgroundColor = vcolor;
+	    document.getElementById("l"+i).style.backgroundColor = vcolor;
 	if ($("#di"+i).length > 0) {
-	    getObj("di"+i).style.backgroundColor = vcolor;
-	    getObj("di"+i).style.color = vtext;
+	    document.getElementById("di"+i).style.backgroundColor = vcolor;
+	    document.getElementById("di"+i).style.color = vtext;
 	}
     }
 }
@@ -286,7 +286,7 @@ var prevUnit;
 
 function generateUnit(lat1, lon1, lat2, lon2) {
     prevUnit = curUnit;
-    curUnit = getObj("distUnits").value;
+    curUnit = document.getElementById("distUnits").value;
     if (curUnit == "miles") {
 	return Math.round(Mileage(lat1, lon1, lat2, lon2)*1000)/1000 + " miles";
     }
@@ -347,15 +347,15 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
         strokeColor: vs.color
     });
     markers[waypointNum].setZIndex(google.maps.Marker.MAX_ZINDEX + zIndex);
-    var row = getObj("waypoint"+waypointNum);
+    var row = document.getElementById("waypoint"+waypointNum);
     row.style.backgroundColor = vs.color;
     row.style.color = vs.textColor;
     if ($("#l"+waypointNum).length > 0) {
-	getObj("l"+(waypointNum)).style.backgroundColor = vs.color;
+	document.getElementById("l"+(waypointNum)).style.backgroundColor = vs.color;
     }
     if ($("#di"+waypointNum).length > 0) {
-	getObj("di"+waypointNum).style.backgroundColor = vs.color;
-	getObj("di"+waypointNum).style.color = vs.textColor;
+	document.getElementById("di"+waypointNum).style.backgroundColor = vs.color;
+	document.getElementById("di"+waypointNum).style.color = vs.textColor;
     }
     if (hideTableLine) 
         row.style.display = "none";
@@ -428,10 +428,10 @@ function startVertexSearch() {
         connections[i].setMap(null);
     }
     //we don't need connections table here, so we remove those
-    getObj("connection").style.display = "none";
+    document.getElementById("connection").style.display = "none";
     
-    getObj("waypoints").style.display = "";
-    var pointRows = getObj("waypoints").getElementsByTagName("*");
+    document.getElementById("waypoints").style.display = "";
+    var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
     for (var i = 0; i < pointRows.length; i++) {
 	pointRows[i].style.display = "";
     }
@@ -676,10 +676,10 @@ function startEdgeSearch() {
 	    });
     }
     //we don't need waypoints table here, so we remove those
-    getObj("waypoints").style.display = "none";
+    document.getElementById("waypoints").style.display = "none";
     
-    getObj("connection").style.display = "";
-    var pointRows = getObj("connection").getElementsByTagName("*");
+    document.getElementById("connection").style.display = "";
+    var pointRows = document.getElementById("connection").getElementsByTagName("*");
     for (var i = 0; i < pointRows.length; i++) {
 	pointRows[i].style.display = "";
     }
@@ -737,8 +737,8 @@ function continueEdgeSearch() {
     if (currentEdgeIndex == graphEdges.length) {
 	done = true;
 	document.getElementById('info1').innerHTML = "<span style='background-color:cyan; color:black;' onclick='edgeClick("+shortnum+")'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta' onclick='edgeClick("+longnum+")'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red' onclick='edgeClick("+minnum+")'>Shortest Edge: " + edgeMin.label+ ": <span id='minedgelength'>"  + generateUnit(waypoints[graphEdges[minnum].v1].lat, waypoints[graphEdges[minnum].v1].lon, waypoints[graphEdges[minnum].v2].lat, waypoints[graphEdges[minnum].v2].lon) + "</span></span><br><span style = 'background-color:blue' onclick='edgeClick("+maxnum+")'>  Longest Edge: " + edgeMax.label + ": <span id='maxedgelength'>" + generateUnit(waypoints[graphEdges[maxnum].v1].lat, waypoints[graphEdges[maxnum].v1].lon, waypoints[graphEdges[maxnum].v2].lat, waypoints[graphEdges[maxnum].v2].lon) + "</span></span>";
-	getObj("minedgelength").classList.add(curUnit);
-	getObj("maxedgelength").classList.add(curUnit);
+	document.getElementById("minedgelength").classList.add(curUnit);
+	document.getElementById("maxedgelength").classList.add(curUnit);
 	return;
     }
     
@@ -781,8 +781,8 @@ function continueEdgeSearch() {
     }	
     document.getElementById('info1').innerHTML = "<span style='background-color:cyan; color:black;' onclick='edgeClick("+shortnum+")'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta' onclick='edgeClick("+longnum+")'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red' onclick='edgeClick("+minnum+")'>Shortest Edge: " + edgeMin.label+ ": <span id='minedgelength'>"  + generateUnit(waypoints[graphEdges[minnum].v1].lat, waypoints[graphEdges[minnum].v1].lon, waypoints[graphEdges[minnum].v2].lat, waypoints[graphEdges[minnum].v2].lon) + "</span></span><br><span style = 'background-color:blue' onclick='edgeClick("+maxnum+")'>  Longest Edge: " + edgeMax.label + ": <span id='maxedgelength'>" + generateUnit(waypoints[graphEdges[maxnum].v1].lat, waypoints[graphEdges[maxnum].v1].lon, waypoints[graphEdges[maxnum].v2].lat, waypoints[graphEdges[maxnum].v2].lon) + "</span></span>";
     
-    getObj("maxedgelength").classList.add(curUnit);
-    getObj("minedgelength").classList.add(curUnit);
+    document.getElementById("maxedgelength").classList.add(curUnit);
+    document.getElementById("minedgelength").classList.add(curUnit);
     
     currentEdgeIndex += 1;
     setTimeout(continueEdgeSearch, delay);
@@ -851,9 +851,9 @@ function startGraphTraversal(discipline) {
         return;
     }
 
-    getObj("connection").style.display = "none";
-    getObj("waypoints").style.display = "";
-    var pointRows = getObj("waypoints").getElementsByTagName("*");
+    document.getElementById("connection").style.display = "none";
+    document.getElementById("waypoints").style.display = "";
+    var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
     for (var i = 0; i < pointRows.length; i++) {
 	pointRows[i].style.display = "";
     }
@@ -1050,7 +1050,7 @@ function continueGraphTraversal() {
     setTimeout(continueGraphTraversal, delay);*/
     var newDS = makeTable();
     if (newDS!=null)
-	getObj("algorithmStatus").appendChild(newDS);
+	document.getElementById("algorithmStatus").appendChild(newDS);
     shiftColors();
     setTimeout(continueGraphTraversal, delay);
 }
@@ -1068,9 +1068,9 @@ function startConnectedPieces(vert, visitarr) {
 
     var piecesTD = "";
     
-    getObj("connection").style.display = "none";
-    getObj("waypoints").style.display = "";
-    var pointRows = getObj("waypoints").getElementsByTagName("*");
+    document.getElementById("connection").style.display = "none";
+    document.getElementById("waypoints").style.display = "";
+    var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
     for (var i = 0; i < pointRows.length; i++)
 	pointRows[i].style.display = "";
     
@@ -1081,7 +1081,7 @@ function startConnectedPieces(vert, visitarr) {
 	piecesTR.appendChild(piecesTD);
 	piecesTD.setAttribute("id","piecesTD");
 	$("#AlgorithmsTable > tbody").append(piecesTR);
-	piecesTD = getObj("piecesTD");
+	piecesTD = document.getElementById("piecesTD");
 	visited = new Array(waypoints.length).fill(false);
 	startingVertex = document.getElementById("startPoint").value;
 	// replace all markers with white circles
@@ -1098,7 +1098,7 @@ function startConnectedPieces(vert, visitarr) {
 	}	
     }
     else {
-	piecesTD = getObj("piecesTD");
+	piecesTD = document.getElementById("piecesTD");
 	visited = visitarr;
 	startingVertex = vert;
     }
@@ -1157,8 +1157,8 @@ function continueConnectedPieces() {
     // maybe we're done
     if (discoveredVertices.length == 0 && !vleft) {
 	done = true;
-        getObj("piecesTD").innerHTML = "Done! Map contains "+piecenum+" unconnected pieces";
-	getObj("piecesTD").style.backgroundColor = "#ffffff";
+        document.getElementById("piecesTD").innerHTML = "Done! Map contains "+piecenum+" unconnected pieces";
+	document.getElementById("piecesTD").style.backgroundColor = "#ffffff";
         return;
     }
     
@@ -1260,7 +1260,7 @@ function continueConnectedPieces() {
     setTimeout(continueGraphTraversal, delay);*/
     var newDS = makeTable();
     if (newDS!=null)
-	getObj("algorithmStatus").appendChild(newDS);
+	document.getElementById("algorithmStatus").appendChild(newDS);
     setTimeout(function() {continueConnectedPieces()}, delay);
 }
 
@@ -1273,8 +1273,8 @@ function startDijkstra() {
         return;
     }
     else {	
-	getObj("connection").style.display = "none";
-	getObj("waypoints").style.display = "none";
+	document.getElementById("connection").style.display = "none";
+	document.getElementById("waypoints").style.display = "none";
 	
 	if ($("#dijtable").length > 0)
 	    $("#dijtable").remove();
@@ -1308,7 +1308,7 @@ function startDijkstra() {
 	dijtbody.id = "dijtbody";
 	dijkstraTable.appendChild(dijtbody);
 	
-	getObj("waypoints").parentNode.parentNode.appendChild(dijkstraTable);	
+	document.getElementById("waypoints").parentNode.parentNode.appendChild(dijkstraTable);	
     }
     discoveredVerticesName = "PQueue";
     
@@ -1478,7 +1478,7 @@ function continueDijkstra() {
 	    }
 	    tr.appendChild(td);
 	    
-	    getObj("dijtbody").appendChild(tr);
+	    document.getElementById("dijtbody").appendChild(tr);
 	}
     
     lastVisitedVertex = nextToVisit.vIndex;
@@ -1572,14 +1572,14 @@ function continueDijkstra() {
     // update view of our list
     var newDS = makeTable();
     if (newDS!=null)
-	getObj("algorithmStatus").appendChild(newDS);
+	document.getElementById("algorithmStatus").appendChild(newDS);
     shiftColors();
     setTimeout(continueDijkstra, delay);
 }
 
 function DSColor(id, color) {
     
-    getObj(id).style.backgroundColor = color;
+    document.getElementById(id).style.backgroundColor = color;
 }
 
 function shiftColors() {
@@ -1648,7 +1648,7 @@ function shiftColors() {
 	pts[discoveredVertices[i].vIndex]++;
     }
     if (discoveredVertices.length > 0) {
-	var colors = getObj("waypoint"+
+	var colors = document.getElementById("waypoint"+
 			    discoveredVertices[discoveredVertices.length-1].vIndex).style.backgroundColor.split(",");
 	gred = parseInt(colors[0].substring(4, colors[0].length).trim());
 	ggrn = parseInt(colors[1].trim());
@@ -1919,10 +1919,6 @@ function isBetween(o1, o2, o3) {
         (squaredDistance(o3,o2) < sqDisto1o2);
 }
 
-function getObj(elementID) {
-    return document.getElementById(elementID);
-}
-
 // Creates the TOSLabels for the different map tiles and appends them
 // to a div which is returned
 function TOSLabel() {
@@ -2185,7 +2181,7 @@ function legendArea(vis) {
 }
 
 function resetVars() {
-    if (done || prevAlgVal != getObj("AlgorithmSelection").value) {
+    if (done || prevAlgVal != document.getElementById("AlgorithmSelection").value) {
 	done = false;
 	updateMap();
 	northIndex = -1;
@@ -2245,14 +2241,14 @@ function resetVars() {
 	totalPath = Array();
 	
 	if ($("#piecesTD").length > 0) {
-	    getObj("piecesTD").parentNode.parentNode.removeChild(getObj("piecesTD").parentNode);
+	    document.getElementById("piecesTD").parentNode.parentNode.removeChild(document.getElementById("piecesTD").parentNode);
 	}
 	for (var i = 0; i < 7; i++) {
 	    if ($("#info"+i).length > 0) {
-		getObj("info"+i).parentNode.parentNode.removeChild(getObj("info"+i).parentNode);
+		document.getElementById("info"+i).parentNode.parentNode.removeChild(document.getElementById("info"+i).parentNode);
 	    }
 	}
-	getObj("algorithmStatus").innerHTML = "";	
+	document.getElementById("algorithmStatus").innerHTML = "";	
     }
 }
 
@@ -2407,7 +2403,7 @@ function undoCollapse(event) {
 
 function collapseElements(clss) {
     var elems = document.querySelectorAll("."+clss);
-    var btn = getObj(clss+"btn");
+    var btn = document.getElementById(clss+"btn");
     for (var i = 0; i < elems.length; i++) {
 	elems[i].style.display = "none";
     }
@@ -2465,17 +2461,17 @@ function processContents(fileContents) {
 
 function mapOptions(e) {
     
-    var sels = getObj("selects");
-    var orderSel = getObj("orderOptions").value;
-    var resSel = getObj("restrictOptions").value;
-    var cateSel = getObj("categoryOptions").value;
-    var min = getObj("minVertices").value;
-    var max = getObj("maxVertices").value;
+    var sels = document.getElementById("selects");
+    var orderSel = document.getElementById("orderOptions").value;
+    var resSel = document.getElementById("restrictOptions").value;
+    var cateSel = document.getElementById("categoryOptions").value;
+    var min = document.getElementById("minVertices").value;
+    var max = document.getElementById("maxVertices").value;
     if (max < 0 || min < 0 || min > max) {
 	return;
     }
     if ($("#mapOptions").length != 0) {
-	sels.removeChild(getObj("mapOptions"));
+	sels.removeChild(document.getElementById("mapOptions"));
     }
     var mapSel = document.createElement("select");
     mapSel.setAttribute("id", "mapOptions");
@@ -2516,7 +2512,7 @@ function mapOptions(e) {
 		}
 		opt.innerHTML = str;
 		opt.value = values[i];
-		getObj("mapOptions").appendChild(opt);
+		document.getElementById("mapOptions").appendChild(opt);
 	    }
 	}
     });
@@ -2524,10 +2520,10 @@ function mapOptions(e) {
 
 function clearTables() {
     if ($("#waypoints").length != 0) {
-	getObj("waypoints_wrapper").parentNode.parentNode.removeChild(getObj("waypoints_wrapper").parentNode);
+	document.getElementById("waypoints_wrapper").parentNode.parentNode.removeChild(document.getElementById("waypoints_wrapper").parentNode);
     }
     if ($("#connection").length!=0) {
-	getObj("connection_wrapper").parentNode.parentNode.removeChild(getObj("connection_wrapper").parentNode);
+	document.getElementById("connection_wrapper").parentNode.parentNode.removeChild(document.getElementById("connection_wrapper").parentNode);
     }
 }
 
