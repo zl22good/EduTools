@@ -235,7 +235,7 @@ function hoverEndE(event, i) {
 var vcolor, vtext, vicon;
 var ecolor, etext, edge, edgew;
 
-function LabelClickHDX(i) {
+function labelClickHDX(i) {
     vertexSelect(i);
     vertexSelectEnd(i);
     map.panTo(new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon));
@@ -288,16 +288,20 @@ function generateUnit(lat1, lon1, lat2, lon2) {
     prevUnit = curUnit;
     curUnit = document.getElementById("distUnits").value;
     if (curUnit == "miles") {
-	return Math.round(Mileage(lat1, lon1, lat2, lon2)*1000)/1000 + " miles";
+	return Math.round(distanceInMiles(lat1, lon1, lat2, lon2)*1000)/1000 +
+	    " miles";
     }
     else if (curUnit == "feet") {
-	return Math.round(Feet(lat1, lon1, lat2, lon2)*1000)/1000 + " feet";
+	return Math.round(distanceInFeet(lat1, lon1, lat2, lon2)*1000)/1000 +
+	    " feet";
     }
     else if (curUnit == "meters") {
-	return Math.round(Feet(lat1, lon1, lat2, lon2)*.3048*1000)/1000+ " meters";
+	return Math.round(distanceInFeet(lat1, lon1, lat2, lon2)*.3048*1000)/1000
+	    + " meters";
     }
     else if (curUnit == "km") {
-	return Math.round(Feet(lat1, lon1, lat2, lon2)*.0003048*1000)/1000+ " km";
+	return Math.round(distanceInFeet(lat1, lon1, lat2, lon2)*.0003048*1000)/1000
+	    + " km";
     }
 }
 
@@ -747,8 +751,8 @@ function continueEdgeSearch() {
     var edge = graphEdges[currentEdgeIndex];
     findEdge(currentEdgeIndex, "#FFFF00", 1, 10);
     
-    var distance = Mileage(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
-			   waypoints[edge.v2].lat, waypoints[edge.v2].lon);
+    var distance = distanceInMiles(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
+				   waypoints[edge.v2].lat, waypoints[edge.v2].lon);
     
     if (distance < minDistance) {
         minDistance = distance;
@@ -1443,7 +1447,7 @@ function continueDijkstra() {
 	    tr.id = "di"+nextToVisit.vIndex;
 	    var td = document.createElement("td");
 	    td.innerHTML = nextToVisit.vIndex;
-	    td.setAttribute("onclick", "LabelClickHDX("+nextToVisit.vIndex+")");
+	    td.setAttribute("onclick", "labelClickHDX("+nextToVisit.vIndex+")");
 	    td.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
 	    td.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
 	    tr.appendChild(td);	
@@ -1453,12 +1457,12 @@ function continueDijkstra() {
 	    else
 		td.innerHTML = 0;
 	    td.classList.add(curUnit);
-	    td.setAttribute("onclick", "LabelClickHDX("+nextToVisit.vIndex+")");
+	    td.setAttribute("onclick", "labelClickHDX("+nextToVisit.vIndex+")");
 	    td.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
 	    td.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
 	    tr.appendChild(td);
 	    td = document.createElement("td");
-	    td.setAttribute("onclick", "LabelClickHDX("+nextToVisit.vIndex+")");
+	    td.setAttribute("onclick", "labelClickHDX("+nextToVisit.vIndex+")");
 	    td.setAttribute("onmouseover", "hoverV("+nextToVisit.vIndex+", false)");
 	    td.setAttribute("onmouseout", "hoverEndV("+nextToVisit.vIndex+", false)");
 	    td.innerHTML = waypoints[nextToVisit.vIndex].label;
@@ -1533,9 +1537,10 @@ function continueDijkstra() {
                 discoveredVertices.push({
                     vIndex: neighbors[i],
                     connection: connection,
-		    dist: Mileage(waypoints[vIndex].lat, waypoints[vIndex].lon,
-				  waypoints[neighbors[i]].lat,
-				  waypoints[neighbors[i]].lon)+nextToVisit.dist,
+		    dist: distanceInMiles(waypoints[vIndex].lat,
+					  waypoints[vIndex].lon,
+					  waypoints[neighbors[i]].lat,
+					  waypoints[neighbors[i]].lon)+nextToVisit.dist,
 		    edge: waypoints[vIndex].edgeList[i]
                 });
                 updateMarkerAndTable(neighbors[i],
@@ -2008,7 +2013,7 @@ function dsElement(type, num) {
     ele.className = "";
     ele.setAttribute("onmouseover", "hoverV("+num+", true)");
     ele.setAttribute("onmouseout", "hoverEndV("+num+", true)");
-    ele.setAttribute("onclick", "LabelClickHDX("+num+")");
+    ele.setAttribute("onclick", "labelClickHDX("+num+")");
     if (pts[num] > 0) {
 	ele.setAttribute("id", "l"+num+"_"+pts[num]);
     }
@@ -2591,7 +2596,7 @@ function parseTMGContents(fileContents) {
     for (var i = 0; i < numV; i++) {
 	var vertexInfo = lines[i+2].split(' ');
 	waypoints[i] = new Waypoint(vertexInfo[0], vertexInfo[1], vertexInfo[2], "", new Array());
-	vTable += '<tr id="waypoint' + i +'" onmouseover = "hoverV('+i+', false)" onmouseout = "hoverEndV('+i+', false)" onclick = "LabelClick('+i+')" ><td>' + i +
+	vTable += '<tr id="waypoint' + i +'" onmouseover = "hoverV('+i+', false)" onmouseout = "hoverEndV('+i+', false)" onclick = "labelClick('+i+')" ><td>' + i +
 	    '</td><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
 	    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
 	    + waypoints[i].label + '</td></tr>';
@@ -2655,7 +2660,7 @@ function parseGRAContents(fileContents) {
 	vTable += '<tr><td>' + i +
 	    '</td><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
 	    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
-	    + "<a onclick=\"javascript:LabelClick(" + i + ",'"
+	    + "<a onclick=\"javascript:labelClick(" + i + ",'"
 	    + waypoints[i].label + "\',"
 	    + waypoints[i].lat + "," + waypoints[i].lon + ",0);\">"
 	    + waypoints[i].label + "</a></td></tr>"
@@ -2753,7 +2758,7 @@ function parsePTHContents(fileContents) {
 	    }
 	    previousWaypoint = info.waypoint;
 	    table += '<tr><td>' + waypoints[waypoints.length-1].elabel +
-		"</td><td><a onclick=\"javascript:LabelClick(" + 0 + ",\'"
+		"</td><td><a onclick=\"javascript:labelClick(" + 0 + ",\'"
 	        + waypoints[waypoints.length-1].label + "\',"
 	        + waypoints[waypoints.length-1].lat + "," + waypoints[waypoints.length-1].lon +
 		",0);\">" + waypoints[waypoints.length-1].label +
@@ -2799,16 +2804,20 @@ function parseNMPContents(fileContents) {
 	graphEdges[i] = new GraphEdge(2*i, 2*i+1, "", null);
 
 	// add an entry to the table to be drawn in the pointbox
-	var miles = Mileage(waypoints[2*i].lat, waypoints[2*i].lon, waypoints[2*i+1].lat, waypoints[2*i+1].lon).toFixed(4);
-	var feet = Feet(waypoints[2*i].lat, waypoints[2*i].lon, waypoints[2*i+1].lat, waypoints[2*i+1].lon).toFixed(2);
+	var miles = distanceInMiles(waypoints[2*i].lat, waypoints[2*i].lon,
+				    waypoints[2*i+1].lat,
+				    waypoints[2*i+1].lon).toFixed(4);
+	var feet = distanceInFeet(waypoints[2*i].lat, waypoints[2*i].lon,
+				  waypoints[2*i+1].lat,
+				  waypoints[2*i+1].lon).toFixed(2);
 	table += "<tr><td><table class=\"nmptable2\"><thead /><tbody><tr><td>"
-	    + "<a onclick=\"javascript:LabelClick(" + 2*i + ",\'"
+	    + "<a onclick=\"javascript:labelClick(" + 2*i + ",\'"
 	    + waypoints[2*i].label + "\',"
 	    + waypoints[2*i].lat + "," + waypoints[2*i].lon + ",0);\">"
 	    + waypoints[2*i].label + "</a></td><td>("
 	    + waypoints[2*i].lat + ","
 	    + waypoints[2*i].lon + ")</td></tr><tr><td>"
-	    + "<a onclick=\"javascript:LabelClick(" + 2*i+1 + ",\'"
+	    + "<a onclick=\"javascript:labelClick(" + 2*i+1 + ",\'"
 	    + waypoints[2*i+1].label + "\',"
 	    + waypoints[2*i+1].lat + "," + waypoints[2*i+1].lon + ",0);\">"
 	    + waypoints[2*i+1].label + "</a></td><td>("
@@ -2845,7 +2854,7 @@ function parseWPLContents(fileContents) {
 		waypoints[waypoints.length] = w;
 		vTable += '<tr><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
 		    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
-		    + "<a onclick=\"javascript:LabelClick(" + i + ",'"
+		    + "<a onclick=\"javascript:labelClick(" + i + ",'"
 		    + w.label + "\',"
 		    + w.lat + "," + w.lon + ",0);\">"
 		    + w.label + "</a></td></tr>"
@@ -2981,7 +2990,7 @@ function mileageWithPTHLine(from, to, line) {
     var xline = line.split(' ');
     if (xline.length == 4) {
 	// no intermediate points, so just compute mileage
-	return Mileage(from.lat, from.lon, to.lat, to.lon);
+	return distanceInMiles(from.lat, from.lon, to.lat, to.lon);
     }
 
     // we have more points, compute sum of segments
@@ -2992,11 +3001,11 @@ function mileageWithPTHLine(from, to, line) {
     for (var i = 0; i < num_points; i++) {
 	var this_lat = parseFloat(xline[2*i+1]).toFixed(6);
 	var this_lon = parseFloat(xline[2*i+2]).toFixed(6);
-	total += Mileage(last_lat, last_lon, this_lat, this_lon);
+	total += distanceInMiles(last_lat, last_lon, this_lat, this_lon);
 	last_lat = this_lat;
 	last_lon = this_lon;
     }
-    total += Mileage(last_lat, last_lon, to.lat, to.lon);
+    total += distanceInMiles(last_lat, last_lon, to.lat, to.lon);
     return total;
 }
 
@@ -3026,8 +3035,9 @@ function PTHLineInfo(line, from) {
 	// no intermediate points, so just compute mileage and have a
 	// null "via" list
 	if (from != null) {
-	    result.mileage = Mileage(from.lat, from.lon,
-				     result.waypoint.lat, result.waypoint.lon);
+	    result.mileage = distanceInMiles(from.lat, from.lon,
+					     result.waypoint.lat,
+					     result.waypoint.lon);
 	}
 	result.via = null;
     }
@@ -3041,12 +3051,12 @@ function PTHLineInfo(line, from) {
 	for (var i = 0; i < num_points; i++) {
 	    var this_lat = parseFloat(xline[2*i+1]).toFixed(6);
 	    var this_lon = parseFloat(xline[2*i+2]).toFixed(6);
-	    total += Mileage(last_lat, last_lon, this_lat, this_lon);
+	    total += distanceInMiles(last_lat, last_lon, this_lat, this_lon);
 	    last_lat = this_lat;
 	    last_lon = this_lon;
 	}
-	total += Mileage(last_lat, last_lon,
-			 result.waypoint.lat, result.waypoint.lon);
+	total += distanceInMiles(last_lat, last_lon,
+				 result.waypoint.lat, result.waypoint.lon);
 	result.mileage = total;
 	result.via = xline.slice(1,xline.length-3);
     }
