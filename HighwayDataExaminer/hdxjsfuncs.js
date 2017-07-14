@@ -15,11 +15,18 @@
 // variables declared here are HDX-specific global variables
 
 // group of variables used by many or all algorithm visualizations
-var hdx_av = {
-// boolean to indicate if a simulation in progress is paused
+var hdxAV = {
+    // boolean to indicate if a simulation in progress is paused
     pause: false,
-    done: false
+    // is an AV complete?
+    done: false,
+    // delay (in ms) between visualization steps
+    // default delay 50 should match the selected option in the speedChanger
+    // and delay should be used for the amount of time in the future to use
+    // for setTimeout calls
+   delay: 50
 };
+
 var prevAlgVal = null;
 
 var red = 255;
@@ -191,7 +198,7 @@ function endPointInput() {
 }
 
 function hoverV(i, bool) {
-    if ((bool && hdx_av.pause) || !bool) {
+    if ((bool && hdxAV.pause) || !bool) {
 	vicon = markers[i].getIcon();
 	vcolor = document.getElementById("waypoint"+i).style.backgroundColor;
 	vtext = document.getElementById("waypoint"+i).style.color;
@@ -200,7 +207,7 @@ function hoverV(i, bool) {
 }
 
 function hoverEndV(i, bool) {
-    if ((bool && hdx_av.pause) || !bool) {
+    if ((bool && hdxAV.pause) || !bool) {
 	markers[i].setIcon(vicon);
 	document.getElementById("waypoint"+i).style.backgroundColor = vcolor;
 	document.getElementById("waypoint"+i).style.color = vtext;
@@ -323,15 +330,10 @@ function convertMiles(num) {
     }
 }
 
-
-// default delay 50 should match the selected option in the speedChanger
-// and delay should be used for the amount of time in the future to use
-// for setTimeout calls
-var delay = 50;
-
+// speedChanger dropdown callback
 function speedChanged() {
     var speedChanger = document.getElementById("speedChanger");
-    delay = speedChanger.options[speedChanger.selectedIndex].value;
+    hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;
 }
 
 
@@ -339,7 +341,7 @@ function speedChanged() {
 // deal with this as appropriate
 function pauseSimulation() {
 
-    hdx_av.pause = true;
+    hdxAV.pause = true;
 }
 
 // function to set the waypoint color, scale, and table entry
@@ -415,8 +417,8 @@ var longIndex = -1;
 function startVertexSearch() {
 
     // if we are paused and the start button is pressed, we "unpause"
-    if (hdx_av.pause) {
-        hdx_av.pause = false;
+    if (hdxAV.pause) {
+        hdxAV.pause = false;
         continueVertexSearch();
         return;
     }
@@ -467,7 +469,7 @@ function startVertexSearch() {
 
     // enable pause button
     //document.getElementById("pauseRestart").disabled = false;
-    setTimeout(continueVertexSearch, delay);
+    setTimeout(continueVertexSearch, hdxAV.delay);
 }
 
 
@@ -476,7 +478,7 @@ function continueVertexSearch() {
 
     // if the simulation is paused, we can do nothing, as this function
     // will be called again when we restart
-    if (hdx_av.pause) {
+    if (hdxAV.pause) {
         return;
     }
 
@@ -636,10 +638,10 @@ function continueVertexSearch() {
         updateMarkerAndTable(nextToCheck, visualSettings.visiting,
 			     30, false);
         
-        setTimeout(continueVertexSearch, delay);
+        setTimeout(continueVertexSearch, hdxAV.delay);
     }
     else {
-	hdx_av.done = true;
+	hdxAV.done = true;
         document.getElementById('algorithmStatus').innerHTML =
             "Done! Visited " + markers.length + " waypoints.";
     }
@@ -666,8 +668,8 @@ var flag = "";
 
 function startEdgeSearch() {
 
-    if (hdx_av.pause) {
-        hdx_av.pause = false;
+    if (hdxAV.pause) {
+        hdxAV.pause = false;
         continueEdgeSearch();
         return;
     }
@@ -699,7 +701,7 @@ function startEdgeSearch() {
     infoBoxtr.appendChild(infoBox);
     algorithmsTbody.appendChild(infoBoxtr);
     // document.getElementById('algorithmStatus').innerHTML = 'Checking: <span style="color:yellow">0</span>';
-    setTimeout(continueEdgeSearch, delay);    
+    setTimeout(continueEdgeSearch, hdxAV.delay);    
 }
 
 function findEdge(edgeNum, color, op, weight) {
@@ -714,7 +716,7 @@ function findEdge(edgeNum, color, op, weight) {
 }
 
 function continueEdgeSearch() {
-    if (hdx_av.pause) {
+    if (hdxAV.pause) {
         return;
     }	
 	
@@ -742,7 +744,7 @@ function continueEdgeSearch() {
     }
     
     if (currentEdgeIndex == graphEdges.length) {
-	hdx_av.done = true;
+	hdxAV.done = true;
 	document.getElementById('info1').innerHTML = "<span style='background-color:cyan; color:black;' onclick='edgeClick("+shortnum+")'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta' onclick='edgeClick("+longnum+")'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red' onclick='edgeClick("+minnum+")'>Shortest Edge: " + edgeMin.label+ ": <span id='minedgelength'>"  + generateUnit(waypoints[graphEdges[minnum].v1].lat, waypoints[graphEdges[minnum].v1].lon, waypoints[graphEdges[minnum].v2].lat, waypoints[graphEdges[minnum].v2].lon) + "</span></span><br><span style = 'background-color:blue' onclick='edgeClick("+maxnum+")'>  Longest Edge: " + edgeMax.label + ": <span id='maxedgelength'>" + generateUnit(waypoints[graphEdges[maxnum].v1].lat, waypoints[graphEdges[maxnum].v1].lon, waypoints[graphEdges[maxnum].v2].lat, waypoints[graphEdges[maxnum].v2].lon) + "</span></span>";
 	document.getElementById("minedgelength").classList.add(curUnit);
 	document.getElementById("maxedgelength").classList.add(curUnit);
@@ -792,7 +794,7 @@ function continueEdgeSearch() {
     document.getElementById("minedgelength").classList.add(curUnit);
     
     currentEdgeIndex += 1;
-    setTimeout(continueEdgeSearch, delay);
+    setTimeout(continueEdgeSearch, hdxAV.delay);
 }
 
 // ********************************************************************
@@ -852,8 +854,8 @@ function startGraphTraversal(discipline) {
     }
 
     // if we are paused
-    if (hdx_av.pause) {
-        hdx_av.pause = false;
+    if (hdxAV.pause) {
+        hdxAV.pause = false;
         continueGraphTraversal();
         return;
     }
@@ -895,7 +897,7 @@ function startGraphTraversal(discipline) {
 
     // nothing to update this first time
     lastVisitedVertex = -1;
-    setTimeout(continueGraphTraversal, delay);
+    setTimeout(continueGraphTraversal, hdxAV.delay);
 }
 
 // function to see if a vertex with the given index is in discoveredVertices
@@ -917,7 +919,7 @@ var numAlreadyVisited = 0;
 function continueGraphTraversal() {
     
     // if we're paused, do nothing for now
-    if (hdx_av.pause) {
+    if (hdxAV.pause) {
         return;
     }
 
@@ -943,7 +945,7 @@ function continueGraphTraversal() {
     }
     // maybe we're done
     if (discoveredVertices.length == 0) {
-	hdx_av.done = true;
+	hdxAV.done = true;
         return;
     }
 
@@ -1059,7 +1061,7 @@ function continueGraphTraversal() {
     if (newDS!=null)
 	document.getElementById("algorithmStatus").appendChild(newDS);
     shiftColors();
-    setTimeout(continueGraphTraversal, delay);
+    setTimeout(continueGraphTraversal, hdxAV.delay);
 }
 
 function startConnectedPieces(vert, visitarr) {
@@ -1067,8 +1069,8 @@ function startConnectedPieces(vert, visitarr) {
     discoveredVerticesName = "Queue";
     
     // if we are paused
-    if (hdx_av.pause) {
-        hdx_av.pause = false;
+    if (hdxAV.pause) {
+        hdxAV.pause = false;
         continueConnectedPieces();
         return;
     }	
@@ -1123,13 +1125,13 @@ function startConnectedPieces(vert, visitarr) {
     
     // nothing to update this first time
     lastVisitedVertex = -1;
-    setTimeout(function() {continueConnectedPieces()}, delay);
+    setTimeout(function() {continueConnectedPieces()}, hdxAV.delay);
 }
 
 function continueConnectedPieces() {
 	
     // if we're paused, do nothing for now
-    if (hdx_av.pause) {
+    if (hdxAV.pause) {
         return;
     }
 
@@ -1163,7 +1165,7 @@ function continueConnectedPieces() {
 
     // maybe we're done
     if (discoveredVertices.length == 0 && !vleft) {
-	hdx_av.done = true;
+	hdxAV.done = true;
         document.getElementById("piecesTD").innerHTML = "Done! Map contains "+piecenum+" unconnected pieces";
 	document.getElementById("piecesTD").style.backgroundColor = "#ffffff";
         return;
@@ -1268,14 +1270,14 @@ function continueConnectedPieces() {
     var newDS = makeTable();
     if (newDS!=null)
 	document.getElementById("algorithmStatus").appendChild(newDS);
-    setTimeout(function() {continueConnectedPieces()}, delay);
+    setTimeout(function() {continueConnectedPieces()}, hdxAV.delay);
 }
 
 function startDijkstra() {
 	
     // if we are paused
-    if (hdx_av.pause) {
-        hdx_av.pause = false;
+    if (hdxAV.pause) {
+        hdxAV.pause = false;
         continueDijkstra();
         return;
     }
@@ -1353,7 +1355,7 @@ function startDijkstra() {
     
     // nothing to update this first time
     lastVisitedVertex = -1;
-    setTimeout(continueDijkstra, delay);
+    setTimeout(continueDijkstra, hdxAV.delay);
 }
 
 function comparePQ(a, b) {
@@ -1382,7 +1384,7 @@ function findNextPath(v1, v2) {
 
 function continueDijkstra() {
     // if we're paused, do nothing for now
-    if (hdx_av.pause) {
+    if (hdxAV.pause) {
         return;
     }
 
@@ -1435,7 +1437,7 @@ function continueDijkstra() {
 		curV = totalPath[findNextPath(nextV, curVnum)];
 	    }
 	}
-	hdx_av.done = true;
+	hdxAV.done = true;
         return;
     }
 
@@ -1582,7 +1584,7 @@ function continueDijkstra() {
     if (newDS!=null)
 	document.getElementById("algorithmStatus").appendChild(newDS);
     shiftColors();
-    setTimeout(continueDijkstra, delay);
+    setTimeout(continueDijkstra, hdxAV.delay);
 }
 
 function DSColor(id, color) {
@@ -1778,8 +1780,8 @@ var firstTestPoint;
 
 function bruteForceConvexHull() {
 
-    if (hdx_av.pause) {
-	hdx_av.pause = false;
+    if (hdxAV.pause) {
+	hdxAV.pause = false;
 	innerLoopConvexHull();
 	return;
     }
@@ -1792,7 +1794,7 @@ function bruteForceConvexHull() {
     hullJ = 1;
     hullI = 0;
     document.getElementById("for1").className += " highlight";
-    setTimeout(innerLoopConvexHull, delay);
+    setTimeout(innerLoopConvexHull, hdxAV.delay);
 }
 
 function innerLoopConvexHull() {
@@ -1802,7 +1804,7 @@ function innerLoopConvexHull() {
     document.getElementById("drawLine2").className -= " highlight";
     updateMarkerAndTable(hullI, visualSettings.hullI, 30, false);
 
-    if (hdx_av.pause) {
+    if (hdxAV.pause) {
 	return;
     }
     
@@ -1828,11 +1830,11 @@ function innerLoopConvexHull() {
     visitingLine[1] = new google.maps.LatLng(point2.lat, point2.lon);
     visitingLineHull(visitingLine);
     
-    setTimeout(innerLoop2, delay);
+    setTimeout(innerLoop2, hdxAV.delay);
 }
 
 function innerLoop2() {
-    if (hdx_av.pause) {
+    if (hdxAV.pause) {
 	return;
     }
     
@@ -1906,7 +1908,7 @@ function innerLoop2() {
     }
     
     if (hullI < waypoints.length - 1) {
-	setTimeout(innerLoopConvexHull, delay);
+	setTimeout(innerLoopConvexHull, hdxAV.delay);
     }
 }
 
@@ -2189,8 +2191,8 @@ function legendArea(vis) {
 }
 
 function resetVars() {
-    if (hdx_av.done || prevAlgVal != document.getElementById("AlgorithmSelection").value) {
-	hdx_av.done = false;
+    if (hdxAV.done || prevAlgVal != document.getElementById("AlgorithmSelection").value) {
+	hdxAV.done = false;
 	updateMap();
 	northIndex = -1;
 	southIndex = -1;

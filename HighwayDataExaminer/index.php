@@ -341,6 +341,7 @@ span{
         <button type="button" onclick="pauseSimulation()">Pause</button>
         <!-- button type="button" onclick="resetSearch()">Reset</button -->
         <select id="speedChanger" onchange="speedChanged()">
+          <option value="1">Fastest</option>
           <option value="5">Extremely fast</option>
           <option value="20">Very fast</option>
           <option value="50" selected>Fast</option>
