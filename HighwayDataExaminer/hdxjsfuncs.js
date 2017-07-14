@@ -27,6 +27,23 @@ var hdxAV = {
    delay: 50
 };
 
+/**********************************************************************
+ * General AV functions
+ **********************************************************************/
+// speedChanger dropdown callback
+function speedChanged() {
+
+    var speedChanger = document.getElementById("speedChanger");
+    hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;
+}
+
+// pause button callback, simply sets pause to true, other functions
+// deal with this as appropriate
+function pauseSimulation() {
+
+    hdxAV.pause = true;
+}
+
 var prevAlgVal = null;
 
 var red = 255;
@@ -328,20 +345,6 @@ function convertMiles(num) {
     else {
 	return Math.round(num*1000)/1000;
     }
-}
-
-// speedChanger dropdown callback
-function speedChanged() {
-    var speedChanger = document.getElementById("speedChanger");
-    hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;
-}
-
-
-// pause button callback, simply sets pause to true, other functions
-// deal with this as appropriate
-function pauseSimulation() {
-
-    hdxAV.pause = true;
 }
 
 // function to set the waypoint color, scale, and table entry
@@ -1687,43 +1690,6 @@ function getAdjacentPoints(pointIndex) {
     }
     
     return resultArray;
-}
-
-function printList(items) {
-    if (items.length == 0) {
-        console.log("[]");
-    } else {
-        var line = `[`;
-        for (var i = 0; i < items.length; i++) {
-            if (i == items.length - 1) {
-                line += items[i];
-            } else {
-                line += items[i] + `, `;
-            }
-	    
-        }
-        line += `]`;
-        console.log(line);
-    }
-    
-}
-
-function listToVIndexString(items) {
-    if (items.length == 0) {
-        return "[]";
-    }
-    else {
-        var line = `[`;
-        for (var i = 0; i < items.length; i++) {
-            if (i == items.length - 1) {
-                line += items[i].vIndex;
-            } else {
-                line += items[i].vIndex + `, `;
-            }	    
-        }
-        line += ` ]`;
-        return line;
-    }
 }
 
 // New Convex Hull 
@@ -3385,4 +3351,34 @@ function makeResize() {
     div.setAttribute("id", "resize");
     document.getElementById("selected").appendChild(div);
     $( "#contents_table" ).resizable();
+}
+
+
+/**********************************************************************
+ * General utility functions
+ **********************************************************************/
+
+// print a list to the console
+function printList(items) {
+
+    console.log(listToVIndexString(items));
+}
+
+// return a String containing the objects in a list
+function listToVIndexString(items) {
+    if (items.length == 0) {
+        return "[]";
+    }
+    else {
+        var line = `[`;
+        for (var i = 0; i < items.length; i++) {
+            if (i == items.length - 1) {
+                line += items[i].vIndex;
+            } else {
+                line += items[i].vIndex + `, `;
+            }	    
+        }
+        line += ` ]`;
+        return line;
+    }
 }
