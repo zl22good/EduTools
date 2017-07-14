@@ -3063,3 +3063,321 @@ function PTHLineInfo(line, from) {
     return result;
 }
 
+function toggleTable() {
+    var menu = document.getElementById("showHideMenu");
+    var index = menu.selectedIndex;
+    var value = menu.options[index].value;
+    //  var algoTable = menu.algorithmbased.value;
+    var pointbox = document.getElementById("pointbox");
+    var options = document.getElementById("options");
+    var selected = document.getElementById("selected");
+    var algorithmVisualization =
+	document.getElementById("AlgorithmVisualization");
+    // show only table (or no table) based on value
+    if (value == "pointbox") {
+	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
+	var newEle = document.createElement("div");
+	newEle.setAttribute("id", "newEle");
+	newEle.innerHTML = pointbox.innerHTML;
+	if ($("#connection").length != 0 || $("#waypoints").length != 0)
+	    document.getElementById("connection").parentNode.parentNode.style.display = "";
+	selected.appendChild(newEle);
+    }
+    else if (value == "options") {
+	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
+	var newEle = document.createElement("div");
+	newEle.setAttribute("id", "newEle");
+	newEle.innerHTML = options.innerHTML;
+	selected.appendChild(newEle);
+	if ($("#connection").length != 0 || $("#waypoints").length != 0)
+	    document.getElementById("connection").parentNode.parentNode.style.display = "";
+	if (document.querySelector(".loadcollapse").style.display == "none")
+	    document.getElementById("loadcollapsebtn").style.display = "";
+    }
+    else if (value =="AlgorithmVisualization") {
+	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
+	var newEle = document.createElement("div");
+	newEle.setAttribute("id", "newEle");
+	newEle.innerHTML = algorithmVisualization.innerHTML;
+	selected.appendChild(newEle);
+	if ($("#connection").length != 0 || $("#waypoints").length != 0)
+	    document.getElementById("connection").parentNode.parentNode.style.display = "";
+	if (document.querySelector(".loadcollapse").style.display == "none")
+	    document.getElementById("loadcollapsebtn").style.display = "";
+    }
+    else {  
+	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
+	var newEle = document.createElement("div");
+	newEle.setAttribute("id", "newEle");
+	selected.appendChild(newEle);
+	if ($("#connection").length != 0 || $("#waypoints").length != 0)
+	    document.getElementById("connection").parentNode.parentNode.style.display = "none";
+    }
+}
+
+// get the selected algorithm from the AlgorithmSelection menu
+// (factored out here to avoid repeated code)
+function getCurrentAlgorithm() {
+    var menuSelection = document.getElementById("AlgorithmSelection");
+    var selectionIndex = menuSelection.selectedIndex;
+    return menuSelection.options[selectionIndex].value;
+}
+
+function showHiddenPseudocode() {
+    var show = document.getElementById("showHidden").checked;
+    var value = getCurrentAlgorithm();
+    if (show) {
+        if (value == "BFS") {
+            document.getElementById('pseudo').innerHTML = "<pre> unmark all vertices\n " +
+                "  choose some starting vertex x \n" + "  mark x \n" +
+                " list L = x\n " + " tree T = x\n " + "  while L nonempty\n  " +
+                " choose some vertex v from front of list\n " + "  visit v\n " +
+                " for each unmarked neighbor w\n " + " mark w\n " + " add it to end of list\n " + " add edge vw to T\n </pre>";
+        } else if (value == "DFS") {
+            document.getElementById('pseudo').innerHTML = " <pre>Algorithm DFS(graph G, Vertex v)\n" +
+                " for all edges e in G.incidentEdges(v) do\n" + " if edge e is unexplored then\n" +
+                " w = G.opposite(v, e)\n" + " if vertex w is unexplored then\n" +
+                " label e as discovery edge\n" + " recursively call DFS(G, w)\n<pre>"
+            " else\n" + " label e a a back edge\n";
+        } else if (value == "vertexSearch") {
+            document.getElementById('pseudo').innerHTML =
+                "<pre>longest = 0\n" +
+                "shortest = 0\n" +
+                "north = 0\n" +
+                "south = 0\n" +
+                "east = 0\n" +
+                "west = 0\n" +
+                "for (i=1 to |V|-1) {\n" +
+                "  if (len(v[i].label) > len(v[longest]))) {\n" +
+                "    longest = i\n" +
+                "  }\n" +
+                "  if (len(v[i].label) < len(v[shortest]))) {\n" +
+                "    shortest = i\n" +
+                "  }\n" +
+                "  if (v[i].lat > v[north].lat) {\n" +
+                "    north = i\n" +
+                "  }\n" +
+                "  if (v[i].lat < v[south].lat) {\n" +
+                "    south = i\n" +
+                "  }\n" +
+                "  if (v[i].lng < v[west].lng) {\n" +
+                "    west = i\n" +
+                "  }\n" +
+                "  if (v[i].lng > v[east].lng) {\n" +
+                "    east = i\n" +
+                "  }\n" +
+                "}</pre>";
+        } else if (value == "EdgeSearch") {
+            document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+        } else if (value == "RFS") {
+            document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
+        }
+        else if (value == "ConvexHull") {
+            document.getElementById('pseudo').innerHTML =
+                "<pre><div id='for1'>for(i=1 to n–1) { </div>" + 
+                "<div id ='for2'>    for(j=i+1 to n) {</div>" +
+                "<div id ='drawLine'>        L=line through pointI and pointJ</div>" 
+                +"           if ( all other points lie on the same side of L) {"+
+                "<div id ='drawLine2'>              add pointI and pointJ to the boundary</div>"+
+                "        }\n    }\n}\n</pre>";
+        }  
+        else {
+            document.getElementById('pseudo').innerHTML = "";
+        }
+    }
+}
+
+function selectAlgorithmAndStart() {
+    var value = getCurrentAlgorithm();
+    if (value == "vertexSearch") {
+	resetVars();
+	prevAlgVal = value;
+        startVertexSearch();
+    }
+    else if (value == "EdgeSearch") {
+	resetVars();
+	prevAlgVal = value;
+        startEdgeSearch();
+    }
+    else if (value == "BFS") {
+	resetVars();
+	prevAlgVal = value;
+        startGraphTraversal("BFS");
+    }
+    else if (value == "DFS") {
+	resetVars();
+	prevAlgVal = value;
+        startGraphTraversal("DFS");
+    }
+    else if (value == "RFS") {
+	resetVars();
+	prevAlgVal = value;
+        startGraphTraversal("RFS");
+    }
+    else if (value == "ConvexHull") {
+	resetVars();
+	prevAlgVal = value;
+        bruteForceConvexHull();
+    } else if (value == "connected") {
+	resetVars();
+	prevAlgVal = value;
+        startConnectedPieces(-1, null);
+    }
+    else if (value == "Dijkstra") {
+	resetVars();
+	prevAlgVal = value;
+	startDijkstra();
+	
+    }
+}
+
+function showLegend() {
+    var show = document.getElementById("showLegend").checked;
+    var value = getCurrentAlgorithm();
+    if (show) {
+        if (value == "vertexSearch") {
+            document.getElementById('legends').innerHTML = "<pre> Longest Label : green \n " +
+                "Shortest Label: brown \n" + " Vertex winners in the table and map: red \n" +
+                " Current vertex in the table and map : yellow \n</pre>";
+        }
+	else if (value == "DFS") {
+            document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
+                " Neighbor edges and possible next candidate: purple\n" + " Vertex in the stack : blue\n" + " Vertex that no be in the stack anymore : gray\n </pre>";
+        }
+	else if (value == "BFS") {
+            document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + "<i>show the yellow</i> \n" + "Edges got used before visiting the candidate : red\n" +
+                " Neighbor edges and possible next candidate: purple\n" + " Vertex in the queue : blue\n" + " Vertex that no be in the queue anymore : gray\n </pre>";
+        }
+	else if (value == "EdgeSearch") {
+            document.getElementById('legends').innerHTML = "<pre>// fill in for real later \n</pre>";
+        }
+	else if (value == "RFS") {
+            document.getElementById('legends').innerHTML = "<pre> Starting vertex : green\n" + " Vertex visiting for the first time : yellow\n" + " Edges got used before visiting the candidate : red\n" +
+                " Neighbor edges and possible next candidate: purple\n" + " Vertex in the list : blue\n" + " Vertex that no be in the list anymore : gray\n </pre>";
+        }
+    }
+    else {
+        document.getElementById('legends').innerHTML = "";
+    }
+}
+
+function selectAlgorithmAndCheckBoxes() {
+    // var show = document.getElementById("selection_checkboxes").checked;
+    // if (show == true) {
+    var value = getCurrentAlgorithm();
+    if (value == "vertexSearch") {
+	document.getElementById("algorithmStatus").style.display = "";
+	document.getElementById("algorithmStatus").innerHTML = "";
+        document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+    }
+    else if (value == "EdgeSearch") {
+	document.getElementById("algorithmStatus").style.display = "none";
+	document.getElementById("algorithmStatus").innerHTML = "";
+        document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+    }
+    else if (value == "BFS") {
+	document.getElementById("algorithmStatus").style.display = "none";
+	document.getElementById("algorithmStatus").innerHTML = "";
+        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
+            '<br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+ '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+    }
+    else if (value == "DFS") {
+	document.getElementById("algorithmStatus").style.display = "none";
+	document.getElementById("algorithmStatus").innerHTML = "";
+        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" min="0" name="Starting Point" value="0" size="7" /> <br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+    }
+    else if (value == "RFS") {
+	document.getElementById("algorithmStatus").style.display = "none";
+	document.getElementById("algorithmStatus").innerHTML = "";
+        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+    }
+    else if (value == "connected") {
+	document.getElementById("algorithmStatus").style.display = "none";
+	document.getElementById("algorithmStatus").innerHTML = "";
+        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+    }
+    else if (value == "Dijkstra") {
+	document.getElementById("algorithmStatus").style.display = "none";
+	document.getElementById("algorithmStatus").innerHTML = "";
+        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" min="0" name="Starting Point" value="0" size="7" /> <br>' + 'End &nbspVertex <input id="endPoint" onfocus="endPointInput()" type="number" min="0" name="End Point" value="0" size="7" /> <br>' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+    }
+    else if (value == "ConvexHull") {
+        alert("This is an n^3 algorithm. This means that it takes quite a while to execute fully so it would be most beneficial to use a small graph.");
+        document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+    }
+    else {
+        document.getElementById('optionSection').innerHTML = "";
+    }
+}
+
+function toggleDS() {
+    var ds = document.getElementById("algorithmStatus");
+    if (ds.style.display == "none") {
+	ds.style.display = "";
+    }
+    else {
+	ds.style.display = "none";
+    }
+}
+
+function selectAlgorithmAndReset() {
+    for (var i = 0; i < connections.length; i++) {
+        connections[i].setMap(null);
+        document.getElementById('connection' + i).style.backgroundColor = "white";
+    }
+    connections = new Array();
+    polypoints = new Array();
+    for (var i = 0; i < markers.length; i++) {
+        markers[i].setMap(null);
+        document.getElementById('waypoint' + i).style.backgroundColor = "white";
+    }
+    markers = new Array();
+    markerinfo = new Array();
+}
+
+function drag(event) {
+    var x = event.target.style.left;
+    var y = event.target.style.top;
+    event.dataTransfer.setData("id",event.target.id);
+    if (x == "70%") {		
+	event.dataTransfer.setData("x",document.documentElement.clientWidth*.7-event.clientX);
+    }
+    else {
+	event.dataTransfer.setData("x",parseInt(x.substring(0,x.length-2))-event.clientX);
+    }
+    event.dataTransfer.setData("y",parseInt(y.substring(0,y.length-2))-event.clientY);
+}
+
+function drop(event) {
+    event.preventDefault();
+    var de = document.getElementById(event.dataTransfer.getData("id"));
+    de.style.left =
+	(event.clientX+parseInt(event.dataTransfer.getData("x"))) + 'px';
+    de.style.top =
+	(event.clientY+parseInt(event.dataTransfer.getData("y"))) + 'px';
+}
+
+function allowdrop(event) {
+    event.preventDefault();
+}   
+
+function toggleUI(event) {
+    var button = event.target;
+    var panel1 = document.getElementById(button.id.substring(6));
+    if (button.value.substring(0,4) == "Hide") {
+	button.value = "Show"+ button.value.substring(4);
+	panel1.style.display = "none";
+    }
+    else {
+	button.value = "Hide"+button.value.substring(4);
+	panel1.style.display = "";
+    }
+}
+
+function makeResize() {
+    $( "#selected" ).resizable();
+    var div = document.createElement("div");
+    div.setAttribute("id", "resize");
+    document.getElementById("selected").appendChild(div);
+    $( "#contents_table" ).resizable();
+}
