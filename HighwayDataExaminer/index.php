@@ -1,3 +1,56 @@
+<?php
+// function to generate the file load html
+function hdx_load_file_entries() {
+  echo <<<ENDOFSTUFF
+      <tr><td class="loadcollapse">
+		Upload file: <br>
+        <input id="filesel" type="file"  value="Start" onchange="startRead()">
+      </td></tr>
+	  <tr><td id="selects" class="loadcollapse">
+		Or load METAL graph: (select your filters then press "Get Graph List") <br>
+		Order by:
+		<select id = "orderOptions">
+			<option value = "alpha">Alphabetical</option>
+			<option value = "small">Size (small)</option>
+			<option value = "large">Size (large)</option>		
+		</select>
+		<br>
+		Restrict by:
+		<select id = "restrictOptions">
+			<option value = "collapsed">Collapsed (most likely you want this)</option>
+			<option value = "simple">Simple</option>
+			<option value = "all">All</option>		
+		</select>
+		<br>
+		Category:
+		<select id = "categoryOptions">
+				<option value="all">All</option>
+				<option value="region">Region</option>
+				<option value="area">Area</option>
+				<option value="continent">Continent</option>
+				<option value="multiregio">Multi Region</option>
+				<option value="multisyste">Multi System</option>
+				<option value="system">System</option>
+				<option value="master">Master</option>
+				<option value="country">Country</option>
+		</select>
+		<br>
+		Size from
+		<input type="number" min="1" value="1" id="minVertices" style="width:6rem;">
+		to 
+		<input type="number" min="1" value="5000" id="maxVertices" style="width:6rem;">
+		vertices
+		<br>
+		<input type="button" value="Get Graph List" onclick="mapOptions(event)">
+	  </td>
+	  <td id="loadcollapsebtn" style="display:none;">
+		<input type="button" onclick="undoCollapse(event)" value="Show Load Options">
+	  </td>
+	  </tr>	  
+ENDOFSTUFF;
+}
+?>
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 
@@ -543,52 +596,7 @@ function makeResize(){
       <tr><th>Load/Map Options</th></tr>
     </thead>
     <tbody>
-      <tr><td class="loadcollapse">
-		Use local file: <br>
-        <input id="filesel" type="file"  value="Start" onchange="startRead()">
-      </td></tr>
-	  <tr><td id="selects" class="loadcollapse">
-		Or select dataset: <br>
-		Order by:
-		<select id = "orderOptions">
-			<option value = "alpha">Alphabetical</option>
-			<option value = "small">Size (small)</option>
-			<option value = "large">Size (large)</option>		
-		</select>
-		<br>
-		Restrict by:
-		<select id = "restrictOptions">
-			<option value = "collapsed">Collapsed</option>
-			<option value = "simple">Simple</option>
-			<option value = "all">All</option>		
-		</select>
-		<br>
-		Category:
-		<select id = "categoryOptions">
-				<option value="all">All</option>
-				<option value="region">Region</option>
-				<option value="area">Area</option>
-				<option value="continent">Continent</option>
-				<option value="multiregio">Multi Region</option>
-				<option value="multisyste">Multi System</option>
-				<option value="system">System</option>
-				<option value="master">Master</option>
-				<option value="country">Country</option>
-		</select>
-		<br>
-		(Choose "Collapsed" if unsure what this means)<br>
-		Size from
-		<input type="number" min="1" value="1" id="minVertices" style="width:6rem;">
-		to 
-		<input type="number" min="1" value="5000" id="maxVertices" style="width:6rem;">
-		vertices
-		<br>
-		<input type="button" value="Get Graph List" onclick="mapOptions(event)">
-	  </td>
-	  <td id="loadcollapsebtn" style="display:none;">
-		<input type="button" onclick="undoCollapse(event)" value="Show Load Options">
-	  </td>
-	  </tr>	  
+      <?php hdx_load_file_entries(); ?>
       <tr><td>
         <input id="showHidden" type="checkbox" name="Show Hidden Markers" onclick="showHiddenClicked()" checked="false">&nbsp;Show Hidden Markers
       </td></tr>
@@ -604,52 +612,7 @@ function makeResize(){
       <tr><th>Algorithm Simulation Control Panel</th></tr>
     </thead>
     <tbody>
-      <tr><td class="loadcollapse">
-        Use local file: <br>
-        <input id="filesel" type="file"  value="Start" onchange="startRead()">
-      </td></tr>
-	  <tr><td id="selects" class="loadcollapse">
-		Or select dataset: <br>
-		Order by:
-		<select id = "orderOptions">
-			<option value = "alpha">Alphabetical</option>
-			<option value = "small">Size (small)</option>
-			<option value = "large">Size (large)</option>		
-		</select>
-		<br>
-		Restrict by:
-		<select id = "restrictOptions">
-			<option value = "collapsed">Collapsed</option>
-			<option value = "simple">Simple</option>
-			<option value = "all">All</option>		
-		</select>
-		<br>
-		Category:
-		<select id = "categoryOptions">
-			<option value="all">All</option>
-				<option value="region">Region</option>
-				<option value="area">Area</option>
-				<option value="continent">Continent</option>
-				<option value="multiregio">Multi Region</option>
-				<option value="multisyste">Multi System</option>
-				<option value="system">System</option>
-				<option value="master">Master</option>
-				<option value="country">Country</option>	
-		</select>
-		<br>
-		(Choose "Collapsed" if unsure what this means)<br>
-		Size from
-		<input type="number" min="1" value="1" id="minVertices" style="width:6rem;">
-		to 
-		<input type="number" min="1" value="5000" id="maxVertices" style="width:6rem;">
-		vertices
-		<br>
-		
-		<input type="button" value="Get Graph List" onclick="mapOptions(event)">
-	  </td>
-	  <td id="loadcollapsebtn" style="display:none;">
-		<input type="button" onclick="undoCollapse(event)" value="Show Load Options">
-	  </td></tr>	
+      <?php hdx_load_file_entries(); ?>
       <tr><td>
         Algorithm Selection:
         <select id= "AlgorithmSelection" onchange="selectAlgorithmAndCheckBoxes()">
