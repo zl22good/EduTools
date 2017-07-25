@@ -257,10 +257,10 @@ var vcolor, vtext, vicon;
 var ecolor, etext, edge, edgew;
 
 function labelClickHDX(i) {
+
     vertexSelect(i);
     vertexSelectEnd(i);
     map.panTo(new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon));
-    //infowindow.setContent(info);
     infowindow.setContent(markerinfo[i]);
     infowindow.open(map, markers[i]);
 }
@@ -2364,6 +2364,7 @@ function processContents(fileContents) {
     document.getElementById('contents_table').appendChild(newEle);
     createDataTable("#waypoints");
     createDataTable("#connection");
+    registerMarkerClickListener(labelClickHDX);
     updateMap();   
 }
 
@@ -2499,7 +2500,7 @@ function parseTMGContents(fileContents) {
     for (var i = 0; i < numV; i++) {
 	var vertexInfo = lines[i+2].split(' ');
 	waypoints[i] = new Waypoint(vertexInfo[0], vertexInfo[1], vertexInfo[2], "", new Array());
-	vTable += '<tr id="waypoint' + i +'" onmouseover = "hoverV('+i+', false)" onmouseout = "hoverEndV('+i+', false)" onclick = "labelClick('+i+')" ><td>' + i +
+	vTable += '<tr id="waypoint' + i +'" onmouseover = "hoverV('+i+', false)" onmouseout = "hoverEndV('+i+', false)" onclick = "labelClickHDX('+i+')" ><td>' + i +
 	    '</td><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
 	    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
 	    + waypoints[i].label + '</td></tr>';
@@ -2563,9 +2564,7 @@ function parseGRAContents(fileContents) {
 	vTable += '<tr><td>' + i +
 	    '</td><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
 	    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
-	    + "<a onclick=\"javascript:labelClick(" + i + ",'"
-	    + waypoints[i].label + "\',"
-	    + waypoints[i].lat + "," + waypoints[i].lon + ",0);\">"
+	    + "<a onclick=\"javascript:labelClickHDX(" + i + ");\">"
 	    + waypoints[i].label + "</a></td></tr>"
     }
     vTable += '</tbody></table>';
@@ -2661,10 +2660,7 @@ function parsePTHContents(fileContents) {
 	    }
 	    previousWaypoint = info.waypoint;
 	    table += '<tr><td>' + waypoints[waypoints.length-1].elabel +
-		"</td><td><a onclick=\"javascript:labelClick(" + 0 + ",\'"
-	        + waypoints[waypoints.length-1].label + "\',"
-	        + waypoints[waypoints.length-1].lat + "," + waypoints[waypoints.length-1].lon +
-		",0);\">" + waypoints[waypoints.length-1].label +
+		"</td><td><a onclick=\"javascript:labelClickHDX(0);\">" + waypoints[waypoints.length-1].label +
 		'</a></td><td style="text-align:right">' + info.mileage.toFixed(2) +
 		'</td><td style="text-align:right">' + totalMiles.toFixed(2) +
 		'</td></tr>';
@@ -2714,15 +2710,11 @@ function parseNMPContents(fileContents) {
 				  waypoints[2*i+1].lat,
 				  waypoints[2*i+1].lon).toFixed(2);
 	table += "<tr><td><table class=\"nmptable2\"><thead /><tbody><tr><td>"
-	    + "<a onclick=\"javascript:labelClick(" + 2*i + ",\'"
-	    + waypoints[2*i].label + "\',"
-	    + waypoints[2*i].lat + "," + waypoints[2*i].lon + ",0);\">"
+	    + "<a onclick=\"javascript:labelClickHDX(" + 2*i + ");\">"
 	    + waypoints[2*i].label + "</a></td><td>("
 	    + waypoints[2*i].lat + ","
 	    + waypoints[2*i].lon + ")</td></tr><tr><td>"
-	    + "<a onclick=\"javascript:labelClick(" + 2*i+1 + ",\'"
-	    + waypoints[2*i+1].label + "\',"
-	    + waypoints[2*i+1].lat + "," + waypoints[2*i+1].lon + ",0);\">"
+	    + "<a onclick=\"javascript:labelClickHDX(" + 2*i+1 + ");\">"
 	    + waypoints[2*i+1].label + "</a></td><td>("
 	    + waypoints[2*i+1].lat + ","
 	    + waypoints[2*i+1].lon + ")</td></tr>"
@@ -2757,9 +2749,7 @@ function parseWPLContents(fileContents) {
 		waypoints[waypoints.length] = w;
 		vTable += '<tr><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
 		    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
-		    + "<a onclick=\"javascript:labelClick(" + i + ",'"
-		    + w.label + "\',"
-		    + w.lat + "," + w.lon + ",0);\">"
+		    + "<a onclick=\"javascript:labelClickHDX(" + i + ");\">"
 		    + w.label + "</a></td></tr>"
 	    }
 	}
