@@ -212,6 +212,12 @@ var hdxVertexSelector = {
     }
 };
 
+// variables and functions to highlight waypoints and connections
+// when the mouse hovers over them
+// TODO: these can go into an object
+var vcolor, vtext, vicon;
+var ecolor, etext, edge, edgew;
+
 function hoverV(i, bool) {
     if ((bool && hdxAV.pause) || !bool) {
 	vicon = markers[i].getIcon();
@@ -226,8 +232,9 @@ function hoverEndV(i, bool) {
 	markers[i].setIcon(vicon);
 	document.getElementById("waypoint"+i).style.backgroundColor = vcolor;
 	document.getElementById("waypoint"+i).style.color = vtext;
-	if ($("#l"+i).length > 0)
+	if ($("#l"+i).length > 0) {
 	    document.getElementById("l"+i).style.backgroundColor = vcolor;
+	}
 	if ($("#di"+i).length > 0) {
 	    document.getElementById("di"+i).style.backgroundColor = vcolor;
 	    document.getElementById("di"+i).style.color = vtext;
@@ -257,9 +264,9 @@ function hoverEndE(event, i) {
     event.target.parentNode.style.backgroundColor = ecolor;
 }
 
-var vcolor, vtext, vicon;
-var ecolor, etext, edge, edgew;
-
+// special HDX version of the label click event handler that is
+// called by the general TM addMarker, as it is registered
+// by the registerMarkerClickListener call in updateMap
 function labelClickHDX(i) {
 
     //alert("labelClickHDX: " + i);
