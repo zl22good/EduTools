@@ -2,25 +2,9 @@
 // read information about graphs from our DB
 $jsonArr = json_decode($_POST['params'], true);
 
-// this should point to /home/www/courses/metal/lib/tm.conf on blizzard
-$tmconffile = fopen($_SERVER['DOCUMENT_ROOT']."/metal/lib/tm.conf", "r");
-$tmdbname = chop(fgets($tmconffile));
-$tmdbuser = chop(fgets($tmconffile));
-$tmdbpasswd = chop(fgets($tmconffile));
-$tmdbhost = chop(fgets($tmconffile));
+require (dirname(__FILE__)."/dbConnect.php");
 
-
-// make the connection
-//echo "<!-- mysqli connecting to database ".$tmdbname." on ".$tmdbhost." -->\n";
-mysqli_report(MYSQLI_REPORT_STRICT);
-try {
-    $tmdb = new mysqli($tmdbhost, $tmdbuser, $tmdbpasswd, $tmdbname);
-}
-catch ( Exception $e ) {
-   //echoecho "<h1 style='color: red'>Failed to connect to database ".$tmdbname." on ".$tmdbhost." Please try again later.</h1>";
-   exit;
-}
-
+// DB connection made, now make our request
 $response = array('text'=>array(), 'values'=>array(), 'vertices'=>array(), 'edges'=>array());
 
 if($jsonArr['order'] == "alpha")
