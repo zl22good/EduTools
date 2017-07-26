@@ -2065,18 +2065,21 @@ function dsTbody(size) {
     return tableBody;
 }
 
+/*
 function createSidePanelBtn() {
     //Creates the menu icon
     var showPanel = document.createElement("button");
     showPanel.setAttribute("id", "panelBtn");
-    showPanel.innerHTML = '<i id="menuIcon" class="material-icons">menu</i>';
+    showPanel.innerHTML = '<i id="menuIcon" xxxclass="material-icons">menu</i>';
     showPanel.setAttribute("title", "Menu");
     showPanel.addEventListener("click", openSidePanel);
     document.body.appendChild(showPanel);
 }
+*/
 
 var sidePanelContent = ["Legend"];
 function sidePanel() {
+
     var div = document.createElement("div");
     div.setAttribute("id", "sidePanel");
     var xButton = document.createElement("a");
@@ -2100,6 +2103,7 @@ function sidePanel() {
 }
 
 function openSidePanel() {
+
     if (document.getElementById("sidePanel") != null) {
 	document.getElementById("sidePanel").style.width = "250px";
 	document.getElementById("main").style.marginLeft = "250px";
@@ -2107,6 +2111,7 @@ function openSidePanel() {
 }
 
 function closeSidePanel() {
+
     document.getElementById("sidePanel").style.width = "0";
     document.getElementById("main").style.marginLeft= "0";
 }

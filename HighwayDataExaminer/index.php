@@ -3,26 +3,26 @@
 function hdx_load_file_entries() {
   echo <<<ENDOFSTUFF
       <tr><td class="loadcollapse">
-		Upload file: <br>
+		Upload file:
         <input id="filesel" type="file"  value="Start" onchange="startRead()">
       </td></tr>
 	  <tr><td id="selects" class="loadcollapse">
-		Or load METAL graph: (select your filters then press "Get Graph List") <br>
-		Order by:
+		Or load METAL graph: (select filters then press "Get Graph List") <br>
+		Sort criteria:
 		<select id = "orderOptions">
 			<option value = "alpha">Alphabetical</option>
 			<option value = "small">Size (small)</option>
 			<option value = "large">Size (large)</option>		
 		</select>
 		<br>
-		Restrict by:
+		Graph format:
 		<select id = "restrictOptions">
 			<option value = "collapsed">Collapsed (most likely you want this)</option>
 			<option value = "simple">Simple</option>
 			<option value = "all">All</option>		
 		</select>
 		<br>
-		Category:
+		Graph category:
 		<select id = "categoryOptions">
 				<option value="all">All</option>
 				<option value="region">Region</option>
@@ -175,6 +175,7 @@ padding:0px;
 	text-align: center;
 	border: none;
 	text-decoration: none;
+	z-index: 10;
 }
 #menuIcon:hover {
 		color: lightgrey;
@@ -183,7 +184,7 @@ padding:0px;
     height: 100%;
     width: 0;
     position: absolute;
-    z-index: 1;
+    z-index: 10;
     top: 0;
     left: 0;
     background-color: #111;
@@ -275,8 +276,11 @@ span{
 <script src="hdxjsfuncs.js" type="text/javascript"></script>
 <title>Highway Data Examiner</title>
 </head>
-<body onload="loadmap(); makeResize(); toggleTable(); createSidePanelBtn(); sidePanel(); mainArea()" ondragover="allowdrop(event)" ondrop="drop(event)">
+<body onload="loadmap(); makeResize(); toggleTable(); sidePanel(); mainArea()" ondragover="allowdrop(event)" ondrop="drop(event)">
 <p class="menubar">
+  <span id="panelBtn" title="Menu" onclick="openSidePanel()">
+     <i id="menuIcon" class="material-icons">menu</i>
+  </span>
   HDX: <span id="filename">Select a file to display</span>
   <span id="status"></span>
 </p>
