@@ -30,10 +30,10 @@ var hdxAV = {
 
     // reset values
     reset: function() {
-	pause = false;
-	done = false;
-	previousAlgorithm = null;
-	delay = 50;
+	this.pause = false;
+	this.done = false;
+	this.previousAlgorithm = null;
+	this.delay = 50;
     }
 };
 
@@ -180,33 +180,37 @@ var visualSettings = {
     }
 };
 
-var endOrStart;
-var endOrStart1;
+/* Support for selection of a vertex (such as a starting or ending
+   vertex for a traversal or search) by clicking on a waypoint on
+   the map or an entry in the waypoint table.  The startSelection
+   method should be set as the onfocus event handler for a selector
+   used to store vertex numbers for any purpose in an algorithm.
 
-//allows the user to click on the table to select a vertex to start at
-function vertexSelect(vertex) {
-    if (endOrStart) {
-	var startVertex = document.querySelector("#startPoint");
-	startVertex.value = vertex;
-	endOrStart = false;
+   Based on code originally developed by Arjol Pengu, Summer 2017. 
+*/
+var hdxVertexSelector = {
+
+    // the string to find the selector to fill in with
+    // a vertex number, if null, no selection is in process
+    selector: "",
+
+    // function to call to start the selection (when the
+    // selector is clicked)
+    startSelection(label) {
+	//alert("startSelection: " + label);
+	this.selector = label;
+    },
+
+    // the actual event handler function to set the value
+    select(vNum) {
+	//alert("select: " + vNum);
+	if (this.selector != "") {
+	    var v = document.querySelector(this.selector);
+	    v.value = vNum;
+	}
+	this.selector = "";
     }
-}
-
-function vertexSelectEnd(vertex) {
-    if (endOrStart1) {
-	var endVertex = document.querySelector("#endPoint");
-	endVertex.value = vertex;
-	endOrStart1 = false;
-    }
-}
-
-function startPointInput() {
-    endOrStart = true;
-}
-
-function endPointInput() {
-    endOrStart1 = true;
-}
+};
 
 function hoverV(i, bool) {
     if ((bool && hdxAV.pause) || !bool) {
@@ -258,8 +262,11 @@ var ecolor, etext, edge, edgew;
 
 function labelClickHDX(i) {
 
-    vertexSelect(i);
-    vertexSelectEnd(i);
+    //alert("labelClickHDX: " + i);
+    // handle vertex control selection
+    hdxVertexSelector.select(i);
+
+    // standard map center/infowindow display
     map.panTo(new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon));
     infowindow.setContent(markerinfo[i]);
     infowindow.open(map, markers[i]);
@@ -3158,48 +3165,40 @@ function selectAlgorithmAndCheckBoxes() {
     // var show = document.getElementById("selection_checkboxes").checked;
     // if (show == true) {
     var value = getCurrentAlgorithm();
+    var algStat = document.getElementById("algorithmStatus");
+    var optSelect = document.getElementById("optionSection");
     if (value == "vertexSearch") {
-	document.getElementById("algorithmStatus").style.display = "";
-	document.getElementById("algorithmStatus").innerHTML = "";
-        document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+	algStat.style.display = "";
+	algStat.innerHTML = "";
+        optSelect.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
     }
     else if (value == "EdgeSearch") {
-	document.getElementById("algorithmStatus").style.display = "none";
-	document.getElementById("algorithmStatus").innerHTML = "";
-        document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+	algStat.style.display = "none";
+	algStat.innerHTML = "";
+        optSelect.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
     }
-    else if (value == "BFS") {
-	document.getElementById("algorithmStatus").style.display = "none";
-	document.getElementById("algorithmStatus").innerHTML = "";
-        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
+    else if ((value == "BFS") || (value == "DFS") || (value == "RFS")) {
+	algStat.style.display = "none";
+	algStat.innerHTML = "";
+        optSelect.innerHTML = 'Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
             '<br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+ '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
     }
-    else if (value == "DFS") {
-	document.getElementById("algorithmStatus").style.display = "none";
-	document.getElementById("algorithmStatus").innerHTML = "";
-        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" min="0" name="Starting Point" value="0" size="7" /> <br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
-    }
-    else if (value == "RFS") {
-	document.getElementById("algorithmStatus").style.display = "none";
-	document.getElementById("algorithmStatus").innerHTML = "";
-        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
-    }
     else if (value == "connected") {
-	document.getElementById("algorithmStatus").style.display = "none";
-	document.getElementById("algorithmStatus").innerHTML = "";
-        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+	algStat.style.display = "none";
+	algStat.innerHTML = "";
+        optSelect.innerHTML = 'Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
     }
     else if (value == "Dijkstra") {
-	document.getElementById("algorithmStatus").style.display = "none";
-	document.getElementById("algorithmStatus").innerHTML = "";
-        document.getElementById('optionSection').innerHTML = 'Start Vertex <input id="startPoint" onfocus="startPointInput()" type="number" min="0" name="Starting Point" value="0" size="7" /> <br>' + 'End &nbspVertex <input id="endPoint" onfocus="endPointInput()" type="number" min="0" name="End Point" value="0" size="7" /> <br>' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+	algStat.style.display = "none";
+	algStat.innerHTML = "";
+        optSelect.innerHTML = 'Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" min="0" name="Starting Point" value="0" size="7" /> <br>' + 'End &nbspVertex <input id="endPoint" onfocus="hdxVertexSelector.startSelection(\'#endPoint\')" type="number" min="0" name="End Point" value="0" size="7" /> <br>' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
     }
     else if (value == "ConvexHull") {
         alert("This is an n^3 algorithm. This means that it takes quite a while to execute fully so it would be most beneficial to use a small graph.");
-        document.getElementById('optionSection').innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+        optSelect.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
     }
     else {
-        document.getElementById('optionSection').innerHTML = "";
+        optSelect.innerHTML = "";
     }
 }
 
