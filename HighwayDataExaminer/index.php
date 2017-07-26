@@ -38,7 +38,7 @@ function hdx_load_file_entries() {
 		Size from
 		<input type="number" min="1" value="1" id="minVertices" style="width:6rem;">
 		to 
-		<input type="number" min="1" value="5000" id="maxVertices" style="width:6rem;">
+		<input type="number" min="1" value="2000" id="maxVertices" style="width:6rem;">
 		vertices
 		<br>
 		<input type="button" value="Get Graph List" onclick="mapOptions(event)">
