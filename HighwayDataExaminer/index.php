@@ -1,6 +1,9 @@
 <?php
+require (dirname(__FILE__)."/dbConnect.php");
+
 // function to generate the file load html
 function hdx_load_file_entries() {
+  global $tmdb;
   echo <<<ENDOFSTUFF
       <tr><td class="loadcollapse">
 		Upload file:
@@ -24,15 +27,15 @@ function hdx_load_file_entries() {
 		<br>
 		Graph category:
 		<select id = "categoryOptions">
-				<option value="all">All</option>
-				<option value="region">Region</option>
-				<option value="area">Area</option>
-				<option value="continent">Continent</option>
-				<option value="multiregio">Multi Region</option>
-				<option value="multisyste">Multi System</option>
-				<option value="system">System</option>
-				<option value="master">Master</option>
-				<option value="country">Country</option>
+				<option value="all">All Graphs</option>
+ENDOFSTUFF;
+  $result = $tmdb->query("SELECT * FROM graphTypes");
+
+  while ($row = $result->fetch_array()) {
+     echo "<option value=\"".$row['category']."\">".$row['descr']."</option>\n";
+  }
+  $result->close();
+  echo <<<ENDOFSTUFF
 		</select>
 		<br>
 		Size from
@@ -235,7 +238,7 @@ padding:0px;
 .for3{}
 .if1{}
 .if2{}
-=======
+
 .box {
   	display: inline-block;
   	height: 20px;
@@ -267,8 +270,8 @@ span{
   echo "<script type=\"application/javascript\">";
   echo "var tmliburl = \"$tmliburl\";";
   echo "</script>\n";
-  fclose($hdxconffile)
-  ?>
+  fclose($hdxconffile);
+?>
 <!-- load in needed JS functions -->
 <?php
   echo "<script src=\"".$tmliburl."tmjsfuncs.js\" type=\"text/javascript\"></script>\n";
@@ -384,3 +387,4 @@ span{
         </div>
         </body>
 </html>
+<?php $tmdb->close(); ?>
