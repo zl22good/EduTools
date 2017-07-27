@@ -97,35 +97,8 @@ var visualSettings = {
 	name: "discarded",
 	value: 0
     },
-    // specific to vertex search
-    northLeader: {
-        color: "#8b0000",
-        textColor: "white",
-        scale: 6,
-	name: "northLeader",
-	value: 0
-    },
-    southLeader: {
-        color: "#ee0000",
-        textColor: "white",
-        scale: 6,
-	name: "southLeader",
-	value: 0
-    },
-    eastLeader: {
-        color: "#000080",
-        textColor: "white",
-        scale: 6,
-	name: "eastLeader",
-	value: 0
-    },
-    westLeader: {
-        color: "#551A8B",
-        textColor: "white",
-        scale: 6,
-	name: "westLeader",
-	value: 0
-    },
+
+    // both vertex and edge search
     shortLabelLeader: {
         color: "#654321",
         textColor: "white",
@@ -409,6 +382,7 @@ var hdxVertexExtremesSearchAV = {
 
     // state variables for vertex extremes search
     nextToCheck: 0,
+    // TODO: the leader indices should become an array!
     northIndex: -1,
     southIndex: -1,
     eastIndex: -1,
@@ -420,8 +394,39 @@ var hdxVertexExtremesSearchAV = {
     name: "Vertex Extremes Search",
 
     // longer description
-    description: "Search for extreme values based on locations and labels.",
-
+    description: "Search for extreme values based on vertex (waypoint) locations and labels.",
+    
+    // visual settings specific to vertex search
+    visualSettings: {
+	northLeader: {
+            color: "#8b0000",
+            textColor: "white",
+            scale: 6,
+	    name: "northLeader",
+	    value: 0
+	},
+	southLeader: {
+            color: "#ee0000",
+            textColor: "white",
+            scale: 6,
+	    name: "southLeader",
+	    value: 0
+	},
+	eastLeader: {
+            color: "#000080",
+            textColor: "white",
+            scale: 6,
+	    name: "eastLeader",
+	    value: 0
+	},
+	westLeader: {
+            color: "#551A8B",
+            textColor: "white",
+            scale: 6,
+	    name: "westLeader",
+	    value: 0
+	}
+    },
     // helper functions
 
     // function to create the table entry for the leader for extreme points
@@ -510,9 +515,6 @@ var hdxVertexExtremesSearchAV = {
 	// keep track of whether this point is a new leader
         var foundNewLeader = false;
 
-	// first we finish the previous point to see if it's a new winner,
-	// and if necessary downgrade anyone who was beaten by this one
-
 	// special case of first checked
 	if (this.nextToCheck == 0) {
             // this was our first check, so this point wins all to start
@@ -599,32 +601,32 @@ var hdxVertexExtremesSearchAV = {
 	    // than trying to avoid it
 	    
 	    // north
-	    updateMarkerAndTable(this.northIndex, visualSettings.northLeader, 
+	    updateMarkerAndTable(this.northIndex, this.visualSettings.northLeader, 
 				 40, false);
 	    infoBox = document.getElementById('info1');
 	    infoBox.innerHTML = 'North extreme:<br />' +
-		this.extremePointLeaderString(this.northIndex, visualSettings.northLeader);
+		this.extremePointLeaderString(this.northIndex, this.visualSettings.northLeader);
 	    
 	    // south
-	    updateMarkerAndTable(this.southIndex, visualSettings.southLeader,
+	    updateMarkerAndTable(this.southIndex, this.visualSettings.southLeader,
 				 40, false);
 	    infoBox = document.getElementById('info2');
 	    infoBox.innerHTML = "South extreme:<br />" +
-		this.extremePointLeaderString(this.southIndex, visualSettings.southLeader);
+		this.extremePointLeaderString(this.southIndex, this.visualSettings.southLeader);
 	    
 	    // east
-	    updateMarkerAndTable(this.eastIndex, visualSettings.eastLeader,
+	    updateMarkerAndTable(this.eastIndex, this.visualSettings.eastLeader,
 				 40, false);
             infoBox = document.getElementById('info3');
             infoBox.innerHTML = "East extreme:<br />" +
-		this.extremePointLeaderString(this.eastIndex, visualSettings.eastLeader);
+		this.extremePointLeaderString(this.eastIndex, this.visualSettings.eastLeader);
 	    
             // west
-            updateMarkerAndTable(this.westIndex, visualSettings.westLeader,
+            updateMarkerAndTable(this.westIndex, this.visualSettings.westLeader,
 				 40, false);
             infoBox = document.getElementById('info4');
             infoBox.innerHTML = "West extreme:<br />" +
-		this.extremePointLeaderString(this.westIndex, visualSettings.westLeader);
+		this.extremePointLeaderString(this.westIndex, this.visualSettings.westLeader);
 	    
             // shortest
             updateMarkerAndTable(this.shortIndex, visualSettings.shortLabelLeader,
@@ -670,154 +672,254 @@ var hdxVertexExtremesSearchAV = {
     }
 };
 
-// **********************************************************************
-// EDGE SEARCH CODE
-// **********************************************************************
+// edge extremes search
+var hdxEdgeExtremesSearchAV = {
 
-var minDistance = 9999999;
-var maxDistance = -999999;
-var edgeMin = null;
-var edgeMax = null;
-var edgeshort = null;
-var edgelong = null;
-var currentEdgeIndex = 0;
-var shortestELabel;
-var longestELabel;
-var maxnum = -1;
-var minnum = -1;
-var shortnum = -1;
-var longnum = -1;
-var flag = "";
+    // state variables for edge search
+    // next to examine
+    currentEdgeIndex: -1,
 
-function startEdgeSearch() {
+    // indices of our leaders in each category
+    shortestEdgeLengthIndex: -1,
+    longestEdgeLengthIndex: -1,
+    shortestEdgeLabelIndex: -1,
+    longestEdgeLabelIndex: -1,    
 
-    var statusLine = document.getElementById("status");
-    // statusLine.innerHTML = "Preparing for Extreme Edge Search Visualization";
-    // we don't need edges here, so we remove those
-    for (var i = 0; i < connections.length; i++) {
-        connections[i].setOptions(
-	    {
-		strokeColor: visualSettings.undiscovered.color,
-		strokeOpacity: 0.3
-	    });
-    }
-    //we don't need waypoints table here, so we remove those
-    document.getElementById("waypoints").style.display = "none";
+    // entry for list of AVs
+    name: "Edge Extremes Search",
+
+    // longer description
+    description: "Search for extreme values based on edge (connection) lengths and labels.",
     
-    document.getElementById("connection").style.display = "";
-    var pointRows = document.getElementById("connection").getElementsByTagName("*");
-    for (var i = 0; i < pointRows.length; i++) {
-	pointRows[i].style.display = "";
-    }
-    var algorithmsTable = document.getElementById('AlgorithmsTable');
-    var algorithmsTbody = algorithmsTable.children[1];
-    var infoid = "info1";
-    var infoBox = document.createElement('td');
-    var infoBoxtr= document.createElement('tr');
-    infoBox.setAttribute('id',infoid);
-    infoBoxtr.appendChild(infoBox);
-    algorithmsTbody.appendChild(infoBoxtr);
-    // document.getElementById('algorithmStatus').innerHTML = 'Checking: <span style="color:yellow">0</span>';
-    if (!hdxAV.paused()) {
-	setTimeout(continueEdgeSearch, hdxAV.delay);
-    }
-}
-
-function findEdge(edgeNum, color, op, weight) {
-    var edge = graphEdges[edgeNum];
-    connections[edgeNum].setOptions({
-	strokeColor: color, 
-	strokeWeight: weight, 
-	strokeOpacity: op});
-    var firstNode = Math.min(edge.v1, edge.v2);
-    var secondNode = Math.max(edge.v1, edge.v2);
-    document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = color;
-}
-
-function continueEdgeSearch() {
+    // visual settings specific to edge search
+    visualSettings: {
+	shortestLeader: {
+            color: "#8b0000",
+            textColor: "white",
+            scale: 6,
+	    name: "northLeader",
+	    value: 0
+	},
+	longestLeader: {
+            color: "#ee0000",
+            textColor: "white",
+            scale: 6,
+	    name: "southLeader",
+	    value: 0
+	}
+    },
     
-    if (hdxAV.paused()) {
-        return;
-    }	
+    // helper function
+    updateEdgeColor(edgeNum, color, op, weight) {
+	var edge = graphEdges[edgeNum];
+	connections[edgeNum].setOptions({
+	    strokeColor: color, 
+	    strokeWeight: weight, 
+	    strokeOpacity: op});
+	var firstNode = Math.min(edge.v1, edge.v2);
+	var secondNode = Math.max(edge.v1, edge.v2);
+	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = color;
+    },
+
+    // required start function
+    start() {
+
+	// initialize all edges to have the "undiscovered" color
+	for (var i = 0; i < connections.length; i++) {
+            connections[i].setOptions(
+		{
+		    strokeColor: visualSettings.undiscovered.color,
+		    strokeOpacity: 0.3
+		});
+	}
+	//we don't need waypoints table here, so we remove those
+	document.getElementById("waypoints").style.display = "none";
 	
-    if (flag != "") {
-	findEdge(maxnum, "#0000ff", 1, 15);
-	findEdge(minnum, "#FF0000", 1, 15);
-	findEdge(shortnum, "#00ffff", 1, 15);
-	findEdge(longnum, "#FF00ff", 1, 15);
-	var ids = flag.split(",");
-	for (var i=1; i<ids.length; i++) {
-	    var id = parseInt(ids[i]);
-	    if (id != -1 && id != minnum && id != maxnum &&
-		id != shortnum && id != longnum) {
-		findEdge(id, visualSettings.spanningTree.color, 0.6, 10);
-		document.getElementById("connection"+(id)).style.display = "none";
+	document.getElementById("connection").style.display = "";
+	var pointRows = document.getElementById("connection").getElementsByTagName("*");
+	for (var i = 0; i < pointRows.length; i++) {
+	    pointRows[i].style.display = "";
+	}
+	var algorithmsTable = document.getElementById('AlgorithmsTable');
+	var algorithmsTbody = algorithmsTable.children[1];
+	var infoid = "info1";
+	var infoBox = document.createElement('td');
+	var infoBoxtr= document.createElement('tr');
+	infoBox.setAttribute('id',infoid);
+	infoBoxtr.appendChild(infoBox);
+	algorithmsTbody.appendChild(infoBoxtr);
+	// document.getElementById('algorithmStatus').innerHTML = 'Checking: <span style="color:yellow">0</span>';
+
+	// initialize to start looking at edge 0
+	this.currentEdgeIndex = 0;
+	
+	if (!hdxAV.paused()) {
+	    var self = this;
+	    setTimeout(function() { self.continue(); }, hdxAV.delay);
+	}
+    },
+
+    // required continue function for edge search
+    continue() {
+    
+	if (hdxAV.paused()) {
+            return;
+	}	
+
+	// keep track of edges that were leaders but got beaten to be
+	// colored grey if they are no longer a leader in any category
+	var defeated = [];
+	
+	// keep track of whether the current edge becomes a new leader
+        var foundNewLeader = false;
+	
+	// if this is the first step, we have a new leader in all!
+	if (this.currentEdgeIndex == 0) {
+	    this.shortestEdgeLengthIndex = 0;
+	    this.longestEdgeLengthIndex = 0;
+	    this.shortestEdgeLabelIndex = 0;
+	    this.longestEdgeLabelIndex = 0;
+	    foundNewLeader = true;
+	}
+	// continue with the current edge, looking for new leaders
+	else {
+	    let d = edgeLengthInMiles(graphEdges[this.currentEdgeIndex]);
+
+	    // is this longer than the longest?
+	    if (d > edgeLengthInMiles(graphEdges[this.longestEdgeLengthIndex])) {
+		foundNewLeader = true;
+		defeated.push(this.longestEdgeLengthIndex);
+		this.longestEdgeLengthIndex = this.currentEdgeIndex;
+	    }
+
+	    // is this shorter than the longest?
+	    if (d < edgeLengthInMiles(graphEdges[this.shortestEdgeLengthIndex])) {
+		foundNewLeader = true;
+		defeated.push(this.shortestEdgeLengthIndex);
+		this.shortestEdgeLengthIndex = this.currentEdgeIndex;
+	    }
+
+	    // is this label longer than any we've seen?
+	    if (graphEdges[this.currentEdgeIndex].label.length >
+		graphEdges[this.longestEdgeLabelIndex].label.length) {
+		foundNewLeader = true;
+		defeated.push(this.longestEdgeLabelIndex);
+		this.longestEdgeLabelIndex = this.currentEdgeIndex;
+	    }
+
+	    // is this label shorter than any we've seen?
+	    if (graphEdges[this.currentEdgeIndex].label.length <
+		graphEdges[this.shortestEdgeLabelIndex].label.length) {
+		foundNewLeader = true;
+		defeated.push(this.shortestEdgeLabelIndex);
+		this.shortestEdgeLabelIndex = this.currentEdgeIndex;
 	    }
 	}
-    }
-    else {
-	if (currentEdgeIndex > 0) {
-	    document.getElementById("connection"+(currentEdgeIndex-1)).style.display = "none";
-	    findEdge(currentEdgeIndex-1, visualSettings.spanningTree.color,
-		     0.6, 10);
+
+	// any edge that was a leader but is no longer will get
+	// discarded
+	while (defeated.length > 0) {
+	    let toCheck = defeated.pop();
+	    if (toCheck != this.longestEdgeLengthIndex &&
+		toCheck != this.shortestEdgeLengthIndex &&
+		toCheck != this.longestEdgeLabelIndex &&
+		toCheck != this.shortestEdgeLabelIndex) {
+		this.updateEdgeColor(toCheck, visualSettings.spanningTree.color, 0.6, 10);
+		document.getElementById("connection"+ toCheck).style.display = "none";
+	    }
+	}
+
+	// if we found a new leader, update leader edges and table entries
+	if (foundNewLeader) {
+
+	    // longest edge length
+	    this.updateEdgeColor(this.longestEdgeLengthIndex,
+				 this.visualSettings.longestLeader.color, 1, 15);
+
+	    // shortest edge length
+	    this.updateEdgeColor(this.shortestEdgeLengthIndex,
+				 this.visualSettings.shortestLeader.color, 1, 15);
+	    
+	    // longest edge label
+	    this.updateEdgeColor(this.longestEdgeLabelIndex,
+				 visualSettings.longLabelLeader.color, 1, 15);
+
+	    // shortest edge label
+	    this.updateEdgeColor(this.shortestEdgeLabelIndex,
+				 visualSettings.shortLabelLeader.color, 1, 15);
+
+	    // update info area
+	    document.getElementById('info1').innerHTML =
+		// short label leader
+		"<span style='background-color:" +
+		visualSettings.shortLabelLeader.color + "; color:" +
+		visualSettings.shortLabelLeader.textColor +
+		";' onclick='edgeClick("+
+		this.shortestEdgeLabelIndex + ")'>Shortest Edge label: " +
+		graphEdges[this.shortestEdgeLabelIndex].label +
+		"</span><br>" +
+		// long label leader
+		"<span style='background-color:" +
+		visualSettings.longLabelLeader.color + "; color:" +
+		visualSettings.longLabelLeader.textColor +
+		";' onclick='edgeClick("+
+		this.longestEdgeLabelIndex + ")'>Longest Edge label: " +
+		graphEdges[this.longestEdgeLabelIndex].label +
+		"</span><br>" +
+		// short edge length leader
+		"<span style = 'background-color:" +
+		this.visualSettings.shortestLeader.color +
+		"' onclick='edgeClick(" + this.shortestEdgeLengthIndex +
+		")'>Shortest Edge: " +
+		graphEdges[this.shortestEdgeLengthIndex].label +
+		": <span id='minedgelength'>"  +
+		edgeLengthInMiles(graphEdges[this.shortestEdgeLengthIndex]) +
+		"</span></span><br>" +
+		// long edge length leader
+		"<span style = 'background-color:" +
+		this.visualSettings.longestLeader.color +
+		"' onclick='edgeClick(" + this.longestEdgeLengthIndex +
+		")'>Longest Edge: " +
+		graphEdges[this.longestEdgeLengthIndex].label +
+		": <span id='maxedgelength'>"  +
+		edgeLengthInMiles(graphEdges[this.longestEdgeLengthIndex]) +
+		"</span></span>";
+
+	    document.getElementById("minedgelength").classList.add(curUnit);
+	    document.getElementById("maxedgelength").classList.add(curUnit);
+	}
+	else {
+	    // no new leader, this edge gets discarded
+	    this.updateEdgeColor(this.currentEdgeIndex,
+				 visualSettings.spanningTree.color, 0.6, 10);
+	    document.getElementById("connection"+ this.currentEdgeIndex).style.display = "none";
+	}
+
+	// update status
+	document.getElementById('algorithmStatus').innerHTML =
+            'Visiting: <span style="color:' + visualSettings.visiting.textColor +
+            '; background-color:' + visualSettings.visiting.color + '"> ' +
+            this.currentEdgeIndex + '</span>, ' +
+	    (graphEdges.length - this.currentEdgeIndex - 1) +
+            ' remaining';
+	
+	// prepare for next iteration
+	this.currentEdgeIndex++;
+	if (this.currentEdgeIndex < graphEdges.length) {
+	    this.updateEdgeColor(this.currentEdgeIndex,
+				 visualSettings.visiting.color, 0.6, 10);
+            var self = this;
+            setTimeout(function() { self.continue() }, hdxAV.delay);
+	}
+	else {
+	    hdxAV.status = hdxStates.AV_COMPLETE;
+	    document.getElementById("startPauseButton").disabled = true;
+	    document.getElementById("startPauseButton").innerHTML = "Start";
+            document.getElementById('algorithmStatus').innerHTML =
+		"Done! Visited " + graphEdges.length + " edges.";
 	}
     }
-    
-    if (currentEdgeIndex == graphEdges.length) {
-	hdxAV.status = hdxStates.AV_COMPLETE;
-	document.getElementById("startPauseButton").disabled = true;
-	document.getElementById("startPauseButton").innerHTML = "Start";
-	document.getElementById('info1').innerHTML = "<span style='background-color:cyan; color:black;' onclick='edgeClick("+shortnum+")'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta' onclick='edgeClick("+longnum+")'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red' onclick='edgeClick("+minnum+")'>Shortest Edge: " + edgeMin.label+ ": <span id='minedgelength'>"  + generateUnit(waypoints[graphEdges[minnum].v1].lat, waypoints[graphEdges[minnum].v1].lon, waypoints[graphEdges[minnum].v2].lat, waypoints[graphEdges[minnum].v2].lon) + "</span></span><br><span style = 'background-color:blue' onclick='edgeClick("+maxnum+")'>  Longest Edge: " + edgeMax.label + ": <span id='maxedgelength'>" + generateUnit(waypoints[graphEdges[maxnum].v1].lat, waypoints[graphEdges[maxnum].v1].lon, waypoints[graphEdges[maxnum].v2].lat, waypoints[graphEdges[maxnum].v2].lon) + "</span></span>";
-	document.getElementById("minedgelength").classList.add(curUnit);
-	document.getElementById("maxedgelength").classList.add(curUnit);
-	return;
-    }
-    
-    flag = '';	
-    
-    var edge = graphEdges[currentEdgeIndex];
-    findEdge(currentEdgeIndex, "#FFFF00", 1, 10);
-    
-    var distance = distanceInMiles(waypoints[edge.v1].lat, waypoints[edge.v1].lon,
-				   waypoints[edge.v2].lat, waypoints[edge.v2].lon);
-    
-    if (distance < minDistance) {
-        minDistance = distance;
-        edgeMin = edge;
-	flag += "," + minnum;
-	minnum = currentEdgeIndex;
-    }
-    
-    if (distance > maxDistance) {
-        maxDistance = distance;
-        edgeMax = edge;
-	flag += "," + maxnum;
-	maxnum = currentEdgeIndex;
-    }
-    
-    if (shortestELabel === undefined || shortestELabel == null ||
-	shortestELabel.length > edge.label.length) {
-        shortestELabel = edge.label;
-	edgeshort = edge;
-	flag += "," + shortnum;
-	shortnum = currentEdgeIndex;
-    }
-    
-    if (longestELabel === undefined || longestELabel == null ||
-	longestELabel.length < edge.label.length) {
-        longestELabel = edge.label;
-	edgelong = edge;
-	flag += "," + longnum;
-	longnum = currentEdgeIndex;
-    }	
-    document.getElementById('info1').innerHTML = "<span style='background-color:cyan; color:black;' onclick='edgeClick("+shortnum+")'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta' onclick='edgeClick("+longnum+")'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red' onclick='edgeClick("+minnum+")'>Shortest Edge: " + edgeMin.label+ ": <span id='minedgelength'>"  + generateUnit(waypoints[graphEdges[minnum].v1].lat, waypoints[graphEdges[minnum].v1].lon, waypoints[graphEdges[minnum].v2].lat, waypoints[graphEdges[minnum].v2].lon) + "</span></span><br><span style = 'background-color:blue' onclick='edgeClick("+maxnum+")'>  Longest Edge: " + edgeMax.label + ": <span id='maxedgelength'>" + generateUnit(waypoints[graphEdges[maxnum].v1].lat, waypoints[graphEdges[maxnum].v1].lon, waypoints[graphEdges[maxnum].v2].lat, waypoints[graphEdges[maxnum].v2].lon) + "</span></span>";
-    
-    document.getElementById("maxedgelength").classList.add(curUnit);
-    document.getElementById("minedgelength").classList.add(curUnit);
-    
-    currentEdgeIndex += 1;
-    setTimeout(continueEdgeSearch, hdxAV.delay);
-}
+};
 
 // ********************************************************************
 // graph traversals
@@ -3156,10 +3258,10 @@ function continuePausedAlgorithm() {
     
     var value = getCurrentAlgorithm();
     if (value == "vertexSearch") {
-        hdxVertexExtremesSearch.continue();
+        hdxVertexExtremesSearchAV.continue();
     }
     else if (value == "EdgeSearch") {
-        continueEdgeSearch();
+        hdxEdgeExtremesSearchAV.continue();
     }
     else if ((value == "BFS") || (value == "DFS") || (value == "RFS")) {
         continueGraphTraversal("RFS");
@@ -3185,7 +3287,7 @@ function selectAlgorithmAndStart() {
         hdxVertexExtremesSearchAV.start();
     }
     else if (value == "EdgeSearch") {
-        startEdgeSearch();
+        hdxEdgeExtremesSearchAV.start();
     }
     else if ((value == "BFS") || (value == "DFS") || (value == "RFS")) {
         startGraphTraversal(value);
@@ -3358,27 +3460,6 @@ function resetVars() {
 	//hdxAV.done = false;
 	hdxAV.reset();
 	updateMap();
-	northIndex = -1;
-	southIndex = -1;
-	eastIndex = -1;
-	westIndex = -1;
-	shortIndex = -1;
-	longIndex = -1;
-	
-	minDistance = 9999999;
-	maxDistance = -999999;
-	edgeMin = null;
-	edgeMax = null;
-	edgeshort = null;
-	edgelong = null;
-	currentEdgeIndex = 0;
-	shortestELabel = null;
-	longestELabel = null;
-	maxnum = -1;
-	minnum = -1;
-	shortnum = -1;
-	longnum = -1;
-	flag = "";
 	
 	discoveredVertices = [];
 	visitedVertices = [];
