@@ -404,264 +404,271 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
     }
 }
 
-// function to create the table entry for the leader for extreme points
-function extremePointLeaderString(waypointNum, vs) {
+// vertex extremes search
+var hdxVertexExtremesSearchAV = {
 
-    return '<span style="color:' +
-        vs.textColor + '; background-color:' +
-        vs.color + '"> #' + waypointNum +
-        ' (' + waypoints[waypointNum].lat + ',' +
-        waypoints[waypointNum].lon +
-        ') ' + waypoints[waypointNum].label + '</span>';
-}
+    // state variables for vertex extremes search
+    nextToCheck: 0,
+    northIndex: -1,
+    southIndex: -1,
+    eastIndex: -1,
+    westIndex: -1,
+    shortIndex: -1,
+    longIndex: -1,
 
-// function to create the table entry for the leader for label-based
-// comparisons
-function labelLeaderString(waypointNum, vs) {
+    // entry for list of AVs
+    name: "Vertex Extremes Search",
 
-    return '<span style="color:' +
-        vs.textColor + '; background-color:' +
-        vs.color + '"> #' + waypointNum +
-        ' (length ' + waypoints[waypointNum].label.length + ') ' +
-        waypoints[waypointNum].label + '</span>';
-}
+    // longer description
+    description: "Search for extreme values based on locations and labels.",
 
+    // helper functions
 
-// some variables to support our vertex search with timers
-var nextToCheck;
-var northIndex = -1;
-var southIndex = -1;
-var eastIndex = -1;
-var westIndex = -1;
-var shortIndex = -1;
-var longIndex = -1;
+    // function to create the table entry for the leader for extreme points
+    extremePointLeaderString(waypointNum, vs) {
 
-// initialize a vertex-based search, called by the start button callback
-function startVertexSearch() {
+	return '<span style="color:' +
+            vs.textColor + '; background-color:' +
+            vs.color + '"> #' + waypointNum +
+            ' (' + waypoints[waypointNum].lat + ',' +
+            waypoints[waypointNum].lon +
+            ') ' + waypoints[waypointNum].label + '</span>';
+    },
 
-    var statusLine = document.getElementById("status");
-    // statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
-    // in the future, make sure we have appropriate data in the system
-    // before executing anything here
+    // function to create the table entry for the leader for
+    // label-based comparisons
+    labelLeaderString(waypointNum, vs) {
 
-    // start by showing all existing markers, even hidden
-    for (var i = 0; i < waypoints.length; i++) {
-        markers[i].setMap(map);
-        updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
-    }
-    // we don't need edges here, so we remove those
-    for (var i = 0; i < connections.length; i++) {
-        connections[i].setMap(null);
-    }
-    //we don't need connections table here, so we remove those
-    document.getElementById("connection").style.display = "none";
-    
-    document.getElementById("waypoints").style.display = "";
-    var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
-    for (var i = 0; i < pointRows.length; i++) {
-	pointRows[i].style.display = "";
-    }
+	return '<span style="color:' +
+            vs.textColor + '; background-color:' +
+            vs.color + '"> #' + waypointNum +
+            ' (length ' + waypoints[waypointNum].label.length + ') ' +
+            waypoints[waypointNum].label + '</span>';
+    },
 
-    // start the search by initializing with the value at pos 0
-    updateMarkerAndTable(0, visualSettings.visiting, 40, false);
+    // required start function
+    // initialize a vertex-based search
+    start() {
 
-    nextToCheck = 0;
+	// start by showing all existing markers, even hidden
+	for (var i = 0; i < waypoints.length; i++) {
+            markers[i].setMap(map);
+            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
+	}
+	// we don't need edges here, so we remove those
+	for (var i = 0; i < connections.length; i++) {
+            connections[i].setMap(null);
+	}
+	//we don't need connections table here, so we remove those
+	document.getElementById("connection").style.display = "none";
 	
-    var algorithmsTable = document.getElementById('AlgorithmsTable');
-    var algorithmsTbody = algorithmsTable.children[1];
-    var infoBox;
-    var infoBoxtr;
-    var infoid = "";
-    for (var i = 1; i < 7; i++) {
-	infoBox = document.createElement('td');
-	infoBoxtr= document.createElement('tr');
-	infoid = "info"+i;
-	infoBox.setAttribute('id',infoid);
-	infoBoxtr.appendChild(infoBox);
-	algorithmsTbody.appendChild(infoBoxtr);
-    }
+	document.getElementById("waypoints").style.display = "";
+	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
+	for (var i = 0; i < pointRows.length; i++) {
+	    pointRows[i].style.display = "";
+	}
+	
+	// start the search by initializing with the value at pos 0
+	updateMarkerAndTable(0, visualSettings.visiting, 40, false);
+	
+	this.nextToCheck = 0;
+	
+	var algorithmsTable = document.getElementById('AlgorithmsTable');
+	var algorithmsTbody = algorithmsTable.children[1];
+	var infoBox;
+	var infoBoxtr;
+	var infoid = "";
+	for (var i = 1; i < 7; i++) {
+	    infoBox = document.createElement('td');
+	    infoBoxtr= document.createElement('tr');
+	    infoid = "info"+i;
+	    infoBox.setAttribute('id',infoid);
+	    infoBoxtr.appendChild(infoBox);
+	    algorithmsTbody.appendChild(infoBoxtr);
+	}
+	
+	if (!hdxAV.paused()) {
+	    var self = this;
+	    setTimeout(function() { self.continue() }, hdxAV.delay);
+	}
+    },
 
-    if (!hdxAV.paused()) {
-	setTimeout(continueVertexSearch, hdxAV.delay);
-    }
-}
+    // required continue function
+    // do an iteration of vertex-based search
+    continue() {
 
+	// if the simulation is paused, we can do nothing, as this function
+	// will be called again when we restart
+	if (hdxAV.paused()) {
+            return;
+	}
 
-// do an iteration of vertex-based search
-function continueVertexSearch() {
-
-    // if the simulation is paused, we can do nothing, as this function
-    // will be called again when we restart
-    if (hdxAV.paused()) {
-        return;
-    }
-
-    // keep track of points that were leaders but got beaten to be
-    // colored grey if they are no longer a leader in any category
-    var defeated = [];
-
-    // first we finish the previous point to see if it's a new winner,
-    // and if necessary downgrade anyone who was beaten by this one
-
-    // special case of first checked
-    if (nextToCheck == 0) {
-        // this was our first check, so this point wins all to start
-        northIndex = 0;
-        southIndex = 0;
-        eastIndex = 0;
-        westIndex = 0;
-        shortIndex = 0;
-        longIndex = 0;
-        foundNewLeader = true;
-    }
-    // we have to do real work to see if we have new winners
-    else {
-        // keep track of whether this point is a new leader
+	// keep track of points that were leaders but got beaten to be
+	// colored grey if they are no longer a leader in any category
+	var defeated = [];
+	
+	// keep track of whether this point is a new leader
         var foundNewLeader = false;
 
-        // check north
-        if (parseFloat(waypoints[nextToCheck].lat) >
-	    parseFloat(waypoints[northIndex].lat)) {
-            foundNewLeader = true;
-            defeated.push(northIndex);
-            northIndex = nextToCheck;
-        }
-        // check south
-        if (parseFloat(waypoints[nextToCheck].lat) <
-	    parseFloat(waypoints[southIndex].lat)) {
-            foundNewLeader = true;
-            defeated.push(southIndex);
-            southIndex = nextToCheck;
-        }
-        // check east
+	// first we finish the previous point to see if it's a new winner,
+	// and if necessary downgrade anyone who was beaten by this one
 
-        if (parseFloat(waypoints[nextToCheck].lon) >
-	    parseFloat(waypoints[eastIndex].lon)) {
+	// special case of first checked
+	if (this.nextToCheck == 0) {
+            // this was our first check, so this point wins all to start
+            this.northIndex = 0;
+            this.southIndex = 0;
+            this.eastIndex = 0;
+            this.westIndex = 0;
+            this.shortIndex = 0;
+            this.longIndex = 0;
             foundNewLeader = true;
-            defeated.push(eastIndex);
-            eastIndex = nextToCheck;
-        }
-        // check west
-        if (parseFloat(waypoints[nextToCheck].lon) <
-	    parseFloat(waypoints[westIndex].lon)) {
-            foundNewLeader = true;
-            defeated.push(westIndex);
-            westIndex = nextToCheck;
-        }
-
-        // check label lengths
-        if (waypoints[nextToCheck].label.length <
-	    waypoints[shortIndex].label.length) {
-            foundNewLeader = true;
-            defeated.push(shortIndex);
-            shortIndex = nextToCheck;
-        }
-
-        if (waypoints[nextToCheck].label.length >
-	    waypoints[longIndex].label.length) {
-            foundNewLeader = true;
-            defeated.push(longIndex);
-            longIndex = nextToCheck;
-        }
-
-    }
-
-    // any point that was a leader but is no longer gets discarded,
-    while (defeated.length > 0) {
-        var toCheck = defeated.pop();
-        if (toCheck != northIndex &&
-            toCheck != southIndex &&
-            toCheck != eastIndex &&
-            toCheck != westIndex &&
-            toCheck != longIndex &&
-            toCheck != shortIndex) {
-
-            updateMarkerAndTable(toCheck, visualSettings.discarded,
+	}
+	// we have to do real work to see if we have new winners
+	else {
+            // check north
+            if (parseFloat(waypoints[this.nextToCheck].lat) >
+		parseFloat(waypoints[this.northIndex].lat)) {
+		foundNewLeader = true;
+		defeated.push(this.northIndex);
+		this.northIndex = this.nextToCheck;
+            }
+            // check south
+            if (parseFloat(waypoints[this.nextToCheck].lat) <
+		parseFloat(waypoints[this.southIndex].lat)) {
+		foundNewLeader = true;
+		defeated.push(this.southIndex);
+		this.southIndex = this.nextToCheck;
+            }
+            // check east	    
+            if (parseFloat(waypoints[this.nextToCheck].lon) >
+		parseFloat(waypoints[this.eastIndex].lon)) {
+		foundNewLeader = true;
+		defeated.push(this.eastIndex);
+		this.eastIndex = this.nextToCheck;
+            }
+            // check west
+            if (parseFloat(waypoints[this.nextToCheck].lon) <
+		parseFloat(waypoints[this.westIndex].lon)) {
+		foundNewLeader = true;
+		defeated.push(this.westIndex);
+		this.westIndex = this.nextToCheck;
+            }
+	    
+            // check label lengths
+            if (waypoints[this.nextToCheck].label.length <
+		waypoints[this.shortIndex].label.length) {
+		foundNewLeader = true;
+		defeated.push(this.shortIndex);
+		this.shortIndex = this.nextToCheck;
+            }
+	    
+            if (waypoints[this.nextToCheck].label.length >
+		waypoints[this.longIndex].label.length) {
+		foundNewLeader = true;
+		defeated.push(this.longIndex);
+		this.longIndex = this.nextToCheck;
+            }
+	    
+	}
+	
+	// any point that was a leader but is no longer gets discarded,
+	while (defeated.length > 0) {
+            var toCheck = defeated.pop();
+            if (toCheck != this.northIndex &&
+		toCheck != this.southIndex &&
+		toCheck != this.eastIndex &&
+		toCheck != this.westIndex &&
+		toCheck != this.longIndex &&
+		toCheck != this.shortIndex) {
+		
+		updateMarkerAndTable(toCheck, visualSettings.discarded,
+				     20, true);
+            }
+	}
+	
+	// the leader in each category is now highlighted in the tables and
+	// on the map
+	
+	// TODO: handle better the situations where the same vertex
+	// becomes the leader in multiple categories, as right now
+	// it just gets colored with the last in this list
+	if (foundNewLeader) {
+	    
+	    // this work will often be redundant but it's probably easier
+	    // than trying to avoid it
+	    
+	    // north
+	    updateMarkerAndTable(this.northIndex, visualSettings.northLeader, 
+				 40, false);
+	    infoBox = document.getElementById('info1');
+	    infoBox.innerHTML = 'North extreme:<br />' +
+		this.extremePointLeaderString(this.northIndex, visualSettings.northLeader);
+	    
+	    // south
+	    updateMarkerAndTable(this.southIndex, visualSettings.southLeader,
+				 40, false);
+	    infoBox = document.getElementById('info2');
+	    infoBox.innerHTML = "South extreme:<br />" +
+		this.extremePointLeaderString(this.southIndex, visualSettings.southLeader);
+	    
+	    // east
+	    updateMarkerAndTable(this.eastIndex, visualSettings.eastLeader,
+				 40, false);
+            infoBox = document.getElementById('info3');
+            infoBox.innerHTML = "East extreme:<br />" +
+		this.extremePointLeaderString(this.eastIndex, visualSettings.eastLeader);
+	    
+            // west
+            updateMarkerAndTable(this.westIndex, visualSettings.westLeader,
+				 40, false);
+            infoBox = document.getElementById('info4');
+            infoBox.innerHTML = "West extreme:<br />" +
+		this.extremePointLeaderString(this.westIndex, visualSettings.westLeader);
+	    
+            // shortest
+            updateMarkerAndTable(this.shortIndex, visualSettings.shortLabelLeader,
+				 40, false);
+            infoBox = document.getElementById('info5');
+            infoBox.innerHTML = "Shortest vertex label:<br />" +
+		this.labelLeaderString(this.shortIndex, visualSettings.shortLabelLeader);
+	    
+            // longest
+            updateMarkerAndTable(this.longIndex, visualSettings.longLabelLeader,
+				 40, false);
+            infoBox = document.getElementById('info6');
+            infoBox.innerHTML = "Longest vertex label:<br />" +
+		this.labelLeaderString(this.longIndex, visualSettings.longLabelLeader);
+	}
+	else {
+            // we didn't have a new leader, just discard this one
+            updateMarkerAndTable(this.nextToCheck, visualSettings.discarded,
 				 20, true);
-        }
+	}
+	
+	document.getElementById('algorithmStatus').innerHTML =
+            'Visiting: <span style="color:' + visualSettings.visiting.textColor +
+            '; background-color:' + visualSettings.visiting.color + '"> ' +
+            this.nextToCheck + '</span>, ' + (markers.length - this.nextToCheck - 1) +
+            ' remaining';
+	
+	// prepare for next iteration
+	this.nextToCheck++;
+	if (this.nextToCheck < markers.length) {
+            updateMarkerAndTable(this.nextToCheck, visualSettings.visiting,
+				 30, false);
+            var self = this;
+            setTimeout(function() { self.continue() }, hdxAV.delay);
+	}
+	else {
+	    hdxAV.status = hdxStates.AV_COMPLETE;
+	    document.getElementById("startPauseButton").disabled = true;
+	    document.getElementById("startPauseButton").innerHTML = "Start";
+            document.getElementById('algorithmStatus').innerHTML =
+		"Done! Visited " + markers.length + " waypoints.";
+	}
     }
-    
-    // the leader in each category is now highlighted in the tables and
-    // on the map
-
-    // TODO: handle better the situations where the same vertex
-    // becomes the leader in multiple categories, as right now
-    // it just gets colored with the last in this list
-    if (foundNewLeader) {
-	
-	// this work will often be redundant but it's probably easier
-	// than trying to avoid it
-	
-	// north
-	updateMarkerAndTable(northIndex, visualSettings.northLeader, 
-			     40, false);
-	infoBox = document.getElementById('info1');
-	infoBox.innerHTML = 'North extreme:<br />' +
-	    extremePointLeaderString(northIndex, visualSettings.northLeader);
-	
-	// south
-	updateMarkerAndTable(southIndex, visualSettings.southLeader,
-			     40, false);
-	infoBox = document.getElementById('info2');
-	infoBox.innerHTML = "South extreme:<br />" +
-	    extremePointLeaderString(southIndex, visualSettings.southLeader);
-	
-	// east
-	updateMarkerAndTable(eastIndex, visualSettings.eastLeader,
-			     40, false);
-        infoBox = document.getElementById('info3');
-        infoBox.innerHTML = "East extreme:<br />" +
-            extremePointLeaderString(eastIndex, visualSettings.eastLeader);
-	
-        // west
-        updateMarkerAndTable(westIndex, visualSettings.westLeader,
-			     40, false);
-        infoBox = document.getElementById('info4');
-        infoBox.innerHTML = "West extreme:<br />" +
-            extremePointLeaderString(westIndex, visualSettings.westLeader);
-	
-        // shortest
-        updateMarkerAndTable(shortIndex, visualSettings.shortLabelLeader,
-			     40, false);
-        infoBox = document.getElementById('info5');
-        infoBox.innerHTML = "Shortest vertex label:<br />" +
-            labelLeaderString(shortIndex, visualSettings.shortLabelLeader);
-	
-        // longest
-        updateMarkerAndTable(longIndex, visualSettings.longLabelLeader,
-			     40, false);
-        infoBox = document.getElementById('info6');
-        infoBox.innerHTML = "Longest vertex label:<br />" +
-            labelLeaderString(longIndex, visualSettings.longLabelLeader);
-    }
-    else {
-        // we didn't have a new leader, just discard this one
-        updateMarkerAndTable(nextToCheck, visualSettings.discarded,
-			     20, true);
-    }
-
-    document.getElementById('algorithmStatus').innerHTML =
-        'Visiting: <span style="color:' + visualSettings.visiting.textColor +
-        '; background-color:' + visualSettings.visiting.color + '"> ' +
-        nextToCheck + '</span>, ' + (markers.length - nextToCheck - 1) +
-        ' remaining';
-    
-    // prepare for next iteration
-    nextToCheck++;
-    if (nextToCheck < markers.length) {
-        updateMarkerAndTable(nextToCheck, visualSettings.visiting,
-			     30, false);
-        
-        setTimeout(continueVertexSearch, hdxAV.delay);
-    }
-    else {
-	hdxAV.status = hdxStates.AV_COMPLETE;
-	document.getElementById("startPauseButton").disabled = true;
-	document.getElementById("startPauseButton").innerHTML = "Start";
-        document.getElementById('algorithmStatus').innerHTML =
-            "Done! Visited " + markers.length + " waypoints.";
-    }
-}
+};
 
 // **********************************************************************
 // EDGE SEARCH CODE
@@ -3149,7 +3156,7 @@ function continuePausedAlgorithm() {
     
     var value = getCurrentAlgorithm();
     if (value == "vertexSearch") {
-        continueVertexSearch();
+        hdxVertexExtremesSearch.continue();
     }
     else if (value == "EdgeSearch") {
         continueEdgeSearch();
@@ -3175,7 +3182,7 @@ function selectAlgorithmAndStart() {
     resetVars();
     hdxAV.previousAlgorithm = value;
     if (value == "vertexSearch") {
-        startVertexSearch();
+        hdxVertexExtremesSearchAV.start();
     }
     else if (value == "EdgeSearch") {
         startEdgeSearch();
