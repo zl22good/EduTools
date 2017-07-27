@@ -14,12 +14,28 @@
 
 // variables declared here are HDX-specific global variables
 
+// Essentially an enum of possible states of the simulation, used to
+// ensure that only things that should be done are permitted in a
+// given state.  Any AV_ state implies that a graph is loaded.  
+var hdxStates = {
+
+    NO_DATA: 1,
+    GRAPH_LOADED: 2,
+    WPT_LOADED: 3,
+    NMP_LOADED: 4,
+    WPL_LOADED: 5,
+    PTH_LOADED: 6,
+    AV_SELECTED: 7,
+    AV_RUNNING: 8,
+    AV_PAUSED: 9,
+    AV_COMPLETE: 10
+};
+
 // group of variables used by many or all algorithm visualizations
 var hdxAV = {
-    // boolean to indicate if a simulation in progress is paused
-    pause: false,
-    // is an AV complete?
-    done: false,
+    // current state of HDX
+    status: hdxStates.NO_DATA,
+
     // delay (in ms) between visualization steps
     // default delay 50 should match the selected option in the speedChanger
     // and delay should be used for the amount of time in the future to use
@@ -30,10 +46,13 @@ var hdxAV = {
 
     // reset values
     reset: function() {
-	this.pause = false;
-	this.done = false;
 	this.previousAlgorithm = null;
 	this.delay = 50;
+    },
+
+    // are we paused?
+    paused() {
+	return this.status == hdxStates.AV_PAUSED;
     }
 };
 
@@ -45,13 +64,6 @@ function speedChanged() {
 
     var speedChanger = document.getElementById("speedChanger");
     hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;
-}
-
-// pause button callback, simply sets pause to true, other functions
-// deal with this as appropriate
-function pauseSimulation() {
-
-    hdxAV.pause = true;
 }
 
 // algorithm visualization color settings and other parameters
@@ -219,7 +231,7 @@ var vcolor, vtext, vicon;
 var ecolor, etext, edge, edgew;
 
 function hoverV(i, bool) {
-    if ((bool && hdxAV.pause) || !bool) {
+    if ((bool && hdxAV.paused()) || !bool) {
 	vicon = markers[i].getIcon();
 	vcolor = document.getElementById("waypoint"+i).style.backgroundColor;
 	vtext = document.getElementById("waypoint"+i).style.color;
@@ -228,7 +240,7 @@ function hoverV(i, bool) {
 }
 
 function hoverEndV(i, bool) {
-    if ((bool && hdxAV.pause) || !bool) {
+    if ((bool && hdxAV.paused()) || !bool) {
 	markers[i].setIcon(vicon);
 	document.getElementById("waypoint"+i).style.backgroundColor = vcolor;
 	document.getElementById("waypoint"+i).style.color = vtext;
@@ -427,12 +439,6 @@ var longIndex = -1;
 // initialize a vertex-based search, called by the start button callback
 function startVertexSearch() {
 
-    // if we are paused and the start button is pressed, we "unpause"
-    if (hdxAV.pause) {
-        hdxAV.pause = false;
-        continueVertexSearch();
-        return;
-    }
     var statusLine = document.getElementById("status");
     // statusLine.innerHTML = "Preparing for Extreme Point Search Visualization";
     // in the future, make sure we have appropriate data in the system
@@ -456,9 +462,6 @@ function startVertexSearch() {
 	pointRows[i].style.display = "";
     }
 
-    // this doesn't really make sense for this search...
-    // var startingPoint = document.getElementById("startPoint").value;
-
     // start the search by initializing with the value at pos 0
     updateMarkerAndTable(0, visualSettings.visiting, 40, false);
 
@@ -478,9 +481,9 @@ function startVertexSearch() {
 	algorithmsTbody.appendChild(infoBoxtr);
     }
 
-    // enable pause button
-    //document.getElementById("pauseRestart").disabled = false;
-    setTimeout(continueVertexSearch, hdxAV.delay);
+    if (!hdxAV.paused()) {
+	setTimeout(continueVertexSearch, hdxAV.delay);
+    }
 }
 
 
@@ -489,7 +492,7 @@ function continueVertexSearch() {
 
     // if the simulation is paused, we can do nothing, as this function
     // will be called again when we restart
-    if (hdxAV.pause) {
+    if (hdxAV.paused()) {
         return;
     }
 
@@ -652,7 +655,9 @@ function continueVertexSearch() {
         setTimeout(continueVertexSearch, hdxAV.delay);
     }
     else {
-	hdxAV.done = true;
+	hdxAV.status = hdxStates.AV_COMPLETE;
+	document.getElementById("startPauseButton").disabled = true;
+	document.getElementById("startPauseButton").innerHTML = "Start";
         document.getElementById('algorithmStatus').innerHTML =
             "Done! Visited " + markers.length + " waypoints.";
     }
@@ -678,12 +683,6 @@ var longnum = -1;
 var flag = "";
 
 function startEdgeSearch() {
-
-    if (hdxAV.pause) {
-        hdxAV.pause = false;
-        continueEdgeSearch();
-        return;
-    }
 
     var statusLine = document.getElementById("status");
     // statusLine.innerHTML = "Preparing for Extreme Edge Search Visualization";
@@ -712,7 +711,9 @@ function startEdgeSearch() {
     infoBoxtr.appendChild(infoBox);
     algorithmsTbody.appendChild(infoBoxtr);
     // document.getElementById('algorithmStatus').innerHTML = 'Checking: <span style="color:yellow">0</span>';
-    setTimeout(continueEdgeSearch, hdxAV.delay);    
+    if (!hdxAV.paused()) {
+	setTimeout(continueEdgeSearch, hdxAV.delay);
+    }
 }
 
 function findEdge(edgeNum, color, op, weight) {
@@ -727,7 +728,8 @@ function findEdge(edgeNum, color, op, weight) {
 }
 
 function continueEdgeSearch() {
-    if (hdxAV.pause) {
+    
+    if (hdxAV.paused()) {
         return;
     }	
 	
@@ -755,7 +757,9 @@ function continueEdgeSearch() {
     }
     
     if (currentEdgeIndex == graphEdges.length) {
-	hdxAV.done = true;
+	hdxAV.status = hdxStates.AV_COMPLETE;
+	document.getElementById("startPauseButton").disabled = true;
+	document.getElementById("startPauseButton").innerHTML = "Start";
 	document.getElementById('info1').innerHTML = "<span style='background-color:cyan; color:black;' onclick='edgeClick("+shortnum+")'>Shortest Edge label: " + shortestELabel + "</span><br><span style='background-color:magenta' onclick='edgeClick("+longnum+")'> Longest Edge label: " + longestELabel +	"</span><br><span style = 'background-color:red' onclick='edgeClick("+minnum+")'>Shortest Edge: " + edgeMin.label+ ": <span id='minedgelength'>"  + generateUnit(waypoints[graphEdges[minnum].v1].lat, waypoints[graphEdges[minnum].v1].lon, waypoints[graphEdges[minnum].v2].lat, waypoints[graphEdges[minnum].v2].lon) + "</span></span><br><span style = 'background-color:blue' onclick='edgeClick("+maxnum+")'>  Longest Edge: " + edgeMax.label + ": <span id='maxedgelength'>" + generateUnit(waypoints[graphEdges[maxnum].v1].lat, waypoints[graphEdges[maxnum].v1].lon, waypoints[graphEdges[maxnum].v2].lat, waypoints[graphEdges[maxnum].v2].lon) + "</span></span>";
 	document.getElementById("minedgelength").classList.add(curUnit);
 	document.getElementById("maxedgelength").classList.add(curUnit);
@@ -869,13 +873,6 @@ function startGraphTraversal(discipline) {
         discoveredVerticesName = "List";
     }
 
-    // if we are paused
-    if (hdxAV.pause) {
-        hdxAV.pause = false;
-        continueGraphTraversal();
-        return;
-    }
-
     document.getElementById("connection").style.display = "none";
     document.getElementById("waypoints").style.display = "";
     var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
@@ -913,7 +910,9 @@ function startGraphTraversal(discipline) {
 
     // nothing to update this first time
     lastVisitedVertex = -1;
-    setTimeout(continueGraphTraversal, hdxAV.delay);
+    if (!hdxAV.paused()) {
+	setTimeout(continueGraphTraversal, hdxAV.delay);
+    }
 }
 
 // function to see if a vertex with the given index is in discoveredVertices
@@ -935,7 +934,7 @@ var numAlreadyVisited = 0;
 function continueGraphTraversal() {
     
     // if we're paused, do nothing for now
-    if (hdxAV.pause) {
+    if (hdxAV.paused()) {
         return;
     }
 
@@ -961,7 +960,9 @@ function continueGraphTraversal() {
     }
     // maybe we're done
     if (discoveredVertices.length == 0) {
-	hdxAV.done = true;
+	hdxAV.status = hdxStates.AV_COMPLETE;
+	document.getElementById("startPauseButton").disabled = true;
+	document.getElementById("startPauseButton").innerHTML = "Start";
         return;
     }
 
@@ -1074,8 +1075,9 @@ function continueGraphTraversal() {
    /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
     setTimeout(continueGraphTraversal, delay);*/
     var newDS = makeTable();
-    if (newDS!=null)
+    if (newDS != null) {
 	document.getElementById("algorithmStatus").appendChild(newDS);
+    }
     shiftColors();
     setTimeout(continueGraphTraversal, hdxAV.delay);
 }
@@ -1089,13 +1091,6 @@ function startConnectedPieces(vert, visitarr) {
 	
     discoveredVerticesName = "Queue";
     
-    // if we are paused
-    if (hdxAV.pause) {
-        hdxAV.pause = false;
-        continueConnectedPieces();
-        return;
-    }	
-
     var piecesTD = "";
     
     document.getElementById("connection").style.display = "none";
@@ -1146,13 +1141,15 @@ function startConnectedPieces(vert, visitarr) {
     
     // nothing to update this first time
     lastVisitedVertex = -1;
-    setTimeout(function() {continueConnectedPieces()}, hdxAV.delay);
+    if (!hdxAV.paused()) {
+	setTimeout(continueConnectedPieces, hdxAV.delay);
+    }
 }
 
 function continueConnectedPieces() {
 	
     // if we're paused, do nothing for now
-    if (hdxAV.pause) {
+    if (hdxAV.paused()) {
         return;
     }
 
@@ -1186,7 +1183,9 @@ function continueConnectedPieces() {
 
     // maybe we're done
     if (discoveredVertices.length == 0 && !vleft) {
-	hdxAV.done = true;
+	hdxAV.status = hdxStates.AV_COMPLETE;
+	document.getElementById("startPauseButton").disabled = true;
+	document.getElementById("startPauseButton").innerHTML = "Start";
         document.getElementById("piecesTD").innerHTML = "Done! Map contains "+piecenum+" unconnected pieces";
 	document.getElementById("piecesTD").style.backgroundColor = "#ffffff";
         return;
@@ -1289,57 +1288,52 @@ function continueConnectedPieces() {
    /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
     setTimeout(continueGraphTraversal, delay);*/
     var newDS = makeTable();
-    if (newDS!=null)
+    if (newDS != null) {
 	document.getElementById("algorithmStatus").appendChild(newDS);
-    setTimeout(function() {continueConnectedPieces()}, hdxAV.delay);
+    }
+    setTimeout(continueConnectedPieces, hdxAV.delay);
 }
 
 function startDijkstra() {
 	
-    // if we are paused
-    if (hdxAV.pause) {
-        hdxAV.pause = false;
-        continueDijkstra();
-        return;
+    document.getElementById("connection").style.display = "none";
+    document.getElementById("waypoints").style.display = "none";
+    
+    if ($("#dijtable").length > 0) {
+	$("#dijtable").remove();
     }
-    else {	
-	document.getElementById("connection").style.display = "none";
-	document.getElementById("waypoints").style.display = "none";
-	
-	if ($("#dijtable").length > 0)
-	    $("#dijtable").remove();
-	
-	var dijkstraTable = document.createElement("table");
-	dijkstraTable.id = "dijtable";
-	dijkstraTable.className = "gratable";
-	var dijthead = document.createElement("thead");
-	
-	var topRow = document.createElement("tr");
-	
-	var th = document.createElement("th");
-	th.innerHTML = "#";
-	topRow.appendChild(th);
-	
-	th = document.createElement("th");
-	th.innerHTML = "Distance";
-	topRow.appendChild(th);
-	
-	th = document.createElement("th");
-	th.innerHTML = "Name";
-	topRow.appendChild(th);
-	
-	th = document.createElement("th");
-	th.innerHTML = "Previous edge";
-	topRow.appendChild(th);
-	
-	dijthead.appendChild(topRow);
-	dijkstraTable.appendChild(dijthead);
-	var dijtbody = document.createElement("tbody");
-	dijtbody.id = "dijtbody";
-	dijkstraTable.appendChild(dijtbody);
-	
-	document.getElementById("waypoints").parentNode.parentNode.appendChild(dijkstraTable);	
-    }
+    
+    var dijkstraTable = document.createElement("table");
+    dijkstraTable.id = "dijtable";
+    dijkstraTable.className = "gratable";
+    var dijthead = document.createElement("thead");
+    
+    var topRow = document.createElement("tr");
+    
+    var th = document.createElement("th");
+    th.innerHTML = "#";
+    topRow.appendChild(th);
+    
+    th = document.createElement("th");
+    th.innerHTML = "Distance";
+    topRow.appendChild(th);
+    
+    th = document.createElement("th");
+    th.innerHTML = "Name";
+    topRow.appendChild(th);
+    
+    th = document.createElement("th");
+    th.innerHTML = "Previous edge";
+    topRow.appendChild(th);
+    
+    dijthead.appendChild(topRow);
+    dijkstraTable.appendChild(dijthead);
+    var dijtbody = document.createElement("tbody");
+    dijtbody.id = "dijtbody";
+    dijkstraTable.appendChild(dijtbody);
+    
+    document.getElementById("waypoints").parentNode.parentNode.appendChild(dijkstraTable);	
+
     discoveredVerticesName = "PQueue";
     
     // initialize our visited array
@@ -1376,7 +1370,9 @@ function startDijkstra() {
     
     // nothing to update this first time
     lastVisitedVertex = -1;
-    setTimeout(continueDijkstra, hdxAV.delay);
+    if (!hdxAV.paused()) {
+	setTimeout(continueDijkstra, hdxAV.delay);
+    }
 }
 
 function comparePQ(a, b) {
@@ -1405,7 +1401,7 @@ function findNextPath(v1, v2) {
 
 function continueDijkstra() {
     // if we're paused, do nothing for now
-    if (hdxAV.pause) {
+    if (hdxAV.paused()) {
         return;
     }
 
@@ -1458,7 +1454,9 @@ function continueDijkstra() {
 		curV = totalPath[findNextPath(nextV, curVnum)];
 	    }
 	}
-	hdxAV.done = true;
+	hdxAV.status = hdxStates.AV_COMPLETE;
+	document.getElementById("startPauseButton").disabled = true;
+	document.getElementById("startPauseButton").innerHTML = "Start";
         return;
     }
 
@@ -1602,8 +1600,9 @@ function continueDijkstra() {
     
     // update view of our list
     var newDS = makeTable();
-    if (newDS!=null)
+    if (newDS != null) {
 	document.getElementById("algorithmStatus").appendChild(newDS);
+    }
     shiftColors();
     setTimeout(continueDijkstra, hdxAV.delay);
 }
@@ -1762,13 +1761,9 @@ var lookingForPositive;
 var foundProblem;
 var firstTestPoint;
 
+// TODO: where do we know we're done?
 function bruteForceConvexHull() {
 
-    if (hdxAV.pause) {
-	hdxAV.pause = false;
-	innerLoopConvexHull();
-	return;
-    }
     for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
 	connections[outerLoop].setMap(null);
     }
@@ -1778,7 +1773,9 @@ function bruteForceConvexHull() {
     hullJ = 1;
     hullI = 0;
     document.getElementById("for1").className += " highlight";
-    setTimeout(innerLoopConvexHull, hdxAV.delay);
+    if (!hdxAV.paused()) {
+	setTimeout(innerLoopConvexHull, hdxAV.delay);
+    }
 }
 
 function innerLoopConvexHull() {
@@ -1788,7 +1785,7 @@ function innerLoopConvexHull() {
     document.getElementById("drawLine2").className -= " highlight";
     updateMarkerAndTable(hullI, visualSettings.hullI, 30, false);
 
-    if (hdxAV.pause) {
+    if (hdxAV.paused()) {
 	return;
     }
     
@@ -1818,7 +1815,7 @@ function innerLoopConvexHull() {
 }
 
 function innerLoop2() {
-    if (hdxAV.pause) {
+    if (hdxAV.paused()) {
 	return;
     }
     
@@ -2318,6 +2315,8 @@ function fileLoaded(event) {
     processContents(event.target.result);
 }
 
+// event handler for "Show Load Options" button
+// which replaces it with the load options panels
 function undoCollapse(event) {
     var container = event.target.parentNode;
     var clss = "."+container.id.substring(0,container.id.indexOf("btn"));
@@ -2328,6 +2327,8 @@ function undoCollapse(event) {
     container.style.display = "none";
 }
 
+// function to hide the load options and show the "Show Load Options"
+// button in the AV control panel
 function collapseElements(clss) {
     var elems = document.querySelectorAll("."+clss);
     var btn = document.getElementById(clss+"btn");
@@ -2554,6 +2555,8 @@ function parseTMGContents(fileContents) {
     eTable += '</tbody></table>';
     genEdges = false;
     usingAdjacencyLists = true;
+    hdxStatus = hdxStates.GRAPH_LOADED;
+    document.getElementById("AlgorithmSelection").disabled = false;
     return summaryInfo + '<p />' + vTable + '<p />' + eTable;
 }
 
@@ -2600,6 +2603,8 @@ function parseGRAContents(fileContents) {
     }
     eTable += '</tbody></table>';
     genEdges = false;
+    hdxStatus = hdxStates.GRAPH_LOADED;
+    document.getElementById("AlgorithmSelection").disabled = false;
     return sideInfo + '<p />' + vTable + '<p />' + eTable;
 }
 
@@ -2625,6 +2630,7 @@ function parseWPTContents(fileContents) {
 	}
     }
     genEdges = true;
+    hdxStatus = hdxStates.WPT_LOADED;
     return "<h2>Raw file contents:</h2><pre>" + fileContents + "</pre>";
 }
 
@@ -2688,6 +2694,7 @@ function parsePTHContents(fileContents) {
     table += '</tbody></table>';
     //genEdges = true;
     usingAdjacencyLists = true;
+    hdxStatus = hdxStates.PTH_LOADED;
     return table;
 }
 
@@ -2744,6 +2751,7 @@ function parseNMPContents(fileContents) {
 
     table += "</tbody></table>";
     genEdges = false;
+    hdxStatus = hdxStates.NMP_LOADED;
     return table;
 }
 
@@ -2778,6 +2786,7 @@ function parseWPLContents(fileContents) {
     graphEdges = new Array();
     genEdges = false;
     var summaryInfo = '<table class="gratable"><thead><tr><th>' + waypoints.length + " waypoints.</th></tr></table>";
+    hdxStatus = hdxStates.WPL_LOADED;
     return summaryInfo + '<p />' + vTable;
 }
 
@@ -3099,47 +3108,89 @@ function showHiddenPseudocode() {
     }
 }
 
-function selectAlgorithmAndStart() {
+// generic event handler for start/pause/resume button
+function startPausePressed() {
+
+    var spButton = document.getElementById("startPauseButton");
+    
+    switch (hdxAV.status) {
+
+    case hdxStates.AV_SELECTED:
+	// if we have selected but not yet started an algorithm,
+	// this is a start button
+	hdxAV.status = hdxStates.AV_RUNNING;
+	spButton.innerHTML = "Pause";
+	document.getElementById("AlgorithmSelection").disabled = true;
+	selectAlgorithmAndStart();
+	break;
+
+    case hdxStates.AV_RUNNING:
+	// if we are in a running algorithm, this is a pause button
+	// the running algorithm will pause when its next
+	// timer event fires
+	hdxAV.status = hdxStates.AV_PAUSED;
+	spButton.innerHTML = "Resume";
+	break;
+
+    case hdxStates.AV_PAUSED:
+	// if we are in paused algorithm, this is a resume button
+	hdxAV.status = hdxStates.AV_RUNNING;
+	spButton.innerHTML = "Pause";
+	continuePausedAlgorithm();
+	break;
+
+    default:
+	alert("startPausePressed, unexpected status=" + hdxAV.status);
+    }
+}
+
+// function to resume a paused algorithm
+function continuePausedAlgorithm() {
+    
     var value = getCurrentAlgorithm();
     if (value == "vertexSearch") {
-	resetVars();
-	hdxAV.previousAlgorithm = value;
+        continueVertexSearch();
+    }
+    else if (value == "EdgeSearch") {
+        continueEdgeSearch();
+    }
+    else if ((value == "BFS") || (value == "DFS") || (value == "RFS")) {
+        continueGraphTraversal("RFS");
+    }
+    else if (value == "ConvexHull") {
+        innerLoopConvexHull();
+    }
+    else if (value == "connected") {
+        continueConnectedPieces(-1, null);
+    }
+    else if (value == "Dijkstra") {
+	continueDijkstra();
+    }
+}
+
+// function to begin the execution of a new AV
+function selectAlgorithmAndStart() {
+    
+    var value = getCurrentAlgorithm();
+    resetVars();
+    hdxAV.previousAlgorithm = value;
+    if (value == "vertexSearch") {
         startVertexSearch();
     }
     else if (value == "EdgeSearch") {
-	resetVars();
-	hdxAV.previousAlgorithm = value;
         startEdgeSearch();
     }
-    else if (value == "BFS") {
-	resetVars();
-	hdxAV.previousAlgorithm = value;
-        startGraphTraversal("BFS");
-    }
-    else if (value == "DFS") {
-	resetVars();
-	hdxAV.previousAlgorithm = value;
-        startGraphTraversal("DFS");
-    }
-    else if (value == "RFS") {
-	resetVars();
-	hdxAV.previousAlgorithm = value;
-        startGraphTraversal("RFS");
+    else if ((value == "BFS") || (value == "DFS") || (value == "RFS")) {
+        startGraphTraversal(value);
     }
     else if (value == "ConvexHull") {
-	resetVars();
-	hdxAV.previousAlgorithm = value;
         bruteForceConvexHull();
-    } else if (value == "connected") {
-	resetVars();
-	hdxAV.previousAlgorithm = value;
+    }
+    else if (value == "connected") {
         startConnectedPieces(-1, null);
     }
     else if (value == "Dijkstra") {
-	resetVars();
-	hdxAV.previousAlgorithm = value;
-	startDijkstra();
-	
+	startDijkstra();	
     }
 }
 
@@ -3173,10 +3224,17 @@ function showLegend() {
     }
 }
 
-function selectAlgorithmAndCheckBoxes() {
+// Event handler for state change on the algorithm selection select control
+function algorithmSelected() {
     // var show = document.getElementById("selection_checkboxes").checked;
     // if (show == true) {
     var value = getCurrentAlgorithm();
+
+    // if we selected a valid algorithm, enable the start button
+    if (value != "NONE") {
+	hdxAV.status = hdxStates.AV_SELECTED;
+	document.getElementById("startPauseButton").disabled = false;
+    }
     var algStat = document.getElementById("algorithmStatus");
     var optSelect = document.getElementById("optionSection");
     if (value == "vertexSearch") {
@@ -3288,7 +3346,7 @@ function makeResize() {
 
 // moved to the end for now, until all variables are grouped by algorithm
 function resetVars() {
-    if (hdxAV.done ||
+    if (hdxAV.status == hdxStates.AV_COMPLETE ||
 	hdxAV.previousAlgorithm != document.getElementById("AlgorithmSelection").value) {
 	//hdxAV.done = false;
 	hdxAV.reset();

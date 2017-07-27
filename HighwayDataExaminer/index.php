@@ -324,8 +324,8 @@ span{
     <tbody>
       <?php hdx_load_file_entries(); ?>
       <tr><td>
-        Algorithm Selection:
-        <select id= "AlgorithmSelection" onchange="selectAlgorithmAndCheckBoxes()">
+        Algorithm to Visualize:
+        <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
           <option value="NONE">Select an Algorithm</option>
           <option value="vertexSearch">Search Vertices</option>
           <option value="EdgeSearch">Search Edges </option>
@@ -339,14 +339,8 @@ span{
 
       </td></tr>
       <tr><td id= "optionSection" > </td></tr>
-        <!--. Start Vertex <input id="startPoint" type="text" name="Starting Point" value="0" size="7" /> -->
-        <!-- <input id="showOptions" type="checkbox" name="Options" onclick="selectAlgorithmAndCheckBoxes()" > Options<br> -->
-        <!-- <input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br> -->
-        <!-- <button type="button" onclick="selectAlgorithmAndCheckBoxes()">Options</button> -->
       <tr id="speedtr"><td>
-        <button type="button" onclick="selectAlgorithmAndStart()">Start</button>
-        <button type="button" onclick="pauseSimulation()">Pause</button>
-        <!-- button type="button" onclick="resetSearch()">Reset</button -->
+        <button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
         <select id="speedChanger" onchange="speedChanged()">
           <option value="1">Fastest</option>
           <option value="5">Extremely fast</option>
