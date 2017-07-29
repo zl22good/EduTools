@@ -41,6 +41,13 @@ var hdxAV = {
     // and delay should be used for the amount of time in the future to use
     // for setTimeout calls
     delay: 50,
+
+    // list of available AVs
+    avList: [],
+    
+    // remember the currently-selected AV
+    currentAV: null,
+    
     // what was the most recent algorithm?
     previousAlgorithm: null,
 
@@ -50,9 +57,98 @@ var hdxAV = {
 	this.delay = 50;
     },
 
+    // some commonly-used document elements
+    algStat: null,
+    algOptions: null,
+    startPause: null,
+    
+    // set the status and do any needed cleanup for that change
+    setStatus(newStatus) {
+	
+	if (this.status == newStatus) {
+	    return;
+	}
+
+	this.status = newStatus;
+	switch (newStatus) {
+	case hdxStates.GRAPH_LOADED:
+	case hdxStates.WPT_LOADED:
+	case hdxStates.PTH_LOADED:
+	case hdxStates.NMP_LOADED:
+	case hdxStates.WPL_LOADED:
+	    this.algStat.innerHTML = "";
+	    this.algOptions.innerHTML = "";
+	    break;
+
+	case hdxStates.AV_COMPLETE:
+	    this.startPause.disabled = true;
+	    this.startPause.innerHTML = "Start";
+	    break;
+	}
+    },
+    
     // are we paused?
     paused() {
 	return this.status == hdxStates.AV_PAUSED;
+    },
+
+    // all setup that needs to happen on page load for HDX
+    initOnLoad() {
+	
+	// populate the list of algorithms -- add new entries here
+	this.avList.push(hdxNoAV);
+	this.avList.push(hdxVertexExtremesSearchAV);
+	this.avList.push(hdxEdgeExtremesSearchAV);
+	this.avList.push(hdxGraphTraversalsAV);
+	this.avList.push(hdxDijkstraAV);
+	this.avList.push(hdxBFConvexHullAV);
+	
+	// populate the algorithm selection select with options
+	// from the avList
+	let s = document.getElementById("AlgorithmSelection");
+	s.innerHTML = "";
+	for (var i = 0; i < this.avList.length; i++) {
+	    let av = this.avList[i];
+	    s.innerHTML += '<option value="' + av.value +
+		'">' + av.name + '</option>';	    
+	}
+
+	// make the "selected" div resizable, was function makeResize()
+	$( "#selected" ).resizable();
+	var div = document.createElement("div");
+	div.setAttribute("id", "resize");
+	document.getElementById("selected").appendChild(div);
+	$( "#contents_table" ).resizable();
+
+	// initalize table for upper right side dropdown
+	toggleTable();
+
+	// set up side panel
+	sidePanel();
+
+	// set up main area, was function mainArea()
+	var main = document.createElement("div");
+	main.setAttribute("id", "main");
+	main.appendChild(document.getElementById("map"));
+	main.appendChild(document.getElementById("togglecontents_table"));
+	//main.appendChild(document.getElementById("distUnits"));
+	main.appendChild(document.getElementById("selected"));
+	main.appendChild(document.getElementById("options"));
+	main.appendChild(document.getElementById("pointbox"));
+	main.appendChild(document.getElementById("AlgorithmVisualization"));
+	main.appendChild(document.getElementById("controlbox"));
+	main.appendChild(document.getElementById("contents_table"));
+	main.appendChild(document.getElementById("panelBtn"));
+	main.appendChild(document.getElementById("toggleselected"));
+	document.body.appendChild(main);
+
+	// set up some references to commonly-used document elements
+	this.algStat = document.getElementById("algorithmStatus");
+	this.algOptions = document.getElementById("algorithmOptions");
+	this.startPause = document.getElementById("startPauseButton");
+
+	// register the HDX-specific event handler for waypoint clicks
+	registerMarkerClickListener(labelClickHDX);
     }
 };
 
@@ -111,28 +207,6 @@ var visualSettings = {
         textColor: "white",
         scale: 6,
 	name: "longLabelLeader",
-	value: 0
-    },
-    // specific to graph traversals
-    startVertex: {
-        color: "purple",
-        textColor: "white",
-        scale: 6,
-	name: "startVertex",
-	value: 0
-    },
-    discoveredEarlier: {
-        color: "red",
-        textColor: "white",
-        scale: 4,
-	name: "discoveredEarlier",
-	value: 0
-    },
-    visitedEarlier: {
-        color: "orange",
-        textColor: "black",
-        scale: 4,
-	name: "visitedEarlier",
 	value: 0
     },
     spanningTree: {
@@ -254,7 +328,6 @@ function hoverEndE(event, i) {
 // by the registerMarkerClickListener call in updateMap
 function labelClickHDX(i) {
 
-    //alert("labelClickHDX: " + i);
     // handle vertex control selection
     hdxVertexSelector.select(i);
 
@@ -377,9 +450,37 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
     }
 }
 
+// dummy AV entry for main menu
+var hdxNoAV = {
+
+    // entries for list of AVs
+    value: "NONE",
+    name: "Select an Algorithm",
+    description: "No algorithm is selected, please select.",
+    
+    // provide start, nextStep, setupUI, just in case buttons are
+    // somehow active when this option is selected
+    start() {
+
+	alert("Please select an algorithm first.");
+    },
+    
+    nextStep() {
+
+	alert("Please select an algorithm first.");
+    },
+
+    setupUI() {}
+};
+
 // vertex extremes search
 var hdxVertexExtremesSearchAV = {
 
+    // entries for list of AVs
+    value: "vertex",
+    name: "Vertex Extremes Search",
+    description: "Search for extreme values based on vertex (waypoint) locations and labels.",
+    
     // state variables for vertex extremes search
     nextToCheck: 0,
     // TODO: the leader indices should become an array!
@@ -390,12 +491,6 @@ var hdxVertexExtremesSearchAV = {
     shortIndex: -1,
     longIndex: -1,
 
-    // entry for list of AVs
-    name: "Vertex Extremes Search",
-
-    // longer description
-    description: "Search for extreme values based on vertex (waypoint) locations and labels.",
-    
     // visual settings specific to vertex search
     visualSettings: {
 	northLeader: {
@@ -494,13 +589,13 @@ var hdxVertexExtremesSearchAV = {
 	
 	if (!hdxAV.paused()) {
 	    var self = this;
-	    setTimeout(function() { self.continue() }, hdxAV.delay);
+	    setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
     },
 
-    // required continue function
+    // required nextStep function
     // do an iteration of vertex-based search
-    continue() {
+    nextStep() {
 
 	// if the simulation is paused, we can do nothing, as this function
 	// will be called again when we restart
@@ -648,7 +743,7 @@ var hdxVertexExtremesSearchAV = {
 				 20, true);
 	}
 	
-	document.getElementById('algorithmStatus').innerHTML =
+	hdxAV.algStat.innerHTML =
             'Visiting: <span style="color:' + visualSettings.visiting.textColor +
             '; background-color:' + visualSettings.visiting.color + '"> ' +
             this.nextToCheck + '</span>, ' + (markers.length - this.nextToCheck - 1) +
@@ -660,21 +755,32 @@ var hdxVertexExtremesSearchAV = {
             updateMarkerAndTable(this.nextToCheck, visualSettings.visiting,
 				 30, false);
             var self = this;
-            setTimeout(function() { self.continue() }, hdxAV.delay);
+            setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
 	else {
-	    hdxAV.status = hdxStates.AV_COMPLETE;
-	    document.getElementById("startPauseButton").disabled = true;
-	    document.getElementById("startPauseButton").innerHTML = "Start";
-            document.getElementById('algorithmStatus').innerHTML =
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+            hdxAV.algStat.innerHTML =
 		"Done! Visited " + markers.length + " waypoints.";
 	}
+    },
+
+    // set up UI for the start of this algorithm
+    setupUI() {
+
+	hdxAV.algStat.style.display = "";
+	hdxAV.algStat.innerHTML = "";
+        hdxAV.algOptions.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
     }
 };
 
 // edge extremes search
 var hdxEdgeExtremesSearchAV = {
 
+    // entries for list of AVs
+    value: "edge",
+    name: "Edge Extremes Search",
+    description: "Search for extreme values based on edge (connection) lengths and labels.",
+    
     // state variables for edge search
     // next to examine
     currentEdgeIndex: -1,
@@ -685,12 +791,6 @@ var hdxEdgeExtremesSearchAV = {
     shortestEdgeLabelIndex: -1,
     longestEdgeLabelIndex: -1,    
 
-    // entry for list of AVs
-    name: "Edge Extremes Search",
-
-    // longer description
-    description: "Search for extreme values based on edge (connection) lengths and labels.",
-    
     // visual settings specific to edge search
     visualSettings: {
 	shortestLeader: {
@@ -748,19 +848,19 @@ var hdxEdgeExtremesSearchAV = {
 	infoBox.setAttribute('id',infoid);
 	infoBoxtr.appendChild(infoBox);
 	algorithmsTbody.appendChild(infoBoxtr);
-	// document.getElementById('algorithmStatus').innerHTML = 'Checking: <span style="color:yellow">0</span>';
+	// hdxAV.algStat.innerHTML = 'Checking: <span style="color:yellow">0</span>';
 
 	// initialize to start looking at edge 0
 	this.currentEdgeIndex = 0;
 	
 	if (!hdxAV.paused()) {
 	    var self = this;
-	    setTimeout(function() { self.continue(); }, hdxAV.delay);
+	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
     },
 
-    // required continue function for edge search
-    continue() {
+    // required nextStep function for edge search
+    nextStep() {
     
 	if (hdxAV.paused()) {
             return;
@@ -896,7 +996,7 @@ var hdxEdgeExtremesSearchAV = {
 	}
 
 	// update status
-	document.getElementById('algorithmStatus').innerHTML =
+	hdxAV.algStat.innerHTML =
             'Visiting: <span style="color:' + visualSettings.visiting.textColor +
             '; background-color:' + visualSettings.visiting.color + '"> ' +
             this.currentEdgeIndex + '</span>, ' +
@@ -909,244 +1009,280 @@ var hdxEdgeExtremesSearchAV = {
 	    this.updateEdgeColor(this.currentEdgeIndex,
 				 visualSettings.visiting.color, 0.6, 10);
             var self = this;
-            setTimeout(function() { self.continue() }, hdxAV.delay);
+            setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
 	else {
-	    hdxAV.status = hdxStates.AV_COMPLETE;
-	    document.getElementById("startPauseButton").disabled = true;
-	    document.getElementById("startPauseButton").innerHTML = "Start";
-            document.getElementById('algorithmStatus').innerHTML =
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+            hdxAV.algStat.innerHTML =
 		"Done! Visited " + graphEdges.length + " edges.";
 	}
+    },
+
+    // set up UI for the start of edge search
+    setupUI() {
+
+	hdxAV.algStat.style.display = "";
+	hdxAV.algStat.innerHTML = "";
+        hdxAV.algOptions.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+
     }
 };
 
 // ********************************************************************
-// graph traversals
+// graph traversals, with option to find connected components
 // ********************************************************************
 
-// this first variable is the stack for DFS, queue for BFS, could be other
-//  for future enhancements
-// elements here are objects with fields vIndex for the index of this vertex
-// and connection is the Polyline connection followed to get here (so it
-// can be colored appropriately when the element comes out)
-var discoveredVertices = [];
+var hdxGraphTraversalsAV = {
 
-// what will we call this structure?
-var discoveredVerticesName;
-
-// array of booleans to indicate if we've visited each vertex
-var visitedVertices = [];
-
-// vertex visited on the previous iteration to be updated
-var lastVisitedVertex;
-
-// where did we start?
-var startingVertex;
-
-var endingVertex;
-// what is our traversal discipline, i.e., is discoveredVertices to be
-// treated as a stack, queue, or something else
-// values are currently "BFS" or "DFS" or "RFS"
-var traversalDiscipline;
-
-// initial vertex color coding and zindex offsets for graph traversals:
-// start vertex: green/10
-// undiscovered: white/0
-// in discovered list and not visited: purple/5
-// in discovered list but already visited: blue/5
-// not in discovered list but already visited: grey/1
-// just removed from discovered list and visiting: yellow/10
-// just removed from discovered list but already visited: orange/10
-
-// initial edge color coding for graph traversals:
-// undiscovered edge: white
-// edge leading to a vertex in the discovered list: purple
-// edge that is part of the spanning tree: red
-// edge that was discovered but ended up not in spanning tree: grey
-
-// initialize graph traversal process
-var gred = 245;
-var ggrn = 255;
-var gblu = 245;
+    // entries for list of AVs
+    value: "traverals",
+    name: "Graph Traversal/Connected Components",
+    description: "Perform graph traversal using breadth-first, depth-first, or random-first traversals, with the option of repeating to find all connected components of the graph.",
 
 
-function startGraphTraversal(discipline) {
-
-    traversalDiscipline = discipline;
-    if (discipline == "BFS") {
-        discoveredVerticesName = "Queue";
-    } else if (discipline == "DFS") {
-        discoveredVerticesName = "Stack";
-    } else if (discipline == "RFS") {
-        discoveredVerticesName = "List";
-    }
-
-    document.getElementById("connection").style.display = "none";
-    document.getElementById("waypoints").style.display = "";
-    var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
-    for (var i = 0; i < pointRows.length; i++) {
-	pointRows[i].style.display = "";
-    }
+    // list of vertices discovered but not yet visited
+    // a stack for DFS, queue for BFS, just an
+    // arbirtrary list for RFS
     
-    // initialize our visited array
-    visited = new Array(waypoints.length).fill(false);
+    // elements here are objects with fields vIndex for the index of
+    // this vertex and connection is the Polyline connection followed
+    // to get here (so it can be colored appropriately when the
+    // element comes out)
+    discoveredVertices: null,
+
+    // array of booleans to indicate if we've visited each vertex
+    visitedVertices: [],
+
+    // vertex visited on the previous iteration to be updated
+    lastVisitedVertex: -1,
+
+    // where did we start?
+    startingVertex: -1,
+
+    // what is our traversal discipline, i.e., is discoveredVertices to be
+    // treated as a stack, queue, or something else
+    // values are currently "BFS" or "DFS" or "RFS"
+    traversalDiscipline: "TBD",
+
+    // initial vertex color coding and zindex offsets for graph traversals:
+    // start vertex: green/10
+    // undiscovered: white/0
+    // in discovered list and not visited: purple/5
+    // in discovered list but already visited: blue/5
+    // not in discovered list but already visited: grey/1
+    // just removed from discovered list and visiting: yellow/10
+    // just removed from discovered list but already visited: orange/10
     
-    // replace all markers with white circles
-    for (var i = 0; i < markers.length; i++) {
-        updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
-    }
-
-    // color all edges white also
-    for (var i = 0; i < connections.length; i++) {
-        connections[i].setOptions({
-            strokeColor: visualSettings.undiscovered.color,
-            strokeOpacity: 0.6
-        });
-    }
-
-    // vertex index to start the traversal
-    startingVertex = document.getElementById("startPoint").value;
-
-    // initialize the process with this value
-    discoveredVertices.push({
-        vIndex: startingVertex,
-        connection: null
-    });
-    numVisited++;
-
-    updateMarkerAndTable(startingVertex, visualSettings.startVertex, 10, false);
-
-    // nothing to update this first time
-    lastVisitedVertex = -1;
-    if (!hdxAV.paused()) {
-	setTimeout(continueGraphTraversal, hdxAV.delay);
-    }
-}
-
-// function to see if a vertex with the given index is in discoveredVertices
-function discoveredVerticesContainsVertex(vIndex) {
-
-    for (var i = 0; i < discoveredVertices.length; i++) {
-        if (discoveredVertices[i].vIndex == vIndex) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// function to process one vertex from the discoveredVertices in the
-// graph traversal process
-var numVisited = 0;
-var numVisitedComingOut = 0;
-var numAlreadyVisited = 0;
-function continueGraphTraversal() {
+    // initial edge color coding for graph traversals:
+    // undiscovered edge: white
+    // edge leading to a vertex in the discovered list: purple
+    // edge that is part of the spanning tree: red
+    // edge that was discovered but ended up not in spanning tree: grey
     
-    // if we're paused, do nothing for now
-    if (hdxAV.paused()) {
-        return;
-    }
 
-    // maybe we have a last visited vertex to update
-    if (lastVisitedVertex != -1) {
-        if (lastVisitedVertex == startingVertex) {
-            // always leave the starting vertex colored appropriately
-            // and in the table
-            updateMarkerAndTable(startingVertex, visualSettings.startVertex,
-				 10, false);
-        }
-	else if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
-            // not in the list, this vertex gets marked as in the spanning tree
-            updateMarkerAndTable(lastVisitedVertex, visualSettings.spanningTree,
-				 1, false);
-        }
-	else {
-            // still in the list, color with the "discoveredEarlier"  style
-            updateMarkerAndTable(lastVisitedVertex,
-				 visualSettings.discoveredEarlier,
-				 5, false);
-        }
-    }
-    // maybe we're done
-    if (discoveredVertices.length == 0) {
-	hdxAV.status = hdxStates.AV_COMPLETE;
-	document.getElementById("startPauseButton").disabled = true;
-	document.getElementById("startPauseButton").innerHTML = "Start";
-        return;
-    }
+    // to be added back in later, possibly
+    //gred: 245,
+    //ggrn: 255,
+    //gblu: 245,
 
-    // select the next vertex to visit and remove it from the
-    // discoveredVertices list
-    var nextToVisit;
-    if (traversalDiscipline == "BFS") {
-        nextToVisit = discoveredVertices.shift();
-        numVisitedComingOut++;
-    }
-    else if (traversalDiscipline == "DFS") {
-        nextToVisit = discoveredVertices.pop();
-        numVisitedComingOut++;
-    }
-    else if (traversalDiscipline == "RFS") {
-        var index = Math.floor(Math.random() * discoveredVertices.length);
-        nextToVisit = discoveredVertices[index];
-        discoveredVertices.splice(index, 1);
-        numVisitedComingOut++;
-    }
+    // some additional stats we keep
+    numVisited: 0,
+    numVisitedComingOut: 0,
+    numAlreadyVisited: 0,
 
-    lastVisitedVertex = nextToVisit.vIndex;
-    var vIndex = nextToVisit.vIndex;
-    numVisited++;
-    // now decide what to do with this vertex -- depends on whether it
-    // had been previously visited
-    if (visited[vIndex]) {
-        numAlreadyVisited++;
-        // we've been here before, but is it still in the list?
-        if (discoveredVerticesContainsVertex(vIndex)) {
-            // not there anymore, indicated this as visitedEarlier, and
-            // will be discarded or marked as discoveredEarlier on the
-            // next iteration
-            updateMarkerAndTable(vIndex, visualSettings.visitedEarlier,
-				 4, false);
-        }
-	else {
-            // still to be seen again, so mark is as discoveredEarlier
-            updateMarkerAndTable(vIndex, visualSettings.discoveredEarlier,
-				 5, false);
-        }
+    // color items specific to graph traversals
+    visualSettings: {
+	startVertex: {
+            color: "purple",
+            textColor: "white",
+            scale: 6,
+	    name: "startVertex",
+	    value: 0
+	},
+	discoveredEarlier: {
+            color: "red",
+            textColor: "white",
+            scale: 4,
+	    name: "discoveredEarlier",
+	    value: 0
+	},
+	visitedEarlier: {
+            color: "orange",
+            textColor: "black",
+            scale: 4,
+	    name: "visitedEarlier",
+	    value: 0
+	}
+    },
+    
+    // initialize graph traversal process, required for all algorithms
+    start() {
 
-        // in either case here, the edge that got us here is not
-        // part of the ultimate spanning tree, so it should be the
-        // "discoveredEarlier" color
-        if (nextToVisit.connection != null) {
-            nextToVisit.connection.setOptions({
-                strokeColor: visualSettings.discoveredEarlier.color
+	let d = document.getElementById("traversalDiscipline");
+	this.traversalDiscipline = d.options[d.selectedIndex].value;
+	if (this.traversalDiscipline == "BFS") {
+            this.discoveredVertices = HDXLinear(hdxLinearTypes.QUEUE);
+	}
+	else if (this.traversalDiscipline == "DFS") {
+            this.discoveredVertices = HDXLinear(hdxLinearTypes.STACK);
+	}
+	else if (this.traversalDiscipline == "RFS") {
+            this.discoveredVertices = HDXLinear(hdxLinearTypes.RANDOM);
+	}
+
+	document.getElementById("connection").style.display = "none";
+	document.getElementById("waypoints").style.display = "";
+	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
+	for (var i = 0; i < pointRows.length; i++) {
+	    pointRows[i].style.display = "";
+	}
+	
+	// initialize our visited array
+	this.visitedVertices = new Array(waypoints.length).fill(false);
+	
+	// replace all markers with white circles
+	for (var i = 0; i < markers.length; i++) {
+            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
+	}
+	
+	// color all edges white also
+	for (var i = 0; i < connections.length; i++) {
+            connections[i].setOptions({
+		strokeColor: visualSettings.undiscovered.color,
+		strokeOpacity: 0.6
             });
-        }
-    }
-    // visiting for the first time
-    else {
-        visited[vIndex] = true;
-        updateMarkerAndTable(vIndex, visualSettings.visiting,
-			     10, false);
+	}
+	
+	// vertex index to start the traversal
+	this.startingVertex = document.getElementById("startPoint").value;
+	
+	// initialize the process with this value
+	this.discoveredVertices.add({
+            vIndex: this.startingVertex,
+            connection: null
+	});
+	this.numVisited = 1;
 
-        // we used the edge to get here, so let's mark it as such
-        if (nextToVisit.connection != null) {
-            nextToVisit.connection.setOptions({
-                strokeColor: visualSettings.spanningTree.color
-            });
-        }
+	updateMarkerAndTable(this.startingVertex,
+			     this.visualSettings.startVertex, 10, false);
+	
+	// nothing to update this first time
+	this.lastVisitedVertex = -1;
+	if (!hdxAV.paused()) {
+	    var self = this;
+	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	}
+    },
 
-        // discover any new neighbors
-        var neighbors = getAdjacentPoints(vIndex);
-        for (var i = 0; i < neighbors.length; i++) {
-            if (!visited[neighbors[i]]) {
-                var connection = waypoints[vIndex].edgeList[i].connection;
-                discoveredVertices.push({
-                    vIndex: neighbors[i],
-                    connection: connection
-                });
-		updateMarkerAndTable(neighbors[i], visualSettings.discovered,
+    // function to see if a vertex with the given index is in
+    // discoveredVertices
+    //discoveredVerticesContainsVertex(vIndex) {
+
+//	for (var i = 0; i < this.discoveredVertices.length; i++) {
+  //          if (this.discoveredVertices[i].vIndex == vIndex) {
+//		return true;
+  //          }
+//	}
+//	return false;
+  //  },
+
+    // function to process one vertex from the discoveredVertices in the
+    // graph traversal process
+    nextStep() {
+    
+	// if we're paused, do nothing for now
+	if (hdxAV.paused()) {
+            return;
+	}
+	
+	// maybe we have a last visited vertex to update
+	if (this.lastVisitedVertex != -1) {
+            if (this.lastVisitedVertex == this.startingVertex) {
+		// always leave the starting vertex colored appropriately
+		// and in the table
+		updateMarkerAndTable(this.startingVertex,
+				     this.visualSettings.startVertex,
+				     10, false);
+            }
+	    else if (!this.discoveredVertices.containsFieldMatching("vIndex", this.lastVisitedVertex)) {
+		// not in the list, this vertex gets marked as in the
+		// spanning tree
+		updateMarkerAndTable(this.lastVisitedVertex,
+				     visualSettings.spanningTree,
+				     1, false);
+            }
+	    else {
+		// still in the list, color with the "discoveredEarlier"  style
+		updateMarkerAndTable(this.lastVisitedVertex,
+				     this.visualSettings.discoveredEarlier,
 				     5, false);
+            }
+	}
+	// maybe we're done
+	if (this.discoveredVertices.isEmpty()) {
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+            return;
+	}
+	
+	// select the next vertex to visit and remove it from the
+	// discoveredVertices list
+	let nextToVisit = this.discoveredVertices.remove();
+        this.numVisitedComingOut++;
+	this.lastVisitedVertex = nextToVisit.vIndex;
+	let vIndex = nextToVisit.vIndex;
+	this.numVisited++;
+	// now decide what to do with this vertex -- depends on whether it
+	// had been previously visited
+	if (this.visitedVertices[vIndex]) {
+            this.numAlreadyVisited++;
+            // we've been here before, but is it still in the list?
+            if (this.discoveredVertices.containsFieldMatching("vIndex", vIndex)) {
+		// not there anymore, indicated this as visitedEarlier, and
+		// will be discarded or marked as discoveredEarlier on the
+		// next iteration
+		updateMarkerAndTable(vIndex, this.visualSettings.visitedEarlier,
+				     4, false);
+            }
+	    else {
+		// still to be seen again, so mark is as discoveredEarlier
+		updateMarkerAndTable(vIndex, this.visualSettings.discoveredEarlier,
+				     5, false);
+            }
+	    
+            // in either case here, the edge that got us here is not
+            // part of the ultimate spanning tree, so it should be the
+            // "discoveredEarlier" color
+            if (nextToVisit.connection != null) {
+		nextToVisit.connection.setOptions({
+                    strokeColor: this.visualSettings.discoveredEarlier.color
+		});
+            }
+	}
+	// visiting for the first time
+	else {
+            this.visitedVertices[vIndex] = true;
+            updateMarkerAndTable(vIndex, visualSettings.visiting,
+			     10, false);
+	    
+            // we used the edge to get here, so let's mark it as such
+            if (nextToVisit.connection != null) {
+		nextToVisit.connection.setOptions({
+                    strokeColor: visualSettings.spanningTree.color
+		});
+            }
+	    
+            // discover any new neighbors
+            var neighbors = getAdjacentPoints(vIndex);
+            for (var i = 0; i < neighbors.length; i++) {
+		if (!this.visitedVertices[neighbors[i]]) {
+                    var connection = connections[waypoints[vIndex].edgeList[i].edgeListIndex];
+                    this.discoveredVertices.add({
+			vIndex: neighbors[i],
+			connection: connection
+                    });
+		    updateMarkerAndTable(neighbors[i], visualSettings.discovered,
+					 5, false);
+/*
                 updateMarkerAndTable(neighbors[i],
 				     {
 					 color: "rgb("+gred+","+ggrn+","+gblu+")",
@@ -1161,419 +1297,245 @@ function continueGraphTraversal() {
 		else {
 		    ggrn-=10;
 		}
-		
-                // also color the edge we followed to get to this
-                // neighbor as the same color to indicate it's a candidate
-                // edge followed to find a current discovered but
-                // unvisited vertex
-                if (connection != null) {
-                    connection.setOptions({
-                        strokeColor: visualSettings.discovered.color
-                    });
-                }
-		else {
-                    console.log("Unexpected null connection, vIndex=" + vIndex +
-				", i=" + i);
-                }
+*/		
+                    // also color the edge we followed to get to this
+                    // neighbor as the same color to indicate it's a candidate
+                    // edge followed to find a current discovered but
+                    // unvisited vertex
+                    if (connection != null) {
+			connection.setOptions({
+                            strokeColor: visualSettings.discovered.color
+			});
+                    }
+		    else {
+			console.log("Unexpected null connection, vIndex=" + vIndex +
+				    ", i=" + i);
+                    }
+		}
             }
-        }
-    }
-
-    // update view of our list
-    //printList(queue);
-   /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
-    setTimeout(continueGraphTraversal, delay);*/
-    var newDS = makeTable();
-    if (newDS != null) {
-	document.getElementById("algorithmStatus").appendChild(newDS);
-    }
-    shiftColors();
-    setTimeout(continueGraphTraversal, hdxAV.delay);
-}
-
-var red = 255;
-var green = 0;
-var blue = 0;
-var piecenum = 1;
-
-function startConnectedPieces(vert, visitarr) {
+	}
 	
-    discoveredVerticesName = "Queue";
+	var newDS = null; //makeTable(this.discoveredVertices);
+	if (newDS != null) {
+	    hdxAV.algStat.appendChild(newDS);
+	}
+	//shiftColors();
+	let self = this;
+	setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+    },
+
+    // set up UI components for traversals
+    setupUI() {
+
+	hdxAV.algStat.style.display = "none";
+	hdxAV.algStat.innerHTML = "";
+        hdxAV.algOptions.innerHTML = 'Order: <select id="traversalDiscipline"><option value="BFS">Breadth First</option><option value="DFS">Depth First</option><option value="RFS">Random</option></select>' +
+	    '<br /><input id="findConnected" type="checkbox" name="Final all connected components">&nbsp;Find all connected components' +
+	    '<br />Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
+            '<br /><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+ '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+
+    }
+};
+
+// Dijstra's algorithm for single-source shortest paths
+// initial code by Clarice Tarbay
+var hdxDijkstraAV = {
     
-    var piecesTD = "";
+    // entries for list of AVs
+    value: "dijkstra",
+    name: "Dijkstra's Algorithm",
+    description: "Dijkstra's algorithm for single-source shortest paths.",
     
-    document.getElementById("connection").style.display = "none";
-    document.getElementById("waypoints").style.display = "";
-    var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
-    for (var i = 0; i < pointRows.length; i++)
-	pointRows[i].style.display = "";
-    
-    // initialize our visited array, define start vertex, recolor if necessary
-    if (vert == -1) {
-	var piecesTR = document.createElement("tr");
-	piecesTD = document.createElement("td");
-	piecesTR.appendChild(piecesTD);
-	piecesTD.setAttribute("id","piecesTD");
-	$("#AlgorithmsTable > tbody").append(piecesTR);
-	piecesTD = document.getElementById("piecesTD");
-	visited = new Array(waypoints.length).fill(false);
-	startingVertex = document.getElementById("startPoint").value;
+    totalPath: [],
+
+    gred: 245,
+    gblu: 245,
+    ggrn: 245,
+
+    // where do we start and end?
+    startingVertex: -1,
+    endingVertex: -1,
+
+    // vertex visited on the previous iteration to be updated
+    lastVisitedVertex: -1,
+
+    // required algorithm start method for Dijkstra's
+    start() {
+
+	// vertex indices for the start and end of the traversal
+	this.startingVertex = document.getElementById("startPoint").value;
+	this.endingVertex = document.getElementById("endPoint").value;
+	
+	if (this.startingVertex == this.endingVertex) {
+	    alert("Start and End vertices must be different!");
+	    return;
+	}    
+	
+	document.getElementById("connection").style.display = "none";
+	document.getElementById("waypoints").style.display = "none";
+	
+	if ($("#dijtable").length > 0) {
+	    $("#dijtable").remove();
+	}
+	
+	var dijkstraTable = document.createElement("table");
+	dijkstraTable.id = "dijtable";
+	dijkstraTable.className = "gratable";
+	var dijthead = document.createElement("thead");
+	
+	var topRow = document.createElement("tr");
+	
+	var th = document.createElement("th");
+	th.innerHTML = "#";
+	topRow.appendChild(th);
+	
+	th = document.createElement("th");
+	th.innerHTML = "Distance";
+	topRow.appendChild(th);
+	
+	th = document.createElement("th");
+	th.innerHTML = "Name";
+	topRow.appendChild(th);
+	
+	th = document.createElement("th");
+	th.innerHTML = "Previous edge";
+	topRow.appendChild(th);
+	
+	dijthead.appendChild(topRow);
+	dijkstraTable.appendChild(dijthead);
+	var dijtbody = document.createElement("tbody");
+	dijtbody.id = "dijtbody";
+	dijkstraTable.appendChild(dijtbody);
+	
+	document.getElementById("waypoints").parentNode.parentNode.appendChild(dijkstraTable);	
+	
+	discoveredVerticesName = "PQueue";
+	
+	// initialize our visited array
+	this.visitedVertices = new Array(waypoints.length).fill(false);
+	
 	// replace all markers with white circles
 	for (var i = 0; i < markers.length; i++) {
-	    updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
+            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
 	}
 	
 	// color all edges white also
 	for (var i = 0; i < connections.length; i++) {
-	    connections[i].setOptions({
+            connections[i].setOptions({
 		strokeColor: visualSettings.undiscovered.color,
 		strokeOpacity: 0.6
-	    });
-	}	
-    }
-    else {
-	piecesTD = document.getElementById("piecesTD");
-	visited = visitarr;
-	startingVertex = vert;
-    }
-    
-    piecesTD.innerHTML = "Currently traversing component #"+ piecenum;
-    piecesTD.style.backgroundColor = "rgb("+red+","+green+","+blue+")";
-    
-    // initialize the process with this value
-    discoveredVertices.push({
-        vIndex: startingVertex,
-        connection: null
-    });
-    
-    updateMarkerAndTable(startingVertex, visualSettings.startVertex, 10, false);
-    
-    // nothing to update this first time
-    lastVisitedVertex = -1;
-    if (!hdxAV.paused()) {
-	setTimeout(continueConnectedPieces, hdxAV.delay);
-    }
-}
-
-function continueConnectedPieces() {
-	
-    // if we're paused, do nothing for now
-    if (hdxAV.paused()) {
-        return;
-    }
-
-    // maybe we have a last visited vertex to update
-    if (lastVisitedVertex != -1) {
-	if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
-            // not in the list, this vertex gets marked as in the spanning tree
-            updateMarkerAndTable(lastVisitedVertex,
-				 {
-				     color: "rgb("+red+","+green+","+blue+")",
-				     textColor: "black",
-				     scale: 2
-				 },
-				 1, false);
-        } else {
-            // still in the list, color with the "discoveredEarlier"  style
-            updateMarkerAndTable(lastVisitedVertex,
-				 visualSettings.discoveredEarlier,
-				 5, false);
-        }
-    }
-    
-    var vleft = false;
-    var index = -1;
-    for (var i = 0; i < visited.length; i++) {
-	if (!visited[i]) {
-	    vleft = true;
-	    index = i;
-	}
-    }
-
-    // maybe we're done
-    if (discoveredVertices.length == 0 && !vleft) {
-	hdxAV.status = hdxStates.AV_COMPLETE;
-	document.getElementById("startPauseButton").disabled = true;
-	document.getElementById("startPauseButton").innerHTML = "Start";
-        document.getElementById("piecesTD").innerHTML = "Done! Map contains "+piecenum+" unconnected pieces";
-	document.getElementById("piecesTD").style.backgroundColor = "#ffffff";
-        return;
-    }
-    
-    if (discoveredVertices.length == 0 && vleft) {
-	if (green <= 220 && blue <=220)
-	    green = green+35;
-	else if (red >= 35 && green > 220)
-	    red-=35;	
-	else if (blue <= 220 && red <= 220)
-	    blue += 35;	
-	else if (blue > 220 && green >=35)
-	    green -=35;
-	else if (red <= 220 && green <= 220)
-	    red += 35;		
-	piecenum++;
-        startConnectedPieces(index, visited);
-	return;
-    }
-
-    // select the next vertex to visit and remove it from the
-    // discoveredVertices list
-   
-    var nextToVisit = discoveredVertices.shift();
-    numVisited++;
-   
-    lastVisitedVertex = nextToVisit.vIndex;
-    var vIndex = nextToVisit.vIndex;
-    
-    // now decide what to do with this vertex -- depends on whether it
-    // had been previously visited
-    if (visited[vIndex]) {
-	numAlreadyVisited++;
-        // we've been here before, but is it still in the list?
-        if (discoveredVerticesContainsVertex(vIndex)) {
-            // not there anymore, indicated this as visitedEarlier, and
-            // will be discarded or marked as discoveredEarlier on the
-            // next iteration
-            updateMarkerAndTable(vIndex, visualSettings.visitedEarlier,
-				 4, false);
-        } else {
-            // still to be seen again, so mark is as discoveredEarlier
-            updateMarkerAndTable(vIndex, visualSettings.discoveredEarlier,
-				 5, false);
-        }
-
-        // in either case here, the edge that got us here is not
-        // part of the ultimate spanning tree, so it should be the
-        // "discoveredEarlier" color
-        if (nextToVisit.connection != null) {
-            nextToVisit.connection.setOptions({
-                strokeColor: visualSettings.discoveredEarlier.color
             });
-        }
-    }
-    // visiting for the first time
-    else {
-	numVisitedComingOut++;
-        visited[vIndex] = true;
-        updateMarkerAndTable(vIndex, visualSettings.visiting,
-			     10, false);
-
-        // we used the edge to get here, so let's mark it as such
-        if (nextToVisit.connection != null) {
-            nextToVisit.connection.setOptions({
-                strokeColor: "rgb("+red+","+green+","+blue+")"
-            });
-        }
-
-        // discover any new neighbors
-        var neighbors = getAdjacentPoints(vIndex);
-        for (var i = 0; i < neighbors.length; i++) {
-            if (!visited[neighbors[i]]) {
-                var connection = waypoints[vIndex].edgeList[i].connection;
-                discoveredVertices.push({
-                    vIndex: neighbors[i],
-                    connection: connection
-                });
-                updateMarkerAndTable(neighbors[i], visualSettings.discovered,
-				     5, false);
-		
-                // also color the edge we followed to get to this
-                // neighbor as the same color to indicate it's a candidate
-                // edge followed to find a current discovered but
-                // unvisited vertex
-                if (connection != null) {
-                    connection.setOptions({
-                        strokeColor: visualSettings.discovered.color
-                    });
-                } else {
-                    console.log("Unexpected null connection, vIndex=" + vIndex + ", i=" + i);
-                }
-            }
-        }
-    }
-    
-    // update view of our list
-    //printList(queue);
-   /* document.getElementById('algorithmStatus').innerHTML = discoveredVerticesName + " (size: " + discoveredVertices.length + ") " + listToVIndexString(discoveredVertices);
-    setTimeout(continueGraphTraversal, delay);*/
-    var newDS = makeTable();
-    if (newDS != null) {
-	document.getElementById("algorithmStatus").appendChild(newDS);
-    }
-    setTimeout(continueConnectedPieces, hdxAV.delay);
-}
-
-function startDijkstra() {
-	
-    document.getElementById("connection").style.display = "none";
-    document.getElementById("waypoints").style.display = "none";
-    
-    if ($("#dijtable").length > 0) {
-	$("#dijtable").remove();
-    }
-    
-    var dijkstraTable = document.createElement("table");
-    dijkstraTable.id = "dijtable";
-    dijkstraTable.className = "gratable";
-    var dijthead = document.createElement("thead");
-    
-    var topRow = document.createElement("tr");
-    
-    var th = document.createElement("th");
-    th.innerHTML = "#";
-    topRow.appendChild(th);
-    
-    th = document.createElement("th");
-    th.innerHTML = "Distance";
-    topRow.appendChild(th);
-    
-    th = document.createElement("th");
-    th.innerHTML = "Name";
-    topRow.appendChild(th);
-    
-    th = document.createElement("th");
-    th.innerHTML = "Previous edge";
-    topRow.appendChild(th);
-    
-    dijthead.appendChild(topRow);
-    dijkstraTable.appendChild(dijthead);
-    var dijtbody = document.createElement("tbody");
-    dijtbody.id = "dijtbody";
-    dijkstraTable.appendChild(dijtbody);
-    
-    document.getElementById("waypoints").parentNode.parentNode.appendChild(dijkstraTable);	
-
-    discoveredVerticesName = "PQueue";
-    
-    // initialize our visited array
-    visited = new Array(waypoints.length).fill(false);
-    
-    // replace all markers with white circles
-    for (var i = 0; i < markers.length; i++) {
-        updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
-    }
-    
-    // color all edges white also
-    for (var i = 0; i < connections.length; i++) {
-        connections[i].setOptions({
-            strokeColor: visualSettings.undiscovered.color,
-            strokeOpacity: 0.6
-        });
-    }
-    
-    // vertex index to start the traversal
-    startingVertex = document.getElementById("startPoint").value;
-    endingVertex = document.getElementById("endPoint").value;
-    
-    
-    // initialize the process with this value
-    discoveredVertices.push({
-        vIndex: startingVertex,
-        connection: null,
-	dist: 0,
-	edge: null
-    });
-    numVisited++;
-    
-    updateMarkerAndTable(startingVertex, visualSettings.startVertex, 10, false);
-    
-    // nothing to update this first time
-    lastVisitedVertex = -1;
-    if (!hdxAV.paused()) {
-	setTimeout(continueDijkstra, hdxAV.delay);
-    }
-}
-
-function comparePQ(a, b) {
-    return a.dist-b.dist;
-}
-
-var totalPath = Array();
-
-function findNextV(edge, vnum) {
-    if (edge.v1 == vnum)
-	return edge.v2;
-    else 
-	return edge.v1;
-}
-
-function findNextPath(v1, v2) {
-    var cur;
-    for (var i = 0; i < totalPath.length; i++) {
-	cur = totalPath[i].edge;
-	if (cur != null &&
-	    (v1 == cur.v1 || v1 == cur.v2) && (v2 != cur.v1 && v2 != cur.v2)) {
-	    return i;
 	}
-    }
-}
+	
+	// initialize the process with this value
+	discoveredVertices.push({
+            vIndex: this.startingVertex,
+            connection: null,
+	    dist: 0,
+	    edge: null
+	});
+	numVisited++;
+	
+	updateMarkerAndTable(this.startingVertex, visualSettings.startVertex, 10, false);
+	
+	// nothing to update this first time
+	lastVisitedVertex = -1;
+	if (!hdxAV.paused()) {
+	    let self = this;
+	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	}
+    },
 
-function continueDijkstra() {
-    // if we're paused, do nothing for now
-    if (hdxAV.paused()) {
-        return;
-    }
+    // PQ comparator function
+    comparePQ(a, b) {
+	return a.dist-b.dist;
+    },
 
-    // maybe we have a last visited vertex to update
-    if (lastVisitedVertex != -1) {
-        if (lastVisitedVertex == startingVertex) {
-            // always leave the starting vertex colored appropriately
-            // and in the table
-            updateMarkerAndTable(startingVertex, visualSettings.startVertex,
-				 10, false);
-        } else if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
-            // not in the list, this vertex gets marked as in the spanning tree
-            updateMarkerAndTable(lastVisitedVertex, visualSettings.spanningTree,
-				 1, false);
-        } else {
-            // still in the list, color with the "discoveredEarlier"  style
-            updateMarkerAndTable(lastVisitedVertex,
-				 visualSettings.discoveredEarlier,
-				 5, false);
-        }
-    }
-    // maybe we're done, if there are no vertices left, or in the case
-    // that start/end are different, we've visited the end
-    if (discoveredVertices.length == 0 ||
-	(visited[endingVertex] && startingVertex != endingVertex)) {
-	//make our table a sortable DataTable
-	createDataTable("#dijtable");
-	//if start/end different, construct path from start to end
-        if (startingVertex != endingVertex) {
-	    var curV = totalPath[totalPath.length-1];
-	    var edgePath = curV.edge;
-	    var curVnum = endingVertex;
-	    var nextV;
-	    while (curV != null) {
-		edgePath = curV.edge;
-		curVnum = nextV;
-		if (curVnum == startingVertex)
-		    break;
-		updateMarkerAndTable(curV.vIndex,
-				     {
-					 color: "#ffaa00",
-					 textColor: "black",
-					 scale: 5},
-				     5, false);
-		curV.connection.setOptions({
-		    strokeColor: "#ffaa00"
-		});
-		
-		nextV = findNextV(edgePath, curVnum);
-		curV = totalPath[findNextPath(nextV, curVnum)];
+    // additional helper functions
+    findNextV(edge, vnum) {
+	if (edge.v1 == vnum)
+	    return edge.v2;
+	else 
+	    return edge.v1;
+    },
+
+    findNextPath(v1, v2) {
+	var cur;
+	for (var i = 0; i < this.totalPath.length; i++) {
+	    cur = this.totalPath[i].edge;
+	    if (cur != null &&
+		(v1 == cur.v1 || v1 == cur.v2) && (v2 != cur.v1 && v2 != cur.v2)) {
+		return i;
 	    }
 	}
-	hdxAV.status = hdxStates.AV_COMPLETE;
-	document.getElementById("startPauseButton").disabled = true;
-	document.getElementById("startPauseButton").innerHTML = "Start";
-        return;
-    }
+    },
 
-    // select the next vertex to visit and remove it from the
-    // discoveredVertices list
-    var nextToVisit = discoveredVertices.shift();
+    // continue next step of Dijkstra's algorithm
+    nextStep() {
+
+	// if we're paused, do nothing for now
+	if (hdxAV.paused()) {
+            return;
+	}
+	
+	// maybe we have a last visited vertex to update
+	if (lastVisitedVertex != -1) {
+            if (lastVisitedVertex == this.startingVertex) {
+		// always leave the starting vertex colored appropriately
+		// and in the table
+		updateMarkerAndTable(this.startingVertex, visualSettings.startVertex,
+				     10, false);
+            } else if (!discoveredVerticesContainsVertex(lastVisitedVertex)) {
+		// not in the list, this vertex gets marked as in the spanning tree
+		updateMarkerAndTable(lastVisitedVertex, visualSettings.spanningTree,
+				     1, false);
+            } else {
+		// still in the list, color with the "discoveredEarlier"  style
+		updateMarkerAndTable(lastVisitedVertex,
+				     visualSettings.discoveredEarlier,
+				     5, false);
+            }
+	}
+	// maybe we're done, if there are no vertices left, or in the case
+	// that start/end are different, we've visited the end
+	if (discoveredVertices.length == 0 ||
+	    (visited[this.endingVertex] && this.startingVertex != this.endingVertex)) {
+	    //make our table a sortable DataTable
+	    createDataTable("#dijtable");
+	    //if start/end different, construct path from start to end
+            if (this.startingVertex != this.endingVertex) {
+		var curV = totalPath[totalPath.length-1];
+		var edgePath = curV.edge;
+		var curVnum = endingVertex;
+		var nextV;
+		while (curV != null) {
+		    edgePath = curV.edge;
+		    curVnum = nextV;
+		    if (curVnum == this.startingVertex)
+			break;
+		    updateMarkerAndTable(curV.vIndex,
+					 {
+					     color: "#ffaa00",
+					     textColor: "black",
+					     scale: 5},
+					 5, false);
+		    curV.connection.setOptions({
+			strokeColor: "#ffaa00"
+		    });
+		    
+		    nextV = findNextV(edgePath, curVnum);
+		    curV = totalPath[findNextPath(nextV, curVnum)];
+		}
+	    }
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+            return;
+	}
+	
+	// select the next vertex to visit and remove it from the
+	// discoveredVertices list
+	var nextToVisit = discoveredVertices.shift();
 	if (startingVertex != endingVertex)
-		totalPath.push(nextToVisit);
+	    totalPath.push(nextToVisit);
 	
 	if ($("#di"+nextToVisit.vIndex).length<=0) {
 	    var tr = document.createElement("tr");
@@ -1617,104 +1579,115 @@ function continueDijkstra() {
 	    
 	    document.getElementById("dijtbody").appendChild(tr);
 	}
-    
-    lastVisitedVertex = nextToVisit.vIndex;
-    var vIndex = nextToVisit.vIndex;
-    numVisited++;
-    // now decide what to do with this vertex -- depends on whether it
-    // had been previously visited
-    if (visited[vIndex]) {
-        numAlreadyVisited++;
 	
-        // we've been here before, but is it still in the list?
-        if (discoveredVerticesContainsVertex(vIndex)) {
-            // not there anymore, indicated this as visitedEarlier, and
-            // will be discarded or marked as discoveredEarlier on the
-            // next iteration
-            updateMarkerAndTable(vIndex, visualSettings.visitedEarlier,
-				 4, false);
-        } else {
-            // still to be seen again, so mark is as discoveredEarlier
-            updateMarkerAndTable(vIndex, visualSettings.discoveredEarlier,
-				 5, false);
-        }
-	
-        // in either case here, the edge that got us here is not
-        // part of the ultimate spanning tree, so it should be the
-        // "discoveredEarlier" color
-        if (nextToVisit.connection != null) {
-            nextToVisit.connection.setOptions({
-                strokeColor: visualSettings.discoveredEarlier.color
-            });
-        }
-    }
-    // visiting for the first time
-    else {
-        visited[vIndex] = true;
-	numVisitedComingOut++;
-        updateMarkerAndTable(vIndex, visualSettings.visiting,
-			     10, false);
-	
-        // we used the edge to get here, so let's mark it as such
-        if (nextToVisit.connection != null) {
-            nextToVisit.connection.setOptions({
-                strokeColor: visualSettings.spanningTree.color
-            });
-        }
-	
-        // discover any new neighbors
-        var neighbors = getAdjacentPoints(vIndex);
-        for (var i = 0; i < neighbors.length; i++) {
-            if (!visited[neighbors[i]]) {
-                var connection = waypoints[vIndex].edgeList[i].connection;
-                discoveredVertices.push({
-                    vIndex: neighbors[i],
-                    connection: connection,
-		    dist: distanceInMiles(waypoints[vIndex].lat,
-					  waypoints[vIndex].lon,
-					  waypoints[neighbors[i]].lat,
-					  waypoints[neighbors[i]].lon)+nextToVisit.dist,
-		    edge: waypoints[vIndex].edgeList[i]
-                });
-                updateMarkerAndTable(neighbors[i],
-				     {
-					 color: "rgb("+gred+","+ggrn+","+gblu+")",
-					 textColor: "black",
-					 scale: 4
-				     },
+	lastVisitedVertex = nextToVisit.vIndex;
+	var vIndex = nextToVisit.vIndex;
+	numVisited++;
+	// now decide what to do with this vertex -- depends on whether it
+	// had been previously visited
+	if (visited[vIndex]) {
+            numAlreadyVisited++;
+	    
+            // we've been here before, but is it still in the list?
+            if (discoveredVerticesContainsVertex(vIndex)) {
+		// not there anymore, indicated this as visitedEarlier, and
+		// will be discarded or marked as discoveredEarlier on the
+		// next iteration
+		updateMarkerAndTable(vIndex, visualSettings.visitedEarlier,
+				     4, false);
+            } else {
+		// still to be seen again, so mark is as discoveredEarlier
+		updateMarkerAndTable(vIndex, visualSettings.discoveredEarlier,
 				     5, false);
-		if (gblu >=10) {
-		    gred-=10;
-		    gblu-=10;
-		}
-		else {
-		    ggrn-=10;
-		}
-		
-                // also color the edge we followed to get to this
-                // neighbor as the same color to indicate it's a candidate
-                // edge followed to find a current discovered but
-                // unvisited vertex
-                if (connection != null) {
-                    connection.setOptions({
-                        strokeColor: visualSettings.discovered.color
-                    });
-                } else {
-                    console.log("Unexpected null connection, vIndex=" + vIndex + ", i=" + i);
-                }
             }
-        }
+	    
+            // in either case here, the edge that got us here is not
+            // part of the ultimate spanning tree, so it should be the
+            // "discoveredEarlier" color
+            if (nextToVisit.connection != null) {
+		nextToVisit.connection.setOptions({
+                    strokeColor: visualSettings.discoveredEarlier.color
+		});
+            }
+	}
+	// visiting for the first time
+	else {
+            visited[vIndex] = true;
+	    numVisitedComingOut++;
+            updateMarkerAndTable(vIndex, visualSettings.visiting,
+				 10, false);
+	    
+            // we used the edge to get here, so let's mark it as such
+            if (nextToVisit.connection != null) {
+		nextToVisit.connection.setOptions({
+                    strokeColor: visualSettings.spanningTree.color
+		});
+            }
+	    
+            // discover any new neighbors
+            var neighbors = getAdjacentPoints(vIndex);
+            for (var i = 0; i < neighbors.length; i++) {
+		if (!visited[neighbors[i]]) {
+                    var connection = waypoints[vIndex].edgeList[i].connection;
+                    discoveredVertices.push({
+			vIndex: neighbors[i],
+			connection: connection,
+			dist: distanceInMiles(waypoints[vIndex].lat,
+					      waypoints[vIndex].lon,
+					      waypoints[neighbors[i]].lat,
+					      waypoints[neighbors[i]].lon)+nextToVisit.dist,
+			edge: waypoints[vIndex].edgeList[i]
+                    });
+		    
+                    updateMarkerAndTable(neighbors[i],
+					 {
+					     color: "rgb("+gred+","+ggrn+","+gblu+")",
+					     textColor: "black",
+					     scale: 4
+					 },
+					 5, false);
+		    if (gblu >=10) {
+			gred-=10;
+			gblu-=10;
+		    }
+		    else {
+			ggrn-=10;
+		    }
+		    
+                    // also color the edge we followed to get to this
+                    // neighbor as the same color to indicate it's a candidate
+                    // edge followed to find a current discovered but
+                    // unvisited vertex
+                    if (connection != null) {
+			connection.setOptions({
+                            strokeColor: visualSettings.discovered.color
+			});
+                    } else {
+			console.log("Unexpected null connection, vIndex=" + vIndex + ", i=" + i);
+                    }
+		}
+            }
+	}
+	discoveredVertices.sort(this.comparePQ);
+	
+	// update view of our list
+	var newDS = null; //makeTable();
+	if (newDS != null) {
+	    hdxAV.algStat.appendChild(newDS);
+	}
+	shiftColors();
+	let self = this;
+	setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+    },
+
+    // set up UI for Dijkstra's
+    setupUI() {
+	
+	hdxAV.algStat.style.display = "none";
+	hdxAV.algStat.innerHTML = "";
+        hdxAV.algOptions.innerHTML = 'Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" min="0" name="Starting Point" value="0" size="7" /> <br>' + 'End &nbspVertex <input id="endPoint" onfocus="hdxVertexSelector.startSelection(\'#endPoint\')" type="number" min="0" name="End Point" value="0" size="7" /> <br>' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
     }
-    discoveredVertices.sort(comparePQ);
-    
-    // update view of our list
-    var newDS = makeTable();
-    if (newDS != null) {
-	document.getElementById("algorithmStatus").appendChild(newDS);
-    }
-    shiftColors();
-    setTimeout(continueDijkstra, hdxAV.delay);
-}
+};
 
 function DSColor(id, color) {
     
@@ -1802,6 +1775,7 @@ function shiftColors() {
     }
 }
 
+// get a list of adjacent vertices by index into waypoints array
 function getAdjacentPoints(pointIndex) {
     var resultArray = [];
     var edgeList = waypoints[pointIndex].edgeList;
@@ -1809,7 +1783,8 @@ function getAdjacentPoints(pointIndex) {
         var adjacentIndex;
         if (edgeList[i].v1 == pointIndex) {
             adjacentIndex = edgeList[i].v2;
-        } else {
+        }
+	else {
             adjacentIndex = edgeList[i].v1;
         }
         resultArray.push(adjacentIndex);
@@ -1818,189 +1793,226 @@ function getAdjacentPoints(pointIndex) {
     return resultArray;
 }
 
-// New Convex Hull 
-function addToHull(temp1, temp2) {
-    hull[0] = temp1;
-    hull[1] = temp2;
-}
+// Brute-force convex hull AV
+// based on original code by Arjol Pengu and Maria Bamundo
+var hdxBFConvexHullAV = {
 
-// Compute Squared Distance 
-function squaredDistance(o1, o2) {
-    var dx, dy;
-    dx = o1.lon - o2.lon;
-    dy = o1.lat - o2.lat;
-    return dx * dx + dy * dy;
-}
-
-var hull = [];
-
-var hullI = 0;
-var hullJ = 0;
-//var k = 0;
-var hull = [];
-
-var convexLineHull = [];
-
-var visitingLine = [];
-
-var currentSegment;
-
-function visitingLineHull(lineHull) {
-    //for (var i = 0; i < lineHull.length; i++) {
-    //currentSegment.setMap(null);
-    //document.getElementById("for2").className -= " highlight";
-    document.getElementById("drawLine").className += " highlight";
-    currentSegment = new google.maps.Polyline({
-	map: map,
-	path: lineHull,
-	strokeColor: '#0000aa',
-	strokeOpacity: 0.6,
-	strokeWeight: 4
-    });
-}
-
-var point1;
-var point2;
-
-var a;
-var b;
-var c;
-
-var lookingForPositive;
-var foundProblem;
-var firstTestPoint;
-
-// TODO: where do we know we're done?
-function bruteForceConvexHull() {
-
-    for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
-	connections[outerLoop].setMap(null);
-    }
-    for (var i = 0; i < waypoints.length; i++) {
-        updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
-    }
-    hullJ = 1;
-    hullI = 0;
-    document.getElementById("for1").className += " highlight";
-    if (!hdxAV.paused()) {
-	setTimeout(innerLoopConvexHull, hdxAV.delay);
-    }
-}
-
-function innerLoopConvexHull() {
-    document.getElementById("for2").className += " highlight";
-    document.getElementById("for1").className -= " highlight";
-    document.getElementById("drawLine").className -= " highlight";
-    document.getElementById("drawLine2").className -= " highlight";
-    updateMarkerAndTable(hullI, visualSettings.hullI, 30, false);
-
-    if (hdxAV.paused()) {
-	return;
-    }
+    // entries for list of AVs
+    value: "bfhull",
+    name: "Brute-Force Convex Hull",
+    description: "Compute the convex hull of the waypoints using the brute-force algorithm.",
     
-    point1 = waypoints[hullI];
-    point2 = waypoints[hullJ];
-    
-    //higlight the points being considered
-    //updateMarkerAndTable(i, visualSettings.leader, 30, false);
-    updateMarkerAndTable(hullJ, visualSettings.visiting, 30, false);
-    
-    // from here, we need to see if all other points are
-    // on the same side of the line connecting point1 and point2
-    a = point2.lat - point1.lat;
-    b = point1.lon - point2.lon;
-    c = point1.lon * point2.lat - point1.lat * point2.lon;
-    // now check all other points to see if they're on the
-    // same side -- stop as soon as we find they're not
-    lookingForPositive = false;
-    foundProblem = false;
-    firstTestPoint = true;
-    
-    visitingLine[0] = new google.maps.LatLng(point1.lat, point1.lon);
-    visitingLine[1] = new google.maps.LatLng(point2.lat, point2.lon);
-    visitingLineHull(visitingLine);
-    
-    setTimeout(innerLoop2, hdxAV.delay);
-}
+    // the convex hull being computed
+    hull: [],
 
-function innerLoop2() {
-    if (hdxAV.paused()) {
-	return;
-    }
+    // need to check these to see if some should be locals
+    // the i and j loop indices for our deconstructed nested loop
+    hullI: 0,
+    hullJ: 0,
     
-    for (var k = 0; k < waypoints.length; k++) {	
-	var point3 = waypoints[k];
-	
-	if (point1 === point3 || point2 === point3) {
-	    continue;
+    convexLineHull: [],
+    visitingLine: [],
+    currentSegment: null,
+ 
+    // boolean to determine whether to set up or do an iteration of
+    // the inner loop, to allow the candidate line to be seen on
+    // the map before it is determined to be part of the hull or not
+    setupNewLine: false,
+    
+    // helper function to highlight a line
+    visitingLineHull(lineHull) {
+
+	document.getElementById("drawLine").className += " highlight";
+	this.currentSegment = new google.maps.Polyline({
+	    map: map,
+	    path: lineHull,
+	    strokeColor: '#0000aa',
+	    strokeOpacity: 0.6,
+	    strokeWeight: 4
+	});
+    },
+
+    // required start method for brute force convex hull
+    // TODO: where do we know we're done?
+    start() {
+
+	// clear connections from the map, as this is a vertex-only
+	// algorithm
+	for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
+	    connections[outerLoop].setMap(null);
 	}
-	//updateMarkerAndTable(k, visualSettings.hullK, 30, false);
-	var checkVal = a * point3.lon + b * point3.lat - c;
+	// mark all vertices as "undiscovered"
+	for (var i = 0; i < waypoints.length; i++) {
+            updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
+	}
+
+	// initialize our i and j for the main n^2 loop
+	this.hullJ = 1;
+	this.hullI = 0;
+	document.getElementById("for1").className += " highlight";
+	if (!hdxAV.paused()) {
+	    this.setupNewLine = true;
+	    let self = this;
+	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	}
+    },
+
+    // required nextStep function for brute-force convex hull
+    nextStep() {
 	
-	if (checkVal === 0) {
-	    if (isBetween(point1, point2, point3)) {
-		continue;
-	    } else {
-		foundProblem = true;
-		break;
+	if (hdxAV.paused()) {
+	    return;
+	}
+
+	// depending on the value of setupNewLine, we either draw a
+	// line from the hullI to hullJ to show the next segment to
+	// be considered, or we actually consider that segment (and
+	// either remove it or add it to the hull, then advance to
+	// the next hullI, hullJ
+	
+	if (this.setupNewLine) {
+	    // formerly "innerLoopConvexHull()"
+	    
+	    document.getElementById("for2").className += " highlight";
+	    document.getElementById("for1").className -= " highlight";
+	    document.getElementById("drawLine").className -= " highlight";
+	    document.getElementById("drawLine2").className -= " highlight";
+	    
+	    // highlight the points being considered
+	    updateMarkerAndTable(this.hullI, visualSettings.hullI, 30, false);
+	    updateMarkerAndTable(this.hullJ, visualSettings.visiting, 30, false);
+    
+	    this.visitingLine[0] =
+		new google.maps.LatLng(waypoints[this.hullI].lat,
+				       waypoints[this.hullI].lon);
+	    this.visitingLine[1] =
+		new google.maps.LatLng(waypoints[this.hullJ].lat,
+				       waypoints[this.hullJ].lon);
+	    this.visitingLineHull(this.visitingLine);
+	    
+	    if (!hdxAV.paused()) {
+		this.setupNewLine = false;
+		let self = this;
+		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	    }
-	}
-	if (firstTestPoint) {
-	    lookingForPositive = (checkVal > 0);
-	    firstTestPoint = false;
 	}
 	else {
-	    if ((lookingForPositive && (checkVal < 0) ||
-		 (!lookingForPositive && (checkVal > 0)))) {
-		// segment not on hull, jump out of innermost loop
-		foundProblem = true;
-		break;
-		//possibly end 3rd for loop here
+	    // was: "innerLoop2()"
+
+	    var pointI = waypoints[this.hullI];
+	    var pointJ = waypoints[this.hullJ];
+    
+	    // from here, we need to see if all other points are
+	    // on the same side of the line connecting pointI and pointJ
+	    // the coefficients for ax + by = c
+	    var a = pointJ.lat - pointI.lat;
+	    var b = pointI.lon - pointJ.lon;
+	    var c = pointI.lon * pointJ.lat - pointI.lat * pointJ.lon;
+	    
+	    // now check all other points to see if they're on the
+	    // same side -- stop as soon as we find they're not
+	    var lookingForPositive = false;
+	    var foundProblem = false;
+	    var firstTestPoint = true;
+	    
+	    for (var k = 0; k < waypoints.length; k++) {	
+		var pointK = waypoints[k];
+
+		// make sure point is not one of the endpoints
+		// of the line being considered for inclusion
+		// in the hull
+		if (pointI === pointK || pointJ === pointK) {
+		    continue;
+		}
+		//updateMarkerAndTable(k, visualSettings.hullK, 30, false);
+		var checkVal = this.a * pointK.lon + this.b * pointK.lat - this.c;
+		
+		if (checkVal === 0) {
+		    if (isBetween(pointI, pointJ, pointK)) {
+			continue;
+		    } else {
+			foundProblem = true;
+			break;
+		    }
+		}
+		if (firstTestPoint) {
+		    lookingForPositive = (checkVal > 0);
+		    firstTestPoint = false;
+		}
+		else {
+		    if ((lookingForPositive && (checkVal < 0) ||
+			 (!lookingForPositive && (checkVal > 0)))) {
+			// segment not on hull, jump out of innermost loop
+			foundProblem = true;
+			break;
+			//possibly end 3rd for loop here
+		    }
+		}
+	    }
+	    document.getElementById("drawLine").className -= " highlight";
+	    // remove the candidate segment
+	    currentSegment.setMap(null);
+	    
+	    if (!foundProblem) {
+		// it's part of the hull, so let's remember that
+		document.getElementById("for2").className -= " highlight";
+		document.getElementById("drawLine").className -= " highlight";
+		document.getElementById("drawLine2").className += " highlight";
+		// purple line showing convex hull
+		this.hull[0] = new google.maps.LatLng(pointI.lat, pointI.lon);
+		this.hull[1] = new google.maps.LatLng(pointJ.lat, pointJ.lon);
+		polyline = new google.maps.Polyline({
+		    map: map,
+		    path: this.hull,
+		    strokeColor: '#cc00ff',
+		    strokeOpacity: 0.6,
+		    strokeWeight: 6
+		});
+		updateMarkerAndTable(this.hullI, visualSettings.startVertex, 30, false);
+		updateMarkerAndTable(this.hullJ, visualSettings.startVertex, 30, false);
+	    } else {
+		updateMarkerAndTable(this.hullJ, visualSettings.discarded, 30, false);
+	    }
+	    this.hullJ++;
+	    if (this.hullJ == waypoints.length) {
+		updateMarkerAndTable(this.hullI, visualSettings.discarded, 30, false);
+		document.getElementById("for1").className += " highlight";
+		document.getElementById("for2").className -= " highlight";
+		this.hullI++;
+		for (var i = this.hullI; i >= 0; i--) {
+		    updateMarkerAndTable(i, visualSettings.discarded, 30, false);
+		}
+		for (var i = this.hullI + 1; i < waypoints.length; i++) {
+		    updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
+		}
+		// initialize next hullJ loop
+		this.hullJ = this.hullI + 1;
+	    }
+
+	    // more to do?
+	    if (this.hullI < waypoints.length - 1) {	    
+		if (!hdxAV.paused()) {
+		    this.setupNewLine = true;
+		    let self = this;
+		    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+		}
+	    }
+	    else {
+		// done
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    }
 	}
+    },
+
+    // set up UI for convex hull
+    setupUI() {
+
+	alert("This is an n^3 algorithm in the worst case, so choose a relatively small graph.");
+	hdxAV.algStat.style.display = "none";
+	hdxAV.algStat.innerHTML = "";
+        hdxAV.algOptions.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
     }
-    document.getElementById("drawLine").className -= " highlight";
-    currentSegment.setMap(null);
-    if (!foundProblem) {
-        document.getElementById("for2").className -= " highlight";
-        document.getElementById("drawLine").className -= " highlight";
-        document.getElementById("drawLine2").className += " highlight";
-	// purple line showing convex hull
-	hull[0] = new google.maps.LatLng(point1.lat, point1.lon);
-	hull[1] = new google.maps.LatLng(point2.lat, point2.lon);
-	polyline = new google.maps.Polyline({
-	    map: map,
-	    path: hull,
-	    strokeColor: '#cc00ff',
-	    strokeOpacity: 0.6,
-	    strokeWeight: 6
-	});
-	updateMarkerAndTable(hullI, visualSettings.startVertex, 30, false);
-	updateMarkerAndTable(hullJ, visualSettings.startVertex, 30, false);
-    } else {
-	updateMarkerAndTable(hullJ, visualSettings.discarded, 30, false);
-    }
-    hullJ++;
-    if (hullJ == waypoints.length) {
-	updateMarkerAndTable(hullI, visualSettings.discarded, 30, false);
-        document.getElementById("for1").className += " highlight";
-        document.getElementById("for2").className -= " highlight";
-	hullI++;
-        for (var i = hullI; i >= 0; i--) {
-            updateMarkerAndTable(i, visualSettings.discarded, 30, false);
-        }
-        for (var i = hullI + 1; i < waypoints.length; i++) {
-            updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
-        }
-	var checkVal = a * point3.lon + b * point3.lat - c;
-	var checkVal = a * point3.lon + b * point3.lat - c;
-	hullJ = hullI + 1;
-    }
-    
-    if (hullI < waypoints.length - 1) {
-	setTimeout(innerLoopConvexHull, hdxAV.delay);
-    }
-}
+};
 
 /**
     Check if this point is directly in between the two given
@@ -2033,142 +2045,74 @@ function TOSLabel() {
     return label;
 }
 
-var createTable = false;
-var showAll = false;
-var numVisitedString = document.createTextNode("Number of Visited Vertices: " + numVisited);
-var numVisitedComingOutString = document.createTextNode("Number of Vertices Visited Coming out: " + numVisitedComingOut);
-var numAlreadyVisitedString = document.createTextNode("Number of Vertices already Visited: " + numAlreadyVisited);
-var nameAndSize = document.createTextNode(discoveredVerticesName + " Size: " + discoveredVertices.length);
 
-function makeTable() {
+/*
+  Linear structure that can be displayed in a collapsed form
+*/
+var hdxLinearTypes = {
+
+    // constants to refer to these, if new ones are added,
+    // place before UNKNOWN and increment UNKNOWN's value
+    STACK: 1,
+    QUEUE: 2,
+    RANDOM: 3,
+    PRIORITY_QUEUE:4,
+    UNKNOWN: 5
+};
     
-    var size = discoveredVertices.length-1;
-    if (createTable) {
-	var oldtableBody = document.getElementById("tablebody");
-	oldtableBody.innerHTML = "";
-        var tableBody = dsTbody(size);        
-        oldtableBody.innerHTML = tableBody.innerHTML;
-	if (size >9 && !showAll)
-	    collapseElements("collapseDataStructure");
-    }
-    else {
-        createTable = true;
-        
-        var div = document.createElement("div");
-        div.setAttribute("id", "makeTable");
-        
-        div.appendChild(numVisitedString);
-        div.appendChild(document.createElement("br"));
-        div.appendChild(numVisitedComingOutString);
-        div.appendChild(document.createElement("br"));
-        div.appendChild(numAlreadyVisitedString);
-        div.appendChild(document.createElement("br"));
-        div.appendChild(nameAndSize);
-	
-	var buttondiv = document.createElement("div");
-	buttondiv.setAttribute("id", "buttondiv");
-	buttondiv.id = "collapseDataStructurebtn";
-	buttondiv.style.display = "none";
-	var btn = document.createElement("input");
-	btn.type = "button";
-	btn.addEventListener("click", undoCollapse);
-	btn.addEventListener("click", function() {showAll = true;});
-	btn.value = "Expand";
-	buttondiv.appendChild(btn);
-	div.appendChild(buttondiv);
-	buttondiv = document.createElement("div");
-	buttondiv.setAttribute("id", "buttondiv");
-	buttondiv.className = "collapseDataStructure";
-	buttondiv.style.display = "none";
-	btn = document.createElement("input");
-	btn.addEventListener("click", function() {
-	    collapseElements("collapseDataStructure");
-	    showAll = false;
-	});
-	btn.value = "Collapse";
-	btn.type = "button";
-	buttondiv.appendChild(btn);
-	div.appendChild(buttondiv);
-        
-        var table = document.createElement("table");
-        table.setAttribute("id", "dstable");
-        var tableBody = dsTbody(size);
-        tableBody.setAttribute("id","tablebody");            
-        table.appendChild(tableBody);
-        table.setAttribute("border", "2");
-        div.appendChild(table);
-    }
-    return div;        
-}
+function HDXLinear(type) {
 
-//Add gradient to points and corresponding table values 
+    // supported types listed above
+    if (type < hdxLinearTypes.STACK || type >= hdxLinearTypes.UNKNOWN) {
+	console.log("Invalid type of HDXLinear!");
+    }
+    this.type = type;
 
-function dsElement(type, num) {
-    var ele = document.createElement(type);
-    ele.className = "";
-    ele.setAttribute("onmouseover", "hoverV("+num+", true)");
-    ele.setAttribute("onmouseout", "hoverEndV("+num+", true)");
-    ele.setAttribute("onclick", "labelClickHDX("+num+")");
-    if (pts[num] > 0) {
-	ele.setAttribute("id", "l"+num+"_"+pts[num]);
-    }
-    else {
-	ele.setAttribute("id", "l"+num);
-    }
-    return ele;
-}
+    // the actual array representing this linear structure
+    this.items = [];
 
-var pts;
+    // add a item to this linear structure
+    this.add = function(e) {
+	items.push(e);
+    };
 
-function dsTbody(size) {
-    numVisitedString.nodeValue = "Number of Visited Vertices: " + numVisited;
-    numVisitedComingOutString.nodeValue =
-	"Number of Vertices Visited Coming out: " + numVisitedComingOut;
-    numAlreadyVisitedString.nodeValue = "Number of Vertices already Visited: " +
-	numAlreadyVisited;
-    nameAndSize.nodeValue = discoveredVerticesName + " Size: " +
-	discoveredVertices.length;
-    var tableBody = document.createElement("tbody");
-    pts = Array(waypoints.length);
-    for (var i = 0; i < pts.length; i++) {
-	pts[i] = 0;
-    }
-    if (discoveredVerticesName == "Stack") {
-        for (var i = 0; i <= size ; i++) { 
-	    var point =  discoveredVertices[discoveredVertices.length-(1+i)].vIndex;
-            var row = dsElement("tr", point);			
-	    var col = document.createElement("td");
-	    col.innerHTML = point;
-	    row.appendChild(col);
-	    if (i > 9) {
-		row.className = "collapseDataStructure";
+    // remove next based on type
+    this.remove = function() {
+
+	switch(this.type) {
+
+	case hdxLinearTypes.STACK:
+	    return this.items.pop();
+
+	case hdxLinearTypes.QUEUE:
+	    return this.items.shift();
+
+	case hdxLinearTypes.RANDOM:
+            let index = Math.floor(Math.random() * this.items.length);
+            let retval = this.items[index];
+            this.items.splice(index, 1);
+	    return retval;
+	}
+    };
+    
+    // search for an entry with the given field having the given value
+    this.containsFieldMatching = function(field, value) {
+
+	for (var i = 0; i < this.items.length; i++) {
+	    if (this.items[i][field] == value) {
+		return true;
 	    }
-	    pts[point]++;
-            tableBody.appendChild(row);
-        }
-    }
-    else if (discoveredVerticesName == "Queue" ||
-	     discoveredVerticesName == "PQueue" ||
-	     discoveredVerticesName == "List") {
-	var row = document.createElement("tr");
-        for (var i = 0; i <= size ; i++) { 				
-            var col = dsElement("td", discoveredVertices[i].vIndex);
-            if (i > 9) {
-		col.className = "collapseDataStructure";
-	    }
-	    if (discoveredVerticesName == "PQueue") {
-		col.innerHTML = discoveredVertices[i].vIndex + " dist: <span class="+curUnit+" style='color:black;' >"+convertMiles(discoveredVertices[i].dist)+" "
-		    +curUnit+"</span>";
-	    }
-	    else {
-		col.innerHTML = discoveredVertices[i].vIndex;
-	    }
-	    row.appendChild(col);
-	    pts[discoveredVertices[i].vIndex]++;
-            tableBody.appendChild(row);
-        }
-    }
-    return tableBody;
+	}
+	return false;
+    };
+
+    // check for empty list
+    this.isEmpty = function() {
+
+	return items.length == 0;
+    };
+
+    return this;
 }
 
 /*
@@ -2220,23 +2164,6 @@ function closeSidePanel() {
 
     document.getElementById("sidePanel").style.width = "0";
     document.getElementById("main").style.marginLeft= "0";
-}
-
-function mainArea() {
-    var main = document.createElement("div");
-    main.setAttribute("id", "main");
-    main.appendChild(document.getElementById("map"));
-    main.appendChild(document.getElementById("togglecontents_table"));
-    //main.appendChild(document.getElementById("distUnits"));
-    main.appendChild(document.getElementById("selected"));
-    main.appendChild(document.getElementById("options"));
-    main.appendChild(document.getElementById("pointbox"));
-    main.appendChild(document.getElementById("AlgorithmVisualization"));
-    main.appendChild(document.getElementById("controlbox"));
-    main.appendChild(document.getElementById("contents_table"));
-    main.appendChild(document.getElementById("panelBtn"));
-    main.appendChild(document.getElementById("toggleselected"));
-    document.body.appendChild(main);
 }
 
 var legendArray = [
@@ -2493,10 +2420,10 @@ function processContents(fileContents) {
     document.getElementById('contents_table').appendChild(newEle);
     createDataTable("#waypoints");
     createDataTable("#connection");
-    registerMarkerClickListener(labelClickHDX);
     updateMap();   
 }
 
+// TODO: make sure maps cannot be selected when an AV is running
 function mapOptions(e) {
     
     var sels = document.getElementById("selects");
@@ -2606,7 +2533,7 @@ function errorHandler(evt) {
 // coordinates of any shaping points along the edge
 //
 function parseTMGContents(fileContents) {
-
+    
     var lines = fileContents.replace(/\r\n/g,"\n").split('\n');
     var header = lines[0].split(' ');
     if (header[0] != "TMG") {
@@ -2622,9 +2549,9 @@ function parseTMGContents(fileContents) {
     var numV = parseInt(counts[0]);
     var numE = parseInt(counts[1]);
     var summaryInfo = '<table class="gratable"><thead><tr><th>' + numV + " waypoints, " + numE + " connections.</th></tr></table>";
-
+    
     var vTable = '<table id="waypoints" class="gratable"><thead><tr><th colspan="3">Waypoints</th></tr><tr><th>#</th><th>Coordinates</th><th>Waypoint Name</th></tr></thead><tbody>';
-
+    
     waypoints = new Array(numV);
     for (var i = 0; i < numV; i++) {
 	var vertexInfo = lines[i+2].split(' ');
@@ -2635,36 +2562,37 @@ function parseTMGContents(fileContents) {
 	    + waypoints[i].label + '</td></tr>';
     }
     vTable += '</tbody></table>';
-
+    
     var eTable = '<table  id="connection" class="gratable"><thead><tr  ><th colspan="3">Connections</th></tr><tr><th>#</th><th>Route Name(s)</th><th>Endpoints</th></tr></thead><tbody>';
     graphEdges = new Array(numE);
     for (var i = 0; i < numE; i++) {
-      var edgeInfo = lines[i+numV+2].split(' ');
-      var newEdge;
-      if (edgeInfo.length > 3) {
-        newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], edgeInfo.slice(3));
-      }
-      else {
-        newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], null);
-      }
-      var firstNode = Math.min(parseInt(newEdge.v1), parseInt(newEdge.v2));
-      var secondNode = Math.max(parseInt(newEdge.v1), parseInt(newEdge.v2));
-      // add this new edge to my endpoint vertex adjacency lists
-      waypoints[newEdge.v1].edgeList.push(newEdge);
-      waypoints[newEdge.v2].edgeList.push(newEdge);
-
-      eTable += '<tr onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="edgeClick('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
-      + edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label +
-      ' &harr; ' + edgeInfo[1] + ':&nbsp;'
-      + waypoints[newEdge.v2].label + '</td></tr>';
-
-      graphEdges[i] = newEdge;
-
+	var edgeInfo = lines[i+numV+2].split(' ');
+	var newEdge;
+	if (edgeInfo.length > 3) {
+            newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], edgeInfo.slice(3));
+	}
+	else {
+            newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], null);
+	}
+	var firstNode = Math.min(parseInt(newEdge.v1), parseInt(newEdge.v2));
+	var secondNode = Math.max(parseInt(newEdge.v1), parseInt(newEdge.v2));
+	// add this new edge to my endpoint vertex adjacency lists
+	waypoints[newEdge.v1].edgeList.push(newEdge);
+	waypoints[newEdge.v2].edgeList.push(newEdge);
+	
+	eTable += '<tr onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="edgeClick('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
+	    + edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label +
+	    ' &harr; ' + edgeInfo[1] + ':&nbsp;'
+	    + waypoints[newEdge.v2].label + '</td></tr>';
+	
+	graphEdges[i] = newEdge;
+	// record edge index in GraphEdge structure
+	newEdge.edgeListIndex = i;
     }
     eTable += '</tbody></table>';
     genEdges = false;
     usingAdjacencyLists = true;
-    hdxStatus = hdxStates.GRAPH_LOADED;
+    hdxAV.setStatus(hdxStates.GRAPH_LOADED);
     document.getElementById("AlgorithmSelection").disabled = false;
     return summaryInfo + '<p />' + vTable + '<p />' + eTable;
 }
@@ -2712,7 +2640,7 @@ function parseGRAContents(fileContents) {
     }
     eTable += '</tbody></table>';
     genEdges = false;
-    hdxStatus = hdxStates.GRAPH_LOADED;
+    hdxAV.setStatus(hdxStates.GRAPH_LOADED);
     document.getElementById("AlgorithmSelection").disabled = false;
     return sideInfo + '<p />' + vTable + '<p />' + eTable;
 }
@@ -2739,7 +2667,7 @@ function parseWPTContents(fileContents) {
 	}
     }
     genEdges = true;
-    hdxStatus = hdxStates.WPT_LOADED;
+    hdxAV.setStatus(hdxStates.WPT_LOADED);
     return "<h2>Raw file contents:</h2><pre>" + fileContents + "</pre>";
 }
 
@@ -2803,7 +2731,7 @@ function parsePTHContents(fileContents) {
     table += '</tbody></table>';
     //genEdges = true;
     usingAdjacencyLists = true;
-    hdxStatus = hdxStates.PTH_LOADED;
+    hdxAV.setStatus(hdxStates.PTH_LOADED);
     return table;
 }
 
@@ -2860,7 +2788,7 @@ function parseNMPContents(fileContents) {
 
     table += "</tbody></table>";
     genEdges = false;
-    hdxStatus = hdxStates.NMP_LOADED;
+    hdxAV.setStatus(hdxStates.NMP_LOADED);
     return table;
 }
 
@@ -2895,7 +2823,7 @@ function parseWPLContents(fileContents) {
     graphEdges = new Array();
     genEdges = false;
     var summaryInfo = '<table class="gratable"><thead><tr><th>' + waypoints.length + " waypoints.</th></tr></table>";
-    hdxStatus = hdxStates.WPL_LOADED;
+    hdxAV.setStatus(hdxStates.WPL_LOADED);
     return summaryInfo + '<p />' + vTable;
 }
 
@@ -3219,16 +3147,14 @@ function showHiddenPseudocode() {
 
 // generic event handler for start/pause/resume button
 function startPausePressed() {
-
-    var spButton = document.getElementById("startPauseButton");
     
     switch (hdxAV.status) {
 
     case hdxStates.AV_SELECTED:
 	// if we have selected but not yet started an algorithm,
 	// this is a start button
-	hdxAV.status = hdxStates.AV_RUNNING;
-	spButton.innerHTML = "Pause";
+	hdxAV.setStatus(hdxStates.AV_RUNNING);
+	hdxAV.startPause.innerHTML = "Pause";
 	document.getElementById("AlgorithmSelection").disabled = true;
 	selectAlgorithmAndStart();
 	break;
@@ -3237,14 +3163,14 @@ function startPausePressed() {
 	// if we are in a running algorithm, this is a pause button
 	// the running algorithm will pause when its next
 	// timer event fires
-	hdxAV.status = hdxStates.AV_PAUSED;
-	spButton.innerHTML = "Resume";
+	hdxAV.setStatus(hdxStates.AV_PAUSED);
+	hdxAV.startPause.innerHTML = "Resume";
 	break;
 
     case hdxStates.AV_PAUSED:
 	// if we are in paused algorithm, this is a resume button
-	hdxAV.status = hdxStates.AV_RUNNING;
-	spButton.innerHTML = "Pause";
+	hdxAV.setStatus(hdxStates.AV_RUNNING);
+	hdxAV.startPause.innerHTML = "Pause";
 	continuePausedAlgorithm();
 	break;
 
@@ -3255,52 +3181,15 @@ function startPausePressed() {
 
 // function to resume a paused algorithm
 function continuePausedAlgorithm() {
-    
-    var value = getCurrentAlgorithm();
-    if (value == "vertexSearch") {
-        hdxVertexExtremesSearchAV.continue();
-    }
-    else if (value == "EdgeSearch") {
-        hdxEdgeExtremesSearchAV.continue();
-    }
-    else if ((value == "BFS") || (value == "DFS") || (value == "RFS")) {
-        continueGraphTraversal("RFS");
-    }
-    else if (value == "ConvexHull") {
-        innerLoopConvexHull();
-    }
-    else if (value == "connected") {
-        continueConnectedPieces(-1, null);
-    }
-    else if (value == "Dijkstra") {
-	continueDijkstra();
-    }
+
+    hdxAV.currentAV.nextStep();
 }
 
 // function to begin the execution of a new AV
 function selectAlgorithmAndStart() {
-    
-    var value = getCurrentAlgorithm();
+
     resetVars();
-    hdxAV.previousAlgorithm = value;
-    if (value == "vertexSearch") {
-        hdxVertexExtremesSearchAV.start();
-    }
-    else if (value == "EdgeSearch") {
-        hdxEdgeExtremesSearchAV.start();
-    }
-    else if ((value == "BFS") || (value == "DFS") || (value == "RFS")) {
-        startGraphTraversal(value);
-    }
-    else if (value == "ConvexHull") {
-        bruteForceConvexHull();
-    }
-    else if (value == "connected") {
-        startConnectedPieces(-1, null);
-    }
-    else if (value == "Dijkstra") {
-	startDijkstra();	
-    }
+    hdxAV.currentAV.start();
 }
 
 function showLegend() {
@@ -3335,62 +3224,37 @@ function showLegend() {
 
 // Event handler for state change on the algorithm selection select control
 function algorithmSelected() {
-    // var show = document.getElementById("selection_checkboxes").checked;
-    // if (show == true) {
+
     var value = getCurrentAlgorithm();
 
     // if we selected a valid algorithm, enable the start button
-    if (value != "NONE") {
-	hdxAV.status = hdxStates.AV_SELECTED;
-	document.getElementById("startPauseButton").disabled = false;
+    if (value != hdxNoAV.value) {
+	hdxAV.setStatus(hdxStates.AV_SELECTED);
+	hdxAV.startPause.disabled = false;
     }
-    var algStat = document.getElementById("algorithmStatus");
-    var optSelect = document.getElementById("optionSection");
-    if (value == "vertexSearch") {
-	algStat.style.display = "";
-	algStat.innerHTML = "";
-        optSelect.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+
+    // set the current algorithm
+    for (var i = 1; i < hdxAV.avList.length; i++) {
+	if (value == hdxAV.avList[i].value) {
+	    hdxAV.currentAV = hdxAV.avList[i];
+	    break;
+	}
     }
-    else if (value == "EdgeSearch") {
-	algStat.style.display = "none";
-	algStat.innerHTML = "";
-        optSelect.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
-    }
-    else if ((value == "BFS") || (value == "DFS") || (value == "RFS")) {
-	algStat.style.display = "none";
-	algStat.innerHTML = "";
-        optSelect.innerHTML = 'Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
-            '<br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+ '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
-    }
-    else if (value == "connected") {
-	algStat.style.display = "none";
-	algStat.innerHTML = "";
-        optSelect.innerHTML = 'Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" name="Starting Point" min="0" value="0" size="7" /> ' + '<br><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
-    }
-    else if (value == "Dijkstra") {
-	algStat.style.display = "none";
-	algStat.innerHTML = "";
-        optSelect.innerHTML = 'Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" min="0" name="Starting Point" value="0" size="7" /> <br>' + 'End &nbspVertex <input id="endPoint" onfocus="hdxVertexSelector.startSelection(\'#endPoint\')" type="number" min="0" name="End Point" value="0" size="7" /> <br>' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
-    }
-    else if (value == "ConvexHull") {
-        alert("This is an n^3 algorithm. This means that it takes quite a while to execute fully so it would be most beneficial to use a small graph.");
-        optSelect.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
-    }
-    else {
-        optSelect.innerHTML = "";
-    }
+
+    // call its function to set up its status and options
+    hdxAV.currentAV.setupUI();
 }
 
 function toggleDS() {
-    var ds = document.getElementById("algorithmStatus");
-    if (ds.style.display == "none") {
-	ds.style.display = "";
+    if (hdxAV.algStat.style.display == "none") {
+	hdxAV.algStat.style.display = "";
     }
     else {
-	ds.style.display = "none";
+	hdxAV.algStat.style.display = "none";
     }
 }
 
+/* SEEMS TO BE UNUSED
 function selectAlgorithmAndReset() {
     for (var i = 0; i < connections.length; i++) {
         connections[i].setMap(null);
@@ -3405,6 +3269,7 @@ function selectAlgorithmAndReset() {
     markers = new Array();
     markerinfo = new Array();
 }
+*/
 
 function drag(event) {
     var x = event.target.style.left;
@@ -3445,13 +3310,6 @@ function toggleUI(event) {
     }
 }
 
-function makeResize() {
-    $( "#selected" ).resizable();
-    var div = document.createElement("div");
-    div.setAttribute("id", "resize");
-    document.getElementById("selected").appendChild(div);
-    $( "#contents_table" ).resizable();
-}
 
 // moved to the end for now, until all variables are grouped by algorithm
 function resetVars() {
@@ -3461,37 +3319,6 @@ function resetVars() {
 	hdxAV.reset();
 	updateMap();
 	
-	discoveredVertices = [];
-	visitedVertices = [];
-	
-	numVisited = 0;
-	numVisitedComingOut = 0;
-	numAlreadyVisited = 0;
-	
-	hull = [];
-	hullI = 0;
-	hullJ = 0;
-	hull = [];
-	convexLineHull = [];
-	visitingLine = [];
-	
-	createTable = false;
-	showAll = false;
-	numVisitedString = document.createTextNode("Number of Visited Vertices: " + numVisited);
-	numVisitedComingOutString = document.createTextNode("Number of Vertices Visited Coming out: " + numVisitedComingOut);
-	numAlreadyVisitedString = document.createTextNode("Number of Vertices already Visited: " + numAlreadyVisited);
-	nameAndSize = document.createTextNode(discoveredVerticesName + " Size: " + discoveredVertices.length);
-	
-	red = 255;
-	green = 0;
-	blue = 0;
-	piecenum = 1;
-	gred = 245;
-	ggrn = 255;
-	gblu = 245;
-	
-	totalPath = Array();
-	
 	if ($("#piecesTD").length > 0) {
 	    document.getElementById("piecesTD").parentNode.parentNode.removeChild(document.getElementById("piecesTD").parentNode);
 	}
@@ -3500,7 +3327,7 @@ function resetVars() {
 		document.getElementById("info"+i).parentNode.parentNode.removeChild(document.getElementById("info"+i).parentNode);
 	    }
 	}
-	document.getElementById("algorithmStatus").innerHTML = "";	
+	hdxAV.algStat.innerHTML = "";
     }
 }
 
@@ -3532,4 +3359,12 @@ function listToVIndexString(items) {
         line += ` ]`;
         return line;
     }
+}
+
+// Compute Squared Distance 
+function squaredDistance(o1, o2) {
+    var dx, dy;
+    dx = o1.lon - o2.lon;
+    dy = o1.lat - o2.lat;
+    return dx * dx + dy * dy;
 }

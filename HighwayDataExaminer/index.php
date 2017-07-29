@@ -279,7 +279,7 @@ span{
 <script src="hdxjsfuncs.js" type="text/javascript"></script>
 <title>Highway Data Examiner</title>
 </head>
-<body onload="loadmap(); makeResize(); toggleTable(); sidePanel(); mainArea()" ondragover="allowdrop(event)" ondrop="drop(event)">
+<body onload="loadmap(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
 <p class="menubar">
   <span id="panelBtn" title="Menu" onclick="openSidePanel()">
      <i id="menuIcon" class="material-icons">menu</i>
@@ -321,30 +321,22 @@ span{
 <div id="AlgorithmVisualization">
   <table id="AlgorithmsTable" class="gratable">
     <thead>
-      <tr><th>Algorithm Simulation Control Panel</th></tr>
+      <tr><th>Algorithm Vizualization Control Panel</th></tr>
     </thead>
     <tbody>
       <?php hdx_load_file_entries(); ?>
       <tr><td>
         Algorithm to Visualize:
         <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
-          <option value="NONE">Select an Algorithm</option>
-          <option value="vertexSearch">Search Vertices</option>
-          <option value="EdgeSearch">Search Edges </option>
-          <option value="BFS">Breadth-First Traversal</option>
-          <option value="DFS">Depth-First Traversal</option>
-          <option value="RFS">Random-First Traversal</option>
-		  <option value="connected">Connected Paths</option>
-          <option value="ConvexHull"> Convex Hull </option>
-         <option value="Dijkstra"> Dijkstra </option>
+	<!-- filled in with options by JS code in hdxAV.initOnLoad() -->
         </select>
 
       </td></tr>
-      <tr><td id= "optionSection" > </td></tr>
+      <tr><td id="algorithmOptions"></td></tr>
       <tr id="speedtr"><td>
         <button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
         <select id="speedChanger" onchange="speedChanged()">
-          <option value="1">Fastest</option>
+          <option value="1">Fastest possible</option>
           <option value="5">Extremely fast</option>
           <option value="20">Very fast</option>
           <option value="50" selected>Fast</option>
@@ -355,16 +347,8 @@ span{
         </select>
 
       </td></tr>
-     <!-- <tr><td id="selectionCheckboxes"></td><tr>-->
-		<tr><td id="algorithmStatus" style="display:none"></td></tr>
-      <!--<tr><td id="info1"></td><tr>
-      <tr><td id="info2"></td><tr>
-      <tr><td id="info3"></td><tr>
-      <tr><td id="info4"></td><tr>
-      <tr><td id="info5"></td><tr>
-      <tr><td id="info6"></td><tr>-->
-		<!--<tr><td id="legends"></td></tr>-->
-		<tr><td id="pseudo"></td></tr>
+      <tr><td id="algorithmStatus"></td></tr>
+      <tr><td id="pseudo"></td></tr>
 
             </tbody>
         </table>
