@@ -264,7 +264,6 @@ var hdxVertexSelector = {
     select(vNum) {
 	//alert("select: " + vNum);
 	if (this.selector != "") {
-	    console.log("calling wSC with " + this.selector);
 	    let v = document.getElementById(this.selector);
 	    v.value = vNum;
 	    // and update the label
@@ -292,7 +291,7 @@ function buildWaypointSelector(id,label,initVal) {
 
 // event handler for waypoint selectors
 function waypointSelectorChanged(id) {
-    console.log("called wSC with " + id);
+
     let vNum = document.getElementById(id).value;
     //let vNum = document.querySelector(id).value;
     document.getElementById(id + "Label").innerHTML = waypoints[vNum].label;
@@ -1358,7 +1357,6 @@ var hdxGraphTraversalsAV = {
 	hdxAV.algStat.innerHTML = "";
         hdxAV.algOptions.innerHTML = 'Order: <select id="traversalDiscipline"><option value="BFS">Breadth First</option><option value="DFS">Depth First</option><option value="RFS">Random</option></select>' +
 	    '<br /><input id="findConnected" type="checkbox" name="Final all connected components">&nbsp;Find all connected components' +
-	    //'<br />Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' + waypoints[0].label +
 	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0) +
             '<br /><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+ '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
 
@@ -1713,7 +1711,9 @@ var hdxDijkstraAV = {
 	
 	hdxAV.algStat.style.display = "none";
 	hdxAV.algStat.innerHTML = "";
-        hdxAV.algOptions.innerHTML = 'Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" min="0" name="Starting Point" value="0" size="7" /> <br>' + 'End &nbspVertex <input id="endPoint" onfocus="hdxVertexSelector.startSelection(\'#endPoint\')" type="number" min="0" name="End Point" value="0" size="7" /> <br>' + '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+        hdxAV.algOptions.innerHTML = buildWaypointSelector("startPoint", "Start Vertex", 0) +
+	    "<br />" + buildWaypointSelector("endPoint", "End Vertex", 1) +
+	    '<br /><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
     }
 };
 
