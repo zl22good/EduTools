@@ -248,9 +248,6 @@ padding:0px;
 #contentArea_legend{
 	background-color: white;
 }
-span{
-	color: white;
-}
 #boxContainer{
 	padding-left: 30px;
 }

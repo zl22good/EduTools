@@ -264,12 +264,39 @@ var hdxVertexSelector = {
     select(vNum) {
 	//alert("select: " + vNum);
 	if (this.selector != "") {
-	    var v = document.querySelector(this.selector);
+	    console.log("calling wSC with " + this.selector);
+	    let v = document.getElementById(this.selector);
 	    v.value = vNum;
+	    // and update the label
+	    waypointSelectorChanged(this.selector);
 	}
 	this.selector = "";
     }
 };
+
+// a function to build HTML to insert a vertex/waypoint selector
+// component
+// id is the HTML element id for the input
+// label is the label for the control
+// initVal is the waypoint number to use for initialization
+function buildWaypointSelector(id,label,initVal) {
+
+    return label + ' <input id="' + id +
+	'" onfocus="hdxVertexSelector.startSelection(\'' + id +
+	'\')" type="number" value="' + initVal + '" min="0" max="' +
+	(waypoints.length-1) + '" size="6" ' +
+	'onchange="waypointSelectorChanged(\'' + id + '\')"' +
+	'/><span id="' + id + 'Label">' + waypoints[initVal].label +
+	'</span>';
+}
+
+// event handler for waypoint selectors
+function waypointSelectorChanged(id) {
+    console.log("called wSC with " + id);
+    let vNum = document.getElementById(id).value;
+    //let vNum = document.querySelector(id).value;
+    document.getElementById(id + "Label").innerHTML = waypoints[vNum].label;
+}
 
 // variables and functions to highlight waypoints and connections
 // when the mouse hovers over them
@@ -1331,7 +1358,8 @@ var hdxGraphTraversalsAV = {
 	hdxAV.algStat.innerHTML = "";
         hdxAV.algOptions.innerHTML = 'Order: <select id="traversalDiscipline"><option value="BFS">Breadth First</option><option value="DFS">Depth First</option><option value="RFS">Random</option></select>' +
 	    '<br /><input id="findConnected" type="checkbox" name="Final all connected components">&nbsp;Find all connected components' +
-	    '<br />Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' +
+	    //'<br />Start Vertex <input id="startPoint" onfocus="hdxVertexSelector.startSelection(\'#startPoint\')" type="number" name="Starting Point" value="0"  min="0" size="7" /> ' + waypoints[0].label +
+	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0) +
             '<br /><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+ '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
 
     }
@@ -2112,6 +2140,40 @@ function HDXLinear(type) {
 	return items.length == 0;
     };
 
+    return this;
+}
+
+/* object to display the value of a variable (which should be
+   a number or string) with a given label and in the given
+   document element's innerHTML, beginning with the given
+   initial value */
+function HDXDisplayVariable(displayLabel,docElement,initVal) {
+
+    this.value = initVal;
+    this.label = displayLabel;
+    this.docElement = docElement;
+
+    // set to a new value
+    this.set = function(newVal) {
+	
+	this.value = newVal;
+	this.paint();
+    };
+
+    // increment
+    this.increment = function() {
+
+	this.value++;
+	this.paint();
+    };
+    
+    // redraw in the document element
+    this.paint = function() {
+
+	this.docElement.innerHTML = this.label + this.value;
+    };
+
+    this.paint();
     return this;
 }
 
