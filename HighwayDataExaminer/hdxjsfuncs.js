@@ -283,7 +283,7 @@ function buildWaypointSelector(id,label,initVal) {
     return label + ' <input id="' + id +
 	'" onfocus="hdxVertexSelector.startSelection(\'' + id +
 	'\')" type="number" value="' + initVal + '" min="0" max="' +
-	(waypoints.length-1) + '" size="6" ' +
+	(waypoints.length-1) + '" size="6" style="width: 7em" ' +
 	'onchange="waypointSelectorChanged(\'' + id + '\')"' +
 	'/><span id="' + id + 'Label">' + waypoints[initVal].label +
 	'</span>';
@@ -1711,7 +1711,8 @@ var hdxDijkstraAV = {
 	
 	hdxAV.algStat.style.display = "none";
 	hdxAV.algStat.innerHTML = "";
-        hdxAV.algOptions.innerHTML = buildWaypointSelector("startPoint", "Start Vertex", 0) +
+        hdxAV.algOptions.innerHTML =
+	    buildWaypointSelector("startPoint", "Start Vertex", 0) +
 	    "<br />" + buildWaypointSelector("endPoint", "End Vertex", 1) +
 	    '<br /><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
     }
