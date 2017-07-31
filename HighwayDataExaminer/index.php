@@ -44,7 +44,7 @@ ENDOFSTUFF;
 		<input type="number" min="1" value="2000" id="maxVertices" style="width:6rem;">
 		vertices
 		<br>
-		<input type="button" value="Get Graph List" onclick="mapOptions(event)">
+		<input type="button" value="Get Graph List" onclick="fillGraphList(event)">
 	  </td>
 	  <td id="loadcollapsebtn" style="display:none;">
 		<input type="button" onclick="undoCollapse(event)" value="Show Load Options">
@@ -153,7 +153,7 @@ height: 1px;
   max-width: 33%;
   opacity: .95;
 }
-#mapOptions{
+#graphList{
 width:150px;
 }
 table.dataTable tbody td{

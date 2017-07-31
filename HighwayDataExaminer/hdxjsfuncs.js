@@ -2357,8 +2357,8 @@ function startRead() {
 
 function readServer(event) {
     clearTables();
-    var index = document.getElementById("mapOptions").selectedIndex;
-    var value = document.getElementById("mapOptions").options[index].value;
+    var index = document.getElementById("graphList").selectedIndex;
+    var value = document.getElementById("graphList").options[index].value;
     
     if (value != "") {
  	// document.getElementById("test").innerHTML = value;
@@ -2487,7 +2487,7 @@ function processContents(fileContents) {
 }
 
 // TODO: make sure maps cannot be selected when an AV is running
-function mapOptions(e) {
+function fillGraphList(e) {
     
     var sels = document.getElementById("selects");
     var orderSel = document.getElementById("orderOptions").value;
@@ -2498,11 +2498,11 @@ function mapOptions(e) {
     if (max < 0 || min < 0 || min > max) {
 	return;
     }
-    if ($("#mapOptions").length != 0) {
-	sels.removeChild(document.getElementById("mapOptions"));
+    if ($("#graphList").length != 0) {
+	sels.removeChild(document.getElementById("graphList"));
     }
     var mapSel = document.createElement("select");
-    mapSel.setAttribute("id", "mapOptions");
+    mapSel.setAttribute("id", "graphList");
     mapSel.setAttribute("onchange", "readServer(event)");
     var init = document.createElement("option");
     init.innerHTML = "Choose Map";
@@ -2519,7 +2519,7 @@ function mapOptions(e) {
     var jsonParams = JSON.stringify(params);
     $.ajax({
         type: "POST",
-        url: "./generateMaps.php",
+        url: "./generateGraphList.php",
 	datatype: "json",
         data: {"params":jsonParams},
         success: function(data) {
@@ -2540,7 +2540,7 @@ function mapOptions(e) {
 		}
 		opt.innerHTML = str;
 		opt.value = values[i];
-		document.getElementById("mapOptions").appendChild(opt);
+		document.getElementById("graphList").appendChild(opt);
 	    }
 	}
     });
