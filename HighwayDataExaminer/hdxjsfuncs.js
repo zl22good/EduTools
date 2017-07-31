@@ -2530,6 +2530,9 @@ function fillGraphList(e) {
 	    var edges = opts['edges'];
 	    var opt;
 	    var str = "";
+	    if (txt.length == 0) {
+		alert("No graphs matched!  Please choose less restrictive filters.");
+	    }
 	    for (var i = 0; i < txt.length; i++) {
 		opt = document.createElement("option");
 		if (values[i].indexOf("simple") != -1) {
