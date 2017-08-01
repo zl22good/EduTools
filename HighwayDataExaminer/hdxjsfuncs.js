@@ -496,10 +496,35 @@ var hdxNoAV = {
 	alert("Please select an algorithm first.");
     },
 
-    setupUI() {}
+    setupUI() {},
+
+    cleanupUI() {}
 };
 
 // vertex extremes search
+
+// helper functions
+
+// function to create the table entry for the leader for extreme points
+function extremePointLeaderString(label, waypointNum, vs) {
+    
+    return label + ':<br />#' + waypointNum +
+        ' (' + waypoints[waypointNum].lat + ',' +
+        waypoints[waypointNum].lon +
+        ') ' + waypoints[waypointNum].label;
+}
+
+// function to create the table entry for the leader for
+// label-based comparisons
+function labelLeaderString(label, waypointNum, vs) {
+    
+    return '<span style="color:' +
+        vs.textColor + '; background-color:' +
+        vs.color + '"> ' + label + ':<br />#' + waypointNum +
+        ' (length ' + waypoints[waypointNum].label.length + ') ' +
+        waypoints[waypointNum].label + '</span>';
+}
+
 var hdxVertexExtremesSearchAV = {
 
     // entries for list of AVs
@@ -509,69 +534,118 @@ var hdxVertexExtremesSearchAV = {
     
     // state variables for vertex extremes search
     nextToCheck: 0,
-    // TODO: the leader indices should become an array!
-    northIndex: -1,
-    southIndex: -1,
-    eastIndex: -1,
-    westIndex: -1,
-    shortIndex: -1,
-    longIndex: -1,
 
-    // visual settings specific to vertex search
-    visualSettings: {
-	northLeader: {
-            color: "#8b0000",
-            textColor: "white",
-            scale: 6,
-	    name: "northLeader",
-	    value: 0
+    // the categories for which we are finding our extremes,
+    // with names for ids, labels to display, indicies of leader,
+    // comparison function to determine if we have a new leader,
+    // and visual settings for the display
+    categories: [
+	{
+	    name: "north",
+	    label: "North extreme",
+	    index: -1,
+
+	    newLeader: function() {
+		return parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lat) >
+		    parseFloat(waypoints[hdxVertexExtremesSearchAV.categories[0].index].lat);
+	    },
+
+	    leaderString: extremePointLeaderString,
+
+	    visualSettings: {
+		color: "#8b0000",
+		textColor: "white",
+		scale: 6,
+		name: "northLeader",
+		value: 0
+	    }
 	},
-	southLeader: {
-            color: "#ee0000",
-            textColor: "white",
-            scale: 6,
-	    name: "southLeader",
-	    value: 0
+
+	{
+	    name: "south",
+	    label: "South extreme",
+	    index: -1,
+
+	    newLeader: function() {
+		return parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lat) <
+		    parseFloat(waypoints[hdxVertexExtremesSearchAV.categories[1].index].lat);
+	    },
+	    leaderString: extremePointLeaderString,
+	    
+	    visualSettings: {
+		color: "#ee0000",
+		textColor: "white",
+		scale: 6,
+		name: "southLeader",
+		value: 0
+	    }
 	},
-	eastLeader: {
-            color: "#000080",
-            textColor: "white",
-            scale: 6,
-	    name: "eastLeader",
-	    value: 0
+
+	{
+	    name: "east",
+	    label: "East extreme",
+	    index: -1,
+
+	    newLeader: function() {
+		return parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lon) >
+		    parseFloat(waypoints[hdxVertexExtremesSearchAV.categories[2].index].lon);
+	    },
+	    leaderString: extremePointLeaderString,
+	    visualSettings: {
+		color: "#000080",
+		textColor: "white",
+		scale: 6,
+		name: "eastLeader",
+		value: 0
+	    }
 	},
-	westLeader: {
-            color: "#551A8B",
-            textColor: "white",
-            scale: 6,
-	    name: "westLeader",
-	    value: 0
-	}
-    },
-    // helper functions
 
-    // function to create the table entry for the leader for extreme points
-    extremePointLeaderString(waypointNum, vs) {
+	{
+	    name: "west",
+	    label: "West extreme",
+	    index: -1,
 
-	return '<span style="color:' +
-            vs.textColor + '; background-color:' +
-            vs.color + '"> #' + waypointNum +
-            ' (' + waypoints[waypointNum].lat + ',' +
-            waypoints[waypointNum].lon +
-            ') ' + waypoints[waypointNum].label + '</span>';
-    },
+	    newLeader: function() {
+		return parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lon) <
+		    parseFloat(waypoints[hdxVertexExtremesSearchAV.categories[3].index].lon);
+	    },
+	    leaderString: extremePointLeaderString,
+	    visualSettings: {
+		color: "#551A8B",
+		textColor: "white",
+		scale: 6,
+		name: "westLeader",
+		value: 0
+	    }
+	},
 
-    // function to create the table entry for the leader for
-    // label-based comparisons
-    labelLeaderString(waypointNum, vs) {
-
-	return '<span style="color:' +
-            vs.textColor + '; background-color:' +
-            vs.color + '"> #' + waypointNum +
-            ' (length ' + waypoints[waypointNum].label.length + ') ' +
-            waypoints[waypointNum].label + '</span>';
-    },
-
+	{
+	    name: "shortest",
+	    label: "Shortest vertex label",
+	    index: -1,
+	    
+	    newLeader: function() {
+		return (waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.length <
+			waypoints[hdxVertexExtremesSearchAV.categories[4].index].label.length);
+	    },
+	    leaderString: labelLeaderString,
+	    visualSettings: visualSettings.shortLabelLeader
+	},
+	
+	{
+	    name: "longest",
+	    label: "Longest vertex label",
+	    index: -1,
+	    
+	    newLeader: function() {
+		return (waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.length >
+			waypoints[hdxVertexExtremesSearchAV.categories[5].index].label.length);
+	    },
+	    leaderString: labelLeaderString,
+	    visualSettings: visualSettings.longLabelLeader
+	},
+    ],
+    
     // required start function
     // initialize a vertex-based search
     start() {
@@ -599,20 +673,6 @@ var hdxVertexExtremesSearchAV = {
 	
 	this.nextToCheck = 0;
 	
-	var algorithmsTable = document.getElementById('AlgorithmsTable');
-	var algorithmsTbody = algorithmsTable.children[1];
-	var infoBox;
-	var infoBoxtr;
-	var infoid = "";
-	for (var i = 1; i < 7; i++) {
-	    infoBox = document.createElement('td');
-	    infoBoxtr= document.createElement('tr');
-	    infoid = "info"+i;
-	    infoBox.setAttribute('id',infoid);
-	    infoBoxtr.appendChild(infoBox);
-	    algorithmsTbody.appendChild(infoBoxtr);
-	}
-	
 	if (!hdxAV.paused()) {
 	    var self = this;
 	    setTimeout(function() { self.nextStep() }, hdxAV.delay);
@@ -634,77 +694,41 @@ var hdxVertexExtremesSearchAV = {
 	var defeated = [];
 	
 	// keep track of whether this point is a new leader
-        var foundNewLeader = false;
+        let foundNewLeader = false;
 
 	// special case of first checked
 	if (this.nextToCheck == 0) {
             // this was our first check, so this point wins all to start
-            this.northIndex = 0;
-            this.southIndex = 0;
-            this.eastIndex = 0;
-            this.westIndex = 0;
-            this.shortIndex = 0;
-            this.longIndex = 0;
+	    for (var i = 0; i < this.categories.length; i++) {
+		this.categories[i].index = 0;
+	    }
             foundNewLeader = true;
 	}
 	// we have to do real work to see if we have new winners
 	else {
-            // check north
-            if (parseFloat(waypoints[this.nextToCheck].lat) >
-		parseFloat(waypoints[this.northIndex].lat)) {
-		foundNewLeader = true;
-		defeated.push(this.northIndex);
-		this.northIndex = this.nextToCheck;
-            }
-            // check south
-            if (parseFloat(waypoints[this.nextToCheck].lat) <
-		parseFloat(waypoints[this.southIndex].lat)) {
-		foundNewLeader = true;
-		defeated.push(this.southIndex);
-		this.southIndex = this.nextToCheck;
-            }
-            // check east	    
-            if (parseFloat(waypoints[this.nextToCheck].lon) >
-		parseFloat(waypoints[this.eastIndex].lon)) {
-		foundNewLeader = true;
-		defeated.push(this.eastIndex);
-		this.eastIndex = this.nextToCheck;
-            }
-            // check west
-            if (parseFloat(waypoints[this.nextToCheck].lon) <
-		parseFloat(waypoints[this.westIndex].lon)) {
-		foundNewLeader = true;
-		defeated.push(this.westIndex);
-		this.westIndex = this.nextToCheck;
-            }
-	    
-            // check label lengths
-            if (waypoints[this.nextToCheck].label.length <
-		waypoints[this.shortIndex].label.length) {
-		foundNewLeader = true;
-		defeated.push(this.shortIndex);
-		this.shortIndex = this.nextToCheck;
-            }
-	    
-            if (waypoints[this.nextToCheck].label.length >
-		waypoints[this.longIndex].label.length) {
-		foundNewLeader = true;
-		defeated.push(this.longIndex);
-		this.longIndex = this.nextToCheck;
-            }
-	    
+	    // check each category
+	    for (var i = 0; i < this.categories.length; i++) {
+		if (this.categories[i].newLeader()) {
+		    foundNewLeader = true;
+		    defeated.push(this.categories[i].index);
+		    this.categories[i].index = this.nextToCheck;
+		}
+	    }
 	}
 	
-	// any point that was a leader but is no longer gets discarded,
+	// any point that was a leader but is no longer gets
+	// discarded, but need to check that it's not still a leader
+	// in another category
 	while (defeated.length > 0) {
-            var toCheck = defeated.pop();
-            if (toCheck != this.northIndex &&
-		toCheck != this.southIndex &&
-		toCheck != this.eastIndex &&
-		toCheck != this.westIndex &&
-		toCheck != this.longIndex &&
-		toCheck != this.shortIndex) {
-		
+            let toCheck = defeated.pop();
+	    let discard = true;
+	    for (var i = 0; i < this.categories.length; i++) {
+		if (toCheck == this.categories[i].index) {
+		    discard = false;
+		    break;
+		}
+	    }
+            if (discard) {
 		updateMarkerAndTable(toCheck, visualSettings.discarded,
 				     20, true);
             }
@@ -721,47 +745,14 @@ var hdxVertexExtremesSearchAV = {
 	    // this work will often be redundant but it's probably easier
 	    // than trying to avoid it
 	    
-	    // north
-	    updateMarkerAndTable(this.northIndex, this.visualSettings.northLeader, 
-				 40, false);
-	    infoBox = document.getElementById('info1');
-	    infoBox.innerHTML = 'North extreme:<br />' +
-		this.extremePointLeaderString(this.northIndex, this.visualSettings.northLeader);
-	    
-	    // south
-	    updateMarkerAndTable(this.southIndex, this.visualSettings.southLeader,
-				 40, false);
-	    infoBox = document.getElementById('info2');
-	    infoBox.innerHTML = "South extreme:<br />" +
-		this.extremePointLeaderString(this.southIndex, this.visualSettings.southLeader);
-	    
-	    // east
-	    updateMarkerAndTable(this.eastIndex, this.visualSettings.eastLeader,
-				 40, false);
-            infoBox = document.getElementById('info3');
-            infoBox.innerHTML = "East extreme:<br />" +
-		this.extremePointLeaderString(this.eastIndex, this.visualSettings.eastLeader);
-	    
-            // west
-            updateMarkerAndTable(this.westIndex, this.visualSettings.westLeader,
-				 40, false);
-            infoBox = document.getElementById('info4');
-            infoBox.innerHTML = "West extreme:<br />" +
-		this.extremePointLeaderString(this.westIndex, this.visualSettings.westLeader);
-	    
-            // shortest
-            updateMarkerAndTable(this.shortIndex, visualSettings.shortLabelLeader,
-				 40, false);
-            infoBox = document.getElementById('info5');
-            infoBox.innerHTML = "Shortest vertex label:<br />" +
-		this.labelLeaderString(this.shortIndex, visualSettings.shortLabelLeader);
-	    
-            // longest
-            updateMarkerAndTable(this.longIndex, visualSettings.longLabelLeader,
-				 40, false);
-            infoBox = document.getElementById('info6');
-            infoBox.innerHTML = "Longest vertex label:<br />" +
-		this.labelLeaderString(this.longIndex, visualSettings.longLabelLeader);
+	    for (var i = 0; i < this.categories.length; i++) {
+		updateMarkerAndTable(this.categories[i].index, this.categories[i].visualSettings, 
+				     40, false);
+		document.getElementById(this.categories[i].name+"Box").innerHTML = 
+		    this.categories[i].leaderString(this.categories[i].label,
+						    this.categories[i].index,
+						    this.categories[i].visualSettings);
+	    }
 	}
 	else {
             // we didn't have a new leader, just discard this one
@@ -796,6 +787,25 @@ var hdxVertexExtremesSearchAV = {
 	hdxAV.algStat.style.display = "";
 	hdxAV.algStat.innerHTML = "";
         hdxAV.algOptions.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+
+	let algorithmsTable = document.getElementById('AlgorithmsTable');
+	let algorithmsTbody = algorithmsTable.children[1];
+	for (var i = 0; i < this.categories.length; i++) {
+	    let infoBox = document.createElement('td');
+	    let infoBoxtr= document.createElement('tr');
+	    infoBox.setAttribute('id', this.categories[i].name + "Box");
+	    infoBox.setAttribute('style', "color:" +
+				 this.categories[i].visualSettings.textColor +
+				 "; background-color:" +
+				 this.categories[i].visualSettings.color);
+	    infoBoxtr.appendChild(infoBox);
+	    algorithmsTbody.appendChild(infoBoxtr);
+	}
+    },
+
+    // remove UI modifications made for vertex extremes search
+    cleanupUI() {
+
     }
 };
 
@@ -3388,11 +3398,11 @@ function resetVars() {
 	if ($("#piecesTD").length > 0) {
 	    document.getElementById("piecesTD").parentNode.parentNode.removeChild(document.getElementById("piecesTD").parentNode);
 	}
-	for (var i = 0; i < 7; i++) {
-	    if ($("#info"+i).length > 0) {
-		document.getElementById("info"+i).parentNode.parentNode.removeChild(document.getElementById("info"+i).parentNode);
-	    }
-	}
+	//for (var i = 0; i < 7; i++) {
+	//    if ($("#info"+i).length > 0) {
+//		document.getElementById("info"+i).parentNode.parentNode.removeChild(document.getElementById("info"+i).parentNode);
+//	    }
+//	}
 	hdxAV.algStat.innerHTML = "";
     }
 }
