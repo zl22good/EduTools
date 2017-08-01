@@ -518,11 +518,9 @@ function extremePointLeaderString(label, waypointNum, vs) {
 // label-based comparisons
 function labelLeaderString(label, waypointNum, vs) {
     
-    return '<span style="color:' +
-        vs.textColor + '; background-color:' +
-        vs.color + '"> ' + label + ':<br />#' + waypointNum +
+    return label + ':<br />#' + waypointNum +
         ' (length ' + waypoints[waypointNum].label.length + ') ' +
-        waypoints[waypointNum].label + '</span>';
+        waypoints[waypointNum].label;
 }
 
 var hdxVertexExtremesSearchAV = {
@@ -546,8 +544,8 @@ var hdxVertexExtremesSearchAV = {
 	    index: -1,
 
 	    newLeader: function() {
-		return parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lat) >
-		    parseFloat(waypoints[hdxVertexExtremesSearchAV.categories[0].index].lat);
+		return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lat) >
+			parseFloat(waypoints[this.index].lat));
 	    },
 
 	    leaderString: extremePointLeaderString,
@@ -567,8 +565,8 @@ var hdxVertexExtremesSearchAV = {
 	    index: -1,
 
 	    newLeader: function() {
-		return parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lat) <
-		    parseFloat(waypoints[hdxVertexExtremesSearchAV.categories[1].index].lat);
+		return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lat) <
+			parseFloat(waypoints[this.index].lat));
 	    },
 	    leaderString: extremePointLeaderString,
 	    
@@ -587,8 +585,8 @@ var hdxVertexExtremesSearchAV = {
 	    index: -1,
 
 	    newLeader: function() {
-		return parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lon) >
-		    parseFloat(waypoints[hdxVertexExtremesSearchAV.categories[2].index].lon);
+		return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lon) >
+			parseFloat(waypoints[this.index].lon));
 	    },
 	    leaderString: extremePointLeaderString,
 	    visualSettings: {
@@ -606,8 +604,8 @@ var hdxVertexExtremesSearchAV = {
 	    index: -1,
 
 	    newLeader: function() {
-		return parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lon) <
-		    parseFloat(waypoints[hdxVertexExtremesSearchAV.categories[3].index].lon);
+		return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lon) <
+			parseFloat(waypoints[this.index].lon));
 	    },
 	    leaderString: extremePointLeaderString,
 	    visualSettings: {
@@ -626,7 +624,7 @@ var hdxVertexExtremesSearchAV = {
 	    
 	    newLeader: function() {
 		return (waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.length <
-			waypoints[hdxVertexExtremesSearchAV.categories[4].index].label.length);
+			waypoints[this.index].label.length);
 	    },
 	    leaderString: labelLeaderString,
 	    visualSettings: visualSettings.shortLabelLeader
@@ -639,7 +637,7 @@ var hdxVertexExtremesSearchAV = {
 	    
 	    newLeader: function() {
 		return (waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.length >
-			waypoints[hdxVertexExtremesSearchAV.categories[5].index].label.length);
+			waypoints[this.index].label.length);
 	    },
 	    leaderString: labelLeaderString,
 	    visualSettings: visualSettings.longLabelLeader
