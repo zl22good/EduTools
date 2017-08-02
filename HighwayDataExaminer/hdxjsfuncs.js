@@ -803,7 +803,13 @@ var hdxVertexExtremesSearchAV = {
 
     // remove UI modifications made for vertex extremes search
     cleanupUI() {
-
+	let algorithmsTable = document.getElementById('AlgorithmsTable');
+	let algorithmsTbody = algorithmsTable.children[1];
+	for (var i = 0; i < this.categories.length; i++) {
+	    let infoBox = document.getElementById(this.categories[i].name + "Box");
+	    let infoBoxtr= infoBox.parentNode;
+	    algorithmsTbody.removeChild(infoBoxtr);
+	}
     }
 };
 
@@ -1059,7 +1065,11 @@ var hdxEdgeExtremesSearchAV = {
 	hdxAV.algStat.innerHTML = "";
         hdxAV.algOptions.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
 
-    }
+    },
+
+    // clean up edge search UI
+    cleanupUI() {}
+
 };
 
 // ********************************************************************
@@ -1368,7 +1378,11 @@ var hdxGraphTraversalsAV = {
 	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0) +
             '<br /><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+ '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
 
-    }
+    },
+
+    // clean up traversals UI
+    cleanupUI() {}
+
 };
 
 // Dijstra's algorithm for single-source shortest paths
@@ -1723,7 +1737,11 @@ var hdxDijkstraAV = {
 	    buildWaypointSelector("startPoint", "Start Vertex", 0) +
 	    "<br />" + buildWaypointSelector("endPoint", "End Vertex", 1) +
 	    '<br /><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
-    }
+    },
+
+    // clean up Dijkstra's UI
+    cleanupUI() {}
+
 };
 
 function DSColor(id, color) {
@@ -2048,7 +2066,11 @@ var hdxBFConvexHullAV = {
 	hdxAV.algStat.style.display = "none";
 	hdxAV.algStat.innerHTML = "";
         hdxAV.algOptions.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
-    }
+    },
+
+    // clean up convex hull UI
+    cleanupUI() {}
+
 };
 
 /**
@@ -3299,6 +3321,13 @@ function showLegend() {
 // Event handler for state change on the algorithm selection select control
 function algorithmSelected() {
 
+    // if we have an algorithm already selected, clean up its
+    // UI first
+    if (hdxAV.currentAV != null) {
+
+	hdxAV.currentAV.cleanupUI();
+    }
+    
     var value = getCurrentAlgorithm();
 
     // if we selected a valid algorithm, enable the start button
