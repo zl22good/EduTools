@@ -461,8 +461,9 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 	document.getElementById("di"+waypointNum).style.backgroundColor = vs.color;
 	document.getElementById("di"+waypointNum).style.color = vs.textColor;
     }
-    if (hideTableLine) 
+    if (hideTableLine) {
         row.style.display = "none";
+    }
     if (vs.color == "#0000a0") {
 	var clone = row.cloneNode(true);
 	clone.className = "blueRow";
@@ -483,6 +484,8 @@ var hdxNoAV = {
     value: "NONE",
     name: "Select an Algorithm",
     description: "No algorithm is selected, please select.",
+
+    code: "Select an algorithm to view pseudocode.",
     
     // provide start, nextStep, setupUI, just in case buttons are
     // somehow active when this option is selected
@@ -529,6 +532,36 @@ var hdxVertexExtremesSearchAV = {
     value: "vertex",
     name: "Vertex Extremes Search",
     description: "Search for extreme values based on vertex (waypoint) locations and labels.",
+
+    // pseudocode
+    code: `
+<pre>longest <- 0
+shortest <- 0
+north <- 0
+south <- 0
+east <- 0
+west <- 0
+for (checkIndex <- 1 to |V|-1) {
+  if (len(v[checkIndex].label) > len(v[longest].label))) {
+    longest <- checkIndex
+  }
+  if (len(v[checkIndex].label) < len(v[shortest].label))) {
+    shortest <- checkIndex
+  }
+  if (v[checkIndex].lat > v[north].lat) {
+    north <- checkIndex
+  }
+  if (v[checkIndex].lat < v[south].lat) {
+    south <- checkIndex
+  }
+  if (v[checkIndex].lng < v[west].lng) {
+    west <- checkIndex
+  }
+  if (v[checkIndex].lng > v[east].lng) {
+    east <- checkIndex
+  }
+}</pre>
+`,
     
     // state variables for vertex extremes search
     nextToCheck: 0,
@@ -784,7 +817,7 @@ var hdxVertexExtremesSearchAV = {
 
 	hdxAV.algStat.style.display = "";
 	hdxAV.algStat.innerHTML = "";
-        hdxAV.algOptions.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+        hdxAV.algOptions.innerHTML = '';
 
 	let algorithmsTable = document.getElementById('AlgorithmsTable');
 	let algorithmsTbody = algorithmsTable.children[1];
@@ -820,6 +853,28 @@ var hdxEdgeExtremesSearchAV = {
     value: "edge",
     name: "Edge Extremes Search",
     description: "Search for extreme values based on edge (connection) lengths and labels.",
+
+    // pseudocode
+    code:`
+<pre>longestLabel <- 0
+shortestLabel <- 0
+longestEdge <- 0
+shortestEdge <- 0
+for (checkIndex <- 1 to |E|-1) {
+  if (len(e[checkIndex].label) > len(e[longestLabel].label))) {
+    longestLabel <- checkIndex
+  }
+  if (len(e[checkIndex].label) < len(e[shortestLabel].label))) {
+    shortestLabel <- checkIndex
+  }
+  if (e[checkIndex].len > e[longestEdge].len) {
+    longestEdge <- checkIndex
+  }
+  if (e[checkIndex].len < e[shortestEdge].len) {
+    shortestEdge <- checkIndex
+  }
+}</pre>
+`,
     
     // state variables for edge search
     // next to examine
@@ -1063,7 +1118,7 @@ var hdxEdgeExtremesSearchAV = {
 
 	hdxAV.algStat.style.display = "";
 	hdxAV.algStat.innerHTML = "";
-        hdxAV.algOptions.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+        hdxAV.algOptions.innerHTML = '';
 
     },
 
@@ -1083,6 +1138,22 @@ var hdxGraphTraversalsAV = {
     name: "Graph Traversal/Connected Components",
     description: "Perform graph traversal using breadth-first, depth-first, or random-first traversals, with the option of repeating to find all connected components of the graph.",
 
+    // pseudocode
+    code:`
+<pre>(NEEDS UPDATING)
+unmark all vertices
+choose some starting vertex x
+mark x
+list L <- x
+tree T <- x
+while L nonempty {
+   remove vertex v from L
+   mark v
+   for each unmarked neighbor w of v
+      L.add(w)
+      T.add(edge vw)
+</pre>
+`,
 
     // list of vertices discovered but not yet visited
     // a stack for DFS, queue for BFS, just an
@@ -1376,7 +1447,7 @@ var hdxGraphTraversalsAV = {
         hdxAV.algOptions.innerHTML = 'Order: <select id="traversalDiscipline"><option value="BFS">Breadth First</option><option value="DFS">Depth First</option><option value="RFS">Random</option></select>' +
 	    '<br /><input id="findConnected" type="checkbox" name="Final all connected components">&nbsp;Find all connected components' +
 	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0) +
-            '<br /><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>'+ '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+            '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
 
     },
 
@@ -1393,6 +1464,9 @@ var hdxDijkstraAV = {
     value: "dijkstra",
     name: "Dijkstra's Algorithm",
     description: "Dijkstra's algorithm for single-source shortest paths.",
+
+    // pseudocode
+    code:`To be added.`,
     
     totalPath: [],
 
@@ -1736,7 +1810,7 @@ var hdxDijkstraAV = {
         hdxAV.algOptions.innerHTML =
 	    buildWaypointSelector("startPoint", "Start Vertex", 0) +
 	    "<br />" + buildWaypointSelector("endPoint", "End Vertex", 1) +
-	    '<br /><input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>' + '<input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+	    '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
     },
 
     // clean up Dijkstra's UI
@@ -1856,6 +1930,15 @@ var hdxBFConvexHullAV = {
     value: "bfhull",
     name: "Brute-Force Convex Hull",
     description: "Compute the convex hull of the waypoints using the brute-force algorithm.",
+    
+    // pseudocode
+    code:`<pre>
+for (i <- 1 to n–1)
+  for (j <- i+1 to n)
+     L <- line through waypoints[i] and waypoints[j]
+       if (all other points lie on the same side of L)
+          add L to hull
+</pre>`,
     
     // the convex hull being computed
     hull: [],
@@ -2065,7 +2148,7 @@ var hdxBFConvexHullAV = {
 	alert("This is an n^3 algorithm in the worst case, so choose a relatively small graph.");
 	hdxAV.algStat.style.display = "none";
 	hdxAV.algStat.innerHTML = "";
-        hdxAV.algOptions.innerHTML = '<input id="showHidden" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHiddenPseudocode()" >&nbsp;Pseudocode<br>';
+        hdxAV.algOptions.innerHTML = '';
     },
 
     // clean up convex hull UI
@@ -3177,68 +3260,12 @@ function getCurrentAlgorithm() {
     return menuSelection.options[selectionIndex].value;
 }
 
-function showHiddenPseudocode() {
-    var show = document.getElementById("showHidden").checked;
-    var value = getCurrentAlgorithm();
-    if (show) {
-        if (value == "BFS") {
-            document.getElementById('pseudo').innerHTML = "<pre> unmark all vertices\n " +
-                "  choose some starting vertex x \n" + "  mark x \n" +
-                " list L = x\n " + " tree T = x\n " + "  while L nonempty\n  " +
-                " choose some vertex v from front of list\n " + "  visit v\n " +
-                " for each unmarked neighbor w\n " + " mark w\n " + " add it to end of list\n " + " add edge vw to T\n </pre>";
-        } else if (value == "DFS") {
-            document.getElementById('pseudo').innerHTML = " <pre>Algorithm DFS(graph G, Vertex v)\n" +
-                " for all edges e in G.incidentEdges(v) do\n" + " if edge e is unexplored then\n" +
-                " w = G.opposite(v, e)\n" + " if vertex w is unexplored then\n" +
-                " label e as discovery edge\n" + " recursively call DFS(G, w)\n<pre>"
-            " else\n" + " label e a a back edge\n";
-        } else if (value == "vertexSearch") {
-            document.getElementById('pseudo').innerHTML =
-                "<pre>longest = 0\n" +
-                "shortest = 0\n" +
-                "north = 0\n" +
-                "south = 0\n" +
-                "east = 0\n" +
-                "west = 0\n" +
-                "for (i=1 to |V|-1) {\n" +
-                "  if (len(v[i].label) > len(v[longest]))) {\n" +
-                "    longest = i\n" +
-                "  }\n" +
-                "  if (len(v[i].label) < len(v[shortest]))) {\n" +
-                "    shortest = i\n" +
-                "  }\n" +
-                "  if (v[i].lat > v[north].lat) {\n" +
-                "    north = i\n" +
-                "  }\n" +
-                "  if (v[i].lat < v[south].lat) {\n" +
-                "    south = i\n" +
-                "  }\n" +
-                "  if (v[i].lng < v[west].lng) {\n" +
-                "    west = i\n" +
-                "  }\n" +
-                "  if (v[i].lng > v[east].lng) {\n" +
-                "    east = i\n" +
-                "  }\n" +
-                "}</pre>";
-        } else if (value == "EdgeSearch") {
-            document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
-        } else if (value == "RFS") {
-            document.getElementById('pseudo').innerHTML = "<pre>// fill in for real later\nlongest = 0\n</pre>";
-        }
-        else if (value == "ConvexHull") {
-            document.getElementById('pseudo').innerHTML =
-                "<pre><div id='for1'>for(i=1 to n–1) { </div>" + 
-                "<div id ='for2'>    for(j=i+1 to n) {</div>" +
-                "<div id ='drawLine'>        L=line through pointI and pointJ</div>" 
-                +"           if ( all other points lie on the same side of L) {"+
-                "<div id ='drawLine2'>              add pointI and pointJ to the boundary</div>"+
-                "        }\n    }\n}\n</pre>";
-        }  
-        else {
-            document.getElementById('pseudo').innerHTML = "";
-        }
-    }
+// pseudocode display event handler
+function showHidePseudocode() {
+
+    let show = document.getElementById("pseudoCheckbox").checked;
+    document.getElementById("pseudoText").style.display =
+	(show ? "" : "none");
 }
 
 // generic event handler for start/pause/resume button
@@ -3343,6 +3370,9 @@ function algorithmSelected() {
 	    break;
 	}
     }
+
+    // set pseudocode
+    document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
 
     // call its function to set up its status and options
     hdxAV.currentAV.setupUI();

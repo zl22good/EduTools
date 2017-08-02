@@ -344,7 +344,7 @@ padding:0px;
 
       </td></tr>
       <tr><td id="algorithmStatus"></td></tr>
-      <tr><td id="pseudo"></td></tr>
+      <tr><td id="pseudo"><input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br><span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span></td></tr>
 
             </tbody>
         </table>
