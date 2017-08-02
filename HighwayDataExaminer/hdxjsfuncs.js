@@ -2618,7 +2618,7 @@ function fillGraphList(e) {
     mapSel.setAttribute("id", "graphList");
     mapSel.setAttribute("onchange", "readServer(event)");
     var init = document.createElement("option");
-    init.innerHTML = "Choose Map";
+    init.innerHTML = "Choose a Graph";
     init.value = "init";
     mapSel.appendChild(init);		
     sels.appendChild(mapSel);
