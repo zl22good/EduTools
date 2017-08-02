@@ -5,12 +5,8 @@ require (dirname(__FILE__)."/dbConnect.php");
 function hdx_load_file_entries() {
   global $tmdb;
   echo <<<ENDOFSTUFF
-      <tr><td class="loadcollapse">
-		Upload file:
-        <input id="filesel" type="file"  value="Start" onchange="startRead()">
-      </td></tr>
 	  <tr><td id="selects" class="loadcollapse">
-		Or load METAL graph: (select filters then press "Get Graph List") <br>
+		Load METAL graph: (select filters then press "Get Graph List") <br>
 		Sort criteria:
 		<select id = "orderOptions">
 			<option value = "alpha">Alphabetical</option>
@@ -50,6 +46,10 @@ ENDOFSTUFF;
 		<input type="button" onclick="undoCollapse(event)" value="Show Load Options">
 	  </td>
 	  </tr>	  
+      <tr><td class="loadcollapse">
+		or upload file:
+        <input id="filesel" type="file"  value="Start" onchange="startRead()">
+      </td></tr>
 ENDOFSTUFF;
 }
 ?>
