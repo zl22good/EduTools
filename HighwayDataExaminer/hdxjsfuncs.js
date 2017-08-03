@@ -170,14 +170,18 @@ var visualSettings = {
         textColor: "#e0e0e0",
         scale: 2,
 	name: "undiscovered", 
-	value: 0
+	value: 0,
+	weight: 5,
+	opacity: 0.6
     },
     visiting: {
         color: "yellow",
         textColor: "black",
         scale: 6,
 	name: "visiting",
-	value: 0
+	value: 0,
+	weight: 8,
+	opacity: 0.8
     },
     leader: {
         color: "red",
@@ -191,7 +195,9 @@ var visualSettings = {
         textColor: "black",
         scale: 2,
 	name: "discarded",
-	value: 0
+	value: 0,
+	weight: 5,
+	opacity: 0.5
     },
 
     // both vertex and edge search
@@ -200,14 +206,18 @@ var visualSettings = {
         textColor: "white",
         scale: 6,
 	name: "shortLabelLeader",
-	value: 0
+	value: 0,
+	weight: 8,
+	opacity: 0.6
     },
     longLabelLeader: {
         color: "#006400",
         textColor: "white",
         scale: 6,
 	name: "longLabelLeader",
-	value: 0
+	value: 0,
+	weight: 8,
+	opacity: 0.6
     },
     spanningTree: {
         color: "#0000a0",
@@ -482,6 +492,9 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
     var row = document.getElementById("waypoint"+waypointNum);
     row.style.backgroundColor = vs.color;
     row.style.color = vs.textColor;
+    if (hideTableLine) {
+        row.style.display = "none";
+    }
 
     // remaining code belongs elsewhere...
     
@@ -492,10 +505,6 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 	document.getElementById("di"+waypointNum).style.backgroundColor = vs.color;
 	document.getElementById("di"+waypointNum).style.color = vs.textColor;
     }
-    if (hideTableLine) {
-        row.style.display = "none";
-    }
-
     if (vs.color == "#0000a0") {
 	var clone = row.cloneNode(true);
 	clone.className = "blueRow";
@@ -507,6 +516,24 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 	row.parentNode.insertBefore(clone, row.parentNode.childNodes[1]);
 	row.parentNode.removeChild(row);		
     }
+}
+
+// function to set the edge color and table entry information
+// based on the visual settings, optionally hide line
+function updatePolylineAndTable(edgeNum, vs, hideTableLine) {
+
+    let edge = graphEdges[edgeNum];
+    connections[edgeNum].setOptions({
+	strokeColor: vs.color,
+	strokeWeight: vs.weight,
+	strokeOpacity: vs.opacity});
+
+    let row = document.getElementById("connection" + edgeNum);
+    row.style.backgroundColor = vs.color;
+    row.style.color = vs.textColor;
+    if (hideTableLine) {
+	row.style.display = "none";
+    } 
 }
 
 // dummy AV entry for main menu
@@ -966,7 +993,7 @@ for (checkIndex <- 1 to |E|-1) {
 	    index: -1,
 	    
 	    newLeader: function() {
-		return (graphEdges[hdxEdgeExtremesSearchAV.nextToCheck].label.length <
+		return (graphEdges[hdxEdgeExtremesSearchAV.nextToCheck].label.length >
 			graphEdges[this.index].label.length);
 	    },
 	    leaderString: edgeLabelLeaderString,
@@ -988,7 +1015,9 @@ for (checkIndex <- 1 to |E|-1) {
 		textColor: "white",
 		scale: 6,
 		name: "shortEdgeLeader",
-		value: 0
+		value: 0,
+		weight: 8,
+		opacity: 0.6
 	    }
 	},
 	
@@ -1007,35 +1036,22 @@ for (checkIndex <- 1 to |E|-1) {
 		textColor: "white",
 		scale: 6,
 		name: "longEdgeLeader",
-		value: 0
+		value: 0,
+		weight: 8,
+		opacity: 0.6
 	    }
 	}
     ],
     
-    // helper function
-    updateEdgeColor(edgeNum, color, op, weight) {
-	var edge = graphEdges[edgeNum];
-	connections[edgeNum].setOptions({
-	    strokeColor: color, 
-	    strokeWeight: weight, 
-	    strokeOpacity: op});
-	var firstNode = Math.min(edge.v1, edge.v2);
-	var secondNode = Math.max(edge.v1, edge.v2);
-	document.getElementsByClassName('v_' + firstNode + '_' + secondNode)[0].style.backgroundColor = color;
-    },
-
     // required start function
     start() {
 
 	hdxAV.algStat.innerHTML = "Initializing";
 
+	document.getElementById("connection").style.display = "";
 	// initialize all edges to have the "undiscovered" color
 	for (var i = 0; i < connections.length; i++) {
-            connections[i].setOptions(
-		{
-		    strokeColor: visualSettings.undiscovered.color,
-		    strokeOpacity: 0.6
-		});
+	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
 	}
 
 	// waypoints not needed, so remove from the map
@@ -1045,12 +1061,11 @@ for (checkIndex <- 1 to |E|-1) {
 	
 	//we don't need waypoints table here, so we remove those
 	document.getElementById("waypoints").style.display = "none";
-	
-	document.getElementById("connection").style.display = "";
-	var pointRows = document.getElementById("connection").getElementsByTagName("*");
-	for (var i = 0; i < pointRows.length; i++) {
-	    pointRows[i].style.display = "";
-	}
+
+	//var pointRows = document.getElementById("connection").getElementsByTagName("*");
+	//for (var i = 0; i < pointRows.length; i++) {
+	//    pointRows[i].style.display = "";
+//	}
 	
 	var algorithmsTbody = document.getElementById('AVControlPanel');
 	var infoid = "info1";
@@ -1125,10 +1140,8 @@ for (checkIndex <- 1 to |E|-1) {
 		}
 	    }
             if (discard) {
-		this.updateEdgeColor(toCheck,
-				     visualSettings.discarded.color,
-				     0.6, 10);
-		document.getElementById("connection"+ toCheck).style.display = "none";
+		updatePolylineAndTable(toCheck, visualSettings.discarded,
+				       true);
 		this.discarded++;
             }
 	}
@@ -1137,9 +1150,9 @@ for (checkIndex <- 1 to |E|-1) {
 	if (foundNewLeader) {
 
 	    for (var i = 0; i < this.categories.length; i++) {
-		this.updateEdgeColor(this.categories[i].index,
-				     this.categories[i].visualSettings.color,
-				     1, 15);
+		updatePolylineAndTable(this.categories[i].index,
+				       this.categories[i].visualSettings,
+				       false);
 		updateAVControlEntry(
 		    this.categories[i].name, 
 		    this.categories[i].leaderString(this.categories[i].label,
@@ -1149,9 +1162,8 @@ for (checkIndex <- 1 to |E|-1) {
 	}
 	else {
 	    // no new leader, this edge gets discarded
-	    this.updateEdgeColor(this.nextToCheck,
-				 visualSettings.discarded.color, 0.6, 10);
-	    document.getElementById("connection"+ this.nextToCheck).style.display = "none";
+	    updatePolylineAndTable(this.nextToCheck,
+				   visualSettings.discarded, true);
 	    this.discarded++;
 	}
 	
@@ -1162,8 +1174,8 @@ for (checkIndex <- 1 to |E|-1) {
 	// prepare for next iteration
 	this.nextToCheck++;
 	if (this.nextToCheck < graphEdges.length) {
-	    this.updateEdgeColor(this.nextToCheck,
-				 visualSettings.visiting.color, 0.6, 10);
+	    updatePolylineAndTable(this.nextToCheck,
+				   visualSettings.visiting, false);
             var self = this;
             setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
@@ -1323,7 +1335,7 @@ while L nonempty {
             this.discoveredVertices = HDXLinear(hdxLinearTypes.RANDOM);
 	}
 
-	document.getElementById("connection").style.display = "none";
+	document.getElementById("connection").style.display = "";
 	document.getElementById("waypoints").style.display = "";
 	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
 	for (var i = 0; i < pointRows.length; i++) {
@@ -1333,12 +1345,12 @@ while L nonempty {
 	// initialize our visited array
 	this.visitedVertices = new Array(waypoints.length).fill(false);
 	
-	// replace all markers with white circles
+	// replace all markers with black circles
 	for (var i = 0; i < markers.length; i++) {
             updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
 	}
 	
-	// color all edges white also
+	// color all edges black also
 	for (var i = 0; i < connections.length; i++) {
             connections[i].setOptions({
 		strokeColor: visualSettings.undiscovered.color,
