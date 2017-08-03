@@ -538,7 +538,7 @@ var hdxNoAV = {
 // helper functions
 
 // function to create the table entry for the leader for extreme points
-function extremePointLeaderString(label, waypointNum, vs) {
+function extremePointLeaderString(label, waypointNum) {
     
     return label + ':<br />#' + waypointNum +
         ' (' + waypoints[waypointNum].lat + ',' +
@@ -548,7 +548,7 @@ function extremePointLeaderString(label, waypointNum, vs) {
 
 // function to create the table entry for the leader for
 // label-based comparisons
-function labelLeaderString(label, waypointNum, vs) {
+function vertexLabelLeaderString(label, waypointNum) {
     
     return label + ':<br />#' + waypointNum +
         ' (length ' + waypoints[waypointNum].label.length + ') ' +
@@ -689,7 +689,7 @@ for (checkIndex <- 1 to |V|-1) {
 		return (waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.length <
 			waypoints[this.index].label.length);
 	    },
-	    leaderString: labelLeaderString,
+	    leaderString: vertexLabelLeaderString,
 	    visualSettings: visualSettings.shortLabelLeader
 	},
 	
@@ -702,7 +702,7 @@ for (checkIndex <- 1 to |V|-1) {
 		return (waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.length >
 			waypoints[this.index].label.length);
 	    },
-	    leaderString: labelLeaderString,
+	    leaderString: vertexLabelLeaderString,
 	    visualSettings: visualSettings.longLabelLeader
 	},
     ],
@@ -821,8 +821,7 @@ for (checkIndex <- 1 to |V|-1) {
 		updateAVControlEntry(
 		    this.categories[i].name, 
 		    this.categories[i].leaderString(this.categories[i].label,
-						    this.categories[i].index,
-						    this.categories[i].visualSettings)
+						    this.categories[i].index)
 		);
 	    }
 	}
@@ -885,6 +884,27 @@ for (checkIndex <- 1 to |V|-1) {
 };
 
 // edge extremes search
+
+// function to create the table entry for the leader for
+// label-based comparisons for edges
+function edgeLabelLeaderString(label, edgeNum) {
+    
+    return label + ':<br />#' + edgeNum +
+        ' (length ' + graphEdges[edgeNum].label.length + ') ' +
+        graphEdges[edgeNum].label;
+}
+
+// function to create the table entry for the leader for
+// edge-length-based comparisons for edges
+function edgeLengthLeaderString(label, edgeNum) {
+    
+    return label + ': ' +
+	edgeLengthInMiles(graphEdges[edgeNum]).toFixed(3) + ' mi<br />#' +
+	edgeNum + ' ' + graphEdges[edgeNum].label + " " +
+	waypoints[graphEdges[edgeNum].v1].label + ' <-> ' +
+	waypoints[graphEdges[edgeNum].v2].label;
+}
+
 var hdxEdgeExtremesSearchAV = {
 
     // entries for list of AVs
@@ -916,31 +936,78 @@ for (checkIndex <- 1 to |E|-1) {
     
     // state variables for edge search
     // next to examine
-    currentEdgeIndex: -1,
+    nextToCheck: -1,
+    discarded: 0,
 
-    // indices of our leaders in each category
-    shortestEdgeLengthIndex: -1,
-    longestEdgeLengthIndex: -1,
-    shortestEdgeLabelIndex: -1,
-    longestEdgeLabelIndex: -1,    
-
-    // visual settings specific to edge search
-    visualSettings: {
-	shortestLeader: {
-            color: "#8b0000",
-            textColor: "white",
-            scale: 6,
-	    name: "northLeader",
-	    value: 0
+    // the categories for which we are finding our extremes,
+    // with names for ids, labels to display, indicies of leader,
+    // comparison function to determine if we have a new leader,
+    // and visual settings for the display
+    categories: [
+	{
+	    name: "shortestLabel",
+	    label: "Shortest edge label",
+	    index: -1,
+	    
+	    newLeader: function() {
+		return (graphEdges[hdxEdgeExtremesSearchAV.nextToCheck].label.length <
+			graphEdges[this.index].label.length);
+	    },
+	    leaderString: edgeLabelLeaderString,
+	    visualSettings: visualSettings.shortLabelLeader
 	},
-	longestLeader: {
-            color: "#ee0000",
-            textColor: "white",
-            scale: 6,
-	    name: "southLeader",
-	    value: 0
+	
+	{
+	    name: "longestLabel",
+	    label: "Longest edge label",
+	    index: -1,
+	    
+	    newLeader: function() {
+		return (graphEdges[hdxEdgeExtremesSearchAV.nextToCheck].label.length <
+			graphEdges[this.index].label.length);
+	    },
+	    leaderString: edgeLabelLeaderString,
+	    visualSettings: visualSettings.longLabelLeader
+	},
+
+    	{
+	    name: "shortestEdge",
+	    label: "Shortest edge length",
+	    index: -1,
+	    
+	    newLeader: function() {
+		return (edgeLengthInMiles(graphEdges[hdxEdgeExtremesSearchAV.nextToCheck]) <
+			edgeLengthInMiles(graphEdges[this.index]));
+	    },
+	    leaderString: edgeLengthLeaderString,
+	    visualSettings: {
+		color: "#8b0000",
+		textColor: "white",
+		scale: 6,
+		name: "shortEdgeLeader",
+		value: 0
+	    }
+	},
+	
+	{
+	    name: "longestEdge",
+	    label: "Longest edge length",
+	    index: -1,
+	    
+	    newLeader: function() {
+		return (edgeLengthInMiles(graphEdges[hdxEdgeExtremesSearchAV.nextToCheck]) >
+			edgeLengthInMiles(graphEdges[this.index]));
+	    },
+	    leaderString: edgeLengthLeaderString,
+	    visualSettings: {
+		color: "#ee0000",
+		textColor: "white",
+		scale: 6,
+		name: "longEdgeLeader",
+		value: 0
+	    }
 	}
-    },
+    ],
     
     // helper function
     updateEdgeColor(edgeNum, color, op, weight) {
@@ -957,12 +1024,14 @@ for (checkIndex <- 1 to |E|-1) {
     // required start function
     start() {
 
+	hdxAV.algStat.innerHTML = "Initializing";
+
 	// initialize all edges to have the "undiscovered" color
 	for (var i = 0; i < connections.length; i++) {
             connections[i].setOptions(
 		{
 		    strokeColor: visualSettings.undiscovered.color,
-		    strokeOpacity: 0.3
+		    strokeOpacity: 0.6
 		});
 	}
 	//we don't need waypoints table here, so we remove those
@@ -973,6 +1042,7 @@ for (checkIndex <- 1 to |E|-1) {
 	for (var i = 0; i < pointRows.length; i++) {
 	    pointRows[i].style.display = "";
 	}
+	
 	var algorithmsTbody = document.getElementById('AVControlPanel');
 	var infoid = "info1";
 	var infoBox = document.createElement('td');
@@ -983,7 +1053,13 @@ for (checkIndex <- 1 to |E|-1) {
 	// hdxAV.algStat.innerHTML = 'Checking: <span style="color:yellow">0</span>';
 
 	// initialize to start looking at edge 0
-	this.currentEdgeIndex = 0;
+	this.nextToCheck = 0;
+	this.discarded = 0;
+
+	hdxAV.algStat.innerHTML = "In Progress";
+	updateAVControlEntry("undiscovered", graphEdges.length + "edges not yet visited");
+	updateAVControlEntry("visiting", "Preparing to visit: #0 " + graphEdges[0].label);
+	updateAVControlEntry("discarded", "0 edges discarded");
 	
 	if (!hdxAV.paused()) {
 	    var self = this;
@@ -1005,140 +1081,79 @@ for (checkIndex <- 1 to |E|-1) {
 	// keep track of whether the current edge becomes a new leader
         var foundNewLeader = false;
 	
-	// if this is the first step, we have a new leader in all!
-	if (this.currentEdgeIndex == 0) {
-	    this.shortestEdgeLengthIndex = 0;
-	    this.longestEdgeLengthIndex = 0;
-	    this.shortestEdgeLabelIndex = 0;
-	    this.longestEdgeLabelIndex = 0;
-	    foundNewLeader = true;
+	// special case of first checked
+	if (this.nextToCheck == 0) {
+            // this was our first check, so this edge wins all to start
+	    for (var i = 0; i < this.categories.length; i++) {
+		this.categories[i].index = 0;
+	    }
+            foundNewLeader = true;
 	}
-	// continue with the current edge, looking for new leaders
+	// we have to do real work to see if we have new winners
 	else {
-	    let d = edgeLengthInMiles(graphEdges[this.currentEdgeIndex]);
-
-	    // is this longer than the longest?
-	    if (d > edgeLengthInMiles(graphEdges[this.longestEdgeLengthIndex])) {
-		foundNewLeader = true;
-		defeated.push(this.longestEdgeLengthIndex);
-		this.longestEdgeLengthIndex = this.currentEdgeIndex;
-	    }
-
-	    // is this shorter than the longest?
-	    if (d < edgeLengthInMiles(graphEdges[this.shortestEdgeLengthIndex])) {
-		foundNewLeader = true;
-		defeated.push(this.shortestEdgeLengthIndex);
-		this.shortestEdgeLengthIndex = this.currentEdgeIndex;
-	    }
-
-	    // is this label longer than any we've seen?
-	    if (graphEdges[this.currentEdgeIndex].label.length >
-		graphEdges[this.longestEdgeLabelIndex].label.length) {
-		foundNewLeader = true;
-		defeated.push(this.longestEdgeLabelIndex);
-		this.longestEdgeLabelIndex = this.currentEdgeIndex;
-	    }
-
-	    // is this label shorter than any we've seen?
-	    if (graphEdges[this.currentEdgeIndex].label.length <
-		graphEdges[this.shortestEdgeLabelIndex].label.length) {
-		foundNewLeader = true;
-		defeated.push(this.shortestEdgeLabelIndex);
-		this.shortestEdgeLabelIndex = this.currentEdgeIndex;
+	    // check each category
+	    for (var i = 0; i < this.categories.length; i++) {
+		if (this.categories[i].newLeader()) {
+		    foundNewLeader = true;
+		    if (defeated.indexOf(this.categories[i].index) == -1) {
+			defeated.push(this.categories[i].index);
+		    }
+		    this.categories[i].index = this.nextToCheck;
+		}
 	    }
 	}
 
-	// any edge that was a leader but is no longer will get
-	// discarded
+	// any edge that was a leader but is no longer gets
+	// discarded, but need to check that it's not still a leader
+	// in another category
 	while (defeated.length > 0) {
-	    let toCheck = defeated.pop();
-	    if (toCheck != this.longestEdgeLengthIndex &&
-		toCheck != this.shortestEdgeLengthIndex &&
-		toCheck != this.longestEdgeLabelIndex &&
-		toCheck != this.shortestEdgeLabelIndex) {
-		this.updateEdgeColor(toCheck, visualSettings.spanningTree.color, 0.6, 10);
-		document.getElementById("connection"+ toCheck).style.display = "none";
+            let toCheck = defeated.pop();
+	    let discard = true;
+	    for (var i = 0; i < this.categories.length; i++) {
+		if (toCheck == this.categories[i].index) {
+		    discard = false;
+		    break;
+		}
 	    }
+            if (discard) {
+		this.updateEdgeColor(toCheck,
+				     visualSettings.discarded.color,
+				     0.6, 10);
+		document.getElementById("connection"+ toCheck).style.display = "none";
+		this.discarded++;
+            }
 	}
 
 	// if we found a new leader, update leader edges and table entries
 	if (foundNewLeader) {
 
-	    // longest edge length
-	    this.updateEdgeColor(this.longestEdgeLengthIndex,
-				 this.visualSettings.longestLeader.color, 1, 15);
-
-	    // shortest edge length
-	    this.updateEdgeColor(this.shortestEdgeLengthIndex,
-				 this.visualSettings.shortestLeader.color, 1, 15);
-	    
-	    // longest edge label
-	    this.updateEdgeColor(this.longestEdgeLabelIndex,
-				 visualSettings.longLabelLeader.color, 1, 15);
-
-	    // shortest edge label
-	    this.updateEdgeColor(this.shortestEdgeLabelIndex,
-				 visualSettings.shortLabelLeader.color, 1, 15);
-
-	    // update info area
-	    document.getElementById('info1').innerHTML =
-		// short label leader
-		"<span style='background-color:" +
-		visualSettings.shortLabelLeader.color + "; color:" +
-		visualSettings.shortLabelLeader.textColor +
-		";' onclick='edgeClick("+
-		this.shortestEdgeLabelIndex + ")'>Shortest Edge label: " +
-		graphEdges[this.shortestEdgeLabelIndex].label +
-		"</span><br>" +
-		// long label leader
-		"<span style='background-color:" +
-		visualSettings.longLabelLeader.color + "; color:" +
-		visualSettings.longLabelLeader.textColor +
-		";' onclick='edgeClick("+
-		this.longestEdgeLabelIndex + ")'>Longest Edge label: " +
-		graphEdges[this.longestEdgeLabelIndex].label +
-		"</span><br>" +
-		// short edge length leader
-		"<span style = 'background-color:" +
-		this.visualSettings.shortestLeader.color +
-		"' onclick='edgeClick(" + this.shortestEdgeLengthIndex +
-		")'>Shortest Edge: " +
-		graphEdges[this.shortestEdgeLengthIndex].label +
-		": <span id='minedgelength'>"  +
-		edgeLengthInMiles(graphEdges[this.shortestEdgeLengthIndex]) +
-		"</span></span><br>" +
-		// long edge length leader
-		"<span style = 'background-color:" +
-		this.visualSettings.longestLeader.color +
-		"' onclick='edgeClick(" + this.longestEdgeLengthIndex +
-		")'>Longest Edge: " +
-		graphEdges[this.longestEdgeLengthIndex].label +
-		": <span id='maxedgelength'>"  +
-		edgeLengthInMiles(graphEdges[this.longestEdgeLengthIndex]) +
-		"</span></span>";
-
-	    document.getElementById("minedgelength").classList.add(curUnit);
-	    document.getElementById("maxedgelength").classList.add(curUnit);
+	    for (var i = 0; i < this.categories.length; i++) {
+		this.updateEdgeColor(this.categories[i].index,
+				     this.categories[i].visualSettings.color,
+				     1, 15);
+		updateAVControlEntry(
+		    this.categories[i].name, 
+		    this.categories[i].leaderString(this.categories[i].label,
+						    this.categories[i].index)
+		);
+	    }
 	}
 	else {
 	    // no new leader, this edge gets discarded
-	    this.updateEdgeColor(this.currentEdgeIndex,
-				 visualSettings.spanningTree.color, 0.6, 10);
-	    document.getElementById("connection"+ this.currentEdgeIndex).style.display = "none";
+	    this.updateEdgeColor(this.nextToCheck,
+				 visualSettings.discarded.color, 0.6, 10);
+	    document.getElementById("connection"+ this.nextToCheck).style.display = "none";
+	    this.discarded++;
 	}
-
-	// update status
-	hdxAV.algStat.innerHTML =
-            'Visiting: <span style="color:' + visualSettings.visiting.textColor +
-            '; background-color:' + visualSettings.visiting.color + '"> ' +
-            this.currentEdgeIndex + '</span>, ' +
-	    (graphEdges.length - this.currentEdgeIndex - 1) +
-            ' remaining';
+	
+	updateAVControlEntry("undiscovered", (graphEdges.length - this.nextToCheck) + " edges not yet visited");
+	updateAVControlEntry("visiting", "Visiting: #" + this.nextToCheck + " " + graphEdges[this.nextToCheck].label);
+	updateAVControlEntry("discarded", this.discarded + " edges discarded");
 	
 	// prepare for next iteration
-	this.currentEdgeIndex++;
-	if (this.currentEdgeIndex < graphEdges.length) {
-	    this.updateEdgeColor(this.currentEdgeIndex,
+	this.nextToCheck++;
+	if (this.nextToCheck < graphEdges.length) {
+	    this.updateEdgeColor(this.nextToCheck,
 				 visualSettings.visiting.color, 0.6, 10);
             var self = this;
             setTimeout(function() { self.nextStep() }, hdxAV.delay);
@@ -1147,6 +1162,9 @@ for (checkIndex <- 1 to |E|-1) {
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
             hdxAV.algStat.innerHTML =
 		"Done! Visited " + graphEdges.length + " edges.";
+	    updateAVControlEntry("undiscovered", "0 edges not yet visited");
+	    updateAVControlEntry("visiting", "");
+	    updateAVControlEntry("discarded", this.discarded + " edges discarded");
 	}
     },
 
@@ -1154,14 +1172,28 @@ for (checkIndex <- 1 to |E|-1) {
     setupUI() {
 
 	hdxAV.algStat.style.display = "";
-	hdxAV.algStat.innerHTML = "";
+	hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.algOptions.innerHTML = '';
+	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
+	addEntryToAVControlPanel("visiting", visualSettings.visiting);
+	addEntryToAVControlPanel("discarded", visualSettings.discarded);
+	for (var i = 0; i < this.categories.length; i++) {
+	    addEntryToAVControlPanel(this.categories[i].name,
+				     this.categories[i].visualSettings);
+	}
 
     },
 
     // clean up edge search UI
-    cleanupUI() {}
+    cleanupUI() {
 
+    	removeEntryFromAVControlPanel("undiscovered");
+	removeEntryFromAVControlPanel("visiting");
+	removeEntryFromAVControlPanel("discared");
+	for (var i = 0; i < this.categories.length; i++) {
+	    removeEntryFromAVControlPanel(this.categories[i].name);
+	}
+    }
 };
 
 // ********************************************************************
