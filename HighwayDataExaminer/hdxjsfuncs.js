@@ -267,7 +267,6 @@ function updateAVControlEntry(namePrefix, text) {
     document.getElementById(namePrefix + "AVCPEntry").innerHTML = text;
 }
 
-
 /* Support for selection of a vertex (such as a starting or ending
    vertex for a traversal or search) by clicking on a waypoint on
    the map or an entry in the waypoint table.  The startSelection
@@ -483,6 +482,9 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
     var row = document.getElementById("waypoint"+waypointNum);
     row.style.backgroundColor = vs.color;
     row.style.color = vs.textColor;
+
+    // remaining code belongs elsewhere...
+    
     if ($("#l"+waypointNum).length > 0) {
 	document.getElementById("l"+(waypointNum)).style.backgroundColor = vs.color;
     }
@@ -493,6 +495,7 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
     if (hideTableLine) {
         row.style.display = "none";
     }
+
     if (vs.color == "#0000a0") {
 	var clone = row.cloneNode(true);
 	clone.className = "blueRow";
@@ -1034,6 +1037,12 @@ for (checkIndex <- 1 to |E|-1) {
 		    strokeOpacity: 0.6
 		});
 	}
+
+	// waypoints not needed, so remove from the map
+	for (var i = 0; i < waypoints.length; i++) {
+            markers[i].setMap(null);
+	}
+	
 	//we don't need waypoints table here, so we remove those
 	document.getElementById("waypoints").style.display = "none";
 	
