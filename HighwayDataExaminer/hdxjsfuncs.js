@@ -239,6 +239,35 @@ var visualSettings = {
     }
 };
 
+/* add entry to the algorithm visualization control panel */
+function addEntryToAVControlPanel(namePrefix, vs) {
+    
+    let avControlTbody = document.getElementById('AVControlPanel');
+    let infoBox = document.createElement('td');
+    let infoBoxtr= document.createElement('tr');
+    infoBox.setAttribute('id', namePrefix + "AVCPEntry");
+    infoBox.setAttribute('style', "color:" + vs.textColor +
+			 "; background-color:" + vs.color);
+    infoBoxtr.appendChild(infoBox);
+    avControlTbody.appendChild(infoBoxtr);
+}
+
+/* remove entry from algorithm visualization control panel */
+function removeEntryFromAVControlPanel(namePrefix) {
+
+    let avControlTbody = document.getElementById('AVControlPanel');
+    let infoBox = document.getElementById(namePrefix + "AVCPEntry");
+    let infoBoxtr= infoBox.parentNode;
+    avControlTbody.removeChild(infoBoxtr);
+}
+
+/* set the HTML of an AV control panel entry */
+function updateAVControlEntry(namePrefix, text) {
+
+    document.getElementById(namePrefix + "AVCPEntry").innerHTML = text;
+}
+
+
 /* Support for selection of a vertex (such as a starting or ending
    vertex for a traversal or search) by clicking on a waypoint on
    the map or an entry in the waypoint table.  The startSelection
@@ -565,6 +594,7 @@ for (checkIndex <- 1 to |V|-1) {
     
     // state variables for vertex extremes search
     nextToCheck: 0,
+    discarded: 0,
 
     // the categories for which we are finding our extremes,
     // with names for ids, labels to display, indicies of leader,
@@ -681,6 +711,7 @@ for (checkIndex <- 1 to |V|-1) {
     // initialize a vertex-based search
     start() {
 
+	hdxAV.algStat.innerHTML = "Initializing";
 	// start by showing all existing markers, even hidden
 	for (var i = 0; i < waypoints.length; i++) {
             markers[i].setMap(map);
@@ -703,7 +734,12 @@ for (checkIndex <- 1 to |V|-1) {
 	updateMarkerAndTable(0, visualSettings.visiting, 40, false);
 	
 	this.nextToCheck = 0;
+	this.discarded = 0;
 	
+	hdxAV.algStat.innerHTML = "In Progress";
+	updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
+	updateAVControlEntry("visiting", "Preparing to visit: #0 " + waypoints[0].label);
+	updateAVControlEntry("discarded", "0 vertices discarded");
 	if (!hdxAV.paused()) {
 	    var self = this;
 	    setTimeout(function() { self.nextStep() }, hdxAV.delay);
@@ -741,7 +777,9 @@ for (checkIndex <- 1 to |V|-1) {
 	    for (var i = 0; i < this.categories.length; i++) {
 		if (this.categories[i].newLeader()) {
 		    foundNewLeader = true;
-		    defeated.push(this.categories[i].index);
+		    if (defeated.indexOf(this.categories[i].index) == -1) {
+			defeated.push(this.categories[i].index);
+		    }
 		    this.categories[i].index = this.nextToCheck;
 		}
 	    }
@@ -762,6 +800,7 @@ for (checkIndex <- 1 to |V|-1) {
             if (discard) {
 		updateMarkerAndTable(toCheck, visualSettings.discarded,
 				     20, true);
+		this.discarded++;
             }
 	}
 	
@@ -779,23 +818,24 @@ for (checkIndex <- 1 to |V|-1) {
 	    for (var i = 0; i < this.categories.length; i++) {
 		updateMarkerAndTable(this.categories[i].index, this.categories[i].visualSettings, 
 				     40, false);
-		document.getElementById(this.categories[i].name+"Box").innerHTML = 
+		updateAVControlEntry(
+		    this.categories[i].name, 
 		    this.categories[i].leaderString(this.categories[i].label,
 						    this.categories[i].index,
-						    this.categories[i].visualSettings);
+						    this.categories[i].visualSettings)
+		);
 	    }
 	}
 	else {
             // we didn't have a new leader, just discard this one
             updateMarkerAndTable(this.nextToCheck, visualSettings.discarded,
 				 20, true);
+	    this.discarded++;
 	}
 	
-	hdxAV.algStat.innerHTML =
-            'Visiting: <span style="color:' + visualSettings.visiting.textColor +
-            '; background-color:' + visualSettings.visiting.color + '"> ' +
-            this.nextToCheck + '</span>, ' + (markers.length - this.nextToCheck - 1) +
-            ' remaining';
+	updateAVControlEntry("undiscovered", (waypoints.length - this.nextToCheck) + " vertices not yet visited");
+	updateAVControlEntry("visiting", "Visiting: #" + this.nextToCheck + " " + waypoints[this.nextToCheck].label);
+	updateAVControlEntry("discarded", this.discarded + " vertices discarded");
 	
 	// prepare for next iteration
 	this.nextToCheck++;
@@ -809,6 +849,10 @@ for (checkIndex <- 1 to |V|-1) {
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
             hdxAV.algStat.innerHTML =
 		"Done! Visited " + markers.length + " waypoints.";
+	    updateAVControlEntry("undiscovered", "0 vertices not yet visited");
+	    updateAVControlEntry("visiting", "");
+	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");
+	
 	}
     },
 
@@ -816,32 +860,26 @@ for (checkIndex <- 1 to |V|-1) {
     setupUI() {
 
 	hdxAV.algStat.style.display = "";
-	hdxAV.algStat.innerHTML = "";
+	hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.algOptions.innerHTML = '';
 
-	let algorithmsTable = document.getElementById('AlgorithmsTable');
-	let algorithmsTbody = algorithmsTable.children[1];
+	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
+	addEntryToAVControlPanel("visiting", visualSettings.visiting);
+	addEntryToAVControlPanel("discarded", visualSettings.discarded);
 	for (var i = 0; i < this.categories.length; i++) {
-	    let infoBox = document.createElement('td');
-	    let infoBoxtr= document.createElement('tr');
-	    infoBox.setAttribute('id', this.categories[i].name + "Box");
-	    infoBox.setAttribute('style', "color:" +
-				 this.categories[i].visualSettings.textColor +
-				 "; background-color:" +
-				 this.categories[i].visualSettings.color);
-	    infoBoxtr.appendChild(infoBox);
-	    algorithmsTbody.appendChild(infoBoxtr);
+	    addEntryToAVControlPanel(this.categories[i].name,
+				     this.categories[i].visualSettings);
 	}
     },
 
     // remove UI modifications made for vertex extremes search
     cleanupUI() {
-	let algorithmsTable = document.getElementById('AlgorithmsTable');
-	let algorithmsTbody = algorithmsTable.children[1];
+
+	removeEntryFromAVControlPanel("undiscovered");
+	removeEntryFromAVControlPanel("visiting");
+	removeEntryFromAVControlPanel("discared");
 	for (var i = 0; i < this.categories.length; i++) {
-	    let infoBox = document.getElementById(this.categories[i].name + "Box");
-	    let infoBoxtr= infoBox.parentNode;
-	    algorithmsTbody.removeChild(infoBoxtr);
+	    removeEntryFromAVControlPanel(this.categories[i].name);
 	}
     }
 };
@@ -935,8 +973,7 @@ for (checkIndex <- 1 to |E|-1) {
 	for (var i = 0; i < pointRows.length; i++) {
 	    pointRows[i].style.display = "";
 	}
-	var algorithmsTable = document.getElementById('AlgorithmsTable');
-	var algorithmsTbody = algorithmsTable.children[1];
+	var algorithmsTbody = document.getElementById('AVControlPanel');
 	var infoid = "info1";
 	var infoBox = document.createElement('td');
 	var infoBoxtr= document.createElement('tr');

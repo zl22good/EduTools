@@ -315,11 +315,11 @@ padding:0px;
   No data loaded....
 </div>
 <div id="AlgorithmVisualization">
-  <table id="AlgorithmsTable" class="gratable">
+  <table class="gratable">
     <thead>
       <tr><th>Algorithm Vizualization Control Panel</th></tr>
     </thead>
-    <tbody>
+    <tbody id="AVControlPanel">
       <?php hdx_load_file_entries(); ?>
       <tr><td>
         Algorithm to Visualize:
@@ -343,11 +343,10 @@ padding:0px;
         </select>
 
       </td></tr>
-      <tr><td id="algorithmStatus"></td></tr>
       <tr><td id="pseudo"><input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br><span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span></td></tr>
-
-            </tbody>
-        </table>
+      <tr><td id="algorithmStatus"></td></tr>
+      </tbody>
+      </table>
     </div>
 
     <div id="controlbox">
