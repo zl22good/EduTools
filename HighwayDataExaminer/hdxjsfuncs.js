@@ -1262,10 +1262,15 @@ while L nonempty {
     // this vertex and connection for the Polyline connection followed
     // to get here (so it can be colored appropriately when the
     // element comes out)
-    discoveredVertices: null,
+    // this is the "list of discovered vertices" or "LDV"
+    ldv: null,
 
-    // array of booleans to indicate if we've visited each vertex
-    visitedVertices: [],
+    // arrays of booleans to indicate if we've visited/discovered
+    // vertices and edges
+    // should these just be attached to the Waypoint and GraphEdge objects?
+    visitedV: [],
+    discoveredV: [],
+    discoveredE: [],
 
     // are we finding all components?
     findingAllComponents: false,
@@ -1276,41 +1281,18 @@ while L nonempty {
     // where did we start?
     startingVertex: -1,
 
-    // what is our traversal discipline, i.e., is discoveredVertices to be
+    // what is our traversal discipline, i.e., is ldv to be
     // treated as a stack, queue, or something else
     // values are currently "BFS" or "DFS" or "RFS"
     traversalDiscipline: "TBD",
 
-    // initial vertex color coding and zindex offsets for graph traversals:
-    // start vertex: green/10
-    // undiscovered: white/0
-    // in discovered list and not visited: purple/5
-    // in discovered list but already visited: blue/5
-    // not in discovered list but already visited: grey/1
-    // just removed from discovered list and visiting: yellow/10
-    // just removed from discovered list but already visited: orange/10
-    
-    // initial edge color coding for graph traversals:
-    // undiscovered edge: white
-    // edge leading to a vertex in the discovered list: purple
-    // edge that is part of the spanning tree: red
-    // edge that was discovered but ended up not in spanning tree: grey
-    
-
-    // to be added back in later, possibly
-    //gred: 245,
-    //ggrn: 255,
-    //gblu: 245,
-
     // some additional stats to maintain and display
     numVSpanningTree: 0,
     numESpanningTree: 0,
-    numVDiscovered: 0,
-    numEDiscovered: 0,
     numVUndiscovered: 0,
     numEUndiscovered: 0,
-    numEDiscardedBeforeAdd: 0,
-    numEDiscardedAfterAdd: 0,
+    numEDiscardedOnDiscovery: 0,
+    numEDiscardedOnRemoval: 0,
     componentNum: 0,
     
     // color items specific to graph traversals
@@ -1355,22 +1337,22 @@ while L nonempty {
 	let d = document.getElementById("traversalDiscipline");
 	this.traversalDiscipline = d.options[d.selectedIndex].value;
 	if (this.traversalDiscipline == "BFS") {
-            this.discoveredVertices = HDXLinear(hdxLinearTypes.QUEUE,
-					       "BFS Queue");
+            this.ldv = HDXLinear(hdxLinearTypes.QUEUE,
+				 "BFS Discovered Queue");
 	}
 	else if (this.traversalDiscipline == "DFS") {
-            this.discoveredVertices = HDXLinear(hdxLinearTypes.STACK,
-					       "DFS Stack");
+            this.ldv = HDXLinear(hdxLinearTypes.STACK,
+				 "DFS Discovered Stack");
 	}
 	else if (this.traversalDiscipline == "RFS") {
-            this.discoveredVertices = HDXLinear(hdxLinearTypes.RANDOM,
-					       "RFS List");
+            this.ldv = HDXLinear(hdxLinearTypes.RANDOM,
+				 "RFS Discovered List");
 	}
 
 	// TODO: make the callback function display more interesting
 	// information and possibly a "hover" information box and
 	// opening the waypoint's infowindow if clicked
-	this.discoveredVertices.setDisplay(
+	this.ldv.setDisplay(
 	    getAVControlEntryDocumentElement("discovered"),
 	    function(item) {
 		return item.vIndex;
@@ -1388,35 +1370,36 @@ while L nonempty {
 	    pointRows[i].style.display = "";
 	}
 	
-	// initialize our visited array
-	this.visitedVertices = new Array(waypoints.length).fill(false);
-	
-	// replace all markers with black circles
+	// initialize our visited/discovered arrays
+	this.visitedV = new Array(waypoints.length).fill(false);
+	this.discoveredV = new Array(waypoints.length).fill(false);
+	this.discoveredE = new Array(connections.length).fill(false);
+
+	// replace all markers with circles in the undiscovered color
 	for (var i = 0; i < markers.length; i++) {
             updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
 	}
 	
-	// color all edges black also
+	// color all edges in the undiscovered color also
 	for (var i = 0; i < connections.length; i++) {
 	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
 	}
 	
 	// vertex index to start the traversal
 	this.startingVertex = document.getElementById("startPoint").value;
+	this.discoveredV[this.startingVertex] = true;
 	
 	// initialize the process with this value
-	this.discoveredVertices.add({
+	this.ldv.add({
             vIndex: this.startingVertex,
             connection: -1
 	});
 	this.numVSpanningTree = 0;
 	this.numESpanningTree = 0;
-	this.numVDiscovered = 1;
-	this.numEDiscovered = 0;
 	this.numVUndiscovered = waypoints.length - 1;
-	this.numEUndisovered = connections.length;
-	this.numEDiscardedBeforeAdd = 0;
-	this.numEDiscardedAfterAdd = 0;
+	this.numEUndiscovered = connections.length;
+	this.numEDiscardedOnDiscovery = 0;
+	this.numEDiscardedOnRemoval = 0;
 	this.componentNum = 0;
 
 	// mark as discovered, will be redrawn as starting vertex
@@ -1444,31 +1427,16 @@ while L nonempty {
 	updateAVControlEntry("undiscovered", "Undiscovered: " +
 			     this.numVUndiscovered + " V, " +
 			     this.numEUndiscovered + " E");
-//	updateAVControlEntry("discovered", "Discovered: " +
-//			     this.numVDiscovered + " V, " +
-//			     this.numEDiscovered + " E");
 	updateAVControlEntry("currentSpanningTree", "Spanning Tree: " +
 			     this.numVSpanningTree + " V, " +
 			     this.numESpanningTree + " E");
 	updateAVControlEntry("discardedBefore", "Discarded on discovery: " +
-			     this.numEDiscardedBeforeAdd + " E");
+			     this.numEDiscardedOnDiscovery + " E");
 	updateAVControlEntry("discardedAfter", "Discarded on removal: " +
-			     this.numEDiscardedAfterAdd + " E");
+			     this.numEDiscardedOnRemoval + " E");
     },
 
-    // function to see if a vertex with the given index is in
-    // discoveredVertices
-    //discoveredVerticesContainsVertex(vIndex) {
-
-//	for (var i = 0; i < this.discoveredVertices.length; i++) {
-  //          if (this.discoveredVertices[i].vIndex == vIndex) {
-//		return true;
-  //          }
-//	}
-//	return false;
-  //  },
-
-    // function to process one vertex from the discoveredVertices in the
+    // function to process one vertex from the ldv in the
     // graph traversal process
     nextStep() {
     
@@ -1476,8 +1444,9 @@ while L nonempty {
 	if (hdxAV.paused()) {
             return;
 	}
-	
-	// maybe we have a last visited vertex to update
+
+	// the last visited vertex is still drawn as the one being visited,
+	// so first recolor it as appropriate, if it exists
 	if (this.lastVisitedVertex != -1) {
             if (this.lastVisitedVertex == this.startingVertex) {
 		// always leave the starting vertex colored appropriately
@@ -1486,7 +1455,7 @@ while L nonempty {
 				     this.visualSettings.startVertex,
 				     10, false);
             }
-	    else if (!this.discoveredVertices.containsFieldMatching("vIndex", this.lastVisitedVertex)) {
+	    else if (!this.ldv.containsFieldMatching("vIndex", this.lastVisitedVertex)) {
 		// not in the list, this vertex gets marked as in the
 		// spanning tree
 		updateMarkerAndTable(this.lastVisitedVertex,
@@ -1503,15 +1472,17 @@ while L nonempty {
 	// maybe we're done
 	// TODO: move on to next component if finding all and
 	// some unvisited vertices remain
-	if (this.discoveredVertices.isEmpty()) {
+	if (this.ldv.isEmpty()) {
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    hdxAV.algStat.innerHTML = "Done.";
+	    updateAVControlEntry("visiting", "Last visited #" +
+				 lastVisitedVertex + " " +
+				 waypoints[lastVisitedVertex].label);
             return;
 	}
 	
-	// select the next vertex to visit and remove it from the
-	// discoveredVertices list
-	let nextToVisit = this.discoveredVertices.remove();
+	// LDV not empty, so select the next vertex to visit and remove it
+	let nextToVisit = this.ldv.remove();
 	this.lastVisitedVertex = nextToVisit.vIndex;
 	let vIndex = nextToVisit.vIndex;
 	let edgeLabel;
@@ -1527,10 +1498,10 @@ while L nonempty {
 
 	// now decide what to do with this vertex -- depends on whether it
 	// had been previously visited
-	if (this.visitedVertices[vIndex]) {
-            this.numEDiscardedAfterAdd++;
+	if (this.visitedV[vIndex]) {
+            this.numEDiscardedOnRemoval++;
             // we've been here before, but is it still in the list?
-            if (this.discoveredVertices.containsFieldMatching("vIndex", vIndex)) {
+            if (this.ldv.containsFieldMatching("vIndex", vIndex)) {
 		// not there anymore, indicated this as visitedEarlier, and
 		// will be discarded or marked as discoveredEarlier on the
 		// next iteration
@@ -1554,18 +1525,15 @@ while L nonempty {
 	}
 	// visiting for the first time
 	else {
-            this.visitedVertices[vIndex] = true;
+            this.visitedV[vIndex] = true;
             updateMarkerAndTable(vIndex, visualSettings.visiting,
 				 10, false);
 	    this.numVSpanningTree++;
 	    // was just discovered, now part of spanning tree
-	    this.numVDiscovered--;
 	    
             // we used the edge to get here, so let's mark it as such
             if (nextToVisit.connection != -1) {
 		this.numESpanningTree++;
-		// was just discovered, now part of tree
-		this.numEDiscovered--;
 		updatePolylineAndTable(nextToVisit.connection,
 				       visualSettings.spanningTree, false);
             }
@@ -1582,20 +1550,29 @@ while L nonempty {
 
 		// it's a different edge, let's see where we can go
 		
-		if (this.visitedVertices[neighbors[i]]) {
+		if (this.visitedV[neighbors[i]]) {
 		    // been here before, so just note that this is
 		    // an edge we discard before adding
-		    this.numEDiscardedBeforeAdd++;
+		    this.numEDiscardedOnDiscovery++;
+		    if (!this.discoveredE[connection]) {
+			this.numEUndiscovered--;
+			this.discoveredE[connection] = true;
+		    }
 		    updatePolylineAndTable(connection,
 					   this.visualSettings.discardedBefore,
 					   false);
 		}
 		else {
 		    // not been here, we've discovered somewhere new
-		    // discovered a new vertex and a new edge
-		    this.numVDiscovered++;
-		    this.numEDiscovered++;
-                    this.discoveredVertices.add({
+		    // possibly discovered a new vertex and
+		    // definitely discovered a new edge
+		    if (!this.discoveredV[neighbors[i]]) {
+			this.numVUndiscovered--;
+			this.discoveredV[neighbors[i]] = true;
+		    }
+		    this.numEUndiscovered--;
+		    this.discoveredE[connection] = true;
+                    this.ldv.add({
 			vIndex: neighbors[i],
 			connection: connection
                     });
@@ -1646,7 +1623,15 @@ while L nonempty {
     },
 
     // clean up traversals UI
-    cleanupUI() {}
+    cleanupUI() {
+
+	removeEntryFromAVControlPanel("visiting");
+	removeEntryFromAVControlPanel("currentSpanningTree");
+    	removeEntryFromAVControlPanel("undiscovered");
+    	removeEntryFromAVControlPanel("discovered");
+	removeEntryFromAVControlPanel("discaredBefore");
+	removeEntryFromAVControlPanel("discaredAfter");
+    }
 
 };
 
