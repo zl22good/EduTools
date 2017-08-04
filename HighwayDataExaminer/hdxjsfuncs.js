@@ -224,7 +224,9 @@ var visualSettings = {
         textColor: "white",
         scale: 2,
 	name: "spanningTree",
-	value: 0
+	value: 0,
+	weight: 2,
+	opacity: 0.6
     },
     discovered: {
         color: "#00a000",
@@ -1329,8 +1331,31 @@ while L nonempty {
             scale: 4,
 	    name: "visitedEarlier",
 	    value: 0
+	},
+	completedComponent: {
+	    color: "white",
+	    textColor: "black",
+	    scale: 2,
+	    name: "completedComponent",
+	    value: 0,
+	    weight: 2,
+	    opacity: 0.6
 	}
     },
+
+    // list of colors to fill in for completed components
+    componentColors: [
+	"orange",
+	"darkCyan",
+	"brown",
+	"crimson",
+	"lightCoral",
+	"moccasin",
+	"orchid",
+	"sienna",
+	"violet",
+	"yellowGreen"
+    ],
     
     // initialize graph traversal process, required for all algorithms
     start() {
@@ -1434,7 +1459,7 @@ while L nonempty {
 	this.lastVisitedVertex = -1;
 	hdxAV.algStat.innerHTML = "Finding spanning tree";
 	if (this.findingAllComponents) {
-	    hdxAV.algStat.innerHTML += " for component " + this.componentNum;
+	    hdxAV.algStat.innerHTML += " for component " + (this.componentNum+1);
 	}
 	if (!hdxAV.paused()) {
 	    var self = this;
@@ -1507,7 +1532,23 @@ while L nonempty {
 	    if (this.findingAllComponents) {
 		// recolor all vertices and edges in the most recent
 		// component with a new color
-		alert("Finished component, should recolor!");
+		if (this.componentNum < this.componentColors.length) {
+		    this.visualSettings.completedComponent.color =
+			this.componentColors[this.componentNum];
+		}
+		else {
+		    // credit https://www.paulirish.com/2009/random-hex-color-code-snippets/
+		    this.visualSettings.completedComponent.color =
+			'#'+Math.floor(Math.random()*16777215).toString(16);
+		}
+		for (var i = 0; i < this.componentVList.length; i++) {
+		    updateMarkerAndTable(this.componentVList[i],
+					 this.visualSettings.completedComponent, false);
+		}
+		for (var i = 0; i < this.componentEList.length; i++) {
+		    updatePolylineAndTable(this.componentEList[i],
+					   this.visualSettings.completedComponent, false);
+		}
 		
 		// done?
 		if (this.numVUndiscovered == 0) {
