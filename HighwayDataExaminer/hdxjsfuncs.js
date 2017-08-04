@@ -1274,6 +1274,15 @@ while L nonempty {
 
     // are we finding all components?
     findingAllComponents: false,
+
+    // when finding all, track the lists of vertices and edges that are
+    // forming the current spanning tree
+    componentVList: [],
+    componentEList: [],
+
+    // where to start the search for an unvisited vertex that will be
+    // the starting vertex for the next component
+    startUnvisitedVSearch: 0,
     
     // vertex visited on the previous iteration to be updated
     lastVisitedVertex: -1,
@@ -1377,23 +1386,43 @@ while L nonempty {
 	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
 	}
 	
+	this.numVSpanningTree = 0;
+	this.numESpanningTree = 0;
+	this.numVUndiscovered = waypoints.length;
+	this.numEUndiscovered = connections.length;
+	this.numEDiscardedOnDiscovery = 0;
+	this.numEDiscardedOnRemoval = 0;
+	this.componentNum = 0;
+
+	// for the search for starting vertices for multiple component
+	// traversals
+	this.startUnvisitedVSearch = 0;
+
 	// vertex index to start the traversal
 	this.startingVertex = document.getElementById("startPoint").value;
+
+	// common to starting first and subsequent components
+	this.startNewComponent();
+    },
+
+    // common code for starting search for the first or subsequent
+    // components
+    startNewComponent() {
+
+	// create new empty lists for the vertices and edges of the
+	// current component
+	this.componentVList = [];
+	this.componentEList = [];
+	
 	this.discoveredV[this.startingVertex] = true;
+	this.numVUndiscovered--;
 	
 	// initialize the process with this value
 	this.ldv.add({
             vIndex: this.startingVertex,
             connection: -1
 	});
-	this.numVSpanningTree = 0;
-	this.numESpanningTree = 0;
-	this.numVUndiscovered = waypoints.length - 1;
-	this.numEUndiscovered = connections.length;
-	this.numEDiscardedOnDiscovery = 0;
-	this.numEDiscardedOnRemoval = 0;
-	this.componentNum = 0;
-
+	
 	// mark as discovered, will be redrawn as starting vertex
 	// color in nextStep
 	updateMarkerAndTable(this.startingVertex,
@@ -1405,7 +1434,7 @@ while L nonempty {
 	this.lastVisitedVertex = -1;
 	hdxAV.algStat.innerHTML = "Finding spanning tree";
 	if (this.findingAllComponents) {
-	    hdxAV.algStat.innerHTML += " for component 0";
+	    hdxAV.algStat.innerHTML += " for component " + this.componentNum;
 	}
 	if (!hdxAV.paused()) {
 	    var self = this;
@@ -1419,7 +1448,14 @@ while L nonempty {
 	updateAVControlEntry("undiscovered", "Undiscovered: " +
 			     this.numVUndiscovered + " V, " +
 			     this.numEUndiscovered + " E");
-	updateAVControlEntry("currentSpanningTree", "Spanning Tree: " +
+	let label;
+	if (this.findingAllComponents) {
+	    label = "Spanning Trees: ";
+	}
+	else {
+	    label = "Spanning Tree: "
+	}
+	updateAVControlEntry("currentSpanningTree", label +
 			     this.numVSpanningTree + " V, " +
 			     this.numESpanningTree + " E");
 	updateAVControlEntry("discardedOnDiscovery", "Discarded on discovery: " +
@@ -1446,6 +1482,7 @@ while L nonempty {
 		updateMarkerAndTable(this.startingVertex,
 				     this.visualSettings.startVertex,
 				     10, false);
+		this.componentVList.push(this.startingVertex);
             }
 	    else if (!this.ldv.containsFieldMatching("vIndex", this.lastVisitedVertex)) {
 		// not in the list, this vertex gets marked as in the
@@ -1461,16 +1498,60 @@ while L nonempty {
 				     5, false);
             }
 	}
-	// maybe we're done
-	// TODO: move on to next component if finding all and
-	// some unvisited vertices remain
+	
+	// check if done with current component
 	if (this.ldv.isEmpty()) {
-	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
-	    hdxAV.algStat.innerHTML = "Done.";
-	    updateAVControlEntry("visiting", "Last visited #" +
-				 this.lastVisitedVertex + " " +
-				 waypoints[this.lastVisitedVertex].label);
-            return;
+
+	    // if we are finding all components, either move on to
+	    // next component or be done
+	    if (this.findingAllComponents) {
+		// recolor all vertices and edges in the most recent
+		// component with a new color
+		alert("Finished component, should recolor!");
+		
+		// done?
+		if (this.numVUndiscovered == 0) {
+		    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+		    hdxAV.algStat.innerHTML = "Done.  Found " +
+			(this.componentNum+1) + " components";
+		    updateAVControlEntry("visiting", "Last visited #" +
+					 this.lastVisitedVertex + " " +
+					 waypoints[this.lastVisitedVertex].label);
+		    return;
+		}
+		// set up to start next component
+		else {
+		    this.componentNum++;
+
+		    // find an unvisited vertex to start next search
+		    while ((this.startUnvisitedVSearch < waypoints.length) &&
+			   this.visitedV[this.startUnvisitedVSearch]) {
+			this.startUnvisitedVSearch++;
+		    }
+		    if (this.startUnvisitedVSearch == waypoints.length) {
+			console.log("Unexpected termination of multi-component graph traversal.");
+			hdxAV.setStatus(hdxStates.AV_COMPLETE);
+			hdxAV.algStat.innerHTML = "Done with error condition.  Found " +
+			    this.componentNum + " components";
+			return;
+		    }
+		    else {
+			// ready to start next component
+			this.startingVertex = this.startUnvisitedVSearch;
+			this.startNewComponent();
+		    }
+
+		}
+		return;
+	    }
+	    else {
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
+		hdxAV.algStat.innerHTML = "Done.";
+		updateAVControlEntry("visiting", "Last visited #" +
+				     this.lastVisitedVertex + " " +
+				     waypoints[this.lastVisitedVertex].label);
+		return;
+	    }
 	}
 	
 	// LDV not empty, so select the next vertex to visit and remove it
@@ -1520,16 +1601,18 @@ while L nonempty {
             this.visitedV[vIndex] = true;
             updateMarkerAndTable(vIndex, visualSettings.visiting,
 				 10, false);
-	    this.numVSpanningTree++;
 	    // was just discovered, now part of spanning tree
+	    this.componentVList.push(vIndex);
+	    this.numVSpanningTree++;
 	    
             // we used the edge to get here, so let's mark it as such
             if (nextToVisit.connection != -1) {
 		this.numESpanningTree++;
+		this.componentEList.push(nextToVisit.connection);
 		updatePolylineAndTable(nextToVisit.connection,
 				       visualSettings.spanningTree, false);
             }
-	    
+
             // discover any new neighbors
             let neighbors = getAdjacentPoints(vIndex);
             for (var i = 0; i < neighbors.length; i++) {
