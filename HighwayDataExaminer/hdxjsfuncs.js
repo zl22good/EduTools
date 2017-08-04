@@ -1602,22 +1602,7 @@ while L nonempty {
 		    updateMarkerAndTable(neighbors[i],
 					 visualSettings.discovered,
 					 5, false);
-/*
-                updateMarkerAndTable(neighbors[i],
-				     {
-					 color: "rgb("+gred+","+ggrn+","+gblu+")",
-					 textColor: "black",
-					 scale: 4
-				     },
-				     5, false);
-		if (gblu >=10) {
-		    gred-=10;
-		    gblu-=10;
-		}
-		else {
-		    ggrn-=10;
-		}
-*/		
+
                     // also color the edge we followed to get to this
                     // neighbor as the same color to indicate it's a candidate
                     // edge followed to find a current discovered but
@@ -1635,12 +1620,6 @@ while L nonempty {
             }
 	}
 	
-	//var newDS = null; //makeTable(this.discoveredVertices);
-	//if (newDS != null) {
-	//    hdxAV.algStat.appendChild(newDS);
-	//}
-	//shiftColors();
-
 	// we changed some variables, so update the AV control entries
 	this.updateControlEntries();
 	
