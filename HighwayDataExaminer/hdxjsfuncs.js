@@ -1367,6 +1367,9 @@ while L nonempty {
 					       "RFS List");
 	}
 
+	// TODO: make the callback function display more interesting
+	// information and possibly a "hover" information box and
+	// opening the waypoint's infowindow if clicked
 	this.discoveredVertices.setDisplay(
 	    getAVControlEntryDocumentElement("discovered"),
 	    function(item) {
@@ -1519,7 +1522,8 @@ while L nonempty {
 	    edgeLabel = " found via " +
 		graphEdges[nextToVisit.connection].label;
 	}
-	updateAVControlEntry("visiting", "Visiting #" + vIndex + edgeLabel);
+	updateAVControlEntry("visiting", "Visiting #" + vIndex +
+			     " " + waypoints[vIndex].label + edgeLabel);
 
 	// now decide what to do with this vertex -- depends on whether it
 	// had been previously visited
@@ -2446,12 +2450,19 @@ function HDXLinear(type, displayName) {
 	this.docElement = dE;
 	this.elementHTMLCallback = eC;
 	let t = this.displayName + ' (size <span id="HDXLinear' +
-	    this.idNum + 'Span">'+ this.items.length + '</span>):<br />' +
-	    '<table><tbody id="HDXLinear' + this.idNum + 'TBody">' +
+	    this.idNum + 'Span">'+ this.items.length +
+	    '</span>)&nbsp;&nbsp;&nbsp;<input id="HDXLinear' +
+	    this.idNum + 'Limit" type="checkbox" checked /> ' +
+	    ' limit display to <input id="HDXLinear' + this.idNum +
+	    'LimitVal" type="number" value="10" min="1" max="1000000" ' +
+	    'size="3" style="width: 3em" /> entries' +
+	    '<br /><table><tbody id="HDXLinear' + this.idNum + 'TBody">' +
 	    '</tbody></table>';
 	this.docElement.innerHTML = t;
 	this.lengthSpan = document.getElementById("HDXLinear" + this.idNum + "Span");
 	this.tbody = document.getElementById("HDXLinear" + this.idNum + "TBody");
+	this.limitCheck = document.getElementById("HDXLinear" + this.idNum + "Limit");
+	this.limit = document.getElementById("HDXLinear" + this.idNum + "LimitVal");
 	this.redraw();
     };
     
@@ -2511,8 +2522,43 @@ function HDXLinear(type, displayName) {
 	if (this.docElement != null) {
 	    this.lengthSpan.innerHTML = this.items.length;
 	    let t = "<tr>";
-	    for (var i = 0; i < this.items.length; i++) {
-		t += "<td>" + this.elementHTMLCallback(this.items[i]) + "</td>";
+	    let maxDisplay = Number.MAX_VALUE;
+	    if (this.limitCheck.checked) {
+		maxDisplay = this.limit.value;
+	    }
+	    if (maxDisplay >= this.items.length) {
+		for (var i = 0; i < this.items.length; i++) {
+		    t += "<td>" + this.elementHTMLCallback(this.items[i]) + "</td>";
+		}
+	    }
+	    else {
+		// we have to limit: with stacks and randoms, we
+		// ignore the initial entries
+		if (this.type == hdxLinearTypes.STACK ||
+		    this.type == hdxLinearTypes.RANDOM) {
+		    // first a placeholder entry
+		    t += "<td>...</td>";
+		    for (var i = this.items.length - maxDisplay;
+			 i < this.items.length; i++) {
+			t += "<td>" + this.elementHTMLCallback(this.items[i]) + "</td>";
+		    }
+		}
+		// queues will ignore the middle
+		else if (this.type == hdxLinearTypes.QUEUE) {
+		    // half of the displayable elements from the front
+		    let firstChunk = Math.floor(maxDisplay / 2);
+		    for (var i = 0; i < firstChunk; i++) {
+			t += "<td>" + this.elementHTMLCallback(this.items[i]) + "</td>";
+		    }
+		    // next a placeholder entry
+		    t += "<td>...</td>";
+		    // half of the displayable elements from the end
+		    for (var i = this.items.length -
+			     (maxDisplay - firstChunk);
+			 i < this.items.length; i++) {
+			t += "<td>" + this.elementHTMLCallback(this.items[i]) + "</td>";
+		    }
+		}
 	    }
 	    t += "</tr>";
 	    this.tbody.innerHTML = t;
