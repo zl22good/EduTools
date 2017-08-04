@@ -1304,24 +1304,16 @@ while L nonempty {
 	    name: "startVertex",
 	    value: 0
 	},
-	discardedBefore: {
-            color: "#e05000",
-            textColor: "white",
+	discardedOnDiscovery: {
+            color: "#f0a0a0",
+            textColor: "black",
             scale: 4,
-	    name: "discardedBefore",
+	    name: "discardedOnDiscovery",
 	    value: 0,
 	    weight: 5,
 	    opacity: 0.6
 	},
-	discardedAfter: {
-            color: "#e00050",
-            textColor: "white",
-            scale: 4,
-	    name: "discardedBefore",
-	    value: 0,
-	    weight: 5,
-	    opacity: 0.6
-	},
+	discardedOnRemoval: visualSettings.discarded,
 	visitedEarlier: {
             color: "orange",
             textColor: "black",
@@ -1430,9 +1422,9 @@ while L nonempty {
 	updateAVControlEntry("currentSpanningTree", "Spanning Tree: " +
 			     this.numVSpanningTree + " V, " +
 			     this.numESpanningTree + " E");
-	updateAVControlEntry("discardedBefore", "Discarded on discovery: " +
+	updateAVControlEntry("discardedOnDiscovery", "Discarded on discovery: " +
 			     this.numEDiscardedOnDiscovery + " E");
-	updateAVControlEntry("discardedAfter", "Discarded on removal: " +
+	updateAVControlEntry("discardedOnRemoval", "Discarded on removal: " +
 			     this.numEDiscardedOnRemoval + " E");
     },
 
@@ -1476,8 +1468,8 @@ while L nonempty {
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    hdxAV.algStat.innerHTML = "Done.";
 	    updateAVControlEntry("visiting", "Last visited #" +
-				 lastVisitedVertex + " " +
-				 waypoints[lastVisitedVertex].label);
+				 this.lastVisitedVertex + " " +
+				 waypoints[this.lastVisitedVertex].label);
             return;
 	}
 	
@@ -1510,16 +1502,16 @@ while L nonempty {
             }
 	    else {
 		// still to be seen again, so mark is as discoveredEarlier
-		updateMarkerAndTable(vIndex, this.visualSettings.discardedAfter,
+		updateMarkerAndTable(vIndex, this.visualSettings.discardedOnRemoval,
 				     5, false);
             }
 	    
             // in either case here, the edge that got us here is not
             // part of the ultimate spanning tree, so it should be the
-            // "discardedAfter" color
+            // "discardedOnRemoval" color
             if (nextToVisit.connection != -1) {
 		updatePolylineAndTable(nextToVisit.connection,
-				       this.visualSettings.discardedAfter,
+				       this.visualSettings.discardedOnRemoval,
 				       false);
             }
 	}
@@ -1559,7 +1551,7 @@ while L nonempty {
 			this.discoveredE[connection] = true;
 		    }
 		    updatePolylineAndTable(connection,
-					   this.visualSettings.discardedBefore,
+					   this.visualSettings.discardedOnDiscovery,
 					   false);
 		}
 		else {
@@ -1617,8 +1609,8 @@ while L nonempty {
 	addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
 	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
 	addEntryToAVControlPanel("discovered", visualSettings.discovered);
-	addEntryToAVControlPanel("discardedBefore", this.visualSettings.discardedBefore);
-	addEntryToAVControlPanel("discardedAfter", this.visualSettings.discardedAfter);
+	addEntryToAVControlPanel("discardedOnDiscovery", this.visualSettings.discardedOnDiscovery);
+	addEntryToAVControlPanel("discardedOnRemoval", this.visualSettings.discardedOnRemoval);
 
     },
 
@@ -1629,8 +1621,8 @@ while L nonempty {
 	removeEntryFromAVControlPanel("currentSpanningTree");
     	removeEntryFromAVControlPanel("undiscovered");
     	removeEntryFromAVControlPanel("discovered");
-	removeEntryFromAVControlPanel("discaredBefore");
-	removeEntryFromAVControlPanel("discaredAfter");
+	removeEntryFromAVControlPanel("discardedOnDiscovery");
+	removeEntryFromAVControlPanel("discardedOnRemoval");
     }
 
 };
