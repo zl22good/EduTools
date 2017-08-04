@@ -249,13 +249,16 @@ var visualSettings = {
     }
 };
 
+/* functions for algorithm visualization control panel */
+var AVCPsuffix = "AVCPEntry";
+
 /* add entry to the algorithm visualization control panel */
 function addEntryToAVControlPanel(namePrefix, vs) {
     
     let avControlTbody = document.getElementById('AVControlPanel');
     let infoBox = document.createElement('td');
     let infoBoxtr= document.createElement('tr');
-    infoBox.setAttribute('id', namePrefix + "AVCPEntry");
+    infoBox.setAttribute('id', namePrefix + AVCPsuffix);
     infoBox.setAttribute('style', "color:" + vs.textColor +
 			 "; background-color:" + vs.color);
     infoBoxtr.appendChild(infoBox);
@@ -266,7 +269,7 @@ function addEntryToAVControlPanel(namePrefix, vs) {
 function removeEntryFromAVControlPanel(namePrefix) {
 
     let avControlTbody = document.getElementById('AVControlPanel');
-    let infoBox = document.getElementById(namePrefix + "AVCPEntry");
+    let infoBox = document.getElementById(namePrefix + AVCPsuffix);
     let infoBoxtr= infoBox.parentNode;
     avControlTbody.removeChild(infoBoxtr);
 }
@@ -274,7 +277,13 @@ function removeEntryFromAVControlPanel(namePrefix) {
 /* set the HTML of an AV control panel entry */
 function updateAVControlEntry(namePrefix, text) {
 
-    document.getElementById(namePrefix + "AVCPEntry").innerHTML = text;
+    document.getElementById(namePrefix + AVCPsuffix).innerHTML = text;
+}
+
+/* get the document element of an AV control entry */
+function getAVControlEntryDocumentElement(namePrefix) {
+
+    return document.getElementById(namePrefix + AVCPsuffix);
 }
 
 /* Support for selection of a vertex (such as a starting or ending
@@ -481,7 +490,7 @@ function convertMiles(num) {
 // using an entry passed in from the visualSettings
 // optionally hide also by setting display to none
 function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
-    legendArea(vs);
+
     markers[waypointNum].setIcon({
         path: google.maps.SymbolPath.CIRCLE,
         scale: vs.scale,
@@ -1224,7 +1233,7 @@ for (checkIndex <- 1 to |E|-1) {
 var hdxGraphTraversalsAV = {
 
     // entries for list of AVs
-    value: "traverals",
+    value: "traversals",
     name: "Graph Traversal/Connected Components",
     description: "Perform graph traversal using breadth-first, depth-first, or random-first traversals, with the option of repeating to find all connected components of the graph.",
 
@@ -1250,7 +1259,7 @@ while L nonempty {
     // arbirtrary list for RFS
     
     // elements here are objects with fields vIndex for the index of
-    // this vertex and connection is the Polyline connection followed
+    // this vertex and connection for the Polyline connection followed
     // to get here (so it can be colored appropriately when the
     // element comes out)
     discoveredVertices: null,
@@ -1258,6 +1267,9 @@ while L nonempty {
     // array of booleans to indicate if we've visited each vertex
     visitedVertices: [],
 
+    // are we finding all components?
+    findingAllComponents: false,
+    
     // vertex visited on the previous iteration to be updated
     lastVisitedVertex: -1,
 
@@ -1290,11 +1302,17 @@ while L nonempty {
     //ggrn: 255,
     //gblu: 245,
 
-    // some additional stats we keep
-    numVisited: 0,
-    numVisitedComingOut: 0,
-    numAlreadyVisited: 0,
-
+    // some additional stats to maintain and display
+    numVSpanningTree: 0,
+    numESpanningTree: 0,
+    numVDiscovered: 0,
+    numEDiscovered: 0,
+    numVUndiscovered: 0,
+    numEUndiscovered: 0,
+    numEDiscardedBeforeAdd: 0,
+    numEDiscardedAfterAdd: 0,
+    componentNum: 0,
+    
     // color items specific to graph traversals
     visualSettings: {
 	startVertex: {
@@ -1304,12 +1322,23 @@ while L nonempty {
 	    name: "startVertex",
 	    value: 0
 	},
-	discoveredEarlier: {
-            color: "red",
+	discardedBefore: {
+            color: "#e05000",
             textColor: "white",
             scale: 4,
-	    name: "discoveredEarlier",
-	    value: 0
+	    name: "discardedBefore",
+	    value: 0,
+	    weight: 5,
+	    opacity: 0.6
+	},
+	discardedAfter: {
+            color: "#e00050",
+            textColor: "white",
+            scale: 4,
+	    name: "discardedBefore",
+	    value: 0,
+	    weight: 5,
+	    opacity: 0.6
 	},
 	visitedEarlier: {
             color: "orange",
@@ -1326,14 +1355,28 @@ while L nonempty {
 	let d = document.getElementById("traversalDiscipline");
 	this.traversalDiscipline = d.options[d.selectedIndex].value;
 	if (this.traversalDiscipline == "BFS") {
-            this.discoveredVertices = HDXLinear(hdxLinearTypes.QUEUE);
+            this.discoveredVertices = HDXLinear(hdxLinearTypes.QUEUE,
+					       "BFS Queue");
 	}
 	else if (this.traversalDiscipline == "DFS") {
-            this.discoveredVertices = HDXLinear(hdxLinearTypes.STACK);
+            this.discoveredVertices = HDXLinear(hdxLinearTypes.STACK,
+					       "DFS Stack");
 	}
 	else if (this.traversalDiscipline == "RFS") {
-            this.discoveredVertices = HDXLinear(hdxLinearTypes.RANDOM);
+            this.discoveredVertices = HDXLinear(hdxLinearTypes.RANDOM,
+					       "RFS List");
 	}
+
+	this.discoveredVertices.setDisplay(
+	    getAVControlEntryDocumentElement("discovered"),
+	    function(item) {
+		return item.vIndex;
+	    });
+	
+	d.style.disabled = true;
+	let c = document.getElementById("findConnected");
+	this.findingAllComponents = c.checked;
+	c.style.disabled = true;
 
 	document.getElementById("connection").style.display = "";
 	document.getElementById("waypoints").style.display = "";
@@ -1352,10 +1395,7 @@ while L nonempty {
 	
 	// color all edges black also
 	for (var i = 0; i < connections.length; i++) {
-            connections[i].setOptions({
-		strokeColor: visualSettings.undiscovered.color,
-		strokeOpacity: 0.6
-            });
+	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
 	}
 	
 	// vertex index to start the traversal
@@ -1364,19 +1404,53 @@ while L nonempty {
 	// initialize the process with this value
 	this.discoveredVertices.add({
             vIndex: this.startingVertex,
-            connection: null
+            connection: -1
 	});
-	this.numVisited = 1;
+	this.numVSpanningTree = 0;
+	this.numESpanningTree = 0;
+	this.numVDiscovered = 1;
+	this.numEDiscovered = 0;
+	this.numVUndiscovered = waypoints.length - 1;
+	this.numEUndisovered = connections.length;
+	this.numEDiscardedBeforeAdd = 0;
+	this.numEDiscardedAfterAdd = 0;
+	this.componentNum = 0;
 
+	// mark as discovered, will be redrawn as starting vertex
+	// color in nextStep
 	updateMarkerAndTable(this.startingVertex,
-			     this.visualSettings.startVertex, 10, false);
+			     visualSettings.discovered, 10, false);
+
+	this.updateControlEntries();
 	
 	// nothing to update this first time
 	this.lastVisitedVertex = -1;
+	hdxAV.algStat.innerHTML = "Finding spanning tree";
+	if (this.findingAllComponents) {
+	    hdxAV.algStat.innerHTML += " for component 0";
+	}
 	if (!hdxAV.paused()) {
 	    var self = this;
 	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
+    },
+
+    // helper function to redraw all variable values
+    updateControlEntries() {
+	
+	updateAVControlEntry("undiscovered", "Undiscovered: " +
+			     this.numVUndiscovered + " V, " +
+			     this.numEUndiscovered + " E");
+//	updateAVControlEntry("discovered", "Discovered: " +
+//			     this.numVDiscovered + " V, " +
+//			     this.numEDiscovered + " E");
+	updateAVControlEntry("currentSpanningTree", "Spanning Tree: " +
+			     this.numVSpanningTree + " V, " +
+			     this.numESpanningTree + " E");
+	updateAVControlEntry("discardedBefore", "Discarded on discovery: " +
+			     this.numEDiscardedBeforeAdd + " E");
+	updateAVControlEntry("discardedAfter", "Discarded on removal: " +
+			     this.numEDiscardedAfterAdd + " E");
     },
 
     // function to see if a vertex with the given index is in
@@ -1417,29 +1491,40 @@ while L nonempty {
 				     1, false);
             }
 	    else {
-		// still in the list, color with the "discoveredEarlier"  style
+		// still in the list, color with the "discovered" style
 		updateMarkerAndTable(this.lastVisitedVertex,
-				     this.visualSettings.discoveredEarlier,
+				     visualSettings.discovered,
 				     5, false);
             }
 	}
 	// maybe we're done
+	// TODO: move on to next component if finding all and
+	// some unvisited vertices remain
 	if (this.discoveredVertices.isEmpty()) {
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+	    hdxAV.algStat.innerHTML = "Done.";
             return;
 	}
 	
 	// select the next vertex to visit and remove it from the
 	// discoveredVertices list
 	let nextToVisit = this.discoveredVertices.remove();
-        this.numVisitedComingOut++;
 	this.lastVisitedVertex = nextToVisit.vIndex;
 	let vIndex = nextToVisit.vIndex;
-	this.numVisited++;
+	let edgeLabel;
+	if (nextToVisit.connection == -1) {
+	    edgeLabel = ", the starting vertex";
+	}
+	else {
+	    edgeLabel = " found via " +
+		graphEdges[nextToVisit.connection].label;
+	}
+	updateAVControlEntry("visiting", "Visiting #" + vIndex + edgeLabel);
+
 	// now decide what to do with this vertex -- depends on whether it
 	// had been previously visited
 	if (this.visitedVertices[vIndex]) {
-            this.numAlreadyVisited++;
+            this.numEDiscardedAfterAdd++;
             // we've been here before, but is it still in the list?
             if (this.discoveredVertices.containsFieldMatching("vIndex", vIndex)) {
 		// not there anymore, indicated this as visitedEarlier, and
@@ -1450,42 +1535,68 @@ while L nonempty {
             }
 	    else {
 		// still to be seen again, so mark is as discoveredEarlier
-		updateMarkerAndTable(vIndex, this.visualSettings.discoveredEarlier,
+		updateMarkerAndTable(vIndex, this.visualSettings.discardedAfter,
 				     5, false);
             }
 	    
             // in either case here, the edge that got us here is not
             // part of the ultimate spanning tree, so it should be the
-            // "discoveredEarlier" color
-            if (nextToVisit.connection != null) {
-		nextToVisit.connection.setOptions({
-                    strokeColor: this.visualSettings.discoveredEarlier.color
-		});
+            // "discardedAfter" color
+            if (nextToVisit.connection != -1) {
+		updatePolylineAndTable(nextToVisit.connection,
+				       this.visualSettings.discardedAfter,
+				       false);
             }
 	}
 	// visiting for the first time
 	else {
             this.visitedVertices[vIndex] = true;
             updateMarkerAndTable(vIndex, visualSettings.visiting,
-			     10, false);
+				 10, false);
+	    this.numVSpanningTree++;
+	    // was just discovered, now part of spanning tree
+	    this.numVDiscovered--;
 	    
             // we used the edge to get here, so let's mark it as such
-            if (nextToVisit.connection != null) {
-		nextToVisit.connection.setOptions({
-                    strokeColor: visualSettings.spanningTree.color
-		});
+            if (nextToVisit.connection != -1) {
+		this.numESpanningTree++;
+		// was just discovered, now part of tree
+		this.numEDiscovered--;
+		updatePolylineAndTable(nextToVisit.connection,
+				       visualSettings.spanningTree, false);
             }
 	    
             // discover any new neighbors
-            var neighbors = getAdjacentPoints(vIndex);
+            let neighbors = getAdjacentPoints(vIndex);
             for (var i = 0; i < neighbors.length; i++) {
-		if (!this.visitedVertices[neighbors[i]]) {
-                    var connection = connections[waypoints[vIndex].edgeList[i].edgeListIndex];
+                let connection = waypoints[vIndex].edgeList[i].edgeListIndex;
+		// First, check if this is the edge we just traversed
+		// to get here, and if so, ignore it
+		if (connection == nextToVisit.connection) {
+		    continue;
+		}
+
+		// it's a different edge, let's see where we can go
+		
+		if (this.visitedVertices[neighbors[i]]) {
+		    // been here before, so just note that this is
+		    // an edge we discard before adding
+		    this.numEDiscardedBeforeAdd++;
+		    updatePolylineAndTable(connection,
+					   this.visualSettings.discardedBefore,
+					   false);
+		}
+		else {
+		    // not been here, we've discovered somewhere new
+		    // discovered a new vertex and a new edge
+		    this.numVDiscovered++;
+		    this.numEDiscovered++;
                     this.discoveredVertices.add({
 			vIndex: neighbors[i],
 			connection: connection
                     });
-		    updateMarkerAndTable(neighbors[i], visualSettings.discovered,
+		    updateMarkerAndTable(neighbors[i],
+					 visualSettings.discovered,
 					 5, false);
 /*
                 updateMarkerAndTable(neighbors[i],
@@ -1507,24 +1618,28 @@ while L nonempty {
                     // neighbor as the same color to indicate it's a candidate
                     // edge followed to find a current discovered but
                     // unvisited vertex
-                    if (connection != null) {
-			connection.setOptions({
-                            strokeColor: visualSettings.discovered.color
-			});
+                    if (connection != -1) {
+			updatePolylineAndTable(connection,
+					       visualSettings.discovered,
+					       false);
                     }
 		    else {
-			console.log("Unexpected null connection, vIndex=" + vIndex +
+			console.log("Unexpected -1 connection, vIndex=" + vIndex +
 				    ", i=" + i);
                     }
 		}
             }
 	}
 	
-	var newDS = null; //makeTable(this.discoveredVertices);
-	if (newDS != null) {
-	    hdxAV.algStat.appendChild(newDS);
-	}
+	//var newDS = null; //makeTable(this.discoveredVertices);
+	//if (newDS != null) {
+	//    hdxAV.algStat.appendChild(newDS);
+	//}
 	//shiftColors();
+
+	// we changed some variables, so update the AV control entries
+	this.updateControlEntries();
+	
 	let self = this;
 	setTimeout(function() { self.nextStep(); }, hdxAV.delay);
     },
@@ -1532,12 +1647,18 @@ while L nonempty {
     // set up UI components for traversals
     setupUI() {
 
-	hdxAV.algStat.style.display = "none";
-	hdxAV.algStat.innerHTML = "";
+	hdxAV.algStat.style.display = "";
+	hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.algOptions.innerHTML = 'Order: <select id="traversalDiscipline"><option value="BFS">Breadth First</option><option value="DFS">Depth First</option><option value="RFS">Random</option></select>' +
-	    '<br /><input id="findConnected" type="checkbox" name="Final all connected components">&nbsp;Find all connected components' +
-	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0) +
-            '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+	    '<br /><input id="findConnected" type="checkbox" name="Find all connected components">&nbsp;Find all connected components' +
+	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0);
+//            '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+	addEntryToAVControlPanel("visiting", visualSettings.visiting);
+	addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
+	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
+	addEntryToAVControlPanel("discovered", visualSettings.discovered);
+	addEntryToAVControlPanel("discardedBefore", this.visualSettings.discardedBefore);
+	addEntryToAVControlPanel("discardedAfter", this.visualSettings.discardedAfter);
 
     },
 
@@ -1825,7 +1946,6 @@ var hdxDijkstraAV = {
 	// visiting for the first time
 	else {
             visited[vIndex] = true;
-	    numVisitedComingOut++;
             updateMarkerAndTable(vIndex, visualSettings.visiting,
 				 10, false);
 	    
@@ -1899,8 +2019,8 @@ var hdxDijkstraAV = {
 	hdxAV.algStat.innerHTML = "";
         hdxAV.algOptions.innerHTML =
 	    buildWaypointSelector("startPoint", "Start Vertex", 0) +
-	    "<br />" + buildWaypointSelector("endPoint", "End Vertex", 1) +
-	    '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+	    "<br />" + buildWaypointSelector("endPoint", "End Vertex", 1);
+//	    '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
     },
 
     // clean up Dijkstra's UI
@@ -2291,40 +2411,81 @@ var hdxLinearTypes = {
     PRIORITY_QUEUE:4,
     UNKNOWN: 5
 };
-    
-function HDXLinear(type) {
+
+// to generate unique document element ids
+var HDXLinearCounter = 1;
+
+function HDXLinear(type, displayName) {
 
     // supported types listed above
     if (type < hdxLinearTypes.STACK || type >= hdxLinearTypes.UNKNOWN) {
 	console.log("Invalid type of HDXLinear!");
     }
     this.type = type;
+    this.displayName = displayName;
+    this.idNum = HDXLinearCounter;
+    HDXLinearCounter++;
 
     // the actual array representing this linear structure
     this.items = [];
 
+    // some stats about it
+    this.addCount = 0;
+    this.removeCount = 0;
+
+    // the document element in which to display the contents
+    this.docElement = null;
+
+    // the callback to use to get the actual text to
+    // display for each displayed element
+    this.elementHTMLCallback = null;
+
+    // set the element and callback
+    this.setDisplay = function(dE, eC) {
+
+	this.docElement = dE;
+	this.elementHTMLCallback = eC;
+	let t = this.displayName + ' (size <span id="HDXLinear' +
+	    this.idNum + 'Span">'+ this.items.length + '</span>):<br />' +
+	    '<table><tbody id="HDXLinear' + this.idNum + 'TBody">' +
+	    '</tbody></table>';
+	this.docElement.innerHTML = t;
+	this.lengthSpan = document.getElementById("HDXLinear" + this.idNum + "Span");
+	this.tbody = document.getElementById("HDXLinear" + this.idNum + "TBody");
+	this.redraw();
+    };
+    
     // add a item to this linear structure
     this.add = function(e) {
 	items.push(e);
+	this.addCount++;
+	this.redraw();
     };
 
     // remove next based on type
     this.remove = function() {
 
+	this.removeCount++;
+	let retval = null;
 	switch(this.type) {
 
 	case hdxLinearTypes.STACK:
-	    return this.items.pop();
-
+	    retval = this.items.pop();
+	    break;
+	    
 	case hdxLinearTypes.QUEUE:
-	    return this.items.shift();
-
+	    retval = this.items.shift();
+	    break;
+	    
 	case hdxLinearTypes.RANDOM:
             let index = Math.floor(Math.random() * this.items.length);
-            let retval = this.items[index];
+            retval = this.items[index];
             this.items.splice(index, 1);
-	    return retval;
+	    break;
 	}
+
+	this.redraw();
+	return retval;
     };
     
     // search for an entry with the given field having the given value
@@ -2341,9 +2502,23 @@ function HDXLinear(type) {
     // check for empty list
     this.isEmpty = function() {
 
-	return items.length == 0;
+	return this.items.length == 0;
     };
 
+    // redraw in the HTML element
+    this.redraw = function() {
+
+	if (this.docElement != null) {
+	    this.lengthSpan.innerHTML = this.items.length;
+	    let t = "<tr>";
+	    for (var i = 0; i < this.items.length; i++) {
+		t += "<td>" + this.elementHTMLCallback(this.items[i]) + "</td>";
+	    }
+	    t += "</tr>";
+	    this.tbody.innerHTML = t;
+	}
+    };
+    
     return this;
 }
 
@@ -3468,14 +3643,14 @@ function algorithmSelected() {
     hdxAV.currentAV.setupUI();
 }
 
-function toggleDS() {
-    if (hdxAV.algStat.style.display == "none") {
-	hdxAV.algStat.style.display = "";
-    }
-    else {
-	hdxAV.algStat.style.display = "none";
-    }
-}
+//function toggleDS() {
+//    if (hdxAV.algStat.style.display == "none") {/
+//	hdxAV.algStat.style.display = "";
+//    }
+//    else {
+//	hdxAV.algStat.style.display = "none";
+//   }
+//}
 
 /* SEEMS TO BE UNUSED
 function selectAlgorithmAndReset() {
@@ -3545,11 +3720,6 @@ function resetVars() {
 	if ($("#piecesTD").length > 0) {
 	    document.getElementById("piecesTD").parentNode.parentNode.removeChild(document.getElementById("piecesTD").parentNode);
 	}
-	//for (var i = 0; i < 7; i++) {
-	//    if ($("#info"+i).length > 0) {
-//		document.getElementById("info"+i).parentNode.parentNode.removeChild(document.getElementById("info"+i).parentNode);
-//	    }
-//	}
 	hdxAV.algStat.innerHTML = "";
     }
 }
