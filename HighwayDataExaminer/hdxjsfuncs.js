@@ -2107,7 +2107,7 @@ var hdxDijkstraAV = {
 	updateAVControlEntry("found", `
 Table of shortest paths found:<br />
 <table class="gratable"><thead>
-<tr><th>Place</th><th>Distance</th><th>Arrive From</th><th>Via</th></tr>
+<tr style="text-align:center"><th>Place</th><th>Distance</th><th>Arrive From</th><th>Via</th></tr>
 </thead><tbody id="dijkstraEntries"></tbody></table>
 `);
 	this.foundTBody = document.getElementById("dijkstraEntries");
