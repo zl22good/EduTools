@@ -1901,9 +1901,17 @@ var hdxDijkstraAV = {
 	let via = "";
 	if (v.connection != -1) {
 	    via = graphEdges[v.connection].label;
+	    let otherV;
+	    if (graphEdges[v.connection].v1 == v.vIndex) {
+		otherV = graphEdges[v.connection].v2;
+	    }
+	    else {
+		otherV = graphEdges[v.connection].v1;
+	    }
+	    fromLabel = waypoints[otherV].label.substr(0,20);
 	}
 	newtr.innerHTML =
-	    '<td>' + waypoints[v.vIndex].label + '</td>' +
+	    '<td>' + waypoints[v.vIndex].label.substr(0,20) + '</td>' +
 	    '<td>' + v.dist.toFixed(3) + '</td>' +
 	    '<td>' + fromLabel + '</td>' +
 	    '<td>' + via + '</td>';
@@ -1959,30 +1967,6 @@ var hdxDijkstraAV = {
 
 	    // we're done!
 	    hdxAV.algStat.innerHTML = "Shortest path found!";
-	    /*
-	    var curV = totalPath[totalPath.length-1];
-	    var edgePath = curV.edge;
-	    var curVnum = endingVertex;
-	    var nextV;
-	    while (curV != null) {
-		edgePath = curV.edge;
-		curVnum = nextV;
-		if (curVnum == this.startingVertex)
-		    break;
-		updateMarkerAndTable(curV.vIndex,
-				     {
-					 color: "#ffaa00",
-					 textColor: "black",
-					 scale: 5},
-				     5, false);
-		curV.connection.setOptions({
-		    strokeColor: "#ffaa00"
-		});
-		
-		nextV = findNextV(edgePath, curVnum);
-		curV = totalPath[findNextPath(nextV, curVnum)];
-	    }
-	    */
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    return;
 	}
@@ -1996,7 +1980,6 @@ var hdxDijkstraAV = {
 	}
     
 	// case 3: continue the search at the next place from the pq
-	
 	let nextToVisit = this.pq.remove();
 
 	// mark the vertex and edge to it as being visited
@@ -2081,10 +2064,10 @@ var hdxDijkstraAV = {
 		    // possibly discovered a new vertex and
 		    // definitely discovered a new edge
 
-		    let newSP = new DijkstraSP(neighbors[i],
-					       edgeLengthInMiles(graphEdges[connection]) + nextToVisit.dist,
-					       connection);
-                    this.pq.add(newSP);
+		    this.pq.add(
+			new DijkstraSP(neighbors[i],
+				       edgeLengthInMiles(graphEdges[connection]) + nextToVisit.dist,
+				       connection));
 
 		    updateMarkerAndTable(neighbors[i],
 					 visualSettings.discovered,
@@ -2124,7 +2107,7 @@ var hdxDijkstraAV = {
 	updateAVControlEntry("found", `
 Table of shortest paths found:<br />
 <table class="gratable"><thead>
-<tr><th>Place</th><th>Distance</th><th>From</th><th>Via</th></tr>
+<tr><th>Place</th><th>Distance</th><th>Arrive From</th><th>Via</th></tr>
 </thead><tbody id="dijkstraEntries"></tbody></table>
 `);
 	this.foundTBody = document.getElementById("dijkstraEntries");
