@@ -265,13 +265,6 @@ var visualSettings = {
 	scale: 6,
 	name: "hoverV",
 	value: 0
-    },
-    hullI: {
-        color: "#0000aa",
-        textColor: "black",
-        scale: 6,
-	name: "hullI",
-	value: 0
     }
 };
 
@@ -539,8 +532,8 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
         row.style.display = "none";
     }
 
-    // remaining code belongs elsewhere...
-    
+    // remaining code belongs elsewhere or is now obsolete...
+    /*
     if ($("#l"+waypointNum).length > 0) {
 	document.getElementById("l"+(waypointNum)).style.backgroundColor = vs.color;
     }
@@ -559,6 +552,7 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 	row.parentNode.insertBefore(clone, row.parentNode.childNodes[1]);
 	row.parentNode.removeChild(row);		
     }
+    */
 }
 
 // function to set the edge color and table entry information
@@ -2221,10 +2215,12 @@ for (i <- 1 to n–1)
           add L to hull
 </pre>`,
     
-    // the convex hull being computed
+    // the list of points in the convex hull being computed
     hull: [],
 
-    // need to check these to see if some should be locals
+    // the list of Polylines that make up the hull so far
+    hullSegments: [],
+
     // the i and j loop indices for our deconstructed nested loop
     hullI: 0,
     hullJ: 0,
@@ -2237,15 +2233,46 @@ for (i <- 1 to n–1)
     // the inner loop, to allow the candidate line to be seen on
     // the map before it is determined to be part of the hull or not
     setupNewLine: false,
-    
-    // helper function to highlight a line
-    visitingLineHull(lineHull) {
 
-	document.getElementById("drawLine").className += " highlight";
+    visualSettings: {
+        hullI: {
+            color: "darkRed",
+            textColor: "white",
+            scale: 6,
+	    name: "hullI",
+	    value: 0
+	},
+        hullJ: {
+            color: "red",
+            textColor: "white",
+            scale: 6,
+	    name: "hullJ",
+	    value: 0
+	},
+	discardedInner: {
+	    color: "c0c0c0",
+	    textColor: "black",
+	    scale: 2,
+	    name: "discardedInner",
+	    value: 0
+	},
+	hullComponent: visualSettings.spanningTree
+    },
+
+    // helper function to draw and set the current segment, i to j
+    mapCurrentSegment() {
+
+	let visitingLine = [];
+	visitingLine[0] =
+	    new google.maps.LatLng(waypoints[this.hullI].lat,
+				   waypoints[this.hullI].lon);
+	visitingLine[1] =
+	    new google.maps.LatLng(waypoints[this.hullJ].lat,
+				   waypoints[this.hullJ].lon);	
 	this.currentSegment = new google.maps.Polyline({
 	    map: map,
-	    path: lineHull,
-	    strokeColor: '#0000aa',
+	    path: visitingLine,
+	    strokeColor: visualSettings.visiting.color,
 	    strokeOpacity: 0.6,
 	    strokeWeight: 4
 	});
@@ -2260,20 +2287,40 @@ for (i <- 1 to n–1)
 	for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
 	    connections[outerLoop].setMap(null);
 	}
+
+	// also no need for connections table
+	document.getElementById("connection").style.display = "none";
+
 	// mark all vertices as "undiscovered"
 	for (var i = 0; i < waypoints.length; i++) {
             updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
 	}
 
-	// initialize our i and j for the main n^2 loop
-	this.hullJ = 1;
+	// initialize our i and j for the main n^2 loop which forms
+	// the granularity of our visualization at this point
+	
 	this.hullI = 0;
-	document.getElementById("for1").className += " highlight";
+	this.hullJ = 1;
+
 	if (!hdxAV.paused()) {
 	    this.setupNewLine = true;
 	    let self = this;
 	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
+    },
+
+    // update display elements for a new i, j combination
+    updateIJDisplayElements() {
+
+	updateMarkerAndTable(this.hullI, this.visualSettings.hullI,
+			     30, false);
+	updateMarkerAndTable(this.hullJ, this.visualSettings.hullJ,
+			     30, false);
+
+	updateAVControlEntry("hullI", "Outer loop: #" + this.hullI + " " +
+			     waypoints[this.hullI].label);
+	updateAVControlEntry("hullJ", "Inner loop: #" + this.hullJ + " " +
+			     waypoints[this.hullJ].label);
     },
 
     // required nextStep function for brute-force convex hull
@@ -2292,22 +2339,10 @@ for (i <- 1 to n–1)
 	if (this.setupNewLine) {
 	    // formerly "innerLoopConvexHull()"
 	    
-	    document.getElementById("for2").className += " highlight";
-	    document.getElementById("for1").className -= " highlight";
-	    document.getElementById("drawLine").className -= " highlight";
-	    document.getElementById("drawLine2").className -= " highlight";
-	    
-	    // highlight the points being considered
-	    updateMarkerAndTable(this.hullI, visualSettings.hullI, 30, false);
-	    updateMarkerAndTable(this.hullJ, visualSettings.visiting, 30, false);
-    
-	    this.visitingLine[0] =
-		new google.maps.LatLng(waypoints[this.hullI].lat,
-				       waypoints[this.hullI].lon);
-	    this.visitingLine[1] =
-		new google.maps.LatLng(waypoints[this.hullJ].lat,
-				       waypoints[this.hullJ].lon);
-	    this.visitingLineHull(this.visitingLine);
+	    this.updateIJDisplayElements();
+	
+	    // draw the line
+	    this.mapCurrentSegment();
 	    
 	    if (!hdxAV.paused()) {
 		this.setupNewLine = false;
@@ -2318,24 +2353,27 @@ for (i <- 1 to n–1)
 	else {
 	    // was: "innerLoop2()"
 
-	    var pointI = waypoints[this.hullI];
-	    var pointJ = waypoints[this.hullJ];
+	    let pointI = waypoints[this.hullI];
+	    let pointJ = waypoints[this.hullJ];
     
 	    // from here, we need to see if all other points are
 	    // on the same side of the line connecting pointI and pointJ
 	    // the coefficients for ax + by = c
-	    var a = pointJ.lat - pointI.lat;
-	    var b = pointI.lon - pointJ.lon;
-	    var c = pointI.lon * pointJ.lat - pointI.lat * pointJ.lon;
-	    
+	    let a = pointJ.lat - pointI.lat;
+	    let b = pointI.lon - pointJ.lon;
+	    let c = pointI.lon * pointJ.lat - pointI.lat * pointJ.lon;
+
+	    updateAVControlEntry("checkingLine",
+				 "Considering line: " + a.toFixed(3) + "lat + " +
+				 b.toFixed(3) + "lng = " + c.toFixed(3));
 	    // now check all other points to see if they're on the
 	    // same side -- stop as soon as we find they're not
-	    var lookingForPositive = false;
-	    var foundProblem = false;
-	    var firstTestPoint = true;
+	    let lookingForPositive = false;
+	    let foundProblem = false;
+	    let firstTestPoint = true;
 	    
 	    for (var k = 0; k < waypoints.length; k++) {	
-		var pointK = waypoints[k];
+		let pointK = waypoints[k];
 
 		// make sure point is not one of the endpoints
 		// of the line being considered for inclusion
@@ -2343,8 +2381,8 @@ for (i <- 1 to n–1)
 		if (pointI === pointK || pointJ === pointK) {
 		    continue;
 		}
-		//updateMarkerAndTable(k, visualSettings.hullK, 30, false);
-		var checkVal = this.a * pointK.lon + this.b * pointK.lat - this.c;
+
+		let checkVal = a * pointK.lon + b * pointK.lat - c;
 		
 		if (checkVal === 0) {
 		    if (isBetween(pointI, pointJ, pointK)) {
@@ -2368,41 +2406,71 @@ for (i <- 1 to n–1)
 		    }
 		}
 	    }
-	    document.getElementById("drawLine").className -= " highlight";
-	    // remove the candidate segment
-	    currentSegment.setMap(null);
-	    
-	    if (!foundProblem) {
-		// it's part of the hull, so let's remember that
-		document.getElementById("for2").className -= " highlight";
-		document.getElementById("drawLine").className -= " highlight";
-		document.getElementById("drawLine2").className += " highlight";
-		// purple line showing convex hull
-		this.hull[0] = new google.maps.LatLng(pointI.lat, pointI.lon);
-		this.hull[1] = new google.maps.LatLng(pointJ.lat, pointJ.lon);
-		polyline = new google.maps.Polyline({
-		    map: map,
-		    path: this.hull,
-		    strokeColor: '#cc00ff',
-		    strokeOpacity: 0.6,
-		    strokeWeight: 6
+
+	    if (foundProblem) {
+		// remove the candidate segment from the map
+		this.currentSegment.setMap(null);
+		hdxAV.algStat.innerHTML = "Discarding segment between # " +
+		    this.hullI + " and #" + this.hullJ;
+	    }
+	    else {
+		hdxAV.algStat.innerHTML = "Adding to hull segment between # " +
+		    this.hullI + " and #" + this.hullJ;
+		// it's part of the hull, so let's remember the points
+		if (!this.hull.includes(this.hullI)) {
+		    this.hull.push(this.hullI);
+		}
+		if (!this.hull.includes(this.hullJ)) {
+		    this.hull.push(this.hullJ);
+		}
+
+		// add to the list of hull segments
+		this.hullSegments.push(this.currentSegment);
+		this.currentSegment.setOptions({
+		    strokeColor: this.visualSettings.hullComponent.color
 		});
-		updateMarkerAndTable(this.hullI, visualSettings.startVertex, 30, false);
-		updateMarkerAndTable(this.hullJ, visualSettings.startVertex, 30, false);
-	    } else {
-		updateMarkerAndTable(this.hullJ, visualSettings.discarded, 30, false);
+	    }
+
+	    // before we update j, see if we should color as part of the
+	    // hull or as part of the inner loop discarded
+	    if (this.hull.includes(this.hullJ)) {
+		updateMarkerAndTable(this.hullJ,
+				     this.visualSettings.hullComponent,
+				     20, false);
+	    }
+	    else {
+		updateMarkerAndTable(this.hullJ,
+				     this.visualSettings.discardedInner,
+				     10, false);
 	    }
 	    this.hullJ++;
 	    if (this.hullJ == waypoints.length) {
-		updateMarkerAndTable(this.hullI, visualSettings.discarded, 30, false);
-		document.getElementById("for1").className += " highlight";
-		document.getElementById("for2").className -= " highlight";
-		this.hullI++;
-		for (var i = this.hullI; i >= 0; i--) {
-		    updateMarkerAndTable(i, visualSettings.discarded, 30, false);
+
+		// before we update i, see if it should be colored as part
+		// of the hull or if it should be discarded permanently
+		if (this.hull.includes(this.hullI)) {
+		    updateMarkerAndTable(this.hullI,
+					 this.visualSettings.hullComponent,
+					 20, false);
 		}
+		else {
+		    updateMarkerAndTable(this.hullI,
+					 visualSettings.discarded,
+					 20, true);
+		}
+		this.hullI++;
+		// all points for the next inner loop back to undiscovered
+		// unless already part of the hull
 		for (var i = this.hullI + 1; i < waypoints.length; i++) {
-		    updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
+		    if (this.hull.includes(i)) {
+			updateMarkerAndTable(i,
+					     this.visualSettings.hullComponent,
+					     20, false);
+		    }
+		    else {
+			updateMarkerAndTable(i, visualSettings.undiscovered,
+					     30, false);
+		    }
 		}
 		// initialize next hullJ loop
 		this.hullJ = this.hullI + 1;
@@ -2419,21 +2487,33 @@ for (i <- 1 to n–1)
 	    else {
 		// done
 		hdxAV.setStatus(hdxStates.AV_COMPLETE);
+		hdxAV.algStat.innerHTML = "Done.  Convex hull contains " +
+		    this.hull.length + " points and segments.";
 	    }
 	}
     },
 
     // set up UI for convex hull
     setupUI() {
-
-	alert("This is an n^3 algorithm in the worst case, so choose a relatively small graph.");
-	hdxAV.algStat.style.display = "none";
-	hdxAV.algStat.innerHTML = "";
+	
+	if (waypoints.length > 100) {
+	    alert("This is an O(n^3) algorithm in the worst case, so you might wish to choose a smaller graph.");
+	}
+	hdxAV.algStat.style.display = "";
+	hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.algOptions.innerHTML = '';
+	addEntryToAVControlPanel("hullI", this.visualSettings.hullI);
+	addEntryToAVControlPanel("hullJ", this.visualSettings.hullJ);
+	addEntryToAVControlPanel("checkingLine", visualSettings.visiting);
     },
 
     // clean up convex hull UI
-    cleanupUI() {}
+    cleanupUI() {
+
+    	removeEntryFromAVControlPanel("hullI");
+    	removeEntryFromAVControlPanel("hullJ");
+    	removeEntryFromAVControlPanel("checkingLine");
+    }
 
 };
 
