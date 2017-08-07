@@ -246,10 +246,10 @@ var visualSettings = {
     spanningTree: {
         color: "#0000a0",
         textColor: "white",
-        scale: 2,
+        scale: 4,
 	name: "spanningTree",
 	value: 0,
-	weight: 2,
+	weight: 4,
 	opacity: 0.6
     },
     discovered: {
@@ -1336,10 +1336,10 @@ while L nonempty {
 	completedComponent: {
 	    color: "white",
 	    textColor: "black",
-	    scale: 2,
+	    scale: 3,
 	    name: "completedComponent",
 	    value: 0,
-	    weight: 2,
+	    weight: 3,
 	    opacity: 0.6
 	}
     },
@@ -1812,8 +1812,8 @@ var hdxDijkstraAV = {
     // visual settings for shortest path
     visualSettings: {
 	shortestPath: {
-	    color: "orange",
-	    textColor: "black",
+	    color: "darkRed",
+	    textColor: "white",
 	    scale: 4,
 	    name: "shortestPath",
 	    weight: 4,
@@ -2017,7 +2017,7 @@ var hdxDijkstraAV = {
 
 		// we are at the next place on the path, update vertex
 		updateMarkerAndTable(place, this.visualSettings.shortestPath,
-				     false);
+				     5, false);
 		// and update edge to get here
 		updatePolylineAndTable(spEntry.connection,
 				       this.visualSettings.shortestPath,
