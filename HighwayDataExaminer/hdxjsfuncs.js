@@ -1899,6 +1899,10 @@ var hdxDijkstraAV = {
 	newtr.setAttribute("id", "dijkstraSP" + this.shortestPaths.length);
 	let fromLabel = "";
 	let via = "";
+	let vLabel = waypoints[v.vIndex].label;
+	if (vLabel.length > 20) {
+	    vLabel = vLabel.substr(0,17) + "...";
+	}
 	if (v.connection != -1) {
 	    via = graphEdges[v.connection].label;
 	    let otherV;
@@ -1908,10 +1912,13 @@ var hdxDijkstraAV = {
 	    else {
 		otherV = graphEdges[v.connection].v1;
 	    }
-	    fromLabel = waypoints[otherV].label.substr(0,20);
+	    fromLabel = waypoints[otherV].label;
+	    if (fromLabel.length > 20) {
+		fromLabel = fromLabel.substr(0,17) + "...";
+	    }
 	}
 	newtr.innerHTML =
-	    '<td>' + waypoints[v.vIndex].label.substr(0,20) + '</td>' +
+	    '<td>' + vLabel + '</td>' +
 	    '<td>' + v.dist.toFixed(3) + '</td>' +
 	    '<td>' + fromLabel + '</td>' +
 	    '<td>' + via + '</td>';
