@@ -2250,7 +2250,7 @@ for (i <- 1 to n–1)
 	    value: 0
 	},
 	discardedInner: {
-	    color: "c0c0c0",
+	    color: "green",
 	    textColor: "black",
 	    scale: 2,
 	    name: "discardedInner",
@@ -2486,6 +2486,28 @@ for (i <- 1 to n–1)
 	    }
 	    else {
 		// done
+		// update last points in case they are part of the hull
+		if (this.hull.includes(waypoints.length - 2)) {
+			updateMarkerAndTable(waypoints.length - 2,
+					     this.visualSettings.hullComponent,
+					     20, false);
+		}
+		else {
+		    updateMarkerAndTable(waypoints.length - 2,
+					 visualSettings.discarded,
+					 20, true);
+		}
+		if (this.hull.includes(waypoints.length - 1)) {
+			updateMarkerAndTable(waypoints.length - 1,
+					     this.visualSettings.hullComponent,
+					     20, false);
+		}
+		else {
+		    updateMarkerAndTable(waypoints.length - 1,
+					 visualSettings.discarded,
+					 20, true);
+		}
+		    
 		hdxAV.setStatus(hdxStates.AV_COMPLETE);
 		hdxAV.algStat.innerHTML = "Done.  Convex hull contains " +
 		    this.hull.length + " points and segments.";
@@ -2513,8 +2535,10 @@ for (i <- 1 to n–1)
     	removeEntryFromAVControlPanel("hullI");
     	removeEntryFromAVControlPanel("hullJ");
     	removeEntryFromAVControlPanel("checkingLine");
+	for (var i = 0; i < this.hullSegments.length; i++) {
+	    this.hullSegments[i].setMap(null);
+	}
     }
-
 };
 
 /**
