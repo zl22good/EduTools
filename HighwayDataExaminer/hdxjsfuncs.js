@@ -306,6 +306,14 @@ function updateAVControlEntry(namePrefix, text) {
     document.getElementById(namePrefix + AVCPsuffix).innerHTML = text;
 }
 
+/* set the visualSettings of an AV control panel entry */
+function updateAVControlVisualSettings(namePrefix, vs) {
+
+    let infoBox = document.getElementById(namePrefix + AVCPsuffix);
+    infoBox.setAttribute('style', "color:" + vs.textColor +
+			 "; background-color:" + vs.color);
+}
+
 /* get the document element of an AV control entry */
 function getAVControlEntryDocumentElement(namePrefix) {
 
@@ -1753,6 +1761,17 @@ function DijkstraSP(vIndex, d, connection) {
     this.vIndex = vIndex;
     this.dist = d;
     this.connection = connection;
+    // compute the other vertex of the endpoint as we'll need
+    // it in a couple places
+    this.fromVIndex = -1;
+    if (connection != -1) {
+	if (graphEdges[connection].v1 == vIndex) {
+	    this.fromVIndex = graphEdges[connection].v2;
+	}
+	else {
+	    this.fromVIndex = graphEdges[connection].v1;
+	}
+    }
     
     return this;
 }
@@ -1789,6 +1808,18 @@ var hdxDijkstraAV = {
     // some stats to track
     numVisited: -1,
     previouslyVisited: 0,
+
+    // visual settings for shortest path
+    visualSettings: {
+	shortestPath: {
+	    color: "orange",
+	    textColor: "black",
+	    scale: 4,
+	    name: "shortestPath",
+	    weight: 4,
+	    opacity: 0.6
+	}
+    },
 
     // required algorithm start method for Dijkstra's
     start() {
@@ -1879,18 +1910,6 @@ var hdxDijkstraAV = {
 	}
     },
 
-/*    findNextPath(v1, v2) {
-	var cur;
-	for (var i = 0; i < this.totalPath.length; i++) {
-	    cur = this.totalPath[i].edge;
-	    if (cur != null &&
-		(v1 == cur.v1 || v1 == cur.v2) && (v2 != cur.v1 && v2 != cur.v2)) {
-		return i;
-	    }
-	}
-    },
-*/
-
     // add a DijkstraSP to the list of shortest paths and to
     // the table of shortest path entries
     addToShortestPaths(v) {
@@ -1905,14 +1924,14 @@ var hdxDijkstraAV = {
 	}
 	if (v.connection != -1) {
 	    via = graphEdges[v.connection].label;
-	    let otherV;
-	    if (graphEdges[v.connection].v1 == v.vIndex) {
-		otherV = graphEdges[v.connection].v2;
-	    }
-	    else {
-		otherV = graphEdges[v.connection].v1;
-	    }
-	    fromLabel = waypoints[otherV].label;
+	    //let otherV;
+	    //if (graphEdges[v.connection].v1 == v.vIndex) {
+		//otherV = graphEdges[v.connection].v2;
+	    //}
+	    //else {
+	//	otherV = graphEdges[v.connection].v1;
+	  //  }
+	    fromLabel = waypoints[v.fromVIndex].label;
 	    if (fromLabel.length > 20) {
 		fromLabel = fromLabel.substr(0,17) + "...";
 	    }
@@ -1973,7 +1992,42 @@ var hdxDijkstraAV = {
 	if (this.visitedVertices[this.endingVertex]) {
 
 	    // we're done!
-	    hdxAV.algStat.innerHTML = "Shortest path found!";
+	    updateAVControlVisualSettings("found",
+					  this.visualSettings.shortestPath);
+	    this.foundLabel.innerHTML = "Shortest path found:";
+	    
+	    // build the shortest path from end to start, showing
+	    // each on the map, in the tables
+
+	    let place = this.endingVertex;
+	    let spIndex = this.shortestPaths.length - 1;
+	    // work our way back up the table from vertex to vertex
+	    // along the shortest path
+	    while (place != this.startingVertex) {
+		let spEntry = this.shortestPaths[spIndex];
+		while (place != spEntry.vIndex) {
+		    // hide line, it's not part of the path
+		    if (place != this.endingVertex) {
+			let tr = document.getElementById("dijkstraSP" + spIndex);
+			tr.style.display = "none";
+		    }
+		    spIndex--;
+		    spEntry = this.shortestPaths[spIndex];
+		}
+
+		// we are at the next place on the path, update vertex
+		updateMarkerAndTable(place, this.visualSettings.shortestPath,
+				     false);
+		// and update edge to get here
+		updatePolylineAndTable(spEntry.connection,
+				       this.visualSettings.shortestPath,
+				       false);
+
+		// update place to the previous in the path
+		spIndex--;
+		place = spEntry.fromVIndex;
+	    }
+	    hdxAV.algStat.innerHTML = "Shortest path found!  Entries below are the path.";
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    return;
 	}
@@ -2112,12 +2166,13 @@ var hdxDijkstraAV = {
 	addEntryToAVControlPanel("discovered", visualSettings.discovered);
 	addEntryToAVControlPanel("found", visualSettings.spanningTree);
 	updateAVControlEntry("found", `
-Table of shortest paths found:<br />
+<span id="foundLabel">Table of shortest paths found:</span><br />
 <table class="gratable"><thead>
 <tr style="text-align:center"><th>Place</th><th>Distance</th><th>Arrive From</th><th>Via</th></tr>
 </thead><tbody id="dijkstraEntries"></tbody></table>
 `);
 	this.foundTBody = document.getElementById("dijkstraEntries");
+	this.foundLabel = document.getElementById("foundLabel");
     },
 
     // clean up Dijkstra's UI
