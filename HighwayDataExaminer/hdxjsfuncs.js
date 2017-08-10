@@ -899,15 +899,15 @@ for (checkIndex <- 1 to |V|-1) {
 	    this.discarded++;
 	}
 	
-	updateAVControlEntry("undiscovered", (waypoints.length - this.nextToCheck) + " vertices not yet visited");
-	updateAVControlEntry("visiting", "Visiting: #" + this.nextToCheck + " " + waypoints[this.nextToCheck].label);
-	updateAVControlEntry("discarded", this.discarded + " vertices discarded");
-	
 	// prepare for next iteration
 	this.nextToCheck++;
 	if (this.nextToCheck < markers.length) {
             updateMarkerAndTable(this.nextToCheck, visualSettings.visiting,
 				 30, false);
+	    updateAVControlEntry("undiscovered", (waypoints.length - this.nextToCheck) + " vertices not yet visited");
+	    updateAVControlEntry("visiting", "Visiting: #" + this.nextToCheck + " " + waypoints[this.nextToCheck].label);
+	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");
+	
             var self = this;
             setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
