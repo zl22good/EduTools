@@ -289,8 +289,10 @@ function removeEntryFromAVControlPanel(namePrefix) {
 
     let avControlTbody = document.getElementById('AVControlPanel');
     let infoBox = document.getElementById(namePrefix + AVCPsuffix);
-    let infoBoxtr= infoBox.parentNode;
-    avControlTbody.removeChild(infoBoxtr);
+    if (infoBox != null) {
+	let infoBoxtr= infoBox.parentNode;
+	avControlTbody.removeChild(infoBoxtr);
+    }
 }
 
 /* set the HTML of an AV control panel entry */
@@ -1253,18 +1255,19 @@ var hdxGraphTraversalsAV = {
 
     // pseudocode
     code:`
-<pre>(NEEDS UPDATING)
-unmark all vertices
-choose some starting vertex x
-mark x
-list L <- x
-tree T <- x
-while L nonempty {
-   remove vertex v from L
-   mark v
-   for each unmarked neighbor w of v
-      L.add(w)
+<pre>unmark all vertices
+s <- starting vertex
+mark s as visited
+list LDV <- s
+tree T <- s
+while LDV nonempty {
+   remove vertex v from LDV
+   mark v as visited
+   for each unmarked neighbor w of v {
+      LDV.add(w)
       T.add(edge vw)
+   }
+}
 </pre>
 `,
 
@@ -1779,7 +1782,32 @@ var hdxDijkstraAV = {
     description: "Dijkstra's algorithm for single-source shortest paths.",
 
     // pseudocode
-    code:`To be added.`,
+    code:`
+<pre>
+G = (V,E) is the graph
+s <- starting vertex
+e <- ending vertex
+T <- table of places found
+PQ <- priority queue of candidates
+PQ.add(0, (s, null))
+while (PQ.notEmpty() and e not in T) {
+  (dist, (to, via)) <- PQ.remove()
+  if (to not in T) {
+     T.add(to, via)
+     for each neighbor w of to {
+        if (w not visited) {
+           PQ.add(dist+len(to,w), (w, edge(to-w)))
+        }
+     }
+  }
+}
+if (e in T) {
+   use T to report shortest path
+}
+else {
+   report no path exists
+}
+</pre>`,
 
     // the priority queue at the heart of Dijkstra's algorithm
     pq: null,
