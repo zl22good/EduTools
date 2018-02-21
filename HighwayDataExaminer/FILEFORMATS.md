@@ -44,3 +44,5 @@ YT1,YT2 60.79662 -135.170288 YT1/YT2@KatRd 60.788579 -135.166302
 YT1,YT2 YT1/YT2@WannRd 60.772479 -135.15044
 YT1,YT2 YT1/YT2@CenSt 60.759893 -135.141191
 </pre>
+
+When loaded, HDX will display these as a path from one entry to the next.  Points are shown as markers and connected with polylines.  This format has been used to show the result of a shortest path computed by Dijkstra's algorithm, or the segments that make up a computed convex hull of a set of points.
