@@ -10,6 +10,15 @@
 
 Routes in [Travel Mapping's Highway Data](https://github.com/TravelMapping/HighwayData) are stored in this format.  Each line represents a point on a route that is included in Travel Mapping (a "waypoint"), and includes a waypoint label and a URL that encodes its latitude and longitude.  Lines in the file represent points from one endpoint of the route to the other.  This format can be used for any list of named points with coordinates that one wishes to plot on the map.
 
+An example of an excerpt of a .wpt file:
+
+<pre>
+YT1_S http://www.openstreetmap.org/?lat=60.684924&lon=-135.059652
+MilCanRd http://www.openstreetmap.org/?lat=60.697199&lon=-135.047250
++5 http://www.openstreetmap.org/?lat=60.705383&lon=-135.054932
+4thAve http://www.openstreetmap.org/?lat=60.712623&lon=-135.050619
+</pre>
+
 ## Path files (.pth)
 
 A path file consists of a series of lines each containing a route name, zero or more intermediate points (latitude, longitude pairs), then a waypoint name and a latitude and a longitude, all space-separated, or a line containing a route name and waypoint name followed by a latitude,longitude pair in parentheses.
