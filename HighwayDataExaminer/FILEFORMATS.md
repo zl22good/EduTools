@@ -66,3 +66,15 @@ CG3@CS360 42.582284 1.51916
 CG3@CS370 42.622655 1.53491
 </pre>
 
+## Waypoint List files (.wpl)
+
+A waypoint list consists of a series of lines, each containing a waypoint name, followed by two floating point numbers representing the point's latitude and longitude.  Points are simply plotted on the map.  These can be used to show results of computations, such as the directional extreme points or others as found in a search.
+
+An example .wpl file that plots the northernmost, southernmost, easternmost, and westernmost points found in a graph:
+
+<pre>
+CG1@AND/ESP 42.43581 1.473198
+CG3@CS380 42.631607 1.481405
+CG4@AND/ESP 42.546251 1.419382
+TunEnv/N22 42.549097 1.737857
+</pre>
