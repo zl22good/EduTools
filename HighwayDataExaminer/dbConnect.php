@@ -8,7 +8,7 @@ $tmdbname = chop(fgets($tmconffile));
 $tmdbuser = chop(fgets($tmconffile));
 $tmdbpasswd = chop(fgets($tmconffile));
 $tmdbhost = chop(fgets($tmconffile));
-
+fclose($tmconffile);
 
 // make the connection
 //echo "<!-- mysqli connecting to database ".$tmdbname." on ".$tmdbhost." -->\n";
