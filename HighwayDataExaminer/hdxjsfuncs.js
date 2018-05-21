@@ -1966,6 +1966,7 @@ else {
 	
 	this.foundTBody.appendChild(newtr);
 	this.shortestPaths.push(v);
+	document.getElementById("tableSize").innerHTML = this.shortestPaths.length + " (number of paths found so far)";
     },
 
     // continue next step of Dijkstra's algorithm
@@ -2188,7 +2189,7 @@ else {
 	addEntryToAVControlPanel("discovered", visualSettings.discovered);
 	addEntryToAVControlPanel("found", visualSettings.spanningTree);
 	updateAVControlEntry("found", `
-<span id="foundLabel">Table of shortest paths found:</span><br />
+<span id="foundLabel">Table of shortest paths found: <span id="tableSize">0 (number of paths found so far)</span></span><br />
 <table class="gratable"><thead>
 <tr style="text-align:center"><th>Place</th><th>Distance</th><th>Arrive From</th><th>Via</th></tr>
 </thead><tbody id="dijkstraEntries"></tbody></table>
