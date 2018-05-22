@@ -1352,7 +1352,17 @@ while LDV nonempty {
 	"orchid",
 	"sienna",
 	"violet",
-	"yellowGreen"
+	"yellowGreen",
+    "gold",
+	"aqua",
+	"dodgerblue",
+	"lawngreen",
+	"khaki",
+	"lime",
+	"firebrick",
+	"indianred",
+	"indigo",
+	"goldenrod"
     ],
     
     // initialize graph traversal process, required for all algorithms
