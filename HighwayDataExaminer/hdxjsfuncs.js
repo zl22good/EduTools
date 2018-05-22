@@ -3850,7 +3850,14 @@ function startPausePressed() {
 	// if we have selected but not yet started an algorithm,
 	// this is a start button
 	hdxAV.setStatus(hdxStates.AV_RUNNING);
-	hdxAV.startPause.innerHTML = "Pause";
+	if ( hdxAV.delay == -1)
+	{
+		hdxAV.startPause.innerHTML = "Next Step";
+	}
+	else
+	{
+		hdxAV.startPause.innerHTML = "Pause";
+	}
 	document.getElementById("AlgorithmSelection").disabled = true;
 	selectAlgorithmAndStart();
 	break;
@@ -3859,8 +3866,16 @@ function startPausePressed() {
 	// if we are in a running algorithm, this is a pause button
 	// the running algorithm will pause when its next
 	// timer event fires
+	
 	hdxAV.setStatus(hdxStates.AV_PAUSED);
-	hdxAV.startPause.innerHTML = "Resume";
+	if ( hdxAV.delay == -1)
+	{
+		hdxAV.startPause.innerHTML = "Next Step";
+	}
+	else
+	{
+		hdxAV.startPause.innerHTML = "Resume";
+	}
 	break;
 
 	
