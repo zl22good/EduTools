@@ -52,7 +52,7 @@ var hdxAV = {
     previousAlgorithm: null,
 
     // reset values
-    reset: function() {
+    reset: function () {
 	this.previousAlgorithm = null;
     },
 
@@ -62,7 +62,7 @@ var hdxAV = {
     startPause: null,
     
     // set the status and do any needed cleanup for that change
-    setStatus(newStatus) {
+    setStatus( newStatus ) {
 	
 	if (this.status == newStatus) {
 	    return;
@@ -158,7 +158,9 @@ var hdxAV = {
 function speedChanged() {
 
     var speedChanger = document.getElementById("speedChanger");
-    hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;
+	
+	hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;
+	
 }
 
 // algorithm visualization color settings and other parameters
@@ -809,7 +811,7 @@ for (checkIndex <- 1 to |V|-1) {
 	updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
 	updateAVControlEntry("visiting", "Preparing to visit: #0 " + waypoints[0].label);
 	updateAVControlEntry("discarded", "0 vertices discarded");
-	if (!hdxAV.paused()) {
+	if (!hdxAV.paused() && hdxAV.delay != -1) {
 	    var self = this;
 	    setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
@@ -824,6 +826,12 @@ for (checkIndex <- 1 to |V|-1) {
 	if (hdxAV.paused()) {
             return;
 	}
+	
+	if (hdxAV.delay == -1) {
+		hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+	
+	
 
 	// keep track of points that were leaders but got beaten to be
 	// colored grey if they are no longer a leader in any category
@@ -1110,7 +1118,7 @@ for (checkIndex <- 1 to |E|-1) {
 	updateAVControlEntry("visiting", "Preparing to visit: #0 " + graphEdges[0].label);
 	updateAVControlEntry("discarded", "0 edges discarded");
 	
-	if (!hdxAV.paused()) {
+	if (!hdxAV.paused() && hdxAV.delay != -1) {
 	    var self = this;
 	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
@@ -1118,9 +1126,12 @@ for (checkIndex <- 1 to |E|-1) {
 
     // required nextStep function for edge search
     nextStep() {
-    
-	if (hdxAV.paused()) {
+    if (hdxAV.paused()) {
             return;
+	}
+	
+	if (hdxAV.delay == -1) {
+		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}	
 
 	// keep track of edges that were leaders but got beaten to be
@@ -1459,7 +1470,7 @@ while LDV nonempty {
 	if (this.findingAllComponents) {
 	    hdxAV.algStat.innerHTML += " for component " + (this.componentNum+1);
 	}
-	if (!hdxAV.paused()) {
+	if (!hdxAV.paused() && hdxAV.delay != -1) {
 	    var self = this;
 	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
@@ -1495,6 +1506,10 @@ while LDV nonempty {
 	if (hdxAV.paused()) {
             return;
 	}
+	
+	if (hdxAV.delay == -1) {
+		hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}	
 
 	// the last visited vertex is still drawn as the one being visited,
 	// so first recolor it as appropriate, if it exists
@@ -1916,7 +1931,7 @@ else {
 	    used: false
 	};
 	
-	if (!hdxAV.paused()) {
+	if (!hdxAV.paused()&& hdxAV.delay != -1) {
 	    let self = this;
 	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
@@ -1975,6 +1990,10 @@ else {
 	if (hdxAV.paused()) {
             return;
 	}
+	
+	if (hdxAV.delay == -1) {
+		hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}	
 	
 	// maybe we have a last visited vertex to update
 	if (this.lastIteration.vIndex != -1) {
@@ -2330,7 +2349,7 @@ for (i <- 1 to n–1)
 	this.hullI = 0;
 	this.hullJ = 1;
 
-	if (!hdxAV.paused()) {
+	if (!hdxAV.paused()&& hdxAV.delay != -1) {
 	    this.setupNewLine = true;
 	    let self = this;
 	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
@@ -2355,7 +2374,11 @@ for (i <- 1 to n–1)
     nextStep() {
 	
 	if (hdxAV.paused()) {
-	    return;
+            return;
+	}
+	
+	if (hdxAV.delay == -1) {
+		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}
 
 	// depending on the value of setupNewLine, we either draw a
@@ -2372,7 +2395,7 @@ for (i <- 1 to n–1)
 	    // draw the line
 	    this.mapCurrentSegment();
 	    
-	    if (!hdxAV.paused()) {
+	    if (!hdxAV.paused() && hdxAV.delay != -1) {
 		this.setupNewLine = false;
 		let self = this;
 		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
@@ -2506,7 +2529,7 @@ for (i <- 1 to n–1)
 
 	    // more to do?
 	    if (this.hullI < waypoints.length - 1) {	    
-		if (!hdxAV.paused()) {
+		if (!hdxAV.paused()&& hdxAV.delay != -1) {
 		    this.setupNewLine = true;
 		    let self = this;
 		    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
@@ -3829,16 +3852,34 @@ function startPausePressed() {
 	hdxAV.startPause.innerHTML = "Resume";
 	break;
 
+	
+	
+	
     case hdxStates.AV_PAUSED:
-	// if we are in paused algorithm, this is a resume button
-	hdxAV.setStatus(hdxStates.AV_RUNNING);
-	hdxAV.startPause.innerHTML = "Pause";
-	continuePausedAlgorithm();
+	if ( hdxAV.delay == -1)
+	{
+		hdxAV.setStatus(hdxStates.AV_RUNNING);
+		hdxAV.startPause.innerHTML = "Next Step";
+		continuePausedAlgorithm();
+	}
+	else
+	{
+		// if we are in paused algorithm, this is a resume button
+		hdxAV.setStatus(hdxStates.AV_RUNNING);
+		hdxAV.startPause.innerHTML = "Pause";
+		continuePausedAlgorithm();
+	}
 	break;
 
     default:
 	alert("startPausePressed, unexpected status=" + hdxAV.status);
     }
+}
+
+//function to complete the running of program
+function runToCompletion()
+{
+	
 }
 
 // function to resume a paused algorithm
