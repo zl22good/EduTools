@@ -158,7 +158,7 @@ var hdxAV = {
 function speedChanged() {
 
     var speedChanger = document.getElementById("speedChanger");
-    hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;	
+    hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;
 }
 
 // algorithm visualization color settings and other parameters
