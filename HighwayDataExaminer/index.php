@@ -331,6 +331,7 @@ padding:0px;
       <tr><td id="algorithmOptions"></td></tr>
       <tr id="speedtr"><td>
         <button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
+		<button id="runToCompletion" type="button" onclick="runToCompletion()" disabled>Run To Completion</button>
         <select id="speedChanger" onchange="speedChanged()">
           <option value="1">Fastest possible</option>
           <option value="5">Extremely fast</option>
@@ -340,6 +341,7 @@ padding:0px;
           <option value="250">Pretty slow</option>
           <option value="500">Slow</option>
           <option value="1000">Painfully slow</option>
+		  <option value="-1">Step</option>
         </select>
 
       </td></tr>
