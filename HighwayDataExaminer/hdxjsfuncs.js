@@ -811,6 +811,12 @@ for (checkIndex <- 1 to |V|-1) {
 	updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
 	updateAVControlEntry("visiting", "Preparing to visit: #0 " + waypoints[0].label);
 	updateAVControlEntry("discarded", "0 vertices discarded");
+	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
+	//break;
+	
 	if (!hdxAV.paused() && hdxAV.delay != -1) {
 	    var self = this;
 	    setTimeout(function() { self.nextStep() }, hdxAV.delay);
@@ -825,6 +831,10 @@ for (checkIndex <- 1 to |V|-1) {
 	// will be called again when we restart
 	if (hdxAV.paused()) {
             return;
+	}
+	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
 	}
 	
 	if (hdxAV.delay == -1) {
@@ -947,6 +957,94 @@ for (checkIndex <- 1 to |V|-1) {
 				     this.categories[i].visualSettings);
 	}
     },
+	
+	runToCompletion(){
+		while (this.nextToCheck < markers.length) {
+			// keep track of points that were leaders but got beaten to be
+	// colored grey if they are no longer a leader in any category
+	var defeated = [];
+	
+	// keep track of whether this point is a new leader
+        let foundNewLeader = false;
+
+	// special case of first checked
+	if (this.nextToCheck == 0) {
+            // this was our first check, so this point wins all to start
+	    for (var i = 0; i < this.categories.length; i++) {
+		this.categories[i].index = 0;
+	    }
+            foundNewLeader = true;
+	}
+	// we have to do real work to see if we have new winners
+	else {
+	    // check each category
+	    for (var i = 0; i < this.categories.length; i++) {
+		if (this.categories[i].newLeader()) {
+		    foundNewLeader = true;
+		    if (defeated.indexOf(this.categories[i].index) == -1) {
+			defeated.push(this.categories[i].index);
+		    }
+		    this.categories[i].index = this.nextToCheck;
+		}
+	    }
+	}
+	
+	// any point that was a leader but is no longer gets
+	// discarded, but need to check that it's not still a leader
+	// in another category
+	while (defeated.length > 0) {
+            let toCheck = defeated.pop();
+	    let discard = true;
+	    for (var i = 0; i < this.categories.length; i++) {
+		if (toCheck == this.categories[i].index) {
+		    discard = false;
+		    break;
+		}
+	    }
+            if (discard) {
+		updateMarkerAndTable(toCheck, visualSettings.discarded,
+				     20, true);
+		this.discarded++;
+            }
+	}
+	
+	// the leader in each category is now highlighted in the tables and
+	// on the map
+	
+	// TODO: handle better the situations where the same vertex
+	// becomes the leader in multiple categories, as right now
+	// it just gets colored with the last in this list
+	if (foundNewLeader) {
+	    
+	    // this work will often be redundant but it's probably easier
+	    // than trying to avoid it
+	    
+	    for (var i = 0; i < this.categories.length; i++) {
+		updateMarkerAndTable(this.categories[i].index, this.categories[i].visualSettings, 
+				     40, false);
+		updateAVControlEntry(
+		    this.categories[i].name, 
+		    this.categories[i].leaderString(this.categories[i].label,
+						    this.categories[i].index)
+		);
+	    }
+	}
+	else {
+            // we didn't have a new leader, just discard this one
+            updateMarkerAndTable(this.nextToCheck, visualSettings.discarded,
+				 20, true);
+	    this.discarded++;
+	}
+	this.nextToCheck++;
+	
+	}
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
+            hdxAV.algStat.innerHTML =
+		"Done! Visited " + markers.length + " waypoints.";
+	    updateAVControlEntry("undiscovered", "0 vertices not yet visited");
+	    updateAVControlEntry("visiting", "");
+	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");
+	},
 
     // remove UI modifications made for vertex extremes search
     cleanupUI() {
@@ -1117,6 +1215,9 @@ for (checkIndex <- 1 to |E|-1) {
 	updateAVControlEntry("undiscovered", graphEdges.length + "edges not yet visited");
 	updateAVControlEntry("visiting", "Preparing to visit: #0 " + graphEdges[0].label);
 	updateAVControlEntry("discarded", "0 edges discarded");
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
 	
 	if (!hdxAV.paused() && hdxAV.delay != -1) {
 	    var self = this;
@@ -1129,7 +1230,9 @@ for (checkIndex <- 1 to |E|-1) {
     if (hdxAV.paused()) {
             return;
 	}
-	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
 	if (hdxAV.delay == -1) {
 		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}	
@@ -1224,7 +1327,89 @@ for (checkIndex <- 1 to |E|-1) {
 	    updateAVControlEntry("discarded", this.discarded + " edges discarded");
 	}
     },
+	
+    runToCompletion()
+	{
+		while(this.nextToCheck < graphEdges.length) {
+			// keep track of edges that were leaders but got beaten to be
+	// colored grey if they are no longer a leader in any category
+	var defeated = [];
+	
+	// keep track of whether the current edge becomes a new leader
+        var foundNewLeader = false;
+	
+	// special case of first checked
+	if (this.nextToCheck == 0) {
+            // this was our first check, so this edge wins all to start
+	    for (var i = 0; i < this.categories.length; i++) {
+		this.categories[i].index = 0;
+	    }
+            foundNewLeader = true;
+	}
+	// we have to do real work to see if we have new winners
+	else {
+	    // check each category
+	    for (var i = 0; i < this.categories.length; i++) {
+		if (this.categories[i].newLeader()) {
+		    foundNewLeader = true;
+		    if (defeated.indexOf(this.categories[i].index) == -1) {
+			defeated.push(this.categories[i].index);
+		    }
+		    this.categories[i].index = this.nextToCheck;
+		}
+	    }
+	}
 
+	// any edge that was a leader but is no longer gets
+	// discarded, but need to check that it's not still a leader
+	// in another category
+	while (defeated.length > 0) {
+            let toCheck = defeated.pop();
+	    let discard = true;
+	    for (var i = 0; i < this.categories.length; i++) {
+		if (toCheck == this.categories[i].index) {
+		    discard = false;
+		    break;
+		}
+	    }
+            if (discard) {
+		updatePolylineAndTable(toCheck, visualSettings.discarded,
+				       true);
+		this.discarded++;
+            }
+	}
+
+	// if we found a new leader, update leader edges and table entries
+	if (foundNewLeader) {
+
+	    for (var i = 0; i < this.categories.length; i++) {
+		updatePolylineAndTable(this.categories[i].index,
+				       this.categories[i].visualSettings,
+				       false);
+		updateAVControlEntry(
+		    this.categories[i].name, 
+		    this.categories[i].leaderString(this.categories[i].label,
+						    this.categories[i].index)
+		);
+	    }
+	}
+	else {
+	    // no new leader, this edge gets discarded
+	    updatePolylineAndTable(this.nextToCheck,
+				   visualSettings.discarded, true);
+	    this.discarded++;
+	}
+	this.nextToCheck++;
+	
+		}
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
+            hdxAV.algStat.innerHTML =
+		"Done! Visited " + graphEdges.length + " edges.";
+	    updateAVControlEntry("undiscovered", "0 edges not yet visited");
+	    updateAVControlEntry("visiting", "");
+	    updateAVControlEntry("discarded", this.discarded + " edges discarded");
+	},
+	
     // set up UI for the start of edge search
     setupUI() {
 
@@ -3902,11 +4087,6 @@ function startPausePressed() {
     }
 }
 
-//function to complete the running of program
-function runToCompletion()
-{
-	
-}
 
 // function to resume a paused algorithm
 function continuePausedAlgorithm() {
