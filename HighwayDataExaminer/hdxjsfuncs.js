@@ -52,7 +52,7 @@ var hdxAV = {
     previousAlgorithm: null,
 
     // reset values
-    reset: function () {
+    reset: function() {
 	this.previousAlgorithm = null;
     },
 
@@ -62,7 +62,7 @@ var hdxAV = {
     startPause: null,
     
     // set the status and do any needed cleanup for that change
-    setStatus( newStatus ) {
+    setStatus(newStatus) {
 	
 	if (this.status == newStatus) {
 	    return;
@@ -158,9 +158,7 @@ var hdxAV = {
 function speedChanged() {
 
     var speedChanger = document.getElementById("speedChanger");
-	
-	hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;
-	
+    hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;
 }
 
 // algorithm visualization color settings and other parameters
@@ -1227,7 +1225,7 @@ for (checkIndex <- 1 to |E|-1) {
 
     // required nextStep function for edge search
     nextStep() {
-    if (hdxAV.paused()) {
+    	if (hdxAV.paused()) {
             return;
 	}
 	if (hdxAV.delay == 0) {
@@ -2570,7 +2568,7 @@ for (i <- 1 to n–1)
     nextStep() {
 	
 	if (hdxAV.paused()) {
-            return;
+           return;
 	}
 	
 	if (hdxAV.delay == -1) {
@@ -4050,8 +4048,7 @@ function startPausePressed() {
     case hdxStates.AV_RUNNING:
 	// if we are in a running algorithm, this is a pause button
 	// the running algorithm will pause when its next
-	// timer event fires
-	
+	// timer event fires	
 	hdxAV.setStatus(hdxStates.AV_PAUSED);
 	if ( hdxAV.delay == -1)
 	{
@@ -4062,9 +4059,6 @@ function startPausePressed() {
 		hdxAV.startPause.innerHTML = "Resume";
 	}
 	break;
-
-	
-	
 	
     case hdxStates.AV_PAUSED:
 	if ( hdxAV.delay == -1)
