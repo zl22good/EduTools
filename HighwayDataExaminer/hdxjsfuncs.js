@@ -778,70 +778,10 @@ for (checkIndex <- 1 to |V|-1) {
     
     // required start function
     // initialize a vertex-based search
-    start() {
-
-	hdxAV.algStat.innerHTML = "Initializing";
-	// start by showing all existing markers, even hidden
-	for (var i = 0; i < waypoints.length; i++) {
-            markers[i].setMap(map);
-            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
-	}
-	// we don't need edges here, so we remove those
-	for (var i = 0; i < connections.length; i++) {
-            connections[i].setMap(null);
-	}
-	//we don't need connections table here, so we remove those
-	document.getElementById("connection").style.display = "none";
 	
-	document.getElementById("waypoints").style.display = "";
-	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
-	for (var i = 0; i < pointRows.length; i++) {
-	    pointRows[i].style.display = "";
-	}
-	
-	// start the search by initializing with the value at pos 0
-	updateMarkerAndTable(0, visualSettings.visiting, 40, false);
-	
-	this.nextToCheck = 0;
-	this.discarded = 0;
-	
-	hdxAV.algStat.innerHTML = "In Progress";
-	updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
-	updateAVControlEntry("visiting", "Preparing to visit: #0 " + waypoints[0].label);
-	updateAVControlEntry("discarded", "0 vertices discarded");
-	
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	//break;
-	
-	if (!hdxAV.paused() && hdxAV.delay != -1) {
-	    var self = this;
-	    setTimeout(function() { self.nextStep() }, hdxAV.delay);
-	}
-    },
-
-    // required nextStep function
-    // do an iteration of vertex-based search
-    nextStep() {
-
-	// if the simulation is paused, we can do nothing, as this function
-	// will be called again when we restart
-	if (hdxAV.paused()) {
-            return;
-	}
-	
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	
-	if (hdxAV.delay == -1) {
-		hdxAV.setStatus(hdxStates.AV_PAUSED);
-	}
-	
-	
-
-	// keep track of points that were leaders but got beaten to be
+	oneIteration()
+	{
+			// keep track of points that were leaders but got beaten to be
 	// colored grey if they are no longer a leader in any category
 	var defeated = [];
 	
@@ -919,7 +859,70 @@ for (checkIndex <- 1 to |V|-1) {
 	
 	// prepare for next iteration
 	this.nextToCheck++;
-	if (this.nextToCheck < markers.length) {
+	},
+	
+    start() {
+
+	hdxAV.algStat.innerHTML = "Initializing";
+	// start by showing all existing markers, even hidden
+	for (var i = 0; i < waypoints.length; i++) {
+            markers[i].setMap(map);
+            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
+	}
+	// we don't need edges here, so we remove those
+	for (var i = 0; i < connections.length; i++) {
+            connections[i].setMap(null);
+	}
+	//we don't need connections table here, so we remove those
+	document.getElementById("connection").style.display = "none";
+	
+	document.getElementById("waypoints").style.display = "";
+	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
+	for (var i = 0; i < pointRows.length; i++) {
+	    pointRows[i].style.display = "";
+	}
+	
+	// start the search by initializing with the value at pos 0
+	updateMarkerAndTable(0, visualSettings.visiting, 40, false);
+	
+	this.nextToCheck = 0;
+	this.discarded = 0;
+	
+	hdxAV.algStat.innerHTML = "In Progress";
+	updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
+	updateAVControlEntry("visiting", "Preparing to visit: #0 " + waypoints[0].label);
+	updateAVControlEntry("discarded", "0 vertices discarded");
+	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
+	//break;
+	
+	if (!hdxAV.paused() && hdxAV.delay != -1) {
+	    var self = this;
+	    setTimeout(function() { self.nextStep() }, hdxAV.delay);
+	}
+    },
+
+    // required nextStep function
+    // do an iteration of vertex-based search
+    nextStep() {
+
+	// if the simulation is paused, we can do nothing, as this function
+	// will be called again when we restart
+	if (hdxAV.paused()) {
+            return;
+	}
+	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
+	
+	if (hdxAV.delay == -1) {
+		hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+	this.oneIteration();
+	if (this.moreWork()) {
             updateMarkerAndTable(this.nextToCheck, visualSettings.visiting,
 				 30, false);
 	    updateAVControlEntry("undiscovered", (waypoints.length - this.nextToCheck) + " vertices not yet visited");
@@ -935,8 +938,7 @@ for (checkIndex <- 1 to |V|-1) {
 		"Done! Visited " + markers.length + " waypoints.";
 	    updateAVControlEntry("undiscovered", "0 vertices not yet visited");
 	    updateAVControlEntry("visiting", "");
-	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");
-	
+	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");	
 	}
     },
 
@@ -957,85 +959,9 @@ for (checkIndex <- 1 to |V|-1) {
     },
 	
 	runToCompletion(){
-		while (this.nextToCheck < markers.length) {
-			// keep track of points that were leaders but got beaten to be
-	// colored grey if they are no longer a leader in any category
-	var defeated = [];
-	
-	// keep track of whether this point is a new leader
-        let foundNewLeader = false;
-
-	// special case of first checked
-	if (this.nextToCheck == 0) {
-            // this was our first check, so this point wins all to start
-	    for (var i = 0; i < this.categories.length; i++) {
-		this.categories[i].index = 0;
-	    }
-            foundNewLeader = true;
-	}
-	// we have to do real work to see if we have new winners
-	else {
-	    // check each category
-	    for (var i = 0; i < this.categories.length; i++) {
-		if (this.categories[i].newLeader()) {
-		    foundNewLeader = true;
-		    if (defeated.indexOf(this.categories[i].index) == -1) {
-			defeated.push(this.categories[i].index);
-		    }
-		    this.categories[i].index = this.nextToCheck;
-		}
-	    }
-	}
-	
-	// any point that was a leader but is no longer gets
-	// discarded, but need to check that it's not still a leader
-	// in another category
-	while (defeated.length > 0) {
-            let toCheck = defeated.pop();
-	    let discard = true;
-	    for (var i = 0; i < this.categories.length; i++) {
-		if (toCheck == this.categories[i].index) {
-		    discard = false;
-		    break;
-		}
-	    }
-            if (discard) {
-		updateMarkerAndTable(toCheck, visualSettings.discarded,
-				     20, true);
-		this.discarded++;
-            }
-	}
-	
-	// the leader in each category is now highlighted in the tables and
-	// on the map
-	
-	// TODO: handle better the situations where the same vertex
-	// becomes the leader in multiple categories, as right now
-	// it just gets colored with the last in this list
-	if (foundNewLeader) {
-	    
-	    // this work will often be redundant but it's probably easier
-	    // than trying to avoid it
-	    
-	    for (var i = 0; i < this.categories.length; i++) {
-		updateMarkerAndTable(this.categories[i].index, this.categories[i].visualSettings, 
-				     40, false);
-		updateAVControlEntry(
-		    this.categories[i].name, 
-		    this.categories[i].leaderString(this.categories[i].label,
-						    this.categories[i].index)
-		);
-	    }
-	}
-	else {
-            // we didn't have a new leader, just discard this one
-            updateMarkerAndTable(this.nextToCheck, visualSettings.discarded,
-				 20, true);
-	    this.discarded++;
-	}
-	this.nextToCheck++;
-	
-	}
+		while (this.moreWork()) {
+			this.oneIteration();
+			}
 		hdxAV.setStatus(hdxStates.AV_COMPLETE);
             hdxAV.algStat.innerHTML =
 		"Done! Visited " + markers.length + " waypoints.";
@@ -1044,6 +970,11 @@ for (checkIndex <- 1 to |V|-1) {
 	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");
 	},
 
+	moreWork()
+	{
+		return (this.nextToCheck < markers.length);
+	},
+	
     // remove UI modifications made for vertex extremes search
     cleanupUI() {
 
@@ -1186,56 +1117,9 @@ for (checkIndex <- 1 to |E|-1) {
 	}
     ],
     
-    // required start function
-    start() {
-
-	hdxAV.algStat.innerHTML = "Initializing";
-
-	document.getElementById("connection").style.display = "";
-	// initialize all edges to have the "undiscovered" color
-	for (var i = 0; i < connections.length; i++) {
-	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
-	}
-
-	// waypoints not needed, so remove from the map
-	for (var i = 0; i < waypoints.length; i++) {
-            markers[i].setMap(null);
-	}
-	
-	//we don't need waypoints table here, so we remove those
-	document.getElementById("waypoints").style.display = "none";
-
-	// initialize to start looking at edge 0
-	this.nextToCheck = 0;
-	this.discarded = 0;
-
-	hdxAV.algStat.innerHTML = "In Progress";
-	updateAVControlEntry("undiscovered", graphEdges.length + "edges not yet visited");
-	updateAVControlEntry("visiting", "Preparing to visit: #0 " + graphEdges[0].label);
-	updateAVControlEntry("discarded", "0 edges discarded");
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	
-	if (!hdxAV.paused() && hdxAV.delay != -1) {
-	    var self = this;
-	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-	}
-    },
-
-    // required nextStep function for edge search
-    nextStep() {
-    	if (hdxAV.paused()) {
-            return;
-	}
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	if (hdxAV.delay == -1) {
-		hdxAV.setStatus(hdxStates.AV_PAUSED);
-	}	
-
-	// keep track of edges that were leaders but got beaten to be
+	oneIteration()
+	{
+		// keep track of edges that were leaders but got beaten to be
 	// colored grey if they are no longer a leader in any category
 	var defeated = [];
 	
@@ -1310,7 +1194,59 @@ for (checkIndex <- 1 to |E|-1) {
 	
 	// prepare for next iteration
 	this.nextToCheck++;
-	if (this.nextToCheck < graphEdges.length) {
+	
+	},
+	
+    // required start function
+    start() {
+
+	hdxAV.algStat.innerHTML = "Initializing";
+
+	document.getElementById("connection").style.display = "";
+	// initialize all edges to have the "undiscovered" color
+	for (var i = 0; i < connections.length; i++) {
+	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
+	}
+
+	// waypoints not needed, so remove from the map
+	for (var i = 0; i < waypoints.length; i++) {
+            markers[i].setMap(null);
+	}
+	
+	//we don't need waypoints table here, so we remove those
+	document.getElementById("waypoints").style.display = "none";
+
+	// initialize to start looking at edge 0
+	this.nextToCheck = 0;
+	this.discarded = 0;
+
+	hdxAV.algStat.innerHTML = "In Progress";
+	updateAVControlEntry("undiscovered", graphEdges.length + "edges not yet visited");
+	updateAVControlEntry("visiting", "Preparing to visit: #0 " + graphEdges[0].label);
+	updateAVControlEntry("discarded", "0 edges discarded");
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
+	
+	if (!hdxAV.paused() && hdxAV.delay != -1) {
+	    var self = this;
+	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	}
+    },
+
+    // required nextStep function for edge search
+    nextStep() {
+    if (hdxAV.paused()) {
+            return;
+	}
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
+	if (hdxAV.delay == -1) {
+		hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+		this.oneIteration();
+	if (this.moreWork) {
 	    updatePolylineAndTable(this.nextToCheck,
 				   visualSettings.visiting, false);
             var self = this;
@@ -1328,77 +1264,8 @@ for (checkIndex <- 1 to |E|-1) {
 	
     runToCompletion()
 	{
-		while(this.nextToCheck < graphEdges.length) {
-			// keep track of edges that were leaders but got beaten to be
-	// colored grey if they are no longer a leader in any category
-	var defeated = [];
-	
-	// keep track of whether the current edge becomes a new leader
-        var foundNewLeader = false;
-	
-	// special case of first checked
-	if (this.nextToCheck == 0) {
-            // this was our first check, so this edge wins all to start
-	    for (var i = 0; i < this.categories.length; i++) {
-		this.categories[i].index = 0;
-	    }
-            foundNewLeader = true;
-	}
-	// we have to do real work to see if we have new winners
-	else {
-	    // check each category
-	    for (var i = 0; i < this.categories.length; i++) {
-		if (this.categories[i].newLeader()) {
-		    foundNewLeader = true;
-		    if (defeated.indexOf(this.categories[i].index) == -1) {
-			defeated.push(this.categories[i].index);
-		    }
-		    this.categories[i].index = this.nextToCheck;
-		}
-	    }
-	}
-
-	// any edge that was a leader but is no longer gets
-	// discarded, but need to check that it's not still a leader
-	// in another category
-	while (defeated.length > 0) {
-            let toCheck = defeated.pop();
-	    let discard = true;
-	    for (var i = 0; i < this.categories.length; i++) {
-		if (toCheck == this.categories[i].index) {
-		    discard = false;
-		    break;
-		}
-	    }
-            if (discard) {
-		updatePolylineAndTable(toCheck, visualSettings.discarded,
-				       true);
-		this.discarded++;
-            }
-	}
-
-	// if we found a new leader, update leader edges and table entries
-	if (foundNewLeader) {
-
-	    for (var i = 0; i < this.categories.length; i++) {
-		updatePolylineAndTable(this.categories[i].index,
-				       this.categories[i].visualSettings,
-				       false);
-		updateAVControlEntry(
-		    this.categories[i].name, 
-		    this.categories[i].leaderString(this.categories[i].label,
-						    this.categories[i].index)
-		);
-	    }
-	}
-	else {
-	    // no new leader, this edge gets discarded
-	    updatePolylineAndTable(this.nextToCheck,
-				   visualSettings.discarded, true);
-	    this.discarded++;
-	}
-	this.nextToCheck++;
-	
+		while(this.moreWork()) {
+			this.oneIteration();	
 		}
 		hdxAV.setStatus(hdxStates.AV_COMPLETE);
             hdxAV.algStat.innerHTML =
@@ -1423,6 +1290,11 @@ for (checkIndex <- 1 to |E|-1) {
 	}
 
     },
+	
+	moreWork()
+	{
+		return (this.nextToCheck < graphEdges.length);
+	},
 
     // clean up edge search UI
     cleanupUI() {
