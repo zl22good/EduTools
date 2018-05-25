@@ -434,9 +434,7 @@ function labelClickHDX(i) {
     hdxVertexSelector.select(i);
 
     // standard map center/infowindow display
-    map.panTo(new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon));
-    infowindow.setContent(markerinfo[i]);
-    infowindow.open(map, markers[i]);
+    map.panTo([waypoints[i].lat, waypoints[i].lon]);
 }
 
 
@@ -520,13 +518,15 @@ function convertMiles(num) {
 // optionally hide also by setting display to none
 function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 
-    markers[waypointNum].setIcon({
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: vs.scale,
-        fillColor: vs.color,
-        strokeColor: vs.color
-    });
-    markers[waypointNum].setZIndex(google.maps.Marker.MAX_ZINDEX + zIndex);
+   var options = {
+       iconShape: 'circle-dot',
+       borderWidth: vs.scale,
+       borderColor: vs.color
+       };
+
+    var icon = L.BeautifyIcon.icon(options);
+    markers[waypointNum].setIcon(icon);
+    markers[waypointNum].setZIndex(zIndex);
     var row = document.getElementById("waypoint"+waypointNum);
     row.style.backgroundColor = vs.color;
     row.style.color = vs.textColor;
@@ -2319,19 +2319,13 @@ for (i <- 1 to n–1)
     mapCurrentSegment() {
 
 	let visitingLine = [];
-	visitingLine[0] =
-	    new google.maps.LatLng(waypoints[this.hullI].lat,
-				   waypoints[this.hullI].lon);
-	visitingLine[1] =
-	    new google.maps.LatLng(waypoints[this.hullJ].lat,
-				   waypoints[this.hullJ].lon);	
-	this.currentSegment = new google.maps.Polyline({
-	    map: map,
-	    path: visitingLine,
-	    strokeColor: visualSettings.visiting.color,
-	    strokeOpacity: 0.6,
-	    strokeWeight: 4
-	});
+	visitingLine[0] = [waypoints[this.hullI].lat, waypoints[this.hullI].lon];
+	visitingLine[1] = [waypoints[this.hullJ].lat, waypoints[this.hullJ].lon];
+	this.currentSegment = L.polyline(visitingLine, {
+	    color: visualSettings.visiting.color,
+	    opacity: 0.6,
+	    weight: 4
+	}).addTo(map);
     },
 
     // required start method for brute force convex hull

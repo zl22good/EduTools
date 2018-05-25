@@ -251,14 +251,19 @@ padding:0px;
 	padding-left: 30px;
 }
 </style>
-<script
- src="http://maps.googleapis.com/maps/api/js?sensor=false"
- type="text/javascript"></script>
+  <link rel="stylesheet" href="/leaflet/leaflet.css" />
+  <script src="/leaflet/leaflet.js"></script>
+  <script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script
  src="http://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"
   type="text/javascript"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+<link rel="stylesheet" href="BeautifyMarker/leaflet-beautify-marker-icon.css">
+<script src="BeautifyMarker/leaflet-beautify-marker-icon.js"></script>
 <!-- config file to find libs from a TM installation -->
 <?php
   $hdxconffile = fopen("hdx.conf", "r");
@@ -295,7 +300,7 @@ padding:0px;
 	<option value="meters">Meters</option>
 </select>
 -->
-<div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px; position:absolute; z-index:3;">
+<div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px; position:absolute; z-index:2000;">
 
 </div>
 <div id="options">
@@ -314,7 +319,7 @@ padding:0px;
 <div id="pointbox">
   No data loaded....
 </div>
-<div id="AlgorithmVisualization">
+<div id="AlgorithmVisualization" position: absolute; z-index:9999;>
   <table class="gratable">
     <thead>
       <tr><th>Algorithm Vizualization Control Panel</th></tr>
@@ -360,7 +365,7 @@ padding:0px;
           </select>
 
         </div>
-        <div id="contents_table" draggable="true"  ondragstart="drag(event)" style="top:70px; left:70%; z-index:3;">
+        <div id="contents_table" draggable="true"  ondragstart="drag(event)" style="top:70px; left:70%; position: absolute; z-index:9999;">
         </div>
         </body>
 </html>
