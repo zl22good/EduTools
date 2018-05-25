@@ -408,18 +408,18 @@ function hoverE(event, i) {
     etext = event.target.parentNode.style.color;
     event.target.parentNode.style.color = visualSettings.hoverV.textColor;
     event.target.parentNode.style.backgroundColor = visualSettings.hoverV.color
-    edge = connections[i].get("strokeColor");
-    edgew = connections[i].get("strokeOpacity");
-    connections[i].setOptions({
-        strokeColor: visualSettings.hoverV.color,
-	strokeOpacity: 0.7
+    edge = connections[i].options.color;
+    edgew = connections[i].options.opacity;
+    connections[i].setStyle({
+        color: visualSettings.hoverV.color,
+	opacity: 0.7
     });
 }
 
 function hoverEndE(event, i) {
-    connections[i].setOptions({
-        strokeColor: edge,
-	strokeOpacity: edgew
+    connections[i].setStyle({
+        color: edge,
+	opacity: edgew
     });
     event.target.parentNode.style.color = etext;
     event.target.parentNode.style.backgroundColor = ecolor;
@@ -526,7 +526,7 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 
     var icon = L.BeautifyIcon.icon(options);
     markers[waypointNum].setIcon(icon);
-    markers[waypointNum].setZIndex(zIndex);
+    markers[waypointNum].setZIndexOffset(2000+zIndex);
     var row = document.getElementById("waypoint"+waypointNum);
     row.style.backgroundColor = vs.color;
     row.style.color = vs.textColor;
@@ -562,10 +562,10 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 function updatePolylineAndTable(edgeNum, vs, hideTableLine) {
 
     let edge = graphEdges[edgeNum];
-    connections[edgeNum].setOptions({
-	strokeColor: vs.color,
-	strokeWeight: vs.weight,
-	strokeOpacity: vs.opacity});
+    connections[edgeNum].setStyle({
+	color: vs.color,
+	weight: vs.weight,
+	opacity: vs.opacity});
 
     let row = document.getElementById("connection" + edgeNum);
     row.style.backgroundColor = vs.color;
@@ -783,12 +783,12 @@ for (checkIndex <- 1 to |V|-1) {
 	hdxAV.algStat.innerHTML = "Initializing";
 	// start by showing all existing markers, even hidden
 	for (var i = 0; i < waypoints.length; i++) {
-            markers[i].setMap(map);
+            markers[i].addTo(map);
             updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
 	}
 	// we don't need edges here, so we remove those
 	for (var i = 0; i < connections.length; i++) {
-            connections[i].setMap(null);
+            connections[i].remove();
 	}
 	//we don't need connections table here, so we remove those
 	document.getElementById("connection").style.display = "none";
@@ -1101,7 +1101,7 @@ for (checkIndex <- 1 to |E|-1) {
 
 	// waypoints not needed, so remove from the map
 	for (var i = 0; i < waypoints.length; i++) {
-            markers[i].setMap(null);
+            markers[i].remove();
 	}
 	
 	//we don't need waypoints table here, so we remove those
@@ -2335,7 +2335,7 @@ for (i <- 1 to n–1)
 	// clear connections from the map, as this is a vertex-only
 	// algorithm
 	for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
-	    connections[outerLoop].setMap(null);
+	    connections[outerLoop].remove();
 	}
 
 	// also no need for connections table
@@ -2463,7 +2463,7 @@ for (i <- 1 to n–1)
 
 	    if (foundProblem) {
 		// remove the candidate segment from the map
-		this.currentSegment.setMap(null);
+		this.currentSegment.remove();
 		hdxAV.algStat.innerHTML = "Discarding segment between # " +
 		    this.hullI + " and #" + this.hullJ;
 	    }
@@ -2480,8 +2480,8 @@ for (i <- 1 to n–1)
 
 		// add to the list of hull segments
 		this.hullSegments.push(this.currentSegment);
-		this.currentSegment.setOptions({
-		    strokeColor: this.visualSettings.hullComponent.color
+		this.currentSegment.setStyle({
+		    color: this.visualSettings.hullComponent.color
 		});
 	    }
 
@@ -2590,7 +2590,7 @@ for (i <- 1 to n–1)
     	removeEntryFromAVControlPanel("hullJ");
     	removeEntryFromAVControlPanel("checkingLine");
 	for (var i = 0; i < this.hullSegments.length; i++) {
-	    this.hullSegments[i].setMap(null);
+	    this.hullSegments[i].remove();
 	}
     }
 };
@@ -3984,13 +3984,13 @@ function algorithmSelected() {
 /* SEEMS TO BE UNUSED
 function selectAlgorithmAndReset() {
     for (var i = 0; i < connections.length; i++) {
-        connections[i].setMap(null);
+        connections[i].remove();
         document.getElementById('connection' + i).style.backgroundColor = "white";
     }
     connections = new Array();
     polypoints = new Array();
     for (var i = 0; i < markers.length; i++) {
-        markers[i].setMap(null);
+        markers[i].remove();
         document.getElementById('waypoint' + i).style.backgroundColor = "white";
     }
     markers = new Array();
