@@ -408,18 +408,18 @@ function hoverE(event, i) {
     etext = event.target.parentNode.style.color;
     event.target.parentNode.style.color = visualSettings.hoverV.textColor;
     event.target.parentNode.style.backgroundColor = visualSettings.hoverV.color
-    edge = connections[i].get("strokeColor");
-    edgew = connections[i].get("strokeOpacity");
-    connections[i].setOptions({
-        strokeColor: visualSettings.hoverV.color,
-	strokeOpacity: 0.7
+    edge = connections[i].options.color;
+    edgew = connections[i].options.opacity;
+    connections[i].setStyle({
+        color: visualSettings.hoverV.color,
+	opacity: 0.7
     });
 }
 
 function hoverEndE(event, i) {
-    connections[i].setOptions({
-        strokeColor: edge,
-	strokeOpacity: edgew
+    connections[i].setStyle({
+        color: edge,
+	opacity: edgew
     });
     event.target.parentNode.style.color = etext;
     event.target.parentNode.style.backgroundColor = ecolor;
@@ -434,9 +434,7 @@ function labelClickHDX(i) {
     hdxVertexSelector.select(i);
 
     // standard map center/infowindow display
-    map.panTo(new google.maps.LatLng(waypoints[i].lat, waypoints[i].lon));
-    infowindow.setContent(markerinfo[i]);
-    infowindow.open(map, markers[i]);
+    map.panTo([waypoints[i].lat, waypoints[i].lon]);
 }
 
 
@@ -520,13 +518,15 @@ function convertMiles(num) {
 // optionally hide also by setting display to none
 function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 
-    markers[waypointNum].setIcon({
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: vs.scale,
-        fillColor: vs.color,
-        strokeColor: vs.color
-    });
-    markers[waypointNum].setZIndex(google.maps.Marker.MAX_ZINDEX + zIndex);
+   var options = {
+       iconShape: 'circle-dot',
+       borderWidth: vs.scale,
+       borderColor: vs.color
+       };
+
+    var icon = L.BeautifyIcon.icon(options);
+    markers[waypointNum].setIcon(icon);
+    markers[waypointNum].setZIndexOffset(2000+zIndex);
     var row = document.getElementById("waypoint"+waypointNum);
     row.style.backgroundColor = vs.color;
     row.style.color = vs.textColor;
@@ -562,10 +562,10 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 function updatePolylineAndTable(edgeNum, vs, hideTableLine) {
 
     let edge = graphEdges[edgeNum];
-    connections[edgeNum].setOptions({
-	strokeColor: vs.color,
-	strokeWeight: vs.weight,
-	strokeOpacity: vs.opacity});
+    connections[edgeNum].setStyle({
+	color: vs.color,
+	weight: vs.weight,
+	opacity: vs.opacity});
 
     let row = document.getElementById("connection" + edgeNum);
     row.style.backgroundColor = vs.color;
@@ -778,6 +778,83 @@ for (checkIndex <- 1 to |V|-1) {
     
     // required start function
     // initialize a vertex-based search
+    start() {
+
+	hdxAV.algStat.innerHTML = "Initializing";
+	// start by showing all existing markers, even hidden
+	for (var i = 0; i < waypoints.length; i++) {
+            markers[i].addTo(map);
+            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
+	}
+	// we don't need edges here, so we remove those
+	for (var i = 0; i < connections.length; i++) {
+            connections[i].remove();
+	}
+	//we don't need connections table here, so we remove those
+	document.getElementById("connection").style.display = "none";
+	
+	document.getElementById("waypoints").style.display = "";
+	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
+	for (var i = 0; i < pointRows.length; i++) {
+	    pointRows[i].style.display = "";
+	}
+	
+	// start the search by initializing with the value at pos 0
+	updateMarkerAndTable(0, visualSettings.visiting, 40, false);
+	
+	this.nextToCheck = 0;
+	this.discarded = 0;
+	
+	hdxAV.algStat.innerHTML = "In Progress";
+	updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
+	updateAVControlEntry("visiting", "Preparing to visit: #0 " + waypoints[0].label);
+	updateAVControlEntry("discarded", "0 vertices discarded");
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
+	if (!hdxAV.paused() && hdxAV.delay != -1) {
+	    var self = this;
+	    setTimeout(function() { self.nextStep() }, hdxAV.delay);
+	}
+    },
+
+    // required nextStep function
+    // do an iteration of vertex-based search
+    nextStep() {
+
+	// if the simulation is paused, we can do nothing, as this function
+	// will be called again when we restart
+	if (hdxAV.paused()) {
+            return;
+	}
+	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
+	
+	if (hdxAV.delay == -1) {
+		hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+	this.oneIteration();
+	if (this.moreWork()) {
+            updateMarkerAndTable(this.nextToCheck, visualSettings.visiting,
+				 30, false);
+	    updateAVControlEntry("undiscovered", (waypoints.length - this.nextToCheck) + " vertices not yet visited");
+	    updateAVControlEntry("visiting", "Visiting: #" + this.nextToCheck + " " + waypoints[this.nextToCheck].label);
+	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");
+	
+            var self = this;
+            setTimeout(function() { self.nextStep() }, hdxAV.delay);
+	}
+	else {
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+            hdxAV.algStat.innerHTML =
+		"Done! Visited " + markers.length + " waypoints.";
+	    updateAVControlEntry("undiscovered", "0 vertices not yet visited");
+	    updateAVControlEntry("visiting", "");
+	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");	
+	}
+    },
 	
 	oneIteration()
 	{
@@ -861,86 +938,10 @@ for (checkIndex <- 1 to |V|-1) {
 	this.nextToCheck++;
 	},
 	
-    start() {
-
-	hdxAV.algStat.innerHTML = "Initializing";
-	// start by showing all existing markers, even hidden
-	for (var i = 0; i < waypoints.length; i++) {
-            markers[i].setMap(map);
-            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
-	}
-	// we don't need edges here, so we remove those
-	for (var i = 0; i < connections.length; i++) {
-            connections[i].setMap(null);
-	}
-	//we don't need connections table here, so we remove those
-	document.getElementById("connection").style.display = "none";
-	
-	document.getElementById("waypoints").style.display = "";
-	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
-	for (var i = 0; i < pointRows.length; i++) {
-	    pointRows[i].style.display = "";
-	}
-	
-	// start the search by initializing with the value at pos 0
-	updateMarkerAndTable(0, visualSettings.visiting, 40, false);
-	
-	this.nextToCheck = 0;
-	this.discarded = 0;
-	
-	hdxAV.algStat.innerHTML = "In Progress";
-	updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
-	updateAVControlEntry("visiting", "Preparing to visit: #0 " + waypoints[0].label);
-	updateAVControlEntry("discarded", "0 vertices discarded");
-	
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	//break;
-	
-	if (!hdxAV.paused() && hdxAV.delay != -1) {
-	    var self = this;
-	    setTimeout(function() { self.nextStep() }, hdxAV.delay);
-	}
-    },
 
     // required nextStep function
     // do an iteration of vertex-based search
-    nextStep() {
-
-	// if the simulation is paused, we can do nothing, as this function
-	// will be called again when we restart
-	if (hdxAV.paused()) {
-            return;
-	}
-	
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	
-	if (hdxAV.delay == -1) {
-		hdxAV.setStatus(hdxStates.AV_PAUSED);
-	}
-	this.oneIteration();
-	if (this.moreWork()) {
-            updateMarkerAndTable(this.nextToCheck, visualSettings.visiting,
-				 30, false);
-	    updateAVControlEntry("undiscovered", (waypoints.length - this.nextToCheck) + " vertices not yet visited");
-	    updateAVControlEntry("visiting", "Visiting: #" + this.nextToCheck + " " + waypoints[this.nextToCheck].label);
-	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");
-	
-            var self = this;
-            setTimeout(function() { self.nextStep() }, hdxAV.delay);
-	}
-	else {
-	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
-            hdxAV.algStat.innerHTML =
-		"Done! Visited " + markers.length + " waypoints.";
-	    updateAVControlEntry("undiscovered", "0 vertices not yet visited");
-	    updateAVControlEntry("visiting", "");
-	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");	
-	}
-    },
+    
 
     // set up UI for the start of this algorithm
     setupUI() {
@@ -1117,9 +1118,77 @@ for (checkIndex <- 1 to |E|-1) {
 	}
     ],
     
+
+		// keep track of edges that were leaders but got beaten to be
+    // required start function
+    start() {
+
+	hdxAV.algStat.innerHTML = "Initializing";
+
+	document.getElementById("connection").style.display = "";
+	// initialize all edges to have the "undiscovered" color
+	for (var i = 0; i < connections.length; i++) {
+	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
+	}
+
+	// waypoints not needed, so remove from the map
+	for (var i = 0; i < waypoints.length; i++) {
+            markers[i].remove();
+	}
+	
+	//we don't need waypoints table here, so we remove those
+	document.getElementById("waypoints").style.display = "none";
+
+	// initialize to start looking at edge 0
+	this.nextToCheck = 0;
+	this.discarded = 0;
+
+	hdxAV.algStat.innerHTML = "In Progress";
+	updateAVControlEntry("undiscovered", graphEdges.length + "edges not yet visited");
+	updateAVControlEntry("visiting", "Preparing to visit: #0 " + graphEdges[0].label);
+	updateAVControlEntry("discarded", "0 edges discarded");
+	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
+	if (!hdxAV.paused() && hdxAV.delay != -1) {
+	    var self = this;
+	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	}
+    },
+
+    // required nextStep function for edge search
+    nextStep() {
+    if (hdxAV.paused()) {
+            return;
+	}
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
+	if (hdxAV.delay == -1) {
+		hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+		this.oneIteration();
+	if (this.moreWork) {
+	    updatePolylineAndTable(this.nextToCheck,
+				   visualSettings.visiting, false);
+            var self = this;
+            setTimeout(function() { self.nextStep() }, hdxAV.delay);
+	}
+	else {
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+            hdxAV.algStat.innerHTML =
+		"Done! Visited " + graphEdges.length + " edges.";
+	    updateAVControlEntry("undiscovered", "0 edges not yet visited");
+	    updateAVControlEntry("visiting", "");
+	    updateAVControlEntry("discarded", this.discarded + " edges discarded");
+	}
+    },
+	
 	oneIteration()
 	{
-		// keep track of edges that were leaders but got beaten to be
+
+	// keep track of edges that were leaders but got beaten to be
 	// colored grey if they are no longer a leader in any category
 	var defeated = [];
 	
@@ -1196,72 +1265,7 @@ for (checkIndex <- 1 to |E|-1) {
 	this.nextToCheck++;
 	
 	},
-	
-    // required start function
-    start() {
-
-	hdxAV.algStat.innerHTML = "Initializing";
-
-	document.getElementById("connection").style.display = "";
-	// initialize all edges to have the "undiscovered" color
-	for (var i = 0; i < connections.length; i++) {
-	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
-	}
-
-	// waypoints not needed, so remove from the map
-	for (var i = 0; i < waypoints.length; i++) {
-            markers[i].setMap(null);
-	}
-	
-	//we don't need waypoints table here, so we remove those
-	document.getElementById("waypoints").style.display = "none";
-
-	// initialize to start looking at edge 0
-	this.nextToCheck = 0;
-	this.discarded = 0;
-
-	hdxAV.algStat.innerHTML = "In Progress";
-	updateAVControlEntry("undiscovered", graphEdges.length + "edges not yet visited");
-	updateAVControlEntry("visiting", "Preparing to visit: #0 " + graphEdges[0].label);
-	updateAVControlEntry("discarded", "0 edges discarded");
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	
-	if (!hdxAV.paused() && hdxAV.delay != -1) {
-	    var self = this;
-	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-	}
-    },
-
-    // required nextStep function for edge search
-    nextStep() {
-    if (hdxAV.paused()) {
-            return;
-	}
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	if (hdxAV.delay == -1) {
-		hdxAV.setStatus(hdxStates.AV_PAUSED);
-	}
-		this.oneIteration();
-	if (this.moreWork) {
-	    updatePolylineAndTable(this.nextToCheck,
-				   visualSettings.visiting, false);
-            var self = this;
-            setTimeout(function() { self.nextStep() }, hdxAV.delay);
-	}
-	else {
-	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
-            hdxAV.algStat.innerHTML =
-		"Done! Visited " + graphEdges.length + " edges.";
-	    updateAVControlEntry("undiscovered", "0 edges not yet visited");
-	    updateAVControlEntry("visiting", "");
-	    updateAVControlEntry("discarded", this.discarded + " edges discarded");
-	}
-    },
-	
+		
     runToCompletion()
 	{
 		while(this.moreWork()) {
@@ -1502,6 +1506,8 @@ while LDV nonempty {
 
 	// common to starting first and subsequent components
 	this.startNewComponent();
+	
+	
     },
 
     // common code for starting search for the first or subsequent
@@ -1535,10 +1541,15 @@ while LDV nonempty {
 	if (this.findingAllComponents) {
 	    hdxAV.algStat.innerHTML += " for component " + (this.componentNum+1);
 	}
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
 	if (!hdxAV.paused() && hdxAV.delay != -1) {
 	    var self = this;
 	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
+	
+	
     },
 
     // helper function to redraw all variable values
@@ -1571,7 +1582,9 @@ while LDV nonempty {
 	if (hdxAV.paused()) {
             return;
 	}
-	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
 	if (hdxAV.delay == -1) {
 		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}	
@@ -1602,78 +1615,50 @@ while LDV nonempty {
             }
 	}
 	
-	// check if done with current component
-	if (this.ldv.isEmpty()) {
-
-	    // if we are finding all components, either move on to
-	    // next component or be done
-	    if (this.findingAllComponents) {
-		// recolor all vertices and edges in the most recent
-		// component with a new color
-		if (this.componentNum < this.componentColors.length) {
-		    this.visualSettings.completedComponent.color =
-			this.componentColors[this.componentNum];
-		}
-		else {
-		    // credit https://www.paulirish.com/2009/random-hex-color-code-snippets/
-		    this.visualSettings.completedComponent.color =
-			'#'+Math.floor(Math.random()*16777215).toString(16);
-		}
-		for (var i = 0; i < this.componentVList.length; i++) {
-		    updateMarkerAndTable(this.componentVList[i],
-					 this.visualSettings.completedComponent, false);
-		}
-		for (var i = 0; i < this.componentEList.length; i++) {
-		    updatePolylineAndTable(this.componentEList[i],
-					   this.visualSettings.completedComponent, false);
-		}
-		
-		// done?
-		if (this.numVUndiscovered == 0) {
-		    hdxAV.setStatus(hdxStates.AV_COMPLETE);
-		    hdxAV.algStat.innerHTML = "Done.  Found " +
-			(this.componentNum+1) + " components";
-		    updateAVControlEntry("visiting", "Last visited #" +
-					 this.lastVisitedVertex + " " +
-					 waypoints[this.lastVisitedVertex].label);
-		    return;
-		}
-		// set up to start next component
-		else {
-		    this.componentNum++;
-
-		    // find an unvisited vertex to start next search
-		    while ((this.startUnvisitedVSearch < waypoints.length) &&
-			   this.visitedV[this.startUnvisitedVSearch]) {
-			this.startUnvisitedVSearch++;
-		    }
-		    if (this.startUnvisitedVSearch == waypoints.length) {
-			console.log("Unexpected termination of multi-component graph traversal.");
-			hdxAV.setStatus(hdxStates.AV_COMPLETE);
-			hdxAV.algStat.innerHTML = "Done with error condition.  Found " +
-			    this.componentNum + " components";
-			return;
-		    }
-		    else {
-			// ready to start next component
-			this.startingVertex = this.startUnvisitedVSearch;
-			this.startNewComponent();
-		    }
-
-		}
-		return;
-	    }
-	    else {
-		hdxAV.setStatus(hdxStates.AV_COMPLETE);
-		hdxAV.algStat.innerHTML = "Done.";
-		updateAVControlEntry("visiting", "Last visited #" +
-				     this.lastVisitedVertex + " " +
-				     waypoints[this.lastVisitedVertex].label);
-		return;
-	    }
-	}
+	this.oneIteration();
+	if (this.moreWork())
+	{
+		// we changed some variables, so update the AV control entries
 	
-	// LDV not empty, so select the next vertex to visit and remove it
+	
+	let self = this;
+	setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	
+	}
+	this.updateControlEntries();
+    },
+	
+	runToCompletion()
+	{
+		while(this.moreWork())
+		{
+			this.oneIteration();
+		}
+		//while(this.moreWork());
+		this.updateControlEntries();
+	},
+
+    // set up UI components for traversals
+    setupUI() {
+
+	hdxAV.algStat.style.display = "";
+	hdxAV.algStat.innerHTML = "Setting up";
+        hdxAV.algOptions.innerHTML = 'Order: <select id="traversalDiscipline"><option value="BFS">Breadth First</option><option value="DFS">Depth First</option><option value="RFS">Random</option></select>' +
+	    '<br /><input id="findConnected" type="checkbox" name="Find all connected components">&nbsp;Find all connected components' +
+	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0);
+//            '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
+	addEntryToAVControlPanel("visiting", visualSettings.visiting);
+	addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
+	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
+	addEntryToAVControlPanel("discovered", visualSettings.discovered);
+	addEntryToAVControlPanel("discardedOnDiscovery", visualSettings.discardedOnDiscovery);
+	addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
+
+    },
+	
+	oneIteration()
+	{
+		// LDV not empty, so select the next vertex to visit and remove it
 	let nextToVisit = this.ldv.remove();
 	this.lastVisitedVertex = nextToVisit.vIndex;
 	let vIndex = nextToVisit.vIndex;
@@ -1791,31 +1776,81 @@ while LDV nonempty {
 		}
             }
 	}
+	},
 	
-	// we changed some variables, so update the AV control entries
-	this.updateControlEntries();
-	
-	let self = this;
-	setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-    },
+	moreWork()
+	{
+		if (this.ldv.isEmpty()) {
 
-    // set up UI components for traversals
-    setupUI() {
+	    // if we are finding all components, either move on to
+	    // next component or be done
+	    if (this.findingAllComponents) {
+		// recolor all vertices and edges in the most recent
+		// component with a new color
+		if (this.componentNum < this.componentColors.length) {
+		    this.visualSettings.completedComponent.color =
+			this.componentColors[this.componentNum];
+		}
+		else {
+		    // credit https://www.paulirish.com/2009/random-hex-color-code-snippets/
+		    this.visualSettings.completedComponent.color =
+			'#'+Math.floor(Math.random()*16777215).toString(16);
+		}
+		for (var i = 0; i < this.componentVList.length; i++) {
+		    updateMarkerAndTable(this.componentVList[i],
+					 this.visualSettings.completedComponent, false);
+		}
+		for (var i = 0; i < this.componentEList.length; i++) {
+		    updatePolylineAndTable(this.componentEList[i],
+					   this.visualSettings.completedComponent, false);
+		}
+		
+		// done?
+		if (this.numVUndiscovered == 0) {
+		    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+		    hdxAV.algStat.innerHTML = "Done.  Found " +
+			(this.componentNum+1) + " components";
+		    updateAVControlEntry("visiting", "Last visited #" +
+					 this.lastVisitedVertex + " " +
+					 waypoints[this.lastVisitedVertex].label);
+		    return false;
+		}
+		// set up to start next component
+		else {
+		    this.componentNum++;
 
-	hdxAV.algStat.style.display = "";
-	hdxAV.algStat.innerHTML = "Setting up";
-        hdxAV.algOptions.innerHTML = 'Order: <select id="traversalDiscipline"><option value="BFS">Breadth First</option><option value="DFS">Depth First</option><option value="RFS">Random</option></select>' +
-	    '<br /><input id="findConnected" type="checkbox" name="Find all connected components">&nbsp;Find all connected components' +
-	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0);
-//            '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
-	addEntryToAVControlPanel("visiting", visualSettings.visiting);
-	addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
-	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
-	addEntryToAVControlPanel("discovered", visualSettings.discovered);
-	addEntryToAVControlPanel("discardedOnDiscovery", visualSettings.discardedOnDiscovery);
-	addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
+		    // find an unvisited vertex to start next search
+		    while ((this.startUnvisitedVSearch < waypoints.length) &&
+			   this.visitedV[this.startUnvisitedVSearch]) {
+			this.startUnvisitedVSearch++;
+		    }
+		    if (this.startUnvisitedVSearch == waypoints.length) {
+			console.log("Unexpected termination of multi-component graph traversal.");
+			hdxAV.setStatus(hdxStates.AV_COMPLETE);
+			hdxAV.algStat.innerHTML = "Done with error condition.  Found " +
+			    this.componentNum + " components";
+			return false;
+		    }
+		    else {
+			// ready to start next component
+			this.startingVertex = this.startUnvisitedVSearch;
+			this.startNewComponent();
+		    }
 
-    },
+		}
+		return false;
+	    }
+	    else {
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
+		hdxAV.algStat.innerHTML = "Done.";
+		updateAVControlEntry("visiting", "Last visited #" +
+				     this.lastVisitedVertex + " " +
+				     waypoints[this.lastVisitedVertex].label);
+		return false;
+	    }
+	}
+	return true;
+	},
 
     // clean up traversals UI
     cleanupUI() {
@@ -2000,6 +2035,11 @@ else {
 	    let self = this;
 	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
+	if (hdxAV.delay == 0)
+	{
+		this.runToCompletion();		
+	}
+	
     },
 
     // additional helper functions
@@ -2051,12 +2091,14 @@ else {
 
     // continue next step of Dijkstra's algorithm
     nextStep() {
-
+	var work = false;
 	// if we're paused, do nothing for now
 	if (hdxAV.paused()) {
             return;
 	}
-	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
 	if (hdxAV.delay == -1) {
 		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}	
@@ -2090,7 +2132,30 @@ else {
 	    }
 	}
 
-	// from here, there are three possibilities:
+	this.oneIteration();
+	if(this.moreWork()){
+	let self = this;
+	setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	}
+    },
+	
+	runToCompletion()
+	{
+		while(this.moreWork())
+		{
+			this.oneIteration();
+		}
+		
+	},
+
+	moreWork()
+	{
+		return (!this.work);
+	},
+	
+	oneIteration()
+	{
+			// from here, there are three possibilities:
 	// 1) we have now visited the endingVertex, so we report the path
 	// 2) we have an empty pq, which means no path exists, report that
 	// 3) we need to continue on to the next place out of the pq
@@ -2134,9 +2199,8 @@ else {
 		spIndex--;
 		place = spEntry.fromVIndex;
 	    }
-	    hdxAV.algStat.innerHTML = "Shortest path found!  Entries below are the path.";
-	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
-	    return;
+	   
+	    this.work = true;
 	}
 
 	// case 2: failed search
@@ -2144,7 +2208,7 @@ else {
 
 	    hdxAV.algStat.innerHTML = "No path exists!";
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
-	    return;
+	    this.work = true;
 	}
     
 	// case 3: continue the search at the next place from the pq
@@ -2256,10 +2320,8 @@ else {
 		}
             }
 	}
-	let self = this;
-	setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-    },
 
+	},
     // set up UI for Dijkstra's
     setupUI() {
 	
@@ -2376,19 +2438,13 @@ for (i <- 1 to n–1)
     mapCurrentSegment() {
 
 	let visitingLine = [];
-	visitingLine[0] =
-	    new google.maps.LatLng(waypoints[this.hullI].lat,
-				   waypoints[this.hullI].lon);
-	visitingLine[1] =
-	    new google.maps.LatLng(waypoints[this.hullJ].lat,
-				   waypoints[this.hullJ].lon);	
-	this.currentSegment = new google.maps.Polyline({
-	    map: map,
-	    path: visitingLine,
-	    strokeColor: visualSettings.visiting.color,
-	    strokeOpacity: 0.6,
-	    strokeWeight: 4
-	});
+	visitingLine[0] = [waypoints[this.hullI].lat, waypoints[this.hullI].lon];
+	visitingLine[1] = [waypoints[this.hullJ].lat, waypoints[this.hullJ].lon];
+	this.currentSegment = L.polyline(visitingLine, {
+	    color: visualSettings.visiting.color,
+	    opacity: 0.6,
+	    weight: 4
+	}).addTo(map);
     },
 
     // required start method for brute force convex hull
@@ -2398,7 +2454,7 @@ for (i <- 1 to n–1)
 	// clear connections from the map, as this is a vertex-only
 	// algorithm
 	for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
-	    connections[outerLoop].setMap(null);
+	    connections[outerLoop].remove();
 	}
 
 	// also no need for connections table
@@ -2414,6 +2470,10 @@ for (i <- 1 to n–1)
 	
 	this.hullI = 0;
 	this.hullJ = 1;
+	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
 
 	if (!hdxAV.paused()&& hdxAV.delay != -1) {
 	    this.setupNewLine = true;
@@ -2443,10 +2503,14 @@ for (i <- 1 to n–1)
            return;
 	}
 	
+	if (hdxAV.delay == 0) {
+		this.runToCompletion();
+	}
+	
 	if (hdxAV.delay == -1) {
 		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}
-
+	
 	// depending on the value of setupNewLine, we either draw a
 	// line from the hullI to hullJ to show the next segment to
 	// be considered, or we actually consider that segment (and
@@ -2468,6 +2532,51 @@ for (i <- 1 to n–1)
 	    }
 	}
 	else {
+
+		
+		this.oneIteration();
+	    // more to do?
+	    if (this.moreWork()) {	    
+		if (!hdxAV.paused()&& hdxAV.delay != -1) {
+		    this.setupNewLine = true;
+		    let self = this;
+		    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+		}
+	    }
+	    else {
+		// done
+		// update last points in case they are part of the hull
+		if (this.hull.includes(waypoints.length - 2)) {
+			updateMarkerAndTable(waypoints.length - 2,
+					     this.visualSettings.hullComponent,
+					     20, false);
+		}
+		else {
+		    updateMarkerAndTable(waypoints.length - 2,
+					 visualSettings.discarded,
+					 20, true);
+		}
+		if (this.hull.includes(waypoints.length - 1)) {
+			updateMarkerAndTable(waypoints.length - 1,
+					     this.visualSettings.hullComponent,
+					     20, false);
+		}
+		else {
+		    updateMarkerAndTable(waypoints.length - 1,
+					 visualSettings.discarded,
+					 20, true);
+		}
+		    
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
+		hdxAV.algStat.innerHTML = "Done.  Convex hull contains " +
+		    this.hull.length + " points and segments.";
+	    }
+		}
+	    },
+		
+	oneIteration()
+	{
+		
 	    // was: "innerLoop2()"
 
 	    let pointI = waypoints[this.hullI];
@@ -2526,7 +2635,7 @@ for (i <- 1 to n–1)
 
 	    if (foundProblem) {
 		// remove the candidate segment from the map
-		this.currentSegment.setMap(null);
+		this.currentSegment.remove();
 		hdxAV.algStat.innerHTML = "Discarding segment between # " +
 		    this.hullI + " and #" + this.hullJ;
 	    }
@@ -2543,8 +2652,8 @@ for (i <- 1 to n–1)
 
 		// add to the list of hull segments
 		this.hullSegments.push(this.currentSegment);
-		this.currentSegment.setOptions({
-		    strokeColor: this.visualSettings.hullComponent.color
+		this.currentSegment.setStyle({
+		    color: this.visualSettings.hullComponent.color
 		});
 	    }
 
@@ -2592,18 +2701,20 @@ for (i <- 1 to n–1)
 		// initialize next hullJ loop
 		this.hullJ = this.hullI + 1;
 	    }
+		
+	},	
+	
+	moreWork()
+	{
+		return (this.hullI < waypoints.length - 1)
+	},
 
-	    // more to do?
-	    if (this.hullI < waypoints.length - 1) {	    
-		if (!hdxAV.paused()&& hdxAV.delay != -1) {
-		    this.setupNewLine = true;
-		    let self = this;
-		    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	runToCompletion()
+	{
+		while(this.moreWork())
+		{
+			this.oneIteration();
 		}
-	    }
-	    else {
-		// done
-		// update last points in case they are part of the hull
 		if (this.hull.includes(waypoints.length - 2)) {
 			updateMarkerAndTable(waypoints.length - 2,
 					     this.visualSettings.hullComponent,
@@ -2628,10 +2739,8 @@ for (i <- 1 to n–1)
 		hdxAV.setStatus(hdxStates.AV_COMPLETE);
 		hdxAV.algStat.innerHTML = "Done.  Convex hull contains " +
 		    this.hull.length + " points and segments.";
-	    }
-	}
-    },
-
+	},
+	
     // set up UI for convex hull
     setupUI() {
 	
@@ -2653,7 +2762,7 @@ for (i <- 1 to n–1)
     	removeEntryFromAVControlPanel("hullJ");
     	removeEntryFromAVControlPanel("checkingLine");
 	for (var i = 0; i < this.hullSegments.length; i++) {
-	    this.hullSegments[i].setMap(null);
+	    this.hullSegments[i].remove();
 	}
     }
 };
@@ -4042,13 +4151,13 @@ function algorithmSelected() {
 /* SEEMS TO BE UNUSED
 function selectAlgorithmAndReset() {
     for (var i = 0; i < connections.length; i++) {
-        connections[i].setMap(null);
+        connections[i].remove();
         document.getElementById('connection' + i).style.backgroundColor = "white";
     }
     connections = new Array();
     polypoints = new Array();
     for (var i = 0; i < markers.length; i++) {
-        markers[i].setMap(null);
+        markers[i].remove();
         document.getElementById('waypoint' + i).style.backgroundColor = "white";
     }
     markers = new Array();
