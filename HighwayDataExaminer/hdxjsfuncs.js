@@ -167,7 +167,7 @@ var visualSettings = {
     undiscovered: {
         color: "#202020",
         textColor: "#e0e0e0",
-        scale: 2,
+        scale: 4,
 	name: "undiscovered", 
 	value: 0,
 	weight: 5,
@@ -176,7 +176,7 @@ var visualSettings = {
     visiting: {
         color: "yellow",
         textColor: "black",
-        scale: 6,
+        scale: 8,
 	name: "visiting",
 	value: 0,
 	weight: 8,
@@ -520,6 +520,7 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 
    var options = {
        iconShape: 'circle-dot',
+       iconAnchor: [vs.scale/2, vs.scale/2],
        borderWidth: vs.scale,
        borderColor: vs.color
        };
@@ -2444,7 +2445,8 @@ for (i <- 1 to n–1)
 	    color: visualSettings.visiting.color,
 	    opacity: 0.6,
 	    weight: 4
-	}).addTo(map);
+	});
+	this.currentSegment.addTo(map);
     },
 
     // required start method for brute force convex hull
