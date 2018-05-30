@@ -155,6 +155,59 @@ var hdxAV = {
  * General AV functions
  **********************************************************************/
 // speedChanger dropdown callback
+function clearForm(f){
+    //enables the the start/pause and algorithm selection buttons/drop down
+    document.getElementById("startPauseButton").disabled = false;
+    document.getElementById("AlgorithmSelection").disabled = false;
+    var frm_elements = f.elements;
+    
+    //clears the form
+    for (i = 0; i < frm_elements.length; i++)
+{
+    field_type = frm_elements[i].type.toLowerCase();
+    switch (field_type)
+    {
+    case "text":
+    case "password":
+    case "textarea":
+    case "hidden":
+        frm_elements[i].value = "";
+        break;
+    case "radio":
+    case "checkbox":
+        if (frm_elements[i].checked)
+        {
+            frm_elements[i].checked = false;
+        }
+        break;
+    case "select-one":
+    case "select-multi":
+    
+        frm_elements[i].selectedIndex = -1;
+        break;
+    default:
+        break;
+    }
+}
+    if(hdxAV.status == hdxStates.AV_COMPLETE || hdxAV.paused() == true){
+    
+    //clearrs the ui
+     hdxAV.setStatus(hdxStates.GRAPH_LOADED);
+     hdxVertexExtremesSearchAV.cleanupUI();
+     hdxBFConvexHullAV.cleanupUI();
+     hdxDijkstraAV.cleanupUI();
+     hdxGraphTraversalsAV.cleanupUI();
+     hdxEdgeExtremesSearchAV.cleanupUI();
+     document.getElementById("connection").style.display = "table-row";
+        //resets the table of waypoints
+     for (var i = 0; i < waypoints.length; i++) {
+            var row = document.getElementById("waypoint"+waypointNum);
+            updateMarkerAndTable(i, visualSettings.reset, 0, false);
+    }
+        
+    }
+    
+}
 function speedChanged() {
 
     var speedChanger = document.getElementById("speedChanger");
@@ -164,6 +217,15 @@ function speedChanged() {
 // algorithm visualization color settings and other parameters
 var visualSettings = {
     // first, some used by many algorithms
+    reset: {
+      color: "#ffffff",
+        textColor: "black",
+        scale: 2,
+        name: "Vertices",
+        value: 0,
+        weight: 5,
+        opacity: .6
+    },
     undiscovered: {
         color: "#202020",
         textColor: "#e0e0e0",
@@ -533,6 +595,9 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
     if (hideTableLine) {
         row.style.display = "none";
     }
+    else if(hideTableLine == false){
+       row.style.display = "table-row";
+   }
 
     // remaining code belongs elsewhere or is now obsolete...
     /*
