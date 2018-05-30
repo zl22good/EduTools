@@ -3252,7 +3252,7 @@ function readServer(event) {
  		}
  	    }
  	};
- 	xmlhttp.open("GET", "http://courses.teresco.org/metal/graphs/"+value, true);
+ 	xmlhttp.open("GET", "http://courses.teresco.org/metal/graphdata/"+value, true);
  	xmlhttp.send();	
     }
 }
