@@ -278,7 +278,7 @@ padding:0px;
   echo "<script src=\"".$tmliburl."tmjsfuncs.js\" type=\"text/javascript\"></script>\n";
 ?>
 <script src="hdxjsfuncs.js" type="text/javascript"></script>
-<title>Highway Data Examiner</title>
+<title>Highway Data Examiner Is Great</title>
 </head>
 <body onload="loadmap(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
 <p class="menubar">
