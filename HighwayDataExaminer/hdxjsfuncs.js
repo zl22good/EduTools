@@ -6,8 +6,8 @@
 //
 // Primary author: Jim Teresco, Siena College, The College of Saint Rose
 //
-// Additional authors: Razie Fathi, Arjol Pengu, Maria Bamundo, Clarice Tarbay
-
+// Additional authors: Razie Fathi, Arjol Pengu, Maria Bamundo, Clarice Tarbay,
+// Michael Dagostino, Abdul Samad, Eric Sauer
 
 // some globals used here (map, waypoints, markers, etc) come from
 // tmjsfuncs.js
