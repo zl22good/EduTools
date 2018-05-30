@@ -381,7 +381,7 @@ var ecolor, etext, edge, edgew;
 
 function hoverV(i, bool) {
     if ((bool && hdxAV.paused()) || !bool) {
-	vicon = markers[i].getIcon();
+	vicon = markers[i].options.icon;
 	vcolor = document.getElementById("waypoint"+i).style.backgroundColor;
 	vtext = document.getElementById("waypoint"+i).style.color;
 	updateMarkerAndTable(i, visualSettings.hoverV, 0, false);
