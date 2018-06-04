@@ -320,6 +320,7 @@ padding:0px;
   No data loaded....
 </div>
 <div id="AlgorithmVisualization" position: absolute; z-index:9999;>
+    <form name="algVis" action="#">
   <table class="gratable">
     <thead>
       <tr><th>Algorithm Vizualization Control Panel</th></tr>
@@ -354,11 +355,13 @@ padding:0px;
       <tr><td id="algorithmStatus"></td></tr>
       </tbody>
       </table>
+        <input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
+    </form>
     </div>
 
     <div id="controlbox" style="z-index:2000;">
         <select id="showHideMenu" onchange="toggleTable();">
-            <option value="maponly">Map Only</option>
+           <!-- <option value="maponly">Map Only</option>-->
             <option value="options" >Show/Load Map Options</option>
             <option value="pointbox">Show Highway Data</option>
             <option value= "AlgorithmVisualization" selected="selected">Show Algorithm Visualization</option>
