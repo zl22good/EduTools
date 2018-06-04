@@ -2097,7 +2097,9 @@ else {
     
     // array of places to which we have found shortest paths
     shortestPaths: [],
-    
+	
+	//to help us stop the function
+    work: false,
     // where do we start and end?
     startingVertex: -1,
     endingVertex: -1,
@@ -2266,21 +2268,25 @@ else {
 	if (hdxAV.delay == -1) {
 		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}	
+	
+	
+	
 	this.oneIteration();
 	if(this.moreWork)
 	{
 		let self = this;
 		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
+	
     },
 	
 	runToCompletion()
 	{
 		
-		do
+		while(this.moreWork())//do
 		{
 			this.oneIteration();
-		}while(this.moreWork());		
+		}//while(this.moreWork());		
 	},
 
 	moreWork()
@@ -2290,6 +2296,7 @@ else {
 	
 	oneIteration()
 	{
+		
 		// maybe we have a last visited vertex to update
 	if (this.lastIteration.vIndex != -1) {
             if (this.lastIteration.vIndex == this.startingVertex) {
@@ -2325,6 +2332,8 @@ else {
 	// 3) we need to continue on to the next place out of the pq
 
 	// case 1: we have a path
+	
+	
 	if (this.visitedVertices[this.endingVertex]) {
 
 	    // we're done!
@@ -2367,6 +2376,7 @@ else {
 	    hdxAV.algStat.innerHTML = "Shortest path found!  Entries below are the path.";
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    this.work = true;
+		return;
 	}
 
 	// case 2: failed search
@@ -2375,6 +2385,7 @@ else {
 	    hdxAV.algStat.innerHTML = "No path exists!";
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    this.work = true;
+		return;
 	}
     
 	// case 3: continue the search at the next place from the pq
@@ -2490,7 +2501,7 @@ else {
 	
     // set up UI for Dijkstra's
     setupUI() {
-	var work = false;
+	
 	hdxAV.algStat.style.display = "";
 	hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.algOptions.innerHTML =
@@ -2843,28 +2854,7 @@ for (i <- 1 to n–1)
 	    }
 	    else {
 		// done
-		// update last points in case they are part of the hull
-		if (this.hull.includes(waypoints.length - 2)) {
-			updateMarkerAndTable(waypoints.length - 2,
-					     this.visualSettings.hullComponent,
-					     20, false);
-		}
-		else {
-		    updateMarkerAndTable(waypoints.length - 2,
-					 visualSettings.discarded,
-					 20, true);
-		}
-		if (this.hull.includes(waypoints.length - 1)) {
-			updateMarkerAndTable(waypoints.length - 1,
-					     this.visualSettings.hullComponent,
-					     20, false);
-		}
-		else {
-		    updateMarkerAndTable(waypoints.length - 1,
-					 visualSettings.discarded,
-					 20, true);
-		}
-		    
+		// update last points in case they are part of the hull		    
 		this.finishUpdates();
 	    }
 		}
@@ -2882,6 +2872,12 @@ for (i <- 1 to n–1)
 		{
 			this.oneIteration();
 		}
+				    
+		this.finishUpdates();
+	},
+	
+	finishUpdates()
+	{
 		if (this.hull.includes(waypoints.length - 2)) {
 			updateMarkerAndTable(waypoints.length - 2,
 					     this.visualSettings.hullComponent,
@@ -2902,12 +2898,6 @@ for (i <- 1 to n–1)
 					 visualSettings.discarded,
 					 20, true);
 		}
-		    
-		this.finishUpdates();
-	},
-	
-	finishUpdates()
-	{
 		hdxAV.setStatus(hdxStates.AV_COMPLETE);
 		hdxAV.algStat.innerHTML = "Done.  Convex hull contains " +
 		    this.hull.length + " points and segments.";
