@@ -6,8 +6,8 @@
 //
 // Primary author: Jim Teresco, Siena College, The College of Saint Rose
 //
-// Additional authors: Razie Fathi, Arjol Pengu, Maria Bamundo, Clarice Tarbay
-
+// Additional authors: Razie Fathi, Arjol Pengu, Maria Bamundo, Clarice Tarbay,
+// Michael Dagostino, Abdul Samad, Eric Sauer
 
 // some globals used here (map, waypoints, markers, etc) come from
 // tmjsfuncs.js
@@ -155,6 +155,60 @@ var hdxAV = {
  * General AV functions
  **********************************************************************/
 // speedChanger dropdown callback
+function clearForm(f){
+    //enables the the start/pause and algorithm selection buttons/drop down
+    document.getElementById("startPauseButton").disabled = false;
+    document.getElementById("AlgorithmSelection").disabled = false;
+    var frm_elements = f.elements;
+    
+    //clears the form
+    for (i = 0; i < frm_elements.length; i++)
+{
+    field_type = frm_elements[i].type.toLowerCase();
+    switch (field_type)
+    {
+    case "text":
+    case "password":
+    case "textarea":
+    case "hidden":
+        frm_elements[i].value = "";
+        break;
+    case "radio":
+    case "checkbox":
+        if (frm_elements[i].checked)
+        {
+            frm_elements[i].checked = false;
+        }
+        break;
+    case "select-one":
+    case "select-multi":
+    
+        frm_elements[i].selectedIndex = -1;
+        break;
+    default:
+        break;
+    }
+}
+    if(hdxAV.status == hdxStates.AV_COMPLETE || hdxAV.paused() == true){
+    
+    //clearrs the ui
+     hdxAV.setStatus(hdxStates.GRAPH_LOADED);
+     hdxVertexExtremesSearchAV.cleanupUI();
+     hdxBFConvexHullAV.cleanupUI();
+     hdxDijkstraAV.cleanupUI();
+     hdxGraphTraversalsAV.cleanupUI();
+     hdxEdgeExtremesSearchAV.cleanupUI();
+     document.getElementById("connection").style.display = "table-row";
+        //resets the table of waypoints
+     for (var i = 0; i < waypoints.length; i++) {
+            var row = document.getElementById("waypoint"+i);
+            markers[i].addTo(map);
+            updateMarkerAndTable(i, visualSettings.reset, 0, false);
+    }
+        
+    }
+    
+}
 function speedChanged() {
 
     var speedChanger = document.getElementById("speedChanger");
@@ -164,10 +218,19 @@ function speedChanged() {
 // algorithm visualization color settings and other parameters
 var visualSettings = {
     // first, some used by many algorithms
+    reset: {
+      color: "#ffffff",
+        textColor: "black",
+        scale: 2,
+        name: "Vertices",
+        value: 0,
+        weight: 5,
+        opacity: .6
+    },
     undiscovered: {
         color: "#202020",
         textColor: "#e0e0e0",
-        scale: 2,
+        scale: 4,
 	name: "undiscovered", 
 	value: 0,
 	weight: 5,
@@ -176,7 +239,7 @@ var visualSettings = {
     visiting: {
         color: "yellow",
         textColor: "black",
-        scale: 6,
+        scale: 8,
 	name: "visiting",
 	value: 0,
 	weight: 8,
@@ -520,6 +583,7 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 
    var options = {
        iconShape: 'circle-dot',
+       iconAnchor: [vs.scale/2, vs.scale/2],
        borderWidth: vs.scale,
        borderColor: vs.color
        };
@@ -533,6 +597,9 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
     if (hideTableLine) {
         row.style.display = "none";
     }
+    else if(hideTableLine == false){
+       row.style.display = "table-row";
+   }
 
     // remaining code belongs elsewhere or is now obsolete...
     /*
@@ -2181,7 +2248,9 @@ else {
 	
 	this.foundTBody.appendChild(newtr);
 	this.shortestPaths.push(v);
-	document.getElementById("tableSize").innerHTML = this.shortestPaths.length + " (number of paths found so far)";
+        if(document.getElementById("tableSize") == null){
+	document.getElementById("foundLabel").innerHTML = this.shortestPaths.length + " (number of paths found so far)";
+        }
     },
 
     // continue next step of Dijkstra's algorithm
@@ -2264,6 +2333,7 @@ else {
 	    updateAVControlVisualSettings("found",
 					  this.visualSettings.shortestPath);
 	    this.foundLabel.innerHTML = "Shortest path found:";
+        hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    
 	    // build the shortest path from end to start, showing
 	    // each on the map, in the tables
@@ -2449,6 +2519,7 @@ else {
     	removeEntryFromAVControlPanel("undiscovered");
     	removeEntryFromAVControlPanel("discovered");
 	removeEntryFromAVControlPanel("found");
+        
     }
 };
 
@@ -2542,7 +2613,8 @@ for (i <- 1 to n–1)
 	    color: visualSettings.visiting.color,
 	    opacity: 0.6,
 	    weight: 4
-	}).addTo(map);
+	});
+	this.currentSegment.addTo(map);
     },
 
     // required start method for brute force convex hull
@@ -3353,7 +3425,7 @@ function readServer(event) {
  		}
  	    }
  	};
- 	xmlhttp.open("GET", "http://courses.teresco.org/metal/graphs/"+value, true);
+ 	xmlhttp.open("GET", "http://courses.teresco.org/metal/graphdata/"+value, true);
  	xmlhttp.send();	
     }
 }
