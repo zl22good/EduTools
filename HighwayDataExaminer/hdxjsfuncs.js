@@ -2197,12 +2197,14 @@ else {
 	if (hdxAV.delay == -1) {
 		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}	
+	
 	this.oneIteration();
 	if(this.moreWork)
 	{
 		let self = this;
 		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
+	
     },
 	
 	runToCompletion()
