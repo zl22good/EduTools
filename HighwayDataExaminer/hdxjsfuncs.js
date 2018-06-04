@@ -2097,7 +2097,9 @@ else {
     
     // array of places to which we have found shortest paths
     shortestPaths: [],
-    
+	
+	//to help us stop the function
+    work: false,
     // where do we start and end?
     startingVertex: -1,
     endingVertex: -1,
@@ -2266,31 +2268,8 @@ else {
 	if (hdxAV.delay == -1) {
 		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}	
-	this.oneIteration();
-	if(this.moreWork)
-	{
-		let self = this;
-		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-	}
-    },
 	
-	runToCompletion()
-	{
-		
-		do
-		{
-			this.oneIteration();
-		}while(this.moreWork());		
-	},
-
-	moreWork()
-	{
-		return (!this.work);
-	},
-	
-	oneIteration()
-	{
-		// maybe we have a last visited vertex to update
+	// maybe we have a last visited vertex to update
 	if (this.lastIteration.vIndex != -1) {
             if (this.lastIteration.vIndex == this.startingVertex) {
 		// always leave the starting vertex colored appropriately
@@ -2319,6 +2298,33 @@ else {
 	    }
 	}
 
+	
+	this.oneIteration();
+	if(this.moreWork)
+	{
+		let self = this;
+		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	}
+	
+    },
+	
+	runToCompletion()
+	{
+		
+		while(this.moreWork())//do
+		{
+			this.oneIteration();
+		}//while(this.moreWork());		
+	},
+
+	moreWork()
+	{
+		return (!this.work);
+	},
+	
+	oneIteration()
+	{
+		
 	// from here, there are three possibilities:
 	// 1) we have now visited the endingVertex, so we report the path
 	// 2) we have an empty pq, which means no path exists, report that
@@ -2367,6 +2373,7 @@ else {
 	    hdxAV.algStat.innerHTML = "Shortest path found!  Entries below are the path.";
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    this.work = true;
+		return;
 	}
 
 	// case 2: failed search
@@ -2375,6 +2382,7 @@ else {
 	    hdxAV.algStat.innerHTML = "No path exists!";
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    this.work = true;
+		return;
 	}
     
 	// case 3: continue the search at the next place from the pq
@@ -2490,7 +2498,7 @@ else {
 	
     // set up UI for Dijkstra's
     setupUI() {
-	var work = false;
+	
 	hdxAV.algStat.style.display = "";
 	hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.algOptions.innerHTML =
