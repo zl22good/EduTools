@@ -2269,7 +2269,35 @@ else {
 		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}	
 	
-	// maybe we have a last visited vertex to update
+	
+	
+	this.oneIteration();
+	if(this.moreWork)
+	{
+		let self = this;
+		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	}
+	
+    },
+	
+	runToCompletion()
+	{
+		
+		while(this.moreWork())//do
+		{
+			this.oneIteration();
+		}//while(this.moreWork());		
+	},
+
+	moreWork()
+	{
+		return (!this.work);
+	},
+	
+	oneIteration()
+	{
+		
+		// maybe we have a last visited vertex to update
 	if (this.lastIteration.vIndex != -1) {
             if (this.lastIteration.vIndex == this.startingVertex) {
 		// always leave the starting vertex colored appropriately
@@ -2298,39 +2326,14 @@ else {
 	    }
 	}
 
-	
-	this.oneIteration();
-	if(this.moreWork)
-	{
-		let self = this;
-		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-	}
-	
-    },
-	
-	runToCompletion()
-	{
-		
-		while(this.moreWork())//do
-		{
-			this.oneIteration();
-		}//while(this.moreWork());		
-	},
-
-	moreWork()
-	{
-		return (!this.work);
-	},
-	
-	oneIteration()
-	{
-		
 	// from here, there are three possibilities:
 	// 1) we have now visited the endingVertex, so we report the path
 	// 2) we have an empty pq, which means no path exists, report that
 	// 3) we need to continue on to the next place out of the pq
 
 	// case 1: we have a path
+	
+	
 	if (this.visitedVertices[this.endingVertex]) {
 
 	    // we're done!
@@ -2851,28 +2854,7 @@ for (i <- 1 to n–1)
 	    }
 	    else {
 		// done
-		// update last points in case they are part of the hull
-		if (this.hull.includes(waypoints.length - 2)) {
-			updateMarkerAndTable(waypoints.length - 2,
-					     this.visualSettings.hullComponent,
-					     20, false);
-		}
-		else {
-		    updateMarkerAndTable(waypoints.length - 2,
-					 visualSettings.discarded,
-					 20, true);
-		}
-		if (this.hull.includes(waypoints.length - 1)) {
-			updateMarkerAndTable(waypoints.length - 1,
-					     this.visualSettings.hullComponent,
-					     20, false);
-		}
-		else {
-		    updateMarkerAndTable(waypoints.length - 1,
-					 visualSettings.discarded,
-					 20, true);
-		}
-		    
+		// update last points in case they are part of the hull		    
 		this.finishUpdates();
 	    }
 		}
@@ -2890,6 +2872,12 @@ for (i <- 1 to n–1)
 		{
 			this.oneIteration();
 		}
+				    
+		this.finishUpdates();
+	},
+	
+	finishUpdates()
+	{
 		if (this.hull.includes(waypoints.length - 2)) {
 			updateMarkerAndTable(waypoints.length - 2,
 					     this.visualSettings.hullComponent,
@@ -2910,12 +2898,6 @@ for (i <- 1 to n–1)
 					 visualSettings.discarded,
 					 20, true);
 		}
-		    
-		this.finishUpdates();
-	},
-	
-	finishUpdates()
-	{
 		hdxAV.setStatus(hdxStates.AV_COMPLETE);
 		hdxAV.algStat.innerHTML = "Done.  Convex hull contains " +
 		    this.hull.length + " points and segments.";
