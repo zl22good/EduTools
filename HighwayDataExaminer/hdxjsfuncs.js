@@ -201,7 +201,8 @@ function clearForm(f){
      document.getElementById("connection").style.display = "table-row";
         //resets the table of waypoints
      for (var i = 0; i < waypoints.length; i++) {
-            var row = document.getElementById("waypoint"+waypointNum);
+            var row = document.getElementById("waypoint"+i);
+            markers[i].addTo(map);
             updateMarkerAndTable(i, visualSettings.reset, 0, false);
     }
         
@@ -2151,7 +2152,9 @@ else {
 	
 	this.foundTBody.appendChild(newtr);
 	this.shortestPaths.push(v);
-	document.getElementById("tableSize").innerHTML = this.shortestPaths.length + " (number of paths found so far)";
+        if(document.getElementById("tableSize") == null){
+	document.getElementById("foundLabel").innerHTML = this.shortestPaths.length + " (number of paths found so far)";
+        }
     },
 
     // continue next step of Dijkstra's algorithm
@@ -2232,6 +2235,7 @@ else {
 	    updateAVControlVisualSettings("found",
 					  this.visualSettings.shortestPath);
 	    this.foundLabel.innerHTML = "Shortest path found:";
+        hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    
 	    // build the shortest path from end to start, showing
 	    // each on the map, in the tables
@@ -2416,6 +2420,7 @@ else {
     	removeEntryFromAVControlPanel("undiscovered");
     	removeEntryFromAVControlPanel("discovered");
 	removeEntryFromAVControlPanel("found");
+        
     }
 };
 
