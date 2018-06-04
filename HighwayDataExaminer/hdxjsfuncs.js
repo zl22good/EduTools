@@ -2854,28 +2854,7 @@ for (i <- 1 to n–1)
 	    }
 	    else {
 		// done
-		// update last points in case they are part of the hull
-		if (this.hull.includes(waypoints.length - 2)) {
-			updateMarkerAndTable(waypoints.length - 2,
-					     this.visualSettings.hullComponent,
-					     20, false);
-		}
-		else {
-		    updateMarkerAndTable(waypoints.length - 2,
-					 visualSettings.discarded,
-					 20, true);
-		}
-		if (this.hull.includes(waypoints.length - 1)) {
-			updateMarkerAndTable(waypoints.length - 1,
-					     this.visualSettings.hullComponent,
-					     20, false);
-		}
-		else {
-		    updateMarkerAndTable(waypoints.length - 1,
-					 visualSettings.discarded,
-					 20, true);
-		}
-		    
+		// update last points in case they are part of the hull		    
 		this.finishUpdates();
 	    }
 		}
@@ -2893,6 +2872,12 @@ for (i <- 1 to n–1)
 		{
 			this.oneIteration();
 		}
+				    
+		this.finishUpdates();
+	},
+	
+	finishUpdates()
+	{
 		if (this.hull.includes(waypoints.length - 2)) {
 			updateMarkerAndTable(waypoints.length - 2,
 					     this.visualSettings.hullComponent,
@@ -2913,12 +2898,6 @@ for (i <- 1 to n–1)
 					 visualSettings.discarded,
 					 20, true);
 		}
-		    
-		this.finishUpdates();
-	},
-	
-	finishUpdates()
-	{
 		hdxAV.setStatus(hdxStates.AV_COMPLETE);
 		hdxAV.algStat.innerHTML = "Done.  Convex hull contains " +
 		    this.hull.length + " points and segments.";
