@@ -848,15 +848,18 @@ for (checkIndex <- 1 to |V|-1) {
             setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
 	else {
-	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+	    	this.finishUpdates();
+	}
+    },
+	finishUpdates()
+	{
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
             hdxAV.algStat.innerHTML =
 		"Done! Visited " + markers.length + " waypoints.";
 	    updateAVControlEntry("undiscovered", "0 vertices not yet visited");
 	    updateAVControlEntry("visiting", "");
-	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");	
-	}
-    },
-	
+	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");
+	},
 	oneIteration()
 	{
 			// keep track of points that were leaders but got beaten to be
@@ -964,14 +967,10 @@ for (checkIndex <- 1 to |V|-1) {
 		while (this.moreWork()) {
 			this.oneIteration();
 			}
-		hdxAV.setStatus(hdxStates.AV_COMPLETE);
-            hdxAV.algStat.innerHTML =
-		"Done! Visited " + markers.length + " waypoints.";
-	    updateAVControlEntry("undiscovered", "0 vertices not yet visited");
-	    updateAVControlEntry("visiting", "");
-	    updateAVControlEntry("discarded", this.discarded + " vertices discarded");
+		this.finishUpdates();
+		
 	},
-
+	
 	moreWork()
 	{
 		return (this.nextToCheck < markers.length);
@@ -1177,15 +1176,19 @@ for (checkIndex <- 1 to |E|-1) {
             setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
 	else {
-	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+	    this.finishUpdates();
+	}
+    },
+	
+	finishUpdates()
+	{
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
             hdxAV.algStat.innerHTML =
 		"Done! Visited " + graphEdges.length + " edges.";
 	    updateAVControlEntry("undiscovered", "0 edges not yet visited");
 	    updateAVControlEntry("visiting", "");
 	    updateAVControlEntry("discarded", this.discarded + " edges discarded");
-	}
-    },
-	
+	},
 	oneIteration()
 	{
 
@@ -1272,12 +1275,7 @@ for (checkIndex <- 1 to |E|-1) {
 		while(this.moreWork()) {
 			this.oneIteration();	
 		}
-		hdxAV.setStatus(hdxStates.AV_COMPLETE);
-            hdxAV.algStat.innerHTML =
-		"Done! Visited " + graphEdges.length + " edges.";
-	    updateAVControlEntry("undiscovered", "0 edges not yet visited");
-	    updateAVControlEntry("visiting", "");
-	    updateAVControlEntry("discarded", this.discarded + " edges discarded");
+		this.finishUpdates();
 	},
 	
     // set up UI for the start of edge search
@@ -1617,28 +1615,56 @@ while LDV nonempty {
 	}
 	
 	this.oneIteration();
-	if (this.moreWork())
-	{
-		// we changed some variables, so update the AV control entries
-	
-	
+	this.updateControlEntries();
 	let self = this;
 	setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-	
-	}
-	this.updateControlEntries();
     },
 	
 	runToCompletion()
 	{
 		while(this.moreWork())
 		{
+			// the last visited vertex is still drawn as the one being visited,
+	// so first recolor it as appropriate, if it exists
+	if (this.lastVisitedVertex != -1) {
+            if (this.lastVisitedVertex == this.startingVertex) {
+		// always leave the starting vertex colored appropriately
+		// and in the table
+		updateMarkerAndTable(this.startingVertex,
+				     visualSettings.startVertex,
+				     10, false);
+		this.componentVList.push(this.startingVertex);
+            }
+	    else if (!this.ldv.containsFieldMatching("vIndex", this.lastVisitedVertex)) {
+		// not in the list, this vertex gets marked as in the
+		// spanning tree
+		updateMarkerAndTable(this.lastVisitedVertex,
+				     visualSettings.spanningTree,
+				     1, false);
+            }
+	    else {
+		// still in the list, color with the "discovered" style
+		updateMarkerAndTable(this.lastVisitedVertex,
+				     visualSettings.discovered,
+				     5, false);
+            }
+	}
 			this.oneIteration();
 		}
-		//while(this.moreWork());
+		
 		this.updateControlEntries();
+		this.finishUpdates();
 	},
 
+	finishUpdates()
+	{
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
+		    hdxAV.algStat.innerHTML = "Done.  Found " +
+			(this.componentNum+1) + " components";
+		    updateAVControlEntry("visiting", "Last visited #" +
+					 this.lastVisitedVertex + " " +
+					 waypoints[this.lastVisitedVertex].label);
+	},
     // set up UI components for traversals
     setupUI() {
 
@@ -1659,6 +1685,72 @@ while LDV nonempty {
 	
 	oneIteration()
 	{
+		// check if done with current component
+	if (this.ldv.isEmpty()) {
+
+	    // if we are finding all components, either move on to
+	    // next component or be done
+	    if (this.findingAllComponents) {
+		// recolor all vertices and edges in the most recent
+		// component with a new color
+		if (this.componentNum < this.componentColors.length) {
+		    this.visualSettings.completedComponent.color =
+			this.componentColors[this.componentNum];
+		}
+		else {
+		    // credit https://www.paulirish.com/2009/random-hex-color-code-snippets/
+		    this.visualSettings.completedComponent.color =
+			'#'+Math.floor(Math.random()*16777215).toString(16);
+		}
+		for (var i = 0; i < this.componentVList.length; i++) {
+		    updateMarkerAndTable(this.componentVList[i],
+					 this.visualSettings.completedComponent, false);
+		}
+		for (var i = 0; i < this.componentEList.length; i++) {
+		    updatePolylineAndTable(this.componentEList[i],
+					   this.visualSettings.completedComponent, false);
+		}
+		
+		// done?
+		if (this.numVUndiscovered == 0) {
+		    this.finshUpdates();
+		    return;
+		}
+		// set up to start next component
+		else {
+		    this.componentNum++;
+
+		    // find an unvisited vertex to start next search
+		    while ((this.startUnvisitedVSearch < waypoints.length) &&
+			   this.visitedV[this.startUnvisitedVSearch]) {
+			this.startUnvisitedVSearch++;
+		    }
+		    if (this.startUnvisitedVSearch == waypoints.length) {
+			console.log("Unexpected termination of multi-component graph traversal.");
+			hdxAV.setStatus(hdxStates.AV_COMPLETE);
+			hdxAV.algStat.innerHTML = "Done with error condition.  Found " +
+			    this.componentNum + " components";
+			return;
+		    }
+		    else {
+			// ready to start next component
+			this.startingVertex = this.startUnvisitedVSearch;
+			this.startNewComponent();
+		    }
+
+		}
+		return;
+	    }
+	    else {
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
+		hdxAV.algStat.innerHTML = "Done.";
+		updateAVControlEntry("visiting", "Last visited #" +
+				     this.lastVisitedVertex + " " +
+				     waypoints[this.lastVisitedVertex].label);
+		return;
+	    }
+	}
+	
 		// LDV not empty, so select the next vertex to visit and remove it
 	let nextToVisit = this.ldv.remove();
 	this.lastVisitedVertex = nextToVisit.vIndex;
@@ -1779,6 +1871,16 @@ while LDV nonempty {
 	}
 	},
 	
+	finishUpdates()
+	{
+		hdxAV.setStatus(hdxStates.AV_COMPLETE);
+		    hdxAV.algStat.innerHTML = "Done.  Found " +
+			(this.componentNum+1) + " components";
+		    updateAVControlEntry("visiting", "Last visited #" +
+					 this.lastVisitedVertex + " " +
+					 waypoints[this.lastVisitedVertex].label);
+	},
+	
 	moreWork()
 	{
 		if (this.ldv.isEmpty()) {
@@ -1808,12 +1910,7 @@ while LDV nonempty {
 		
 		// done?
 		if (this.numVUndiscovered == 0) {
-		    hdxAV.setStatus(hdxStates.AV_COMPLETE);
-		    hdxAV.algStat.innerHTML = "Done.  Found " +
-			(this.componentNum+1) + " components";
-		    updateAVControlEntry("visiting", "Last visited #" +
-					 this.lastVisitedVertex + " " +
-					 waypoints[this.lastVisitedVertex].label);
+		    this.finishUpdates();
 		    return false;
 		}
 		// set up to start next component
@@ -1961,7 +2058,6 @@ else {
 
     // required algorithm start method for Dijkstra's
     start() {
-
 	// vertex indices for the start and end of the traversal
 	this.startingVertex = document.getElementById("startPoint").value;
 	this.endingVertex = document.getElementById("endPoint").value;
@@ -2040,7 +2136,6 @@ else {
 	{
 		this.runToCompletion();		
 	}
-	
     },
 
     // additional helper functions
@@ -2092,7 +2187,7 @@ else {
 
     // continue next step of Dijkstra's algorithm
     nextStep() {
-	var work = false;
+	
 	// if we're paused, do nothing for now
 	if (hdxAV.paused()) {
             return;
@@ -2103,8 +2198,31 @@ else {
 	if (hdxAV.delay == -1) {
 		hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}	
+	this.oneIteration();
+	if(this.moreWork)
+	{
+		let self = this;
+		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	}
+    },
 	
-	// maybe we have a last visited vertex to update
+	runToCompletion()
+	{
+		
+		do
+		{
+			this.oneIteration();
+		}while(this.moreWork());		
+	},
+
+	moreWork()
+	{
+		return (!this.work);
+	},
+	
+	oneIteration()
+	{
+		// maybe we have a last visited vertex to update
 	if (this.lastIteration.vIndex != -1) {
             if (this.lastIteration.vIndex == this.startingVertex) {
 		// always leave the starting vertex colored appropriately
@@ -2133,30 +2251,7 @@ else {
 	    }
 	}
 
-	this.oneIteration();
-	if(this.moreWork()){
-	let self = this;
-	setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-	}
-    },
-	
-	runToCompletion()
-	{
-		while(this.moreWork())
-		{
-			this.oneIteration();
-		}
-		
-	},
-
-	moreWork()
-	{
-		return (!this.work);
-	},
-	
-	oneIteration()
-	{
-			// from here, there are three possibilities:
+	// from here, there are three possibilities:
 	// 1) we have now visited the endingVertex, so we report the path
 	// 2) we have an empty pq, which means no path exists, report that
 	// 3) we need to continue on to the next place out of the pq
@@ -2200,7 +2295,8 @@ else {
 		spIndex--;
 		place = spEntry.fromVIndex;
 	    }
-	   
+	    hdxAV.algStat.innerHTML = "Shortest path found!  Entries below are the path.";
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    this.work = true;
 	}
 
@@ -2321,11 +2417,11 @@ else {
 		}
             }
 	}
-
 	},
+	
     // set up UI for Dijkstra's
     setupUI() {
-	
+	var work = false;
 	hdxAV.algStat.style.display = "";
 	hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.algOptions.innerHTML =
@@ -2472,13 +2568,12 @@ for (i <- 1 to n–1)
 	
 	this.hullI = 0;
 	this.hullJ = 1;
-	
+	this.setupNewLine = true;
 	if (hdxAV.delay == 0) {
 		this.runToCompletion();
 	}
-
+	
 	if (!hdxAV.paused()&& hdxAV.delay != -1) {
-	    this.setupNewLine = true;
 	    let self = this;
 	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
 	}
@@ -2519,7 +2614,19 @@ for (i <- 1 to n–1)
 	// either remove it or add it to the hull, then advance to
 	// the next hullI, hullJ
 	
-	if (this.setupNewLine) {
+	this.oneIteration();
+	if(this.moreWork())
+	{
+		let self = this;
+		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
+	}
+	
+	},
+		
+	oneIteration()
+	{
+		
+		if (this.setupNewLine) {
 	    // formerly "innerLoopConvexHull()"
 	    
 	    this.updateIJDisplayElements();
@@ -2527,58 +2634,12 @@ for (i <- 1 to n–1)
 	    // draw the line
 	    this.mapCurrentSegment();
 	    
-	    if (!hdxAV.paused() && hdxAV.delay != -1) {
+	    //if (!hdxAV.paused()){ //&& hdxAV.delay != -1) {
 		this.setupNewLine = false;
-		let self = this;
-		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-	    }
+	    //}
 	}
 	else {
 
-		
-		this.oneIteration();
-	    // more to do?
-	    if (this.moreWork()) {	    
-		if (!hdxAV.paused()&& hdxAV.delay != -1) {
-		    this.setupNewLine = true;
-		    let self = this;
-		    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-		}
-	    }
-	    else {
-		// done
-		// update last points in case they are part of the hull
-		if (this.hull.includes(waypoints.length - 2)) {
-			updateMarkerAndTable(waypoints.length - 2,
-					     this.visualSettings.hullComponent,
-					     20, false);
-		}
-		else {
-		    updateMarkerAndTable(waypoints.length - 2,
-					 visualSettings.discarded,
-					 20, true);
-		}
-		if (this.hull.includes(waypoints.length - 1)) {
-			updateMarkerAndTable(waypoints.length - 1,
-					     this.visualSettings.hullComponent,
-					     20, false);
-		}
-		else {
-		    updateMarkerAndTable(waypoints.length - 1,
-					 visualSettings.discarded,
-					 20, true);
-		}
-		    
-		hdxAV.setStatus(hdxStates.AV_COMPLETE);
-		hdxAV.algStat.innerHTML = "Done.  Convex hull contains " +
-		    this.hull.length + " points and segments.";
-	    }
-		}
-	    },
-		
-	oneIteration()
-	{
-		
 	    // was: "innerLoop2()"
 
 	    let pointI = waypoints[this.hullI];
@@ -2704,6 +2765,40 @@ for (i <- 1 to n–1)
 		this.hullJ = this.hullI + 1;
 	    }
 		
+	    // more to do?
+	    if (this.moreWork()) {	    
+		//if (!hdxAV.paused()&& hdxAV.delay != -1) {
+		    this.setupNewLine = true;
+		//}
+	    }
+	    else {
+		// done
+		// update last points in case they are part of the hull
+		if (this.hull.includes(waypoints.length - 2)) {
+			updateMarkerAndTable(waypoints.length - 2,
+					     this.visualSettings.hullComponent,
+					     20, false);
+		}
+		else {
+		    updateMarkerAndTable(waypoints.length - 2,
+					 visualSettings.discarded,
+					 20, true);
+		}
+		if (this.hull.includes(waypoints.length - 1)) {
+			updateMarkerAndTable(waypoints.length - 1,
+					     this.visualSettings.hullComponent,
+					     20, false);
+		}
+		else {
+		    updateMarkerAndTable(waypoints.length - 1,
+					 visualSettings.discarded,
+					 20, true);
+		}
+		    
+		this.finishUpdates();
+	    }
+		}
+		
 	},	
 	
 	moreWork()
@@ -2738,11 +2833,15 @@ for (i <- 1 to n–1)
 					 20, true);
 		}
 		    
+		this.finishUpdates();
+	},
+	
+	finishUpdates()
+	{
 		hdxAV.setStatus(hdxStates.AV_COMPLETE);
 		hdxAV.algStat.innerHTML = "Done.  Convex hull contains " +
 		    this.hull.length + " points and segments.";
 	},
-	
     // set up UI for convex hull
     setupUI() {
 	
