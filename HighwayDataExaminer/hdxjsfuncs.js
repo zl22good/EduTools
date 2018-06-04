@@ -2270,6 +2270,7 @@ else {
 	    }
 	   
 	    this.work = true;
+        return;
 	}
 
 	// case 2: failed search
@@ -2278,6 +2279,7 @@ else {
 	    hdxAV.algStat.innerHTML = "No path exists!";
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    this.work = true;
+        return;
 	}
     
 	// case 3: continue the search at the next place from the pq
