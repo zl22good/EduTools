@@ -155,6 +155,12 @@ var hdxAV = {
  * General AV functions
  **********************************************************************/
 // speedChanger dropdown callback
+function highlighter (x, color){
+    document.getElementById(x).style.color = color;
+}
+function resetHighlight(x){
+    document.getElementById(x).style.color = "black";
+}
 function clearForm(f){
     //enables the the start/pause and algorithm selection buttons/drop down
     document.getElementById("startPauseButton").disabled = false;
@@ -2051,7 +2057,6 @@ function DijkstraSP(vIndex, d, connection) {
     
     return this;
 }
-
 // core Dijkstra's algorithm code
 var hdxDijkstraAV = {
     
@@ -2062,31 +2067,31 @@ var hdxDijkstraAV = {
 
     // pseudocode
     code:`
-<pre>
-G = (V,E) is the graph
-s <- starting vertex
-e <- ending vertex
-T <- table of places found
-PQ <- priority queue of candidates
-PQ.add(0, (s, null))
-while (PQ.notEmpty() and e not in T) {
-  (dist, (to, via)) <- PQ.remove()
-  if (to not in T) {
-     T.add(to, via)
-     for each neighbor w of to {
-        if (w not visited) {
-           PQ.add(dist+len(to,w), (w, edge(to-w)))
+<div>
+<div id = 1> G = (V,E) is the graph</div>
+<div>s <- starting vertex</div>
+<div>e <- ending vertex</div>
+<div>T <- table of places found</div>
+<div>PQ <- priority queue of candidates</div>
+<div>PQ.add(0, (s, null))</div>
+<div>while (PQ.notEmpty() and e not in T) {</div>
+  <div>(dist, (to, via)) <- PQ.remove()</div>
+  <div>if (to not in T) {</div>
+     <div>T.add(to, via)</div>
+     <div>for each neighbor w of to {</div>
+        <div>if (w not visited) {</div>
+           <div>PQ.add(dist+len(to,w), (w, edge(to-w)))</div>
         }
      }
   }
 }
-if (e in T) {
-   use T to report shortest path
+<div>if (e in T) {</div>
+   <div>use T to report shortest path</div>
 }
-else {
-   report no path exists
+<div>else {</div>
+   <div>report no path exists</div>
 }
-</pre>`,
+</div>`,
 
     // the priority queue at the heart of Dijkstra's algorithm
     pq: null,
@@ -2126,6 +2131,7 @@ else {
 
     // required algorithm start method for Dijkstra's
     start() {
+        highlighter(1, "blue");
 	// vertex indices for the start and end of the traversal
 	this.startingVertex = document.getElementById("startPoint").value;
 	this.endingVertex = document.getElementById("endPoint").value;
@@ -2219,6 +2225,8 @@ else {
     // add a DijkstraSP to the list of shortest paths and to
     // the table of shortest path entries
     addToShortestPaths(v) {
+        resetHighlight(1);
+        
 	
 	let newtr = document.createElement("tr");
 	newtr.setAttribute("id", "dijkstraSP" + this.shortestPaths.length);
@@ -2249,6 +2257,7 @@ else {
 	    '<td>' + via + '</td>';
 	
 	this.foundTBody.appendChild(newtr);
+        
 	this.shortestPaths.push(v);
         if(document.getElementById("tableSize") == null){
 	document.getElementById("foundLabel").innerHTML = this.shortestPaths.length + " (number of paths found so far)";
@@ -2376,7 +2385,9 @@ else {
 	    hdxAV.algStat.innerHTML = "Shortest path found!  Entries below are the path.";
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    this.work = true;
-		return;
+        return;
+
+
 	}
 
 	// case 2: failed search
@@ -2386,6 +2397,7 @@ else {
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	    this.work = true;
 		return;
+
 	}
     
 	// case 3: continue the search at the next place from the pq
@@ -3492,8 +3504,8 @@ function processContents(fileContents) {
     newEle.setAttribute("id", "newEle");
     newEle.innerHTML = pointboxContents;
     document.getElementById('contents_table').appendChild(newEle);
-    createDataTable("#waypoints");
-    createDataTable("#connection");
+    //createDataTable("#waypoints");
+    //createDataTable("#connection");
     updateMap();   
 }
 
