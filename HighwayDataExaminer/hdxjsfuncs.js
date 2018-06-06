@@ -3492,8 +3492,8 @@ function processContents(fileContents) {
     newEle.setAttribute("id", "newEle");
     newEle.innerHTML = pointboxContents;
     document.getElementById('contents_table').appendChild(newEle);
-    createDataTable("#waypoints");
-    createDataTable("#connection");
+    //createDataTable("#waypoints");
+    //createDataTable("#connection");
     updateMap();   
 }
 
