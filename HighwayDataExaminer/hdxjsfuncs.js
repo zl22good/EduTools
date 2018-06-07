@@ -504,6 +504,8 @@ function labelClickHDX(i) {
 
     // standard map center/infowindow display
     map.panTo([waypoints[i].lat, waypoints[i].lon]);
+
+    markers[i].openPopup();
 }
 
 
