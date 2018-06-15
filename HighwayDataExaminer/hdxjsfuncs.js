@@ -131,7 +131,7 @@ var hdxAV = {
 	var main = document.createElement("div");
 	main.setAttribute("id", "main");
 	main.appendChild(document.getElementById("map"));
-	main.appendChild(document.getElementById("togglecontents_table"));
+	//main.appendChild(document.getElementById("togglecontents_table"));
 	//main.appendChild(document.getElementById("distUnits"));
 	//main.appendChild(document.getElementById("selected"));
 	main.appendChild(document.getElementById("options"));
@@ -4369,7 +4369,7 @@ function allowdrop(event) {
     event.preventDefault();
 }   
 
-function toggleUI(event) {
+/* function toggleUI(event) {
     var button = event.target;
     var panel1 = document.getElementById(button.id.substring(6));
     if (button.value.substring(0,4) == "Hide") {
@@ -4380,7 +4380,8 @@ function toggleUI(event) {
 	button.value = "Hide"+button.value.substring(4);
 	panel1.style.display = "";
     }
-}
+ }
+ */
 
 
 // moved to the end for now, until all variables are grouped by algorithm

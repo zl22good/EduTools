@@ -318,8 +318,10 @@ padding:0px;
 </p>
 <div id="map">
 </div>
+<!--
 <input type="button" id="togglecontents_table" value="Hide Table" style="left:100px; top:25px; opacity:.75; position:absolute; z-index:2000; padding:0;" onclick="toggleUI(event)">
 <input type="button" id="toggleselected" value="Hide Panel" style="left:180px; top:25px; opacity:.75; position:absolute; z-index:2000; padding:0;" onclick="toggleUI(event)">
+-->
 <!-- commented out until this system can be reworked
 <select id="distUnits" style="position:absolute; left:100px; top:48px; width: 7rem; z-index:2;" onchange="changeUnits(event)">
 	<option value="miles">Miles</option>
