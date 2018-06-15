@@ -299,8 +299,8 @@ padding:0px;
 	background-color: white; 
 	z-index: 70000;
 	position: absolute;
-	left: 50%;
-	margin-left: -100px;
+	left: 40%;
+	margin-left: -80px;
 }
 #algControlsPanel{
 	border: 1px solid black;
