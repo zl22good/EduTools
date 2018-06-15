@@ -44,6 +44,11 @@
 ?>
 <script src="tmlib/tmjsfuncs.js" type="text/javascript"></script>
 <script src="hdxjsfuncs.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min.js"></script>
+<script src="basic-sch.js"></script>
+<link rel="stylesheet" type="text/css" href="supplmentalTypeAhead.css"/>
+
+
 
 <?php
 // function to generate the file load html
@@ -276,6 +281,31 @@ padding:0px;
 #boxContainer{
 	padding-left: 30px;
 }
+#searchTest{
+	margin: auto;
+	background-color: white; 
+	z-index: 5000;
+	position: absolute;
+}
+#searchTable{
+	border: 1px solid black;
+	
+}
+#searchBox{
+	width: 365px;
+}
+#algorithmControls2{
+	margin: auto;
+	background-color: white; 
+	z-index: 70000;
+	position: absolute;
+	left: 50%;
+	margin-left: -100px;
+}
+#algControlsPanel{
+	border: 1px solid black;
+}
+
 </style>
 </head>
 <body onload="loadmap(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
@@ -324,7 +354,6 @@ padding:0px;
       <tr><th>Algorithm Vizualization Control Panel</th></tr>
     </thead>
     <tbody id="AVControlPanel">
-      <?php hdx_load_file_entries(); ?>
       <tr><td>
         Algorithm to Visualize:
         <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
@@ -354,8 +383,75 @@ padding:0px;
       </tbody>
       </table>
         <input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
+		<input type="button" value="Show Graph Options" id="searchBarShow" onClick="ShowSearchBar()"/>
+	    
     </form>
     </div>
+	
+	<div id="searchTest">
+		<table id="searchTable">
+			<thead>
+				<tr><th>Search for a graph:</th></tr>
+			</thead>
+			<tbody id="AVControlPanel">
+			<tr>
+				<td>
+					<div>
+						<?php hdx_load_file_entries(); ?>
+					</div>
+				</td>
+			</tr>
+			<tr><td>
+					<div id="the-basics">
+					  <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
+					  
+					</div>
+			</td></tr>
+			<tr><td>
+			Algorithm to Visualize:
+        <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
+	<!-- filled in with options by JS code in hdxAV.initOnLoad() -->
+        </select>
+
+      </td></tr>
+			<tr><td> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()">
+			</tbody>
+		</table>
+	</div>
+	<div id="algorithmControls2">
+		<table id="algControlsPanel">
+			<thead>
+				<tr><th>Algorithm Controls</th></tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td id="algorithmOptions"></td>
+					<td id="speedtr">
+						<button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
+						<select id="speedChanger" onchange="speedChanged()">
+						<option value="0">Run To Completion</option>
+						  <option value="1">Fastest possible</option>
+						  <option value="5">Extremely fast</option>
+						  <option value="20">Very fast</option>
+						  <option value="50" selected>Fast</option>
+						  <option value="100">Medium speed</option>
+						  <option value="250">Pretty slow</option>
+						  <option value="500">Slow</option>
+						  <option value="1000">Painfully slow</option>
+						  <option value="-1">Step</option>
+						</select>
+					</td>
+					<td id="pseudo">
+						<input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br><span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span>
+					</td>
+					<td>
+						<input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
+						<input type="button" value="Show Graph Options" id="searchBarShow" onClick="ShowSearchBar()"/>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 
     <div id="controlbox" style="z-index:2000;">
         <select id="showHideMenu" onchange="toggleTable();">

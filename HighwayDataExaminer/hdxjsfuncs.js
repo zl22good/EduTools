@@ -114,15 +114,15 @@ var hdxAV = {
 		'">' + av.name + '</option>';	    
 	}
 
-	// make the "selected" div resizable, was function makeResize()
+	/* // make the "selected" div resizable, was function makeResize()
 	$( "#selected" ).resizable();
 	var div = document.createElement("div");
 	div.setAttribute("id", "resize");
 	document.getElementById("selected").appendChild(div);
-	$( "#contents_table" ).resizable();
+	$( "#contents_table" ).resizable(); */
 
 	// initalize table for upper right side dropdown
-	toggleTable();
+	//toggleTable();
 
 	// set up side panel
 	sidePanel();
@@ -133,14 +133,14 @@ var hdxAV = {
 	main.appendChild(document.getElementById("map"));
 	main.appendChild(document.getElementById("togglecontents_table"));
 	//main.appendChild(document.getElementById("distUnits"));
-	main.appendChild(document.getElementById("selected"));
+	//main.appendChild(document.getElementById("selected"));
 	main.appendChild(document.getElementById("options"));
-	main.appendChild(document.getElementById("pointbox"));
+	//main.appendChild(document.getElementById("pointbox"));
 	main.appendChild(document.getElementById("AlgorithmVisualization"));
-	main.appendChild(document.getElementById("controlbox"));
-	main.appendChild(document.getElementById("contents_table"));
+	//main.appendChild(document.getElementById("controlbox"));
+	//main.appendChild(document.getElementById("contents_table"));
 	main.appendChild(document.getElementById("panelBtn"));
-	main.appendChild(document.getElementById("toggleselected"));
+	//main.appendChild(document.getElementById("toggleselected"));
 	document.body.appendChild(main);
 
 	// set up some references to commonly-used document elements
@@ -4114,57 +4114,7 @@ function PTHLineInfo(line, from) {
     return result;
 }
 
-function toggleTable() {
-    var menu = document.getElementById("showHideMenu");
-    var index = menu.selectedIndex;
-    var value = menu.options[index].value;
-    //  var algoTable = menu.algorithmbased.value;
-    var pointbox = document.getElementById("pointbox");
-    var options = document.getElementById("options");
-    var selected = document.getElementById("selected");
-    var algorithmVisualization =
-	document.getElementById("AlgorithmVisualization");
-    // show only table (or no table) based on value
-    if (value == "pointbox") {
-	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
-	var newEle = document.createElement("div");
-	newEle.setAttribute("id", "newEle");
-	newEle.innerHTML = pointbox.innerHTML;
-	if ($("#connection").length != 0 || $("#waypoints").length != 0)
-	    document.getElementById("connection").parentNode.parentNode.style.display = "";
-	selected.appendChild(newEle);
-    }
-    else if (value == "options") {
-	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
-	var newEle = document.createElement("div");
-	newEle.setAttribute("id", "newEle");
-	newEle.innerHTML = options.innerHTML;
-	selected.appendChild(newEle);
-	if ($("#connection").length != 0 || $("#waypoints").length != 0)
-	    document.getElementById("connection").parentNode.parentNode.style.display = "";
-	if (document.querySelector(".loadcollapse").style.display == "none")
-	    document.getElementById("loadcollapsebtn").style.display = "";
-    }
-    else if (value =="AlgorithmVisualization") {
-	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
-	var newEle = document.createElement("div");
-	newEle.setAttribute("id", "newEle");
-	newEle.innerHTML = algorithmVisualization.innerHTML;
-	selected.appendChild(newEle);
-	if ($("#connection").length != 0 || $("#waypoints").length != 0)
-	    document.getElementById("connection").parentNode.parentNode.style.display = "";
-	if (document.querySelector(".loadcollapse").style.display == "none")
-	    document.getElementById("loadcollapsebtn").style.display = "";
-    }
-    else {  
-	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
-	var newEle = document.createElement("div");
-	newEle.setAttribute("id", "newEle");
-	selected.appendChild(newEle);
-	if ($("#connection").length != 0 || $("#waypoints").length != 0)
-	    document.getElementById("connection").parentNode.parentNode.style.display = "none";
-    }
-}
+
 
 // get the selected algorithm from the AlgorithmSelection menu
 // (factored out here to avoid repeated code)
