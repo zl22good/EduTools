@@ -416,7 +416,7 @@ padding:0px;
         </select>
 
       </td></tr>
-			<tr><td> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()">
+			<tr><td> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled>
 			</tbody>
 		</table>
 	</div>
