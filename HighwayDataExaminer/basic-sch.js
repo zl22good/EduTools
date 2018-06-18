@@ -103,6 +103,7 @@ function hideSearchBar(){
 function ShowSearchBar()
 {
 	document.getElementById("searchTest").style.zIndex = 5000;
+	document.getElementById("hideSearchBar").disabled=false;
 }
 function hideAlgorithmControls()
 {
