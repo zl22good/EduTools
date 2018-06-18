@@ -154,6 +154,7 @@ var hdxAV = {
     }
 };
 
+
 /**********************************************************************
  * General AV functions
  **********************************************************************/
@@ -3553,6 +3554,7 @@ function processContents(fileContents) {
     else if (fileName.indexOf(".tmg") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
 	pointboxContents = parseTMGContents(fileContents);
+	showAlgorithmControls();
     }
     
     // document.getElementById('pointbox').innerHTML = pointboxContents;

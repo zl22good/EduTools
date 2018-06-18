@@ -301,9 +301,13 @@ padding:0px;
 	position: absolute;
 	left: 40%;
 	margin-left: -80px;
+	display: none;
 }
 #algControlsPanel{
 	border: 1px solid black;
+}
+#selected{
+	display: none;
 }
 
 </style>
@@ -420,8 +424,8 @@ padding:0px;
 			</tbody>
 		</table>
 	</div>
-	<div id="algorithmControls2">
-		<table id="algControlsPanel">
+	<div id="algorithmControls2" style="display=none;">
+		<table id="algControlsPanel" style="display=none;">
 			<thead>
 				<tr><th>Algorithm Controls</th></tr>
 			</thead>

@@ -105,13 +105,13 @@ function ShowSearchBar()
 	document.getElementById("searchTest").style.zIndex = 5000;
 	document.getElementById("hideSearchBar").disabled=false;
 }
-function hideAlgorithmControls()
+/* function hideAlgorithmControls()
 {
 	document.getElementById("AlgorithmControls2").style.zIndex=0;
-}
+} */
 function showAlgorithmControls()
 {
-	document.getElementById("AlgorithmControls2").style.zindex=5000;
+	document.getElementById("algorithmControls2").style.display="table";
 }
 
 
