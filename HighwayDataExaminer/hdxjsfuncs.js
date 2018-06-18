@@ -14,6 +14,7 @@
 
 // start UI redesign 2018-06-14
 
+
 // variables declared here are HDX-specific global variables
 
 // Essentially an enum of possible states of the simulation, used to
@@ -3561,6 +3562,7 @@ function processContents(fileContents) {
     document.getElementById('contents_table').appendChild(newEle);
     //createDataTable("#waypoints");
     //createDataTable("#connection");
+	hideSearchBar();
     updateMap();   
 }
 

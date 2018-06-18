@@ -42,10 +42,10 @@
     exit;
   }
 ?>
-<script src="tmlib/tmjsfuncs.js" type="text/javascript"></script>
-<script src="hdxjsfuncs.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min.js"></script>
 <script src="basic-sch.js"></script>
+<script src="tmlib/tmjsfuncs.js" type="text/javascript"></script>
+<script src="hdxjsfuncs.js" type="text/javascript"></script>
 <link rel="stylesheet" type="text/css" href="supplmentalTypeAhead.css"/>
 
 
