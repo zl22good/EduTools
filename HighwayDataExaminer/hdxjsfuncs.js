@@ -96,7 +96,7 @@ var hdxAV = {
 
     // all setup that needs to happen on page load for HDX
     initOnLoad() {
-	
+	console.log("does initOnLoad working?");
 	// populate the list of algorithms -- add new entries here
 	this.avList.push(hdxNoAV);
 	this.avList.push(hdxVertexExtremesSearchAV);
@@ -110,9 +110,11 @@ var hdxAV = {
 	let s = document.getElementById("AlgorithmSelection");
 	s.innerHTML = "";
 	for (var i = 0; i < this.avList.length; i++) {
+		console.log("is this loop spinning?");
 	    let av = this.avList[i];
 	    s.innerHTML += '<option value="' + av.value +
-		'">' + av.name + '</option>';	    
+		'">' + av.name + '</option>';
+			console.log(s.innerHTML);
 	}
 
 	/* // make the "selected" div resizable, was function makeResize()
@@ -129,20 +131,20 @@ var hdxAV = {
 	sidePanel();
 
 	// set up main area, was function mainArea()
-	var main = document.createElement("div");
-	main.setAttribute("id", "main");
-	main.appendChild(document.getElementById("map"));
+	//var main = document.createElement("div");
+	//main.setAttribute("id", "main");
+	//main.appendChild(document.getElementById("map"));
 	//main.appendChild(document.getElementById("togglecontents_table"));
 	//main.appendChild(document.getElementById("distUnits"));
 	//main.appendChild(document.getElementById("selected"));
-	main.appendChild(document.getElementById("options"));
+	//main.appendChild(document.getElementById("options"));
 	//main.appendChild(document.getElementById("pointbox"));
-	main.appendChild(document.getElementById("AlgorithmVisualization"));
+	//main.appendChild(document.getElementById("AlgorithmVisualization"));
 	//main.appendChild(document.getElementById("controlbox"));
 	//main.appendChild(document.getElementById("contents_table"));
-	main.appendChild(document.getElementById("panelBtn"));
+	//main.appendChild(document.getElementById("panelBtn"));
 	//main.appendChild(document.getElementById("toggleselected"));
-	document.body.appendChild(main);
+	//document.body.appendChild(main);
 
 	// set up some references to commonly-used document elements
 	this.algStat = document.getElementById("algorithmStatus");
@@ -4290,7 +4292,7 @@ function showLegend() {
 
 // Event handler for state change on the algorithm selection select control
 function algorithmSelected() {
-
+console.log("do we get to populating the options");
     // if we have an algorithm already selected, clean up its
     // UI first
     if (hdxAV.currentAV != null) {

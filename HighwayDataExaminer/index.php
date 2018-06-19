@@ -334,6 +334,7 @@ padding:0px;
 	<option value="meters">Meters</option>
 </select>
 -->
+<!--
 <div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px; position:absolute; z-index:2000;">
 
 </div>
@@ -363,7 +364,7 @@ padding:0px;
       <tr><td>
         Algorithm to Visualize:
         <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
-	<!-- filled in with options by JS code in hdxAV.initOnLoad() -->
+	<!-- filled in with options by JS code in hdxAV.initOnLoad() 
         </select>
 
       </td></tr>
@@ -393,7 +394,7 @@ padding:0px;
 	    
     </form>
     </div>
-	
+	-->
 	<div id="searchTest">
 		<table id="searchTable">
 			<thead>
@@ -419,7 +420,10 @@ padding:0px;
 	<!-- filled in with options by JS code in hdxAV.initOnLoad() -->
         </select>
 
-      </td></tr>
+      </td>
+	  
+		<td id="algorithmStatus"></td>
+	  </tr>
 			<tr><td> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled>
 			</tbody>
 		</table>
