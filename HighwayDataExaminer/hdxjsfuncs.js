@@ -34,6 +34,7 @@ var hdxStates = {
     AV_COMPLETE: 10
 };
 
+
 // group of variables used by many or all algorithm visualizations
 var hdxAV = {
     // current state of HDX
@@ -3566,7 +3567,7 @@ function processContents(fileContents) {
     document.getElementById('contents_table').appendChild(newEle);
     //createDataTable("#waypoints");
     //createDataTable("#connection");
-	hideSearchBar();
+	//hideSearchBar();
     updateMap();   
 }
 
@@ -4307,6 +4308,9 @@ console.log("do we get to populating the options");
 	hdxAV.setStatus(hdxStates.AV_SELECTED);
 	hdxAV.startPause.disabled = false;
     }
+	else{
+		showSearchBar();
+	}
 
     // set the current algorithm
     for (var i = 1; i < hdxAV.avList.length; i++) {
