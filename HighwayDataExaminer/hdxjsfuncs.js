@@ -34,6 +34,8 @@ var hdxStates = {
     AV_COMPLETE: 10
 };
 
+var algSelectFlag = false;
+
 
 // group of variables used by many or all algorithm visualizations
 var hdxAV = {
@@ -3568,7 +3570,17 @@ function processContents(fileContents) {
     //createDataTable("#waypoints");
     //createDataTable("#connection");
 	//hideSearchBar();
-    updateMap();   
+    updateMap();
+	if(algSelectFlag == false)
+	{
+		showSearchBar();
+	}
+	else
+	{
+		hideSearchBar();
+	}
+	
+	
 }
 
 // TODO: make sure maps cannot be selected when an AV is running
@@ -4309,7 +4321,7 @@ console.log("do we get to populating the options");
 	hdxAV.startPause.disabled = false;
     }
 	else{
-		showSearchBar();
+		algSelectFlag=true;
 	}
 
     // set the current algorithm
