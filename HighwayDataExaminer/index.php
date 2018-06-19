@@ -396,6 +396,7 @@ padding:0px;
     </div>
 	-->
 	<div id="searchTest">
+	<form name="algVis" action="#">
 		<table id="searchTable">
 			<thead>
 				<tr><th>Search for a graph:</th></tr>
@@ -422,6 +423,9 @@ padding:0px;
 
       </td>
 	  
+		
+	  </tr>
+	  <tr>
 		<td id="algorithmStatus"></td>
 	  </tr>
 			<tr><td> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled>
@@ -462,6 +466,7 @@ padding:0px;
 			</tbody>
 		</table>
 	</div>
+	</form>
 
     <div id="controlbox" style="z-index:2000;">
         <select id="showHideMenu" onchange="toggleTable();">
