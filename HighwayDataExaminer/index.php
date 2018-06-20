@@ -411,7 +411,7 @@ padding:0px;
 	-->
 	<div id="searchTest">
 	<form name="algVis" action="#">
-		<table id="searchTable">
+		<table id="searchTable" class="gratable">
 			<thead>
 				<tr><th>Search for a graph:</th></tr>
 			</thead>
@@ -445,7 +445,7 @@ padding:0px;
 		</table>
 	</div>
 	<div id="algorithmControls2" style="display=none;">
-		<table id="algControlsPanel" style="display=none;">
+		<table id="algControlsPanel" style="display=none;" class="gratable">
 			<thead>
 				<tr><th>Algorithm Controls</th></tr>
 			</thead>
