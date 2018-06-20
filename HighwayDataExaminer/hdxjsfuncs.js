@@ -352,7 +352,7 @@ var AVCPsuffix = "AVCPEntry";
 /* add entry to the algorithm visualization control panel */
 function addEntryToAVControlPanel(namePrefix, vs) {
     
-    let avControlTbody = document.getElementById('AVControlPanel');
+    let avControlTbody = document.getElementById('algorithmVars');
     let infoBox = document.createElement('td');
     let infoBoxtr= document.createElement('tr');
     infoBox.setAttribute('id', namePrefix + AVCPsuffix);
@@ -365,7 +365,7 @@ function addEntryToAVControlPanel(namePrefix, vs) {
 /* remove entry from algorithm visualization control panel */
 function removeEntryFromAVControlPanel(namePrefix) {
 
-    let avControlTbody = document.getElementById('AVControlPanel');
+    let avControlTbody = document.getElementById('algorithmVars');
     let infoBox = document.getElementById(namePrefix + AVCPsuffix);
     if (infoBox != null) {
 	let infoBoxtr= infoBox.parentNode;
@@ -3571,14 +3571,14 @@ function processContents(fileContents) {
     //createDataTable("#connection");
 	//hideSearchBar();
     updateMap();
-	if(algSelectFlag == false)
+	/* if(algSelectFlag == false)
 	{
 		showSearchBar();
 	}
 	else
 	{
 		hideSearchBar();
-	}
+	} */
 	
 	
 }

@@ -309,6 +309,20 @@ padding:0px;
 #selected{
 	display: none;
 }
+#algStats{
+	margin-top: 250px;
+	z-index: 10000;
+	background-color: white;
+	position: absolute;
+	overflow: scroll;
+}
+#algStatsTable{
+	border: 1px solid black;
+	width: 365px;
+	
+}
+
+
 
 </style>
 </head>
@@ -425,9 +439,7 @@ padding:0px;
 	  
 		
 	  </tr>
-	  <tr>
-		<td id="algorithmStatus"></td>
-	  </tr>
+	  
 			<tr><td> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled>
 			</tbody>
 		</table>
@@ -467,6 +479,14 @@ padding:0px;
 		</table>
 	</div>
 	</form>
+	<div id="algStats">
+		<table id="algStatsTable" class="gratable">
+			<thead><tr><th>Algorithm Information</th></tr><thead>
+			<tbody id="algorithmVars">
+			<tr><td id="algorithmStatus"></td></tr>
+			</tbody>
+		</table>
+	</div>
 
     <div id="controlbox" style="z-index:2000;">
         <select id="showHideMenu" onchange="toggleTable();">
