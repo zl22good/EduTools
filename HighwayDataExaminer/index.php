@@ -416,6 +416,12 @@ padding:0px;
 				<tr><th>Search for a graph:</th></tr>
 			</thead>
 			<tbody id="AVControlPanel">
+			<tr><td>
+					<div id="the-basics">
+					  <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
+					  
+					</div>
+			</td></tr>
 			<tr>
 				<td>
 					<div>
@@ -423,12 +429,6 @@ padding:0px;
 					</div>
 				</td>
 			</tr>
-			<tr><td>
-					<div id="the-basics">
-					  <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
-					  
-					</div>
-			</td></tr>
 			<tr><td>
 			Algorithm to Visualize:
         <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
