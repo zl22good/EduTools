@@ -422,13 +422,6 @@ padding:0px;
 					  
 					</div>
 			</td></tr>
-			<tr>
-				<td>
-					<div>
-						<?php hdx_load_file_entries(); ?>
-					</div>
-				</td>
-			</tr>
 			<tr><td>
 			Algorithm to Visualize:
         <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
@@ -439,6 +432,14 @@ padding:0px;
 	  
 		
 	  </tr>
+			<tr>
+				<td>
+					<div>
+						<?php hdx_load_file_entries(); ?>
+					</div>
+				</td>
+			</tr>
+			
 	  
 			<tr><td> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled>
 			</tbody>
