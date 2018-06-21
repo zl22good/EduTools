@@ -475,9 +475,6 @@ padding:0px;
 						  <option value="-1">Step</option>
 						</select>
 					</td>
-					<td id="pseudo">
-						<input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br><span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span>
-					</td>
 					<td>
 						<input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
 						<input type="button" value="Show Graph Options" id="searchBarShow" onClick="ShowSearchBar()"/>
@@ -492,6 +489,10 @@ padding:0px;
 			<thead><tr><th>Algorithm Information</th></tr><thead>
 			<tbody id="algorithmVars">
 			<tr><td id="algorithmStatus"></td></tr>
+			<tr><td id="pseudo">
+						<input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br><span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span>
+					</td>
+			</tr>
 			</tbody>
 		</table>
 	</div>
