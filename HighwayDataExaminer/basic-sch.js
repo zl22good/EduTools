@@ -102,7 +102,7 @@ function hideSearchBar(){
 }
 function ShowSearchBar()
 {
-	document.getElementById("searchTest").style.zIndex = 5000;
+	document.getElementById("searchTest").style.zIndex = 10500;
 	document.getElementById("hideSearchBar").disabled=false;
 }
 /* function hideAlgorithmControls()
@@ -113,6 +113,18 @@ function showAlgorithmControls()
 {
 	document.getElementById("algorithmControls2").style.display="table";
 }
+function showAlgStats()
+{
+	console.log("do we get to showAlgStats");
+	document.getElementById("algStats").style.display="table";
+}
+
+function hideAlgStats()
+{
+	document.getElementById("algStats").style.display="none";
+}
+
+console.log("do we see the algStatsTable");
 
 
 

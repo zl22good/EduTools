@@ -54,7 +54,7 @@
 // function to generate the file load html
 function hdx_load_file_entries() {
   echo <<<ENDOFSTUFF
-	  <tr><td id="selects" class="loadcollapse">
+		<tr><td id="selects" class="loadcollapse">
 		Load METAL graph: (select filters then press "Get Graph List") <br>
 		Sort criteria:
 		<select id = "orderOptions">
@@ -310,17 +310,24 @@ padding:0px;
 	display: none;
 }
 #algStats{
-	margin-top: 250px;
+	margin:auto;
 	z-index: 10000;
 	background-color: white;
 	position: absolute;
 	overflow: scroll;
+	max-width: 45%;
+	max-height: 50%;
+	opacity: .95;
+	display: none;
 }
 #algStatsTable{
 	border: 1px solid black;
 	width: 365px;
 	
+	
 }
+
+
 
 
 
