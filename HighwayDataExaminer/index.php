@@ -496,6 +496,11 @@ padding:0px;
 					<td id="algorithmOptions"></td>
 					
 				</tr>
+				<tr>
+					<td>
+						<input type="button" value="Done">
+					</td>
+				</tr>
 			</tbody>
 		</table>
 	</div>
