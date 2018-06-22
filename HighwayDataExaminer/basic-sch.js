@@ -126,6 +126,15 @@ function hideAlgStats()
 
 console.log("do we see the algStatsTable");
 
+function showTopAlgControls()
+{
+	document.getElementById("algorithmControls3").style.display="table";
+}
+function hideTopAlgControls()
+{
+	document.getElementById("algorithmControls3").style.display="none";
+}
+
 
 
 

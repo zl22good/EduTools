@@ -123,7 +123,7 @@ ENDOFSTUFF;
 }
 #map {
   position: absolute;
-  top:25px;
+  top: 25px;
   bottom:0px;
   width: 100%;
   overflow:hidden;
@@ -299,8 +299,7 @@ padding:0px;
 	background-color: white; 
 	z-index: 70000;
 	position: absolute;
-	left: 40%;
-	margin-left: -80px;
+	margin-top: 110px;
 	display: none;
 }
 #algControlsPanel{
@@ -326,6 +325,16 @@ padding:0px;
 	
 	
 }
+#algorithmControls3{
+	background-color: white;
+    margin: auto;
+	top: 25px;
+	left: 40%;
+	margin-left: -80px;
+	position: absolute;
+	z-index: 11000;
+	display: none;
+}
 
 
 
@@ -341,6 +350,33 @@ padding:0px;
   HDX: <span id="filename">Select a file to display</span>
   <span id="status"></span>
 </p>
+<div id="algorithmControls3">
+	<table id="newAlgControls">
+			<tbody>
+				<tr>
+					<td id="speedtr">
+						<button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
+						<select id="speedChanger" onchange="speedChanged()">
+						<option value="0">Run To Completion</option>
+						  <option value="1">Fastest possible</option>
+						  <option value="5">Extremely fast</option>
+						  <option value="20">Very fast</option>
+						  <option value="50" selected>Fast</option>
+						  <option value="100">Medium speed</option>
+						  <option value="250">Pretty slow</option>
+						  <option value="500">Slow</option>
+						  <option value="1000">Painfully slow</option>
+						  <option value="-1">Step</option>
+						</select>
+					</td>
+					<td>
+						<input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
+						<input type="button" value="Show Graph Options" id="searchBarShow" onClick="ShowSearchBar()"/>
+					</td>
+				</tr>
+			</tbody>
+	</table>
+</div>
 <div id="map">
 </div>
 <!--
@@ -429,16 +465,6 @@ padding:0px;
 					  
 					</div>
 			</td></tr>
-			<tr><td>
-			Algorithm to Visualize:
-        <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
-	<!-- filled in with options by JS code in hdxAV.initOnLoad() -->
-        </select>
-
-      </td>
-	  
-		
-	  </tr>
 			<tr>
 				<td>
 					<div>
@@ -455,30 +481,21 @@ padding:0px;
 	<div id="algorithmControls2" style="display=none;">
 		<table id="algControlsPanel" style="display=none;" class="gratable">
 			<thead>
-				<tr><th>Algorithm Controls</th></tr>
+				<tr><th>Algorithm Options</th></tr>
 			</thead>
 			<tbody>
+			<tr>
+			<td>
+				Algorithm to Visualize:
+			<select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
+		<!-- filled in with options by JS code in hdxAV.initOnLoad() -->
+			</select>
+
+      </td>
+			</tr>
 				<tr>
 					<td id="algorithmOptions"></td>
-					<td id="speedtr">
-						<button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
-						<select id="speedChanger" onchange="speedChanged()">
-						<option value="0">Run To Completion</option>
-						  <option value="1">Fastest possible</option>
-						  <option value="5">Extremely fast</option>
-						  <option value="20">Very fast</option>
-						  <option value="50" selected>Fast</option>
-						  <option value="100">Medium speed</option>
-						  <option value="250">Pretty slow</option>
-						  <option value="500">Slow</option>
-						  <option value="1000">Painfully slow</option>
-						  <option value="-1">Step</option>
-						</select>
-					</td>
-					<td>
-						<input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
-						<input type="button" value="Show Graph Options" id="searchBarShow" onClick="ShowSearchBar()"/>
-					</td>
+					
 				</tr>
 			</tbody>
 		</table>

@@ -4320,11 +4320,13 @@ console.log("do we get to populating the options");
 	hdxAV.setStatus(hdxStates.AV_SELECTED);
 	hdxAV.startPause.disabled = false;
 	hideSearchBar();
+	showTopAlgControls();
 	algSelectFlag=true;
 	showAlgStats();
     }
 	else{
-		showSearchBar();
+		hideSearchBar();
+		showAlgorithmControls();
 	}
 
     // set the current algorithm
