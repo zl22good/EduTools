@@ -3569,7 +3569,7 @@ function processContents(fileContents) {
     document.getElementById('contents_table').appendChild(newEle);
     //createDataTable("#waypoints");
     //createDataTable("#connection");
-	//hideSearchBar();
+	hideSearchBar();
     updateMap();
 	/* if(algSelectFlag == false)
 	{
