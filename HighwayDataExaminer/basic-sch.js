@@ -105,10 +105,10 @@ function ShowSearchBar()
 	document.getElementById("searchTest").style.zIndex = 10500;
 	document.getElementById("hideSearchBar").disabled=false;
 }
-/* function hideAlgorithmControls()
+ function hideAlgorithmControls()
 {
-	document.getElementById("AlgorithmControls2").style.zIndex=0;
-} */
+	document.getElementById("algorithmControls2").style.display="none";
+} 
 function showAlgorithmControls()
 {
 	document.getElementById("algorithmControls2").style.display="table";
