@@ -51,6 +51,9 @@ var hdxAV = {
     // what was the most recent algorithm?
     previousAlgorithm: null,
 
+    // are we tracing psuedocode?
+    traceCode: false,
+    
     // reset values
     reset: function() {
 	this.previousAlgorithm = null;
@@ -96,6 +99,7 @@ var hdxAV = {
 	
 	// populate the list of algorithms -- add new entries here
 	this.avList.push(hdxNoAV);
+	this.avList.push(hdxNewVertexExtremesSearchAV);
 	this.avList.push(hdxVertexExtremesSearchAV);
 	this.avList.push(hdxEdgeExtremesSearchAV);
 	this.avList.push(hdxGraphTraversalsAV);
@@ -1049,6 +1053,490 @@ for (checkIndex <- 1 to |V|-1) {
 	{
 		return (this.nextToCheck < markers.length);
 	},
+	
+    // remove UI modifications made for vertex extremes search
+    cleanupUI() {
+
+	removeEntryFromAVControlPanel("undiscovered");
+	removeEntryFromAVControlPanel("visiting");
+	removeEntryFromAVControlPanel("discared");
+	for (var i = 0; i < this.categories.length; i++) {
+	    removeEntryFromAVControlPanel(this.categories[i].name);
+	}
+    }
+};
+
+var hdxNewVertexExtremesSearchAV = {
+
+    // entries for list of AVs
+    value: "vertexNew",
+    name: "New Vertex Extremes Search",
+    description: "Search for extreme values based on vertex (waypoint) locations and labels.",
+
+    // pseudocode
+    code: `
+<pre>longest <- 0
+shortest <- 0
+north <- 0
+south <- 0
+east <- 0
+west <- 0
+for (checkIndex <- 1 to |V|-1) {
+  if (len(v[checkIndex].label) > len(v[longest].label))) {
+    longest <- checkIndex
+  }
+  if (len(v[checkIndex].label) < len(v[shortest].label))) {
+    shortest <- checkIndex
+  }
+  if (v[checkIndex].lat > v[north].lat) {
+    north <- checkIndex
+  }
+  if (v[checkIndex].lat < v[south].lat) {
+    south <- checkIndex
+  }
+  if (v[checkIndex].lng < v[west].lng) {
+    west <- checkIndex
+  }
+  if (v[checkIndex].lng > v[east].lng) {
+    east <- checkIndex
+  }
+}</pre>
+`,
+    
+    // state variables for vertex extremes search
+    nextToCheck: 0,
+    discarded: 0,
+    foundNewLeader: false,
+    nextAction: "initialize",
+
+    // the categories for which we are finding our extremes,
+    // with names for ids, labels to display, indicies of leader,
+    // comparison function to determine if we have a new leader,
+    // and visual settings for the display
+    categories: [
+	{
+	    name: "north",
+	    label: "North extreme",
+	    index: -1,
+
+	    newLeader: function() {
+		return (parseFloat(waypoints[hdxNewVertexExtremesSearchAV.nextToCheck].lat) >
+			parseFloat(waypoints[this.index].lat));
+	    },
+
+	    leaderString: extremePointLeaderString,
+
+	    visualSettings: {
+		color: "#8b0000",
+		textColor: "white",
+		scale: 6,
+		name: "northLeader",
+		value: 0
+	    }
+	},
+
+	{
+	    name: "south",
+	    label: "South extreme",
+	    index: -1,
+
+	    newLeader: function() {
+		return (parseFloat(waypoints[hdxNewVertexExtremesSearchAV.nextToCheck].lat) <
+			parseFloat(waypoints[this.index].lat));
+	    },
+	    leaderString: extremePointLeaderString,
+	    
+	    visualSettings: {
+		color: "#ee0000",
+		textColor: "white",
+		scale: 6,
+		name: "southLeader",
+		value: 0
+	    }
+	},
+
+	{
+	    name: "east",
+	    label: "East extreme",
+	    index: -1,
+
+	    newLeader: function() {
+		return (parseFloat(waypoints[hdxNewVertexExtremesSearchAV.nextToCheck].lon) >
+			parseFloat(waypoints[this.index].lon));
+	    },
+	    leaderString: extremePointLeaderString,
+	    visualSettings: {
+		color: "#000080",
+		textColor: "white",
+		scale: 6,
+		name: "eastLeader",
+		value: 0
+	    }
+	},
+
+	{
+	    name: "west",
+	    label: "West extreme",
+	    index: -1,
+
+	    newLeader: function() {
+		return (parseFloat(waypoints[hdxNewVertexExtremesSearchAV.nextToCheck].lon) <
+			parseFloat(waypoints[this.index].lon));
+	    },
+	    leaderString: extremePointLeaderString,
+	    visualSettings: {
+		color: "#551A8B",
+		textColor: "white",
+		scale: 6,
+		name: "westLeader",
+		value: 0
+	    }
+	},
+
+	{
+	    name: "shortest",
+	    label: "Shortest vertex label",
+	    index: -1,
+	    
+	    newLeader: function() {
+		return (waypoints[hdxNewVertexExtremesSearchAV.nextToCheck].label.length <
+			waypoints[this.index].label.length);
+	    },
+	    leaderString: vertexLabelLeaderString,
+	    visualSettings: visualSettings.shortLabelLeader
+	},
+	
+	{
+	    name: "longest",
+	    label: "Longest vertex label",
+	    index: -1,
+	    
+	    newLeader: function() {
+		return (waypoints[hdxNewVertexExtremesSearchAV.nextToCheck].label.length >
+			waypoints[this.index].label.length);
+	    },
+	    leaderString: vertexLabelLeaderString,
+	    visualSettings: visualSettings.longLabelLeader
+	},
+    ],
+
+    // the actions that make up this algorithm
+    avActions: [
+	{
+	    label: "initialize",
+	    comment: "initialize all leader indices to 0",
+	    pseudocode: "north <- 0, south <- 0, east <- 0, west <-0, shortest <- 0, longest <-0",
+	    code: function(thisAV) {
+		for (var i = 0; i < thisAV.categories.length; i++) {
+		    thisAV.categories[i].index = 0;
+		}
+		
+		// highlight vertex 0 as leader in all categories and current
+		thisAV.nextToCheck = 0;
+		thisAV.discarded = 0;
+	
+		hdxAV.algStat.innerHTML = "In Progress";
+		updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
+		updateAVControlEntry("visiting", "Visiting #0 (initial leader in each category: #0 " + waypoints[0].label);
+		updateAVControlEntry("discarded", "0 vertices discarded");
+
+		// show marker 0 as the leader in each category
+		// on the map and in the table
+		for (var i = 0; i < thisAV.categories.length; i++) {
+		    updateMarkerAndTable(thisAV.categories[i].index,
+					 thisAV.categories[i].visualSettings, 
+					 40, false);
+		    updateAVControlEntry(
+			thisAV.categories[i].name, 
+			thisAV.categories[i].leaderString(thisAV.categories[i].label,
+							  thisAV.categories[i].index)
+		    );
+		}
+		thisAV.iterationDone = true;
+		thisAV.nextAction = "forLoopTop";
+	    },
+	    logMessage: "Initializing leaders to vertex 0"
+	},
+	{
+	    label: "forLoopTop",
+	    comment: "for loop to iterate over remaining vertices",
+	    pseudocode: "for (checkIndex <- 1 to |V|-1)",
+	    code: function(thisAV) {
+		thisAV.nextToCheck++;
+		if (thisAV.nextToCheck == waypoints.length) {
+		    thisAV.nextAction = "cleanup";
+		}
+		else {
+		    // highlight nextToCheck as current vertex
+		    thisAV.nextAction = "checkNextCategory";
+		    thisAV.nextCategory = 0;
+		    thisAV.foundNewLeader = false;
+		    updateMarkerAndTable(thisAV.nextToCheck, visualSettings.visiting,
+					 30, false);
+		    updateAVControlEntry("undiscovered", (waypoints.length - thisAV.nextToCheck) + " vertices not yet visited");
+		    updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + waypoints[thisAV.nextToCheck].label);
+		}
+	    },
+	    logMessage: "Top of main for loop over vertices"
+	},
+	{
+	    label: "checkNextCategory",
+	    comment: "check if current vertex is a new category leader",
+	    pseudocode: "TBD", //thisAV.categories[thisAV.nextCategory].comparisonPseudocode,
+	    code: function(thisAV) {
+		console.log("checkNextCategory for vertex " + thisAV.nextToCheck + " in category " + thisAV.nextCategory);
+		if (thisAV.categories[thisAV.nextCategory].newLeader()) {
+		    thisAV.nextAction = "updateNextCategory";
+		}
+		else {
+		    thisAV.nextCategory++;
+		    if (thisAV.nextCategory == thisAV.categories.length) {
+			thisAV.nextAction = "forLoopBottom";
+		    }
+		    else {
+			thisAV.nextAction = "checkNextCategory";
+		    }
+		}
+	    },
+	    logMessage: "Check for new category leader"
+	},
+	{
+	    label: "updateNextCategory",
+	    comment: "update new category leader",
+	    pseudocode: "TBD", //thisAV.categories[thisAV.nextCategory].updatePseudocode;
+	    
+	    code: function(thisAV) {
+
+		// remember that we have a new leader so this doesn't
+		// get discarded at the end of the loop
+		thisAV.foundNewLeader = true;
+
+		// if the old leader is still leading in some other category,
+		// color it as such, and if not, discard
+		let oldLeader = thisAV.categories[thisAV.nextCategory].index;
+		let stillALeader = false;
+		for (var i = 0; i < thisAV.categories.length; i++) {
+		    if (i == thisAV.nextCategory) continue;
+		    if (thisAV.categories[i].index == oldLeader) {
+			stillALeader = true;
+			updateMarkerAndTable(oldLeader,
+					     thisAV.categories[i].visualSettings, 
+					     40, false);
+			break;  // could lead in others, but pick the first
+		    }
+		}
+		if (!stillALeader) {
+		    updateMarkerAndTable(oldLeader, visualSettings.discarded,
+					 20, true);
+		    thisAV.discarded++;
+		    updateAVControlEntry("discarded", thisAV.discarded + " vertices discarded");
+		}
+		    
+		// update this category to indicate its new leader
+		// but keep it shown as the vertex being visited on the
+		// map and in the table until the end of the iteration
+		thisAV.categories[thisAV.nextCategory].index = thisAV.nextToCheck;
+		updateAVControlEntry(
+		    thisAV.categories[thisAV.nextCategory].name, 
+		    thisAV.categories[thisAV.nextCategory].leaderString(
+			thisAV.categories[thisAV.nextCategory].label,
+			thisAV.categories[thisAV.nextCategory].index)
+		);
+		thisAV.nextCategory++;
+		if (thisAV.nextCategory == thisAV.categories.length) {
+		    thisAV.nextAction = "forLoopBottom";
+		}
+		else {
+		    thisAV.nextAction = "checkNextCategory";
+		}
+	    },
+	    logMessage: "Update to new category leader"
+	},
+	{
+	    label: "forLoopBottom",
+	    comment: "end of for loop iteration",
+	    pseudocode: "",
+	    code: function(thisAV){
+
+		// if this waypoint is the leader in any category, show it,
+		// otherwise it gets discarded
+		if (thisAV.foundNewLeader) {
+		    for (var i = 0; i < thisAV.categories.length; i++) {
+			if (thisAV.nextToCheck == thisAV.categories[i].index) {
+			    updateMarkerAndTable(thisAV.categories[i].index,
+						 thisAV.categories[i].visualSettings, 
+						 40, false);
+			    break;  // just use the first we find
+			}
+		    }
+		}
+		else {
+		    updateMarkerAndTable(thisAV.nextToCheck, visualSettings.discarded,
+					 20, true);
+		    thisAV.discarded++;
+		    updateAVControlEntry("discarded", thisAV.discarded + " vertices discarded");
+
+		}
+		thisAV.iterationDone = true;
+		thisAV.nextAction = "forLoopTop";
+	    },
+	    logMessage: "Update any newly found leaders on map and table"
+	},
+	{
+	    label: "cleanup",
+	    comment: "cleanup and updates at the end of the visualization",
+	    pseudocode: "",
+	    code: function(thisAV) {
+		hdxAV.algStat.innerHTML =
+		    "Done! Visited " + markers.length + " waypoints.";
+		updateAVControlEntry("undiscovered", "0 vertices not yet visited");
+		updateAVControlEntry("visiting", "");
+		thisAV.nextAction = "DONE";
+	    },
+	    logMessage: "Cleanup and finalize visualization"
+	}
+    ],
+    
+    // required start function
+    // initialize a vertex-based search
+    start() {
+
+	hdxAV.algStat.innerHTML = "Initializing";
+	// start by showing all existing markers, even hidden
+	for (var i = 0; i < waypoints.length; i++) {
+            markers[i].addTo(map);
+            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
+	}
+	// we don't need edges here, so we remove those
+	for (var i = 0; i < connections.length; i++) {
+            connections[i].remove();
+	}
+	//we don't need connections table here, so we remove those
+	document.getElementById("connection").style.display = "none";
+
+	// we do need waypoints, so make sure they're displayed
+	document.getElementById("waypoints").style.display = "";
+	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
+	for (var i = 0; i < pointRows.length; i++) {
+	    pointRows[i].style.display = "";
+	}
+	
+	// start the search by initializing with the value at pos 0
+	updateMarkerAndTable(0, visualSettings.visiting, 40, false);
+	
+	// set up for our first action
+	this.nextAction = "initialize";
+
+	// to start, make just a simple call to nextStep, ignoring any
+	// delay until after the first action occurs
+
+	this.nextStep();
+    },
+
+    // required nextStep function
+    // this will do an action, an iteration, or run to completion
+    // for vertex-based search
+    nextStep() {
+
+	// if the simulation is paused, we can do nothing, as this function
+	// will be called again when we restart
+	if (hdxAV.paused()) {
+            return;
+	}
+
+	// run to completion option
+	if (hdxAV.delay == 0) {
+	    while (this.moreActions()) {
+		this.oneIteration();
+	    }
+	    return;
+	}
+
+	// if delay has become -1, it means we took a single step and
+	// should pause now rather than perform more work
+	if (hdxAV.delay == -1) {
+		hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+
+	// we are supposed to do some work, either a single action or
+	// a full iteration
+	if (hdxAV.traceCode) {
+	    this.oneAction();
+	}
+	else {
+	    this.oneIteration();
+	}
+
+	// in either case, we now set the timeout for the next one
+	if (this.moreActions()) {
+            var self = this;
+            setTimeout(function() { self.nextStep() }, hdxAV.delay);
+	}
+	else {
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+	}
+    },
+
+    // this code needs to move to avActions
+    finishUpdates() {
+    },
+
+    // one iteration is now defined as a series of actions ending with
+    // one which sets hdxAV.iterationDone to true
+    oneIteration() {
+
+	hdxAV.iterationDone = false;
+	while (!hdxAV.iterationDone) {
+	    this.oneAction();
+	}
+    },
+
+    oneAction() {
+
+	// look up the action to execute next
+	let currentAction = null;
+	for (var i = 0; i < this.avActions.length; i++) {
+	    if (this.nextAction == this.avActions[i].label) {
+		currentAction = this.avActions[i];
+		break;
+	    }
+	}
+	if (currentAction == null) {
+	    alert("HDX Internal error: bad AV action");
+	    hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+
+	// we have an action to execute
+
+	// TODO: highlight appropriate pseudocode
+
+	// this won't stay, should have some other way to log or
+	// only enable it for debugging
+	console.log("HDX ACTION START: " + currentAction.logMessage);
+	
+	// execute the JS to continue the AV
+	currentAction.code(this);
+    },
+
+    // set up UI for the start of this algorithm
+    setupUI() {
+
+	hdxAV.algStat.style.display = "";
+	hdxAV.algStat.innerHTML = "Setting up";
+        hdxAV.algOptions.innerHTML = '';
+
+	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
+	addEntryToAVControlPanel("visiting", visualSettings.visiting);
+	addEntryToAVControlPanel("discarded", visualSettings.discarded);
+	for (var i = 0; i < this.categories.length; i++) {
+	    addEntryToAVControlPanel(this.categories[i].name,
+				     this.categories[i].visualSettings);
+	}
+    },
+	
+    moreActions() {
+	return this.nextAction != "DONE";
+    },
 	
     // remove UI modifications made for vertex extremes search
     cleanupUI() {
@@ -4178,6 +4666,12 @@ function showHidePseudocode() {
     let show = document.getElementById("pseudoCheckbox").checked;
     document.getElementById("pseudoText").style.display =
 	(show ? "" : "none");
+}
+
+// trace code checkbox event handler
+function traceCodeClicked() {
+
+    hdxAV.traceCode = document.getElementById("traceCodeCheckbox").checked;
 }
 
 // generic event handler for start/pause/resume button

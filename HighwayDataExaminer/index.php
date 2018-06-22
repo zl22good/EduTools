@@ -349,6 +349,7 @@ padding:0px;
         </select>
 
       </td></tr>
+      <tr><td id="tracecode"><input id="traceCodeCheckbox" type="checkbox" name="Trace Pseudocode" onclick="traceCodeClicked()" />&nbsp;Trace Pseudocode</td></tr>
       <tr><td id="pseudo"><input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br><span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span></td></tr>
       <tr><td id="algorithmStatus"></td></tr>
       </tbody>
