@@ -937,7 +937,9 @@ shortest &larr; 0</td></tr>
 		thisAV.iterationDone = true;
 		thisAV.nextAction = "forLoopTop";
 	    },
-	    logMessage: "Initializing leaders to vertex 0"
+	    logMessage: function(thisAV) {
+		return "Initializing leaders to vertex 0";
+	    }
 	},
 	{
 	    label: "forLoopTop",
@@ -960,7 +962,9 @@ shortest &larr; 0</td></tr>
 		}
 		thisAV.iterationDone = true;
 	    },
-	    logMessage: "Top of main for loop over vertices"
+	    logMessage: function(thisAV) {
+		return "Top of main for loop over vertices, check=" + thisAV.nextToCheck;
+	    }
 	},
 	{
 	    label: "checkNextCategory",
@@ -982,7 +986,9 @@ shortest &larr; 0</td></tr>
 		    }
 		}
 	    },
-	    logMessage: "Check for new category leader"
+	    logMessage: function(thisAV) {
+		return "Check for new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+	    }
 	},
 	{
 	    label: "updateNextCategory",
@@ -1034,7 +1040,9 @@ shortest &larr; 0</td></tr>
 		    thisAV.nextAction = "checkNextCategory";
 		}
 	    },
-	    logMessage: "Update to new category leader"
+	    logMessage: function(thisAV) {
+		return thisAV.nextToCheck + " is new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+	    }
 	},
 	{
 	    label: "forLoopBottom",
@@ -1063,7 +1071,9 @@ shortest &larr; 0</td></tr>
 		thisAV.iterationDone = true;
 		thisAV.nextAction = "forLoopTop";
 	    },
-	    logMessage: "Update any newly found leaders on map and table"
+	    logMessage: function(thisAV) {
+		return "Update/discard on map and table";
+	    }
 	},
 	{
 	    label: "cleanup",
@@ -1076,7 +1086,9 @@ shortest &larr; 0</td></tr>
 		thisAV.nextAction = "DONE";
 		thisAV.iterationDone = true;
 	    },
-	    logMessage: "Cleanup and finalize visualization"
+	    logMessage: function(thisAV) {
+		return "Cleanup and finalize visualization";
+	    }
 	}
     ],
     
@@ -1193,13 +1205,13 @@ shortest &larr; 0</td></tr>
 
 	// this won't stay, should have some other way to log or
 	// only enable it for debugging
-	console.log("HDX ACTION START: " + currentAction.logMessage);
+	console.log("HDX ACTION START: " + currentAction.logMessage(this));
 
 	// undo any previous highlighting
 	unhighlightPseudocode();
 
 	// update status to this line of code's logMessage
-	hdxAV.algStat.innerHTML = currentAction.logMessage;
+	hdxAV.algStat.innerHTML = currentAction.logMessage(this);
 	
 	// execute the JS to continue the AV
 	currentAction.code(this);
