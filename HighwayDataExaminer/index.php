@@ -184,6 +184,7 @@ width:150px;
 table.dataTable tbody td{
 padding:0px;
 }
+
 #menuIcon{
 	padding: 0px;
 	margin: 0px;
@@ -254,7 +255,23 @@ padding:0px;
 	top: 35px;
 }
 
-/** Psudocode CSS */
+
+table.pseudocode {
+    font-size: 10pt;
+    font-family: "Courier New", Courier, monospace;
+    border: none;
+    border-spacing: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+    color: black;
+}
+
+td.psuedocode {
+    border: none;
+    border-collapse: collapse;
+}
+
 .highlight {
     background-color: yellow;
 }

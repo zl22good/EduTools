@@ -59,6 +59,9 @@ var hdxAV = {
 	this.previousAlgorithm = null;
     },
 
+    // for pseudocode highlighting, id of element to unhighlight
+    previousHighlight: null,
+
     // some commonly-used document elements
     algStat: null,
     algOptions: null,
@@ -338,6 +341,10 @@ var visualSettings = {
 	scale: 6,
 	name: "hoverV",
 	value: 0
+    },
+    pseudocodeDefault: {
+	color: "white",
+	textColor: "black"
     }
 };
 
@@ -652,6 +659,26 @@ function updatePolylineAndTable(edgeNum, vs, hideTableLine) {
     if (hideTableLine) {
 	row.style.display = "none";
     } 
+}
+
+// update a chunk of pseudocode with an id based on given visualsettings
+function highlightPseudocode(id, vs) {
+
+    let codeChunk = document.getElementById(id);
+    if (codeChunk != null) {
+	codeChunk.style.backgroundColor = vs.color;
+	codeChunk.style.textColor = vs.textColor;
+	hdxAV.previousHighlight = id;
+    }
+}
+
+// unhighlight previously-highlighted pseudocode
+function unhighlightPseudocode() {
+
+    if (hdxAV.previousHighlight != null) {
+	highlightPseudocode(hdxAV.previousHighlight,
+			    visualSettings.pseudocodeDefault);
+    }
 }
 
 // dummy AV entry for main menu
@@ -1075,32 +1102,51 @@ var hdxNewVertexExtremesSearchAV = {
 
     // pseudocode
     code: `
-<pre>longest <- 0
-shortest <- 0
-north <- 0
-south <- 0
-east <- 0
-west <- 0
-for (checkIndex <- 1 to |V|-1) {
-  if (len(v[checkIndex].label) > len(v[longest].label))) {
-    longest <- checkIndex
-  }
-  if (len(v[checkIndex].label) < len(v[shortest].label))) {
-    shortest <- checkIndex
-  }
-  if (v[checkIndex].lat > v[north].lat) {
-    north <- checkIndex
-  }
-  if (v[checkIndex].lat < v[south].lat) {
-    south <- checkIndex
-  }
-  if (v[checkIndex].lng < v[west].lng) {
-    west <- checkIndex
-  }
-  if (v[checkIndex].lng > v[east].lng) {
-    east <- checkIndex
-  }
-}</pre>
+<table class="pseudocode"><tr id="initialize" class="pseudocode"><td class="pseudocode">
+north &larr; 0<br />
+south &larr; 0<br />
+east &larr; 0<br />
+west &larr; 0<br />
+longest &larr; 0<br />
+shortest &larr; 0</td></tr>
+<tr id="forLoopTop"><td>for (check &larr; 1 to |V|-1)</td></tr>
+<tr id="checkNextCategory0"><td>
+&nbsp;&nbsp;if (v[check].lat > v[north].lat)
+</td></tr>
+<tr id="updateNextCategory0"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;north &larr; check
+</td></tr>
+<tr id="checkNextCategory1"><td>
+&nbsp;&nbsp;if (v[check].lat < v[south].lat)
+</td></tr>
+<tr id="updateNextCategory1"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;south &larr; check
+</td></tr>
+<tr id="checkNextCategory2"><td>
+&nbsp;&nbsp;if (v[check].lng > v[east].lng)
+</td></tr>
+<tr id="updateNextCategory2"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;east &larr; check
+</td></tr>
+<tr id="checkNextCategory3"><td>
+&nbsp;&nbsp;if (v[check].lng < v[west].lng)
+</td></tr>
+<tr id="updateNextCategory3"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;west &larr; check
+</td></tr>
+<tr id="checkNextCategory4"><td>
+&nbsp;&nbsp;if (len(v[check].label) < len(v[shortest].label)))
+</td></tr>
+<tr id="updateNextCategory4"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;shortest &larr; check
+</td></tr>
+<tr id="checkNextCategory5"><td>
+&nbsp;&nbsp;if (len(v[check].label) > len(v[longest].label)))
+</td></tr>
+<tr id="updateNextCategory5"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;longest &larr; check
+</td></tr>
+</table>
 `,
     
     // state variables for vertex extremes search
@@ -1225,8 +1271,8 @@ for (checkIndex <- 1 to |V|-1) {
 	{
 	    label: "initialize",
 	    comment: "initialize all leader indices to 0",
-	    pseudocode: "north <- 0, south <- 0, east <- 0, west <-0, shortest <- 0, longest <-0",
 	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
 		for (var i = 0; i < thisAV.categories.length; i++) {
 		    thisAV.categories[i].index = 0;
 		}
@@ -1260,8 +1306,8 @@ for (checkIndex <- 1 to |V|-1) {
 	{
 	    label: "forLoopTop",
 	    comment: "for loop to iterate over remaining vertices",
-	    pseudocode: "for (checkIndex <- 1 to |V|-1)",
 	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
 		thisAV.nextToCheck++;
 		if (thisAV.nextToCheck == waypoints.length) {
 		    thisAV.nextAction = "cleanup";
@@ -1283,8 +1329,9 @@ for (checkIndex <- 1 to |V|-1) {
 	{
 	    label: "checkNextCategory",
 	    comment: "check if current vertex is a new category leader",
-	    pseudocode: "TBD", //thisAV.categories[thisAV.nextCategory].comparisonPseudocode,
 	    code: function(thisAV) {
+		highlightPseudocode(this.label+thisAV.nextCategory,
+				    thisAV.categories[thisAV.nextCategory].visualSettings);
 		console.log("checkNextCategory for vertex " + thisAV.nextToCheck + " in category " + thisAV.nextCategory);
 		if (thisAV.categories[thisAV.nextCategory].newLeader()) {
 		    thisAV.nextAction = "updateNextCategory";
@@ -1304,10 +1351,10 @@ for (checkIndex <- 1 to |V|-1) {
 	{
 	    label: "updateNextCategory",
 	    comment: "update new category leader",
-	    pseudocode: "TBD", //thisAV.categories[thisAV.nextCategory].updatePseudocode;
-	    
 	    code: function(thisAV) {
 
+		highlightPseudocode(this.label+thisAV.nextCategory,
+				    thisAV.categories[thisAV.nextCategory].visualSettings);
 		// remember that we have a new leader so this doesn't
 		// get discarded at the end of the loop
 		thisAV.foundNewLeader = true;
@@ -1356,7 +1403,6 @@ for (checkIndex <- 1 to |V|-1) {
 	{
 	    label: "forLoopBottom",
 	    comment: "end of for loop iteration",
-	    pseudocode: "",
 	    code: function(thisAV){
 
 		// if this waypoint is the leader in any category, show it,
@@ -1386,7 +1432,6 @@ for (checkIndex <- 1 to |V|-1) {
 	{
 	    label: "cleanup",
 	    comment: "cleanup and updates at the end of the visualization",
-	    pseudocode: "",
 	    code: function(thisAV) {
 		hdxAV.algStat.innerHTML =
 		    "Done! Visited " + markers.length + " waypoints.";
@@ -1515,6 +1560,9 @@ for (checkIndex <- 1 to |V|-1) {
 	// this won't stay, should have some other way to log or
 	// only enable it for debugging
 	console.log("HDX ACTION START: " + currentAction.logMessage);
+
+	// undo any previous highlighting
+	unhighlightPseudocode();
 	
 	// execute the JS to continue the AV
 	currentAction.code(this);
