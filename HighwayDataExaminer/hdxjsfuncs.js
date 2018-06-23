@@ -918,7 +918,6 @@ shortest &larr; 0</td></tr>
 		thisAV.nextToCheck = 0;
 		thisAV.discarded = 0;
 	
-		hdxAV.algStat.innerHTML = "In Progress";
 		updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
 		updateAVControlEntry("visiting", "Visiting #0 (initial leader in each category: #0 " + waypoints[0].label);
 		updateAVControlEntry("discarded", "0 vertices discarded");
@@ -1192,14 +1191,15 @@ shortest &larr; 0</td></tr>
 
 	// we have an action to execute
 
-	// TODO: highlight appropriate pseudocode
-
 	// this won't stay, should have some other way to log or
 	// only enable it for debugging
 	console.log("HDX ACTION START: " + currentAction.logMessage);
 
 	// undo any previous highlighting
 	unhighlightPseudocode();
+
+	// update status to this line of code's logMessage
+	hdxAV.algStat.innerHTML = currentAction.logMessage;
 	
 	// execute the JS to continue the AV
 	currentAction.code(this);
