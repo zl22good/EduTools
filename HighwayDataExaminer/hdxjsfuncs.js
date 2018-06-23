@@ -1276,6 +1276,7 @@ for (checkIndex <- 1 to |V|-1) {
 		    updateAVControlEntry("undiscovered", (waypoints.length - thisAV.nextToCheck) + " vertices not yet visited");
 		    updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + waypoints[thisAV.nextToCheck].label);
 		}
+		thisAV.iterationDone = true;
 	    },
 	    logMessage: "Top of main for loop over vertices"
 	},
@@ -1392,6 +1393,7 @@ for (checkIndex <- 1 to |V|-1) {
 		updateAVControlEntry("undiscovered", "0 vertices not yet visited");
 		updateAVControlEntry("visiting", "");
 		thisAV.nextAction = "DONE";
+		thisAV.iterationDone = true;
 	    },
 	    logMessage: "Cleanup and finalize visualization"
 	}
@@ -1455,7 +1457,7 @@ for (checkIndex <- 1 to |V|-1) {
 	// if delay has become -1, it means we took a single step and
 	// should pause now rather than perform more work
 	if (hdxAV.delay == -1) {
-		hdxAV.setStatus(hdxStates.AV_PAUSED);
+	    hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}
 
 	// we are supposed to do some work, either a single action or
@@ -1464,11 +1466,13 @@ for (checkIndex <- 1 to |V|-1) {
 	    this.oneAction();
 	}
 	else {
+	    console.log("nextStep() calling oneIteration()");
 	    this.oneIteration();
 	}
 
 	// in either case, we now set the timeout for the next one
 	if (this.moreActions()) {
+	    console.log("nextStep(): setting callback for " + hdxAV.delay);
             var self = this;
             setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
@@ -1477,16 +1481,14 @@ for (checkIndex <- 1 to |V|-1) {
 	}
     },
 
-    // this code needs to move to avActions
-    finishUpdates() {
-    },
-
     // one iteration is now defined as a series of actions ending with
     // one which sets hdxAV.iterationDone to true
     oneIteration() {
 
-	hdxAV.iterationDone = false;
-	while (!hdxAV.iterationDone) {
+	console.log("oneIteration()");
+	this.iterationDone = false;
+	while (!this.iterationDone) {
+	    console.log("oneIteration() calling oneAction(), nextAction=" + this.nextAction);
 	    this.oneAction();
 	}
     },
