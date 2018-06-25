@@ -972,7 +972,7 @@ shortest &larr; 0</td></tr>
 	    code: function(thisAV) {
 		highlightPseudocode(this.label+thisAV.nextCategory,
 				    thisAV.categories[thisAV.nextCategory].visualSettings);
-		console.log("checkNextCategory for vertex " + thisAV.nextToCheck + " in category " + thisAV.nextCategory);
+		//console.log("checkNextCategory for vertex " + thisAV.nextToCheck + " in category " + thisAV.nextCategory);
 		if (thisAV.categories[thisAV.nextCategory].newLeader()) {
 		    thisAV.nextAction = "updateNextCategory";
 		}
@@ -1159,13 +1159,13 @@ shortest &larr; 0</td></tr>
 	    this.oneAction();
 	}
 	else {
-	    console.log("nextStep() calling oneIteration()");
+	    //console.log("nextStep() calling oneIteration()");
 	    this.oneIteration();
 	}
 
 	// in either case, we now set the timeout for the next one
 	if (this.moreActions()) {
-	    console.log("nextStep(): setting callback for " + hdxAV.delay);
+	    //console.log("nextStep(): setting callback for " + hdxAV.delay);
             var self = this;
             setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
@@ -1178,10 +1178,10 @@ shortest &larr; 0</td></tr>
     // one which sets hdxAV.iterationDone to true
     oneIteration() {
 
-	console.log("oneIteration()");
+	//console.log("oneIteration()");
 	this.iterationDone = false;
 	while (!this.iterationDone) {
-	    console.log("oneIteration() calling oneAction(), nextAction=" + this.nextAction);
+	    //console.log("oneIteration() calling oneAction(), nextAction=" + this.nextAction);
 	    this.oneAction();
 	}
     },
@@ -1205,7 +1205,7 @@ shortest &larr; 0</td></tr>
 
 	// this won't stay, should have some other way to log or
 	// only enable it for debugging
-	console.log("HDX ACTION START: " + currentAction.logMessage(this));
+	//console.log("HDX ACTION START: " + currentAction.logMessage(this));
 
 	// undo any previous highlighting
 	unhighlightPseudocode();
