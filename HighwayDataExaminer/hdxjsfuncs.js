@@ -791,6 +791,9 @@ shortest &larr; 0</td></tr>
     discarded: 0,
     foundNewLeader: false,
     nextAction: "initialize",
+    // list of polylines showing the directional bounds, updated by
+    // directionalBoundingBox function below
+    boundingPoly: [],
 
     // the categories for which we are finding our extremes,
     // with names for ids, labels to display, indicies of leader,
@@ -1026,6 +1029,10 @@ shortest &larr; 0</td></tr>
 		// but keep it shown as the vertex being visited on the
 		// map and in the table until the end of the iteration
 		thisAV.categories[thisAV.nextCategory].index = thisAV.nextToCheck;
+
+		// update bounding box
+		thisAV.directionalBoundingBox();
+		
 		updateAVControlEntry(
 		    thisAV.categories[thisAV.nextCategory].name, 
 		    thisAV.categories[thisAV.nextCategory].leaderString(
@@ -1091,6 +1098,63 @@ shortest &larr; 0</td></tr>
 	    }
 	}
     ],
+
+    // function to draw or update a bounding box of polylines
+    // that encloses the directional extremes found so far
+    directionalBoundingBox() {
+
+	// note this assumes that the order of the categories
+	// has north at 0, south at 1, east at 2, west at 3
+	let n = waypoints[this.categories[0].index].lat;
+	let s = waypoints[this.categories[1].index].lat;
+	let e = waypoints[this.categories[2].index].lon;
+	let w = waypoints[this.categories[3].index].lon;
+	let nEnds = [[n,w],[n,e]];
+	let sEnds = [[s,w],[s,e]];
+	let eEnds = [[n,e],[s,e]];
+	let wEnds = [[n,w],[s,w]];
+
+	// create or update as appropriate
+	if (this.boundingPoly.length == 0) {
+	    this.boundingPoly.push(
+		L.polyline(nEnds, {
+		    color: this.categories[0].visualSettings.color,
+		    opacity: 0.6,
+		    weight: 3
+		})
+	    );
+	    this.boundingPoly.push(
+		L.polyline(sEnds, {
+		    color: this.categories[1].visualSettings.color,
+		    opacity: 0.6,
+		    weight: 3
+		})
+	    );
+	    this.boundingPoly.push(
+		L.polyline(eEnds, {
+		    color: this.categories[2].visualSettings.color,
+		    opacity: 0.6,
+		    weight: 3
+		})
+	    );
+	    this.boundingPoly.push(
+		L.polyline(wEnds, {
+		    color: this.categories[3].visualSettings.color,
+		    opacity: 0.6,
+		    weight: 3
+		})
+	    );
+	    for (var i = 0; i < 4; i++) {
+		this.boundingPoly[i].addTo(map);
+	    }
+	}
+	else {
+	    this.boundingPoly[0].setLatLngs(nEnds);
+	    this.boundingPoly[1].setLatLngs(sEnds);
+	    this.boundingPoly[2].setLatLngs(eEnds);
+	    this.boundingPoly[3].setLatLngs(wEnds);
+	}
+    },
     
     // required start function
     // initialize a vertex-based search
