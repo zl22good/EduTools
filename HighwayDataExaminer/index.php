@@ -189,6 +189,7 @@ width:150px;
 table.dataTable tbody td{
 padding:0px;
 }
+
 #menuIcon{
 	padding: 0px;
 	margin: 0px;
@@ -259,7 +260,23 @@ padding:0px;
 	top: 35px;
 }
 
-/** Psudocode CSS */
+
+table.pseudocode {
+    font-size: 10pt;
+    font-family: "Courier New", Courier, monospace;
+    border: none;
+    border-spacing: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+    color: black;
+}
+
+td.psuedocode {
+    border: none;
+    border-collapse: collapse;
+}
+
 .highlight {
     background-color: yellow;
 }
@@ -445,6 +462,7 @@ padding:0px;
         </select>
 
       </td></tr>
+      <tr><td id="tracecode"><input id="traceCodeCheckbox" type="checkbox" name="Trace Pseudocode" onclick="traceCodeClicked()" />&nbsp;Trace Pseudocode</td></tr>
       <tr><td id="pseudo"><input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br><span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span></td></tr>
       <tr><td id="algorithmStatus"></td></tr>
       </tbody>
