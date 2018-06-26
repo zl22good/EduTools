@@ -4324,6 +4324,7 @@ console.log("do we get to populating the options");
 	algSelectFlag=true;
 	//hideAlgorithmControls();
 	showAlgStats();
+	document.getElementById("currentAlgorithm").innerHTML="Algorithm: (" + value +")";
     }
 	else{
 		hideSearchBar();

@@ -346,8 +346,9 @@ padding:0px;
   <span id="panelBtn" title="Menu" onclick="openSidePanel()">
      <i id="menuIcon" class="material-icons">menu</i>
   </span>
-  HDX: <span id="filename">Select a file to display</span>
+  HDX: <span id="filename">Select a file to display </span>
   <span id="status"></span>
+  <span id="currentAlgorithm"> (Algorithm Chosen)</span>
 </p>
 <div id="algorithmControls3">
 	<table id="newAlgControls">
@@ -369,8 +370,11 @@ padding:0px;
 						</select>
 					</td>
 					<td>
+						<input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br>
+					</td>
+					<td>
 						<input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
-						<input type="button" value="Show Graph Options" id="searchBarShow" onClick="ShowSearchBar()"/>
+						<input type="button" value="Load Options" id="searchBarShow" onClick="ShowSearchBar()"/>
 					</td>
 				</tr>
 			</tbody>
@@ -511,7 +515,7 @@ padding:0px;
 			<tbody id="algorithmVars">
 			<tr><td id="algorithmStatus"></td></tr>
 			<tr><td id="pseudo">
-						<input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br><span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span>
+						<span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span>
 					</td>
 			</tr>
 			</tbody>

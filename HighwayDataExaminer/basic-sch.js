@@ -169,6 +169,8 @@ $(document).ready(function(){
 	});
 	$("algOptionsDone").click(function() {
 		hideAlgorithmControls();
+		
+		
 	});
 });
 
