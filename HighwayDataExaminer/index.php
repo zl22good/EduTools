@@ -399,10 +399,6 @@ td.psuedocode {
 </div>
 <div id="map">
 </div>
-<!--
-<input type="button" id="togglecontents_table" value="Hide Table" style="left:100px; top:25px; opacity:.75; position:absolute; z-index:2000; padding:0;" onclick="toggleUI(event)">
-<input type="button" id="toggleselected" value="Hide Panel" style="left:180px; top:25px; opacity:.75; position:absolute; z-index:2000; padding:0;" onclick="toggleUI(event)">
--->
 <!-- commented out until this system can be reworked
 <select id="distUnits" style="position:absolute; left:100px; top:48px; width: 7rem; z-index:2;" onchange="changeUnits(event)">
 	<option value="miles">Miles</option>
@@ -411,68 +407,6 @@ td.psuedocode {
 	<option value="meters">Meters</option>
 </select>
 -->
-<!--
-<div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px; position:absolute; z-index:2000;">
-
-</div>
-<div id="options">
-  <table id="optionsTable" class="gratable">
-    <thead>
-      <tr><th>Load/Map Options</th></tr>
-    </thead>
-    <tbody>
-      <?php hdx_load_file_entries(); ?>
-      <tr><td>
-        <input id="showHidden" type="checkbox" name="Show Hidden Markers" onclick="showHiddenClicked()" checked="false">&nbsp;Show Hidden Markers
-      </td></tr>
-    </tbody>
-  </table>
-</div>
-<div id="pointbox">
-  No data loaded....
-</div>
-<div id="AlgorithmVisualization" position: absolute; z-index:9999;>
-    <form name="algVis" action="#">
-  <table class="gratable">
-    <thead>
-      <tr><th>Algorithm Vizualization Control Panel</th></tr>
-    </thead>
-    <tbody id="AVControlPanel">
-      <tr><td>
-        Algorithm to Visualize:
-        <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
-	<!-- filled in with options by JS code in hdxAV.initOnLoad() 
-        </select>
-
-      </td></tr>
-      <tr><td id="algorithmOptions"></td></tr>
-      <tr id="speedtr"><td>
-        <button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
-        <select id="speedChanger" onchange="speedChanged()">
-		<option value="0">Run To Completion</option>
-          <option value="1">Fastest possible</option>
-          <option value="5">Extremely fast</option>
-          <option value="20">Very fast</option>
-          <option value="50" selected>Fast</option>
-          <option value="100">Medium speed</option>
-          <option value="250">Pretty slow</option>
-          <option value="500">Slow</option>
-          <option value="1000">Painfully slow</option>
-		  <option value="-1">Step</option>
-        </select>
-
-      </td></tr>
-      <tr><td id="tracecode"><input id="traceCodeCheckbox" type="checkbox" name="Trace Pseudocode" onclick="traceCodeClicked()" />&nbsp;Trace Pseudocode</td></tr>
-      <tr><td id="pseudo"><input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br><span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span></td></tr>
-      <tr><td id="algorithmStatus"></td></tr>
-      </tbody>
-      </table>
-        <input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
-		<input type="button" value="Show Graph Options" id="searchBarShow" onClick="ShowSearchBar()"/>
-	    
-    </form>
-    </div>
-	-->
 	<div id="searchTest">
 	<form name="algVis" action="#">
 		<table id="searchTable" class="gratable">
