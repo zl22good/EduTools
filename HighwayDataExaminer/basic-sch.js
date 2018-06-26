@@ -152,7 +152,7 @@ $(document).ready(function(){
 	  source: substringMatcher(description)
 	});	
 	
-	
+	// adapted from https://howtodoinjava.com/scripting/jquery/jquery-detect-if-enter-key-is-pressed/
 	$("#searchBox").keypress(function(event) {
 		var keycode = (event.keycode ? event.keycode : event.which);
 		if(keycode == '13'){
