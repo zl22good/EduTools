@@ -167,9 +167,10 @@ $(document).ready(function(){
 	$("#searchBarShow").click(function() {
 		ShowSearchBar();
 	});
-	$("algOptionsDone").click(function() {
+	$("#algOptionsDone").click(function() {
+		console.log("can we click done?");
 		hideAlgorithmControls();
-		
+		showAlgStats();
 		
 	});
 });
