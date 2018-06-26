@@ -4448,15 +4448,9 @@ function getCurrentAlgorithm() {
 // pseudocode display event handler
 function showHidePseudocode() {
 
-    let show = document.getElementById("pseudoCheckbox").checked;
+    hdxAV.traceCode = document.getElementById("pseudoCheckbox").checked;
     document.getElementById("pseudoText").style.display =
-	(show ? "" : "none");
-}
-
-// trace code checkbox event handler
-function traceCodeClicked() {
-
-    hdxAV.traceCode = document.getElementById("traceCodeCheckbox").checked;
+	(hdxAV.traceCode ? "" : "none");
 }
 
 // generic event handler for start/pause/resume button
