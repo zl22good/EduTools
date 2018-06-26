@@ -1353,31 +1353,45 @@ var hdxEdgeExtremesSearchAV = {
 
     // pseudocode
     code:`
-<pre>longestLabel <- 0
-shortestLabel <- 0
-longestEdge <- 0
-shortestEdge <- 0
-for (checkIndex <- 1 to |E|-1) {
-  if (len(e[checkIndex].label) > len(e[longestLabel].label))) {
-    longestLabel <- checkIndex
-  }
-  if (len(e[checkIndex].label) < len(e[shortestLabel].label))) {
-    shortestLabel <- checkIndex
-  }
-  if (e[checkIndex].len > e[longestEdge].len) {
-    longestEdge <- checkIndex
-  }
-  if (e[checkIndex].len < e[shortestEdge].len) {
-    shortestEdge <- checkIndex
-  }
-}</pre>
+<table class="pseudocode"><tr id="initialize" class="pseudocode"><td class="pseudocode">
+longestLabel &larr; 0<br />
+shortestLabel &larr; 0<br />
+longestEdge &larr; 0<br />
+shortestEdge &larr; 0</td></tr>
+<tr id="forLoopTop"><td>for (checkIndex &larr; 1 to |E|-1)</td></tr>
+<tr id="checkNextCategory0"><td> 
+&nbsp;&nbsp;if (len(e[checkIndex].label) > len(e[longestLabel].label)))
+</td></tr>
+<tr id="updateNextCategory0"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;longestLabel &larr; checkIndex
+</td></tr>
+<tr id="checkNextCategory1"><td>
+&nbsp;&nbsp;if (len(e[checkIndex].label) < len(e[shortestLabel].label)))
+</td></tr>
+<tr id="updateNextCategory1"><td>	
+&nbsp;&nbsp;&nbsp;&nbsp;shortestLabel &larr; checkIndex
+</td></tr>
+<tr id="checkNextCategory2"><td>
+&nbsp;&nbsp;if (e[checkIndex].len > e[longestEdge].len)
+</td></tr>
+<tr id="updateNextCategory2"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;longestEdge &larr; checkIndex
+</td></tr>
+<tr id="checkNextCategory3"><td>
+&nbsp;&nbsp;if (e[checkIndex].len < e[shortestEdge].len)
+</td></tr>
+<tr id="updateNextCategory3"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;shortestEdge &larr; checkIndex
+</td></tr>
+</table>
 `,
     
     // state variables for edge search
     // next to examine
-    nextToCheck: -1,
+    nextToCheck: 0,
     discarded: 0,
-
+	foundNewLeader: false,
+	nextAction: "initialize",
     // the categories for which we are finding our extremes,
     // with names for ids, labels to display, indicies of leader,
     // comparison function to determine if we have a new leader,
@@ -1452,6 +1466,194 @@ for (checkIndex <- 1 to |E|-1) {
 	}
     ],
     
+	// the actions that make up this algorithm
+    avActions: [
+	{
+	    label: "initialize",
+	    comment: "initialize all leader indices to 0",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+		for (var i = 0; i < thisAV.categories.length; i++) {
+		    thisAV.categories[i].index = 0;
+		}
+		
+		// highlight vertex 0 as leader in all categories and current
+		thisAV.nextToCheck = 0;
+		thisAV.discarded = 0;
+	
+		updateAVControlEntry("undiscovered", (graphEdges.length - thisAV.nextToCheck) + " edges not yet visited");
+		updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + graphEdges[thisAV.nextToCheck].label);
+		updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
+
+		// show marker 0 as the leader in each category
+		// on the map and in the table
+		for (var i = 0; i < thisAV.categories.length; i++) {
+		    updatePolylineAndTable(thisAV.categories[i].index,
+					 thisAV.categories[i].visualSettings, 
+					  false);
+		    updateAVControlEntry(
+			thisAV.categories[i].name, 
+			thisAV.categories[i].leaderString(thisAV.categories[i].label,
+							  thisAV.categories[i].index)
+		    );
+		}
+		thisAV.iterationDone = true;
+		thisAV.nextAction = "forLoopTop";
+	    },
+	    logMessage: function(thisAV) {
+		return "Initializing leaders to vertex 0";
+	    }
+	},
+	{
+	    label: "forLoopTop",
+	    comment: "for loop to iterate over remaining waypoints",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+		thisAV.nextToCheck++;
+		if (thisAV.nextToCheck == graphEdges.length) {
+		    thisAV.nextAction = "cleanup";
+		}
+		else {
+		    // highlight nextToCheck as current vertex
+		    thisAV.nextAction = "checkNextCategory";
+		    thisAV.nextCategory = 0;
+		    thisAV.foundNewLeader = false;
+		    updateAVControlEntry("undiscovered", (graphEdges.length - thisAV.nextToCheck) + " edges not yet visited");
+			updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + graphEdges[thisAV.nextToCheck].label);
+		}
+		thisAV.iterationDone = true;
+	    },
+	    logMessage: function(thisAV) {
+		return "Top of main for loop over vertices, check=" + thisAV.nextToCheck;
+	    }
+	},
+	{
+	    label: "checkNextCategory",
+	    comment: "check if current vertex is a new category leader",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label+thisAV.nextCategory,
+				    thisAV.categories[thisAV.nextCategory].visualSettings);
+		//console.log("checkNextCategory for vertex " + thisAV.nextToCheck + " in category " + thisAV.nextCategory);
+		if (thisAV.categories[thisAV.nextCategory].newLeader()) {
+		    thisAV.nextAction = "updateNextCategory";
+		}
+		else {
+		    thisAV.nextCategory++;
+		    if (thisAV.nextCategory == thisAV.categories.length) {
+			thisAV.nextAction = "forLoopBottom";
+		    }
+		    else {
+			thisAV.nextAction = "checkNextCategory";
+		    }
+		}
+	    },
+	    logMessage: function(thisAV) {
+		return "Check for new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+	    }
+	},
+	{
+	    label: "updateNextCategory",
+	    comment: "update new category leader",
+	    code: function(thisAV) {
+
+		highlightPseudocode(this.label+thisAV.nextCategory,
+				    thisAV.categories[thisAV.nextCategory].visualSettings);
+		// remember that we have a new leader so this doesn't
+		// get discarded at the end of the loop
+		thisAV.foundNewLeader = true;
+
+		// if the old leader is still leading in some other category,
+		// color it as such, and if not, discard
+		let oldLeader = thisAV.categories[thisAV.nextCategory].index;
+		let stillALeader = false;
+		for (var i = 0; i < thisAV.categories.length; i++) {
+		    if (i == thisAV.nextCategory) continue;
+		    if (thisAV.categories[i].index == oldLeader) {
+			stillALeader = true;
+			updatePolylineAndTable(oldLeader,
+					     thisAV.categories[i].visualSettings, 
+					      false);
+			break;  // could lead in others, but pick the first
+		    }
+		}
+		if (!stillALeader) {
+		    updatePolylineAndTable(oldLeader, visualSettings.discarded,
+				 true);
+		    thisAV.discarded++;
+		    updateAVControlEntry("discarded", thisAV.discarded + " vertices discarded");
+		}
+		    
+		// update this category to indicate its new leader
+		// but keep it shown as the vertex being visited on the
+		// map and in the table until the end of the iteration
+		thisAV.categories[thisAV.nextCategory].index = thisAV.nextToCheck;
+		updateAVControlEntry(
+		    thisAV.categories[thisAV.nextCategory].name, 
+		    thisAV.categories[thisAV.nextCategory].leaderString(
+			thisAV.categories[thisAV.nextCategory].label,
+			thisAV.categories[thisAV.nextCategory].index)
+		);
+		thisAV.nextCategory++;
+		if (thisAV.nextCategory == thisAV.categories.length) {
+		    thisAV.nextAction = "forLoopBottom";
+		}
+		else {
+		    thisAV.nextAction = "checkNextCategory";
+		}
+	    },
+	    logMessage: function(thisAV) {
+		return thisAV.nextToCheck + " is new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+	    }
+	},
+	{
+	    label: "forLoopBottom",
+	    comment: "end of for loop iteration",
+	    code: function(thisAV){
+
+		// if this waypoint is the leader in any category, show it,
+		// otherwise it gets discarded
+		if (thisAV.foundNewLeader) {
+		    for (var i = 0; i < thisAV.categories.length; i++) {
+			if (thisAV.nextToCheck == thisAV.categories[i].index) {
+			    updatePolylineAndTable(thisAV.categories[i].index,
+						 thisAV.categories[i].visualSettings, 
+						 false);
+			    break;  // just use the first we find
+			}
+		    }
+		}
+		else {
+		    updatePolylineAndTable(thisAV.nextToCheck, visualSettings.discarded,
+			 true);
+		    thisAV.discarded++;
+			updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
+
+		}
+		thisAV.iterationDone = true;
+		thisAV.nextAction = "forLoopTop";
+	    },
+	    logMessage: function(thisAV) {
+		return "Update/discard on map and table";
+	    }
+	},
+	{
+	    label: "cleanup",
+	    comment: "cleanup and updates at the end of the visualization",
+	    code: function(thisAV) {
+		hdxAV.algStat.innerHTML =
+		    "Done! Visited " + graphEdges.length + " edges.";
+		updateAVControlEntry("undiscovered", "0 edges not yet visited");
+		updateAVControlEntry("visiting", "");
+		thisAV.nextAction = "DONE";
+		thisAV.iterationDone = true;
+	    },
+	    logMessage: function(thisAV) {
+		return "Cleanup and finalize visualization";
+	    }
+		
+	}
+    ],
+	
 
 		// keep track of edges that were leaders but got beaten to be
     // required start function
@@ -1459,7 +1661,6 @@ for (checkIndex <- 1 to |E|-1) {
 
 	hdxAV.algStat.innerHTML = "Initializing";
 
-	document.getElementById("connection").style.display = "";
 	// initialize all edges to have the "undiscovered" color
 	for (var i = 0; i < connections.length; i++) {
 	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
@@ -1473,57 +1674,122 @@ for (checkIndex <- 1 to |E|-1) {
 	//we don't need waypoints table here, so we remove those
 	document.getElementById("waypoints").style.display = "none";
 
+	
+	document.getElementById("connection").style.display = "";
+	var pointRows = document.getElementById("connection").getElementsByTagName("*");
+	for (var i = 0; i < pointRows.length; i++) {
+	    pointRows[i].style.display = "";
+	}
+
+	updateMarkerAndTable(0, visualSettings.visiting, false);
 	// initialize to start looking at edge 0
-	this.nextToCheck = 0;
-	this.discarded = 0;
+	//this.nextToCheck = 0;
+	//this.discarded = 0;
 
 	hdxAV.algStat.innerHTML = "In Progress";
 	updateAVControlEntry("undiscovered", graphEdges.length + "edges not yet visited");
 	updateAVControlEntry("visiting", "Preparing to visit: #0 " + graphEdges[0].label);
 	updateAVControlEntry("discarded", "0 edges discarded");
 	
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	if (!hdxAV.paused() && hdxAV.delay != -1) {
-	    var self = this;
-	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-	}
+	
+	// set up for our first action
+	this.nextAction = "initialize";
+
+	// to start, make just a simple call to nextStep, ignoring any
+	// delay until after the first action occurs
+
+	this.nextStep();
     },
 
     // required nextStep function for edge search
     nextStep() {
-    if (hdxAV.paused()) {
+
+	// if the simulation is paused, we can do nothing, as this function
+	// will be called again when we restart
+	if (hdxAV.paused()) {
             return;
 	}
+
+	// run to completion option
 	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	if (hdxAV.delay == -1) {
-		hdxAV.setStatus(hdxStates.AV_PAUSED);
-	}
+	    while (this.moreActions()) {
 		this.oneIteration();
-	if (this.moreWork) {
-	    updatePolylineAndTable(this.nextToCheck,
-				   visualSettings.visiting, false);
+	    }
+	    return;
+	}
+
+	// if delay has become -1, it means we took a single step and
+	// should pause now rather than perform more work
+	if (hdxAV.delay == -1) {
+	    hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+
+	// we are supposed to do some work, either a single action or
+	// a full iteration
+	if (hdxAV.traceCode) {
+	    this.oneAction();
+	}
+	else {
+	    //console.log("nextStep() calling oneIteration()");
+	    this.oneIteration();
+	}
+
+	// in either case, we now set the timeout for the next one
+	if (this.moreActions()) {
+	    //console.log("nextStep(): setting callback for " + hdxAV.delay);
             var self = this;
             setTimeout(function() { self.nextStep() }, hdxAV.delay);
 	}
 	else {
-	    this.finishUpdates();
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	}
     },
 	
-	finishUpdates()
-	{
-		hdxAV.setStatus(hdxStates.AV_COMPLETE);
-            hdxAV.algStat.innerHTML =
-		"Done! Visited " + graphEdges.length + " edges.";
-	    updateAVControlEntry("undiscovered", "0 edges not yet visited");
-	    updateAVControlEntry("visiting", "");
-	    updateAVControlEntry("discarded", this.discarded + " edges discarded");
+	oneAction() {
+
+	// look up the action to execute next
+	let currentAction = null;
+	for (var i = 0; i < this.avActions.length; i++) {
+	    if (this.nextAction == this.avActions[i].label) {
+		currentAction = this.avActions[i];
+		break;
+	    }
+	}
+	if (currentAction == null) {
+	    alert("HDX Internal error: bad AV action");
+	    hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+
+	// we have an action to execute
+
+	// this won't stay, should have some other way to log or
+	// only enable it for debugging
+	//console.log("HDX ACTION START: " + currentAction.logMessage(this));
+
+	// undo any previous highlighting
+	unhighlightPseudocode();
+
+	// update status to this line of code's logMessage
+	hdxAV.algStat.innerHTML = currentAction.logMessage(this);
+	
+	// execute the JS to continue the AV
+	currentAction.code(this);
+    },
+	
+	moreActions() {
+	return this.nextAction != "DONE";
+    },
+	
+	oneIteration(){
+	//console.log("oneIteration()");
+	this.iterationDone = false;
+	while (!this.iterationDone) {
+	    //console.log("oneIteration() calling oneAction(), nextAction=" + this.nextAction);
+	    this.oneAction();
+	}
 	},
-	oneIteration()
+	
+	Iteration()
 	{
 
 	// keep track of edges that were leaders but got beaten to be
@@ -1531,7 +1797,6 @@ for (checkIndex <- 1 to |E|-1) {
 	var defeated = [];
 	
 	// keep track of whether the current edge becomes a new leader
-        var foundNewLeader = false;
 	
 	// special case of first checked
 	if (this.nextToCheck == 0) {
@@ -1568,7 +1833,7 @@ for (checkIndex <- 1 to |E|-1) {
 		}
 	    }
             if (discard) {
-		updatePolylineAndTable(toCheck, visualSettings.discarded,
+		updatePolylineAndTable(this.nexttoCheck, visualSettings.discarded,
 				       true);
 		this.discarded++;
             }
@@ -1582,7 +1847,7 @@ for (checkIndex <- 1 to |E|-1) {
 				       this.categories[i].visualSettings,
 				       false);
 		updateAVControlEntry(
-		    this.categories[i].name, 
+		    thisAV.categories[i].name, 
 		    this.categories[i].leaderString(this.categories[i].label,
 						    this.categories[i].index)
 		);
@@ -1590,7 +1855,7 @@ for (checkIndex <- 1 to |E|-1) {
 	}
 	else {
 	    // no new leader, this edge gets discarded
-	    updatePolylineAndTable(this.nextToCheck,
+	    updatePolylineAndTable(thisAV.nextToCheck,
 				   visualSettings.discarded, true);
 	    this.discarded++;
 	}
@@ -1604,14 +1869,6 @@ for (checkIndex <- 1 to |E|-1) {
 	
 	},
 		
-    runToCompletion()
-	{
-		while(this.moreWork()) {
-			this.oneIteration();	
-		}
-		this.finishUpdates();
-	},
-	
     // set up UI for the start of edge search
     setupUI() {
 
@@ -1627,11 +1884,6 @@ for (checkIndex <- 1 to |E|-1) {
 	}
 
     },
-	
-	moreWork()
-	{
-		return (this.nextToCheck < graphEdges.length);
-	},
 
     // clean up edge search UI
     cleanupUI() {
