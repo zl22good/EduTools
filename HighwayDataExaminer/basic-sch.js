@@ -98,11 +98,11 @@ getGraphs();
 console.log(graphs);
 
 function hideSearchBar(){
-	document.getElementById("searchTest").style.zIndex = 0;
+	document.getElementById("searchTest").style.display ="none";
 }
 function ShowSearchBar()
 {
-	document.getElementById("searchTest").style.zIndex = 10500;
+	document.getElementById("searchTest").style.display = "table";
 	document.getElementById("hideSearchBar").disabled=false;
 }
  function hideAlgorithmControls()
@@ -166,6 +166,9 @@ $(document).ready(function(){
 	});
 	$("#searchBarShow").click(function() {
 		ShowSearchBar();
+	});
+	$("algOptionsDone").click(function() {
+		hideAlgorithmControls();
 	});
 });
 

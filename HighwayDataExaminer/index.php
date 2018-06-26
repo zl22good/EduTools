@@ -284,7 +284,7 @@ padding:0px;
 #searchTest{
 	margin: auto;
 	background-color: white; 
-	z-index: 5000;
+	z-index: 11000;
 	position: absolute;
 }
 #searchTable{
@@ -498,7 +498,7 @@ padding:0px;
 				</tr>
 				<tr>
 					<td>
-						<input type="button" value="Done">
+						<input type="button" value="Done" id="algOptionsDone" onClick="hideAlgorithmControls()">
 					</td>
 				</tr>
 			</tbody>

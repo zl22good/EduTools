@@ -4322,7 +4322,7 @@ console.log("do we get to populating the options");
 	hideSearchBar();
 	showTopAlgControls();
 	algSelectFlag=true;
-	hideAlgorithmControls();
+	//hideAlgorithmControls();
 	showAlgStats();
     }
 	else{
