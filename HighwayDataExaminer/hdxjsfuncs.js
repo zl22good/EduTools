@@ -12,6 +12,9 @@
 // some globals used here (map, waypoints, markers, etc) come from
 // tmjsfuncs.js
 
+// start UI redesign 2018-06-14
+
+
 // variables declared here are HDX-specific global variables
 
 // Essentially an enum of possible states of the simulation, used to
@@ -30,6 +33,9 @@ var hdxStates = {
     AV_PAUSED: 9,
     AV_COMPLETE: 10
 };
+
+var algSelectFlag = false;
+
 
 // group of variables used by many or all algorithm visualizations
 var hdxAV = {
@@ -99,7 +105,7 @@ var hdxAV = {
 
     // all setup that needs to happen on page load for HDX
     initOnLoad() {
-	
+	console.log("does initOnLoad working?");
 	// populate the list of algorithms -- add new entries here
 	this.avList.push(hdxNoAV);
 	this.avList.push(hdxVertexExtremesSearchAV);
@@ -113,39 +119,41 @@ var hdxAV = {
 	let s = document.getElementById("AlgorithmSelection");
 	s.innerHTML = "";
 	for (var i = 0; i < this.avList.length; i++) {
+		console.log("is this loop spinning?");
 	    let av = this.avList[i];
 	    s.innerHTML += '<option value="' + av.value +
-		'">' + av.name + '</option>';	    
+		'">' + av.name + '</option>';
+			console.log(s.innerHTML);
 	}
 
-	// make the "selected" div resizable, was function makeResize()
+	/* // make the "selected" div resizable, was function makeResize()
 	$( "#selected" ).resizable();
 	var div = document.createElement("div");
 	div.setAttribute("id", "resize");
 	document.getElementById("selected").appendChild(div);
-	$( "#contents_table" ).resizable();
+	$( "#contents_table" ).resizable(); */
 
 	// initalize table for upper right side dropdown
-	toggleTable();
+	//toggleTable();
 
 	// set up side panel
 	sidePanel();
 
 	// set up main area, was function mainArea()
-	var main = document.createElement("div");
-	main.setAttribute("id", "main");
-	main.appendChild(document.getElementById("map"));
-	main.appendChild(document.getElementById("togglecontents_table"));
+	//var main = document.createElement("div");
+	//main.setAttribute("id", "main");
+	//main.appendChild(document.getElementById("map"));
+	//main.appendChild(document.getElementById("togglecontents_table"));
 	//main.appendChild(document.getElementById("distUnits"));
-	main.appendChild(document.getElementById("selected"));
-	main.appendChild(document.getElementById("options"));
-	main.appendChild(document.getElementById("pointbox"));
-	main.appendChild(document.getElementById("AlgorithmVisualization"));
-	main.appendChild(document.getElementById("controlbox"));
-	main.appendChild(document.getElementById("contents_table"));
-	main.appendChild(document.getElementById("panelBtn"));
-	main.appendChild(document.getElementById("toggleselected"));
-	document.body.appendChild(main);
+	//main.appendChild(document.getElementById("selected"));
+	//main.appendChild(document.getElementById("options"));
+	//main.appendChild(document.getElementById("pointbox"));
+	//main.appendChild(document.getElementById("AlgorithmVisualization"));
+	//main.appendChild(document.getElementById("controlbox"));
+	//main.appendChild(document.getElementById("contents_table"));
+	//main.appendChild(document.getElementById("panelBtn"));
+	//main.appendChild(document.getElementById("toggleselected"));
+	//document.body.appendChild(main);
 
 	// set up some references to commonly-used document elements
 	this.algStat = document.getElementById("algorithmStatus");
@@ -156,6 +164,7 @@ var hdxAV = {
 	registerMarkerClickListener(labelClickHDX);
     }
 };
+
 
 /**********************************************************************
  * General AV functions
@@ -353,7 +362,7 @@ var AVCPsuffix = "AVCPEntry";
 /* add entry to the algorithm visualization control panel */
 function addEntryToAVControlPanel(namePrefix, vs) {
     
-    let avControlTbody = document.getElementById('AVControlPanel');
+    let avControlTbody = document.getElementById('algorithmVars');
     let infoBox = document.createElement('td');
     let infoBoxtr= document.createElement('tr');
     infoBox.setAttribute('id', namePrefix + AVCPsuffix);
@@ -366,7 +375,7 @@ function addEntryToAVControlPanel(namePrefix, vs) {
 /* remove entry from algorithm visualization control panel */
 function removeEntryFromAVControlPanel(namePrefix) {
 
-    let avControlTbody = document.getElementById('AVControlPanel');
+    let avControlTbody = document.getElementById('algorithmVars');
     let infoBox = document.getElementById(namePrefix + AVCPsuffix);
     if (infoBox != null) {
 	let infoBoxtr= infoBox.parentNode;
@@ -3683,6 +3692,57 @@ function readServer(event) {
     }
 }
 
+function readServerSearch(file)
+{
+	//clearTables();
+	var tmgFile = file;
+	console.log(tmgFile);
+	var xmlhttp = new XMLHttpRequest();
+	console.log(xmlhttp);
+	xmlhttp.onreadystatechange = function() {
+		if(xmlhttp.readyState == 4 && xmlhttp.status == 200){
+			console.log("got to status change");
+			var file = new Blob([xmlhttp.responseText], {type : "text/plain"});
+			console.log("the blob works");
+			console.log(file);
+			file.name = tmgFile;
+			console.log(file.name);
+			console.log("file.name worked");
+			var menu = document.getElementById("showHideMenu");
+			console.log("was able to hide menu");
+			console.log(menu);
+			
+			if(tmgFile){
+				document.getElementById('filename').innerHTML = file.name;
+				var reader;
+				try{
+					reader = new FileReader();
+                    console.log("created Reader");					
+					console.log(reader);
+				}
+				catch(e){
+					console(e);
+					pointboxErrorMsg("Error: unable to access file (Perhaps no browser support?  Try recent Firefox or Chrome releases.).");
+					return;
+				}
+				reader.readAsText(file, "UTF-8");
+				console.log("able to read the text");
+				console.log(reader);
+				reader.onload = fileLoaded;
+				console.log("able to use fileLoaded");
+				console.log(reader.onload);
+			}
+			
+		}
+	};
+	xmlhttp.open("GET", "http://courses.teresco.org/metal/graphdata/"+tmgFile, true);
+	console.log("able to open the xml request");
+	console.log(xmlhttp);
+	xmlhttp.send();
+	console.log("got to xml send");
+}
+
+
 // when the FileReader created in startRead has finished, this will be called
 // to process the contents of the file
 function fileLoaded(event) {
@@ -3750,6 +3810,7 @@ function processContents(fileContents) {
     else if (fileName.indexOf(".tmg") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
 	pointboxContents = parseTMGContents(fileContents);
+	showAlgorithmControls();
     }
     
     // document.getElementById('pointbox').innerHTML = pointboxContents;
@@ -3759,7 +3820,18 @@ function processContents(fileContents) {
     document.getElementById('contents_table').appendChild(newEle);
     //createDataTable("#waypoints");
     //createDataTable("#connection");
-    updateMap();   
+	hideSearchBar();
+    updateMap();
+	/* if(algSelectFlag == false)
+	{
+		showSearchBar();
+	}
+	else
+	{
+		hideSearchBar();
+	} */
+	
+	
 }
 
 // TODO: make sure maps cannot be selected when an AV is running
@@ -4363,57 +4435,7 @@ function PTHLineInfo(line, from) {
     return result;
 }
 
-function toggleTable() {
-    var menu = document.getElementById("showHideMenu");
-    var index = menu.selectedIndex;
-    var value = menu.options[index].value;
-    //  var algoTable = menu.algorithmbased.value;
-    var pointbox = document.getElementById("pointbox");
-    var options = document.getElementById("options");
-    var selected = document.getElementById("selected");
-    var algorithmVisualization =
-	document.getElementById("AlgorithmVisualization");
-    // show only table (or no table) based on value
-    if (value == "pointbox") {
-	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
-	var newEle = document.createElement("div");
-	newEle.setAttribute("id", "newEle");
-	newEle.innerHTML = pointbox.innerHTML;
-	if ($("#connection").length != 0 || $("#waypoints").length != 0)
-	    document.getElementById("connection").parentNode.parentNode.style.display = "";
-	selected.appendChild(newEle);
-    }
-    else if (value == "options") {
-	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
-	var newEle = document.createElement("div");
-	newEle.setAttribute("id", "newEle");
-	newEle.innerHTML = options.innerHTML;
-	selected.appendChild(newEle);
-	if ($("#connection").length != 0 || $("#waypoints").length != 0)
-	    document.getElementById("connection").parentNode.parentNode.style.display = "";
-	if (document.querySelector(".loadcollapse").style.display == "none")
-	    document.getElementById("loadcollapsebtn").style.display = "";
-    }
-    else if (value =="AlgorithmVisualization") {
-	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
-	var newEle = document.createElement("div");
-	newEle.setAttribute("id", "newEle");
-	newEle.innerHTML = algorithmVisualization.innerHTML;
-	selected.appendChild(newEle);
-	if ($("#connection").length != 0 || $("#waypoints").length != 0)
-	    document.getElementById("connection").parentNode.parentNode.style.display = "";
-	if (document.querySelector(".loadcollapse").style.display == "none")
-	    document.getElementById("loadcollapsebtn").style.display = "";
-    }
-    else {  
-	selected.removeChild(selected.childNodes[selected.childNodes.length-1]);
-	var newEle = document.createElement("div");
-	newEle.setAttribute("id", "newEle");
-	selected.appendChild(newEle);
-	if ($("#connection").length != 0 || $("#waypoints").length != 0)
-	    document.getElementById("connection").parentNode.parentNode.style.display = "none";
-    }
-}
+
 
 // get the selected algorithm from the AlgorithmSelection menu
 // (factored out here to avoid repeated code)
@@ -4540,7 +4562,7 @@ function showLegend() {
 
 // Event handler for state change on the algorithm selection select control
 function algorithmSelected() {
-
+console.log("do we get to populating the options");
     // if we have an algorithm already selected, clean up its
     // UI first
     if (hdxAV.currentAV != null) {
@@ -4554,7 +4576,17 @@ function algorithmSelected() {
     if (value != hdxNoAV.value) {
 	hdxAV.setStatus(hdxStates.AV_SELECTED);
 	hdxAV.startPause.disabled = false;
+	hideSearchBar();
+	showTopAlgControls();
+	algSelectFlag=true;
+	//hideAlgorithmControls();
+	//showAlgStats();
+	
     }
+	else{
+		hideSearchBar();
+		showAlgorithmControls();
+	}
 
     // set the current algorithm
     for (var i = 1; i < hdxAV.avList.length; i++) {
@@ -4563,7 +4595,7 @@ function algorithmSelected() {
 	    break;
 	}
     }
-
+	document.getElementById("currentAlgorithm").innerHTML="Algorithm: (" + hdxAV.currentAV.name +")";
     // set pseudocode
     document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
 
@@ -4623,7 +4655,7 @@ function allowdrop(event) {
     event.preventDefault();
 }   
 
-function toggleUI(event) {
+/* function toggleUI(event) {
     var button = event.target;
     var panel1 = document.getElementById(button.id.substring(6));
     if (button.value.substring(0,4) == "Hide") {
@@ -4634,7 +4666,8 @@ function toggleUI(event) {
 	button.value = "Hide"+button.value.substring(4);
 	panel1.style.display = "";
     }
-}
+ }
+ */
 
 
 // moved to the end for now, until all variables are grouped by algorithm

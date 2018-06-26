@@ -42,14 +42,19 @@
     exit;
   }
 ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min.js"></script>
+<script src="basic-sch.js"></script>
 <script src="tmlib/tmjsfuncs.js" type="text/javascript"></script>
 <script src="hdxjsfuncs.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="supplmentalTypeAhead.css"/>
+
+
 
 <?php
 // function to generate the file load html
 function hdx_load_file_entries() {
   echo <<<ENDOFSTUFF
-	  <tr><td id="selects" class="loadcollapse">
+		<tr><td id="selects" class="loadcollapse">
 		Load METAL graph: (select filters then press "Get Graph List") <br>
 		Sort criteria:
 		<select id = "orderOptions">
@@ -118,7 +123,7 @@ ENDOFSTUFF;
 }
 #map {
   position: absolute;
-  top:25px;
+  top: 25px;
   bottom:0px;
   width: 100%;
   overflow:hidden;
@@ -293,6 +298,64 @@ td.psuedocode {
 #boxContainer{
 	padding-left: 30px;
 }
+#searchTest{
+	margin: auto;
+	background-color: white; 
+	z-index: 11000;
+	position: absolute;
+}
+#searchTable{
+	border: 1px solid black;
+	
+}
+#searchBox{
+	width: 365px;
+}
+#algorithmControls2{
+	margin: auto;
+	background-color: white; 
+	z-index: 70000;
+	position: absolute;
+	display: none;
+}
+#algControlsPanel{
+	border: 1px solid black;
+}
+#selected{
+	display: none;
+}
+#algStats{
+	margin:auto;
+	z-index: 10000;
+	background-color: white;
+	position: absolute;
+	overflow: scroll;
+	max-width: 45%;
+	max-height: 50%;
+	opacity: .95;
+	display: none;
+}
+#algStatsTable{
+	border: 1px solid black;
+	width: 365px;
+	
+	
+}
+#algorithmControls3{
+	background-color: white;
+    margin: auto;
+	top: 25px;
+	left: 40%;
+	margin-left: -80px;
+	position: absolute;
+	z-index: 11000;
+	display: none;
+}
+
+
+
+
+
 </style>
 </head>
 <body onload="loadmap(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
@@ -300,13 +363,46 @@ td.psuedocode {
   <span id="panelBtn" title="Menu" onclick="openSidePanel()">
      <i id="menuIcon" class="material-icons">menu</i>
   </span>
-  HDX: <span id="filename">Select a file to display</span>
+  HDX: <span id="filename">Select a file to display </span>
   <span id="status"></span>
+  <span id="currentAlgorithm"> (Algorithm Chosen)</span>
 </p>
+<div id="algorithmControls3">
+	<table id="newAlgControls">
+			<tbody>
+				<tr>
+					<td id="speedtr">
+						<button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
+						<select id="speedChanger" onchange="speedChanged()">
+						<option value="0">Run To Completion</option>
+						  <option value="1">Fastest possible</option>
+						  <option value="5">Extremely fast</option>
+						  <option value="20">Very fast</option>
+						  <option value="50" selected>Fast</option>
+						  <option value="100">Medium speed</option>
+						  <option value="250">Pretty slow</option>
+						  <option value="500">Slow</option>
+						  <option value="1000">Painfully slow</option>
+						  <option value="-1">Step</option>
+						</select>
+					</td>
+					<td>
+						<input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br>
+					</td>
+					<td>
+						<input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
+						<input type="button" value="Load Options" id="searchBarShow" onClick="ShowSearchBar()"/>
+					</td>
+				</tr>
+			</tbody>
+	</table>
+</div>
 <div id="map">
 </div>
+<!--
 <input type="button" id="togglecontents_table" value="Hide Table" style="left:100px; top:25px; opacity:.75; position:absolute; z-index:2000; padding:0;" onclick="toggleUI(event)">
 <input type="button" id="toggleselected" value="Hide Panel" style="left:180px; top:25px; opacity:.75; position:absolute; z-index:2000; padding:0;" onclick="toggleUI(event)">
+-->
 <!-- commented out until this system can be reworked
 <select id="distUnits" style="position:absolute; left:100px; top:48px; width: 7rem; z-index:2;" onchange="changeUnits(event)">
 	<option value="miles">Miles</option>
@@ -315,6 +411,7 @@ td.psuedocode {
 	<option value="meters">Meters</option>
 </select>
 -->
+<!--
 <div id="selected" draggable="true"  ondragstart="drag(event)" style="left:10px; top:70px; position:absolute; z-index:2000;">
 
 </div>
@@ -341,11 +438,10 @@ td.psuedocode {
       <tr><th>Algorithm Vizualization Control Panel</th></tr>
     </thead>
     <tbody id="AVControlPanel">
-      <?php hdx_load_file_entries(); ?>
       <tr><td>
         Algorithm to Visualize:
         <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
-	<!-- filled in with options by JS code in hdxAV.initOnLoad() -->
+	<!-- filled in with options by JS code in hdxAV.initOnLoad() 
         </select>
 
       </td></tr>
@@ -372,8 +468,77 @@ td.psuedocode {
       </tbody>
       </table>
         <input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
+		<input type="button" value="Show Graph Options" id="searchBarShow" onClick="ShowSearchBar()"/>
+	    
     </form>
     </div>
+	-->
+	<div id="searchTest">
+	<form name="algVis" action="#">
+		<table id="searchTable" class="gratable">
+			<thead>
+				<tr><th>Search for a graph:</th></tr>
+			</thead>
+			<tbody id="AVControlPanel">
+			<tr><td>
+					<div id="the-basics">
+					  <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
+					  
+					</div>
+			</td></tr>
+			<tr>
+				<td>
+					<div>
+						<?php hdx_load_file_entries(); ?>
+					</div>
+				</td>
+			</tr>
+			
+	  
+			<tr><td> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled>
+			</tbody>
+		</table>
+	</div>
+	<div id="algorithmControls2" style="display=none;">
+		<table id="algControlsPanel" style="display=none;" class="gratable">
+			<thead>
+				<tr><th>Algorithm Options</th></tr>
+			</thead>
+			<tbody>
+			<tr>
+			<td>
+				Algorithm to Visualize:
+			<select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
+		<!-- filled in with options by JS code in hdxAV.initOnLoad() -->
+			</select>
+
+      </td>
+			</tr>
+				<tr>
+					<td id="algorithmOptions"></td>
+					
+				</tr>
+				<tr>
+					<td>
+						<input type="button" value="Done" id="algOptionsDone" onClick="hideAlgorithmControls()">
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	</form>
+	<div id="algStats">
+		<table id="algStatsTable" class="gratable">
+			<thead><tr><th>Algorithm Information</th></tr><thead>
+			<tbody id="algorithmVars">
+			<tr><td id="algorithmStatus"></td></tr>
+			<tr><td id="pseudo">
+						<span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span>
+					</td>
+			</tr>
+			</tbody>
+		</table>
+	</div>
 
     <div id="controlbox" style="z-index:2000;">
         <select id="showHideMenu" onchange="toggleTable();">
