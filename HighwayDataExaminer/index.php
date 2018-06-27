@@ -351,6 +351,11 @@ td.psuedocode {
 	z-index: 11000;
 	display: none;
 }
+#algorithmVars{
+	overflow: auto;
+	max-height: 500px;
+	display: block;
+}
 
 
 
