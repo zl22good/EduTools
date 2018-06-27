@@ -4847,7 +4847,7 @@ console.log("do we get to populating the options");
 	    break;
 	}
     }
-	document.getElementById("currentAlgorithm").innerHTML="Algorithm: (" + hdxAV.currentAV.name +")";
+	document.getElementById("currentAlgorithm").innerHTML="Algorithm: " + hdxAV.currentAV.name;
     // set pseudocode
     document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
 
