@@ -301,7 +301,7 @@ td.psuedocode {
 #searchTest{
 	margin: auto;
 	background-color: white; 
-	z-index: 11000;
+	z-index: 14000;
 	position: absolute;
 }
 #searchTable{
@@ -314,7 +314,7 @@ td.psuedocode {
 #algorithmControls2{
 	margin: auto;
 	background-color: white; 
-	z-index: 70000;
+	z-index: 12000;
 	position: absolute;
 	display: none;
 }
