@@ -434,7 +434,7 @@ td.psuedocode {
 			</tr>
 			
 	  
-			<tr><td> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled>
+			<tr><td id="hideButtonRow"> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled></td></tr>
 			</tbody>
 		</table>
 	</div>

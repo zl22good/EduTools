@@ -104,6 +104,7 @@ function ShowSearchBar()
 {
 	document.getElementById("searchTest").style.display = "table";
 	document.getElementById("hideSearchBar").disabled=false;
+	//document.getElementById("hideButtonRow").display="table-cell";
 }
  function hideAlgorithmControls()
 {
