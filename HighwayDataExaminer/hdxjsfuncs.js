@@ -4041,26 +4041,32 @@ function processContents(fileContents) {
     var fileName = document.getElementById('filename').innerHTML;
     if (fileName.indexOf(".wpt") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseWPTContents(fileContents);
     }
     else if (fileName.indexOf(".pth") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint Path File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parsePTHContents(fileContents);
     }
     else if (fileName.indexOf(".nmp") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Near-Miss Point File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseNMPContents(fileContents);
     }
     else if (fileName.indexOf(".wpl") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint List File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseWPLContents(fileContents);
     }
     else if (fileName.indexOf(".gra") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseGRAContents(fileContents);
     }
     else if (fileName.indexOf(".tmg") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseTMGContents(fileContents);
 	showAlgorithmControls();
     }

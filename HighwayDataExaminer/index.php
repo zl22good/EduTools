@@ -363,9 +363,10 @@ td.psuedocode {
   <span id="panelBtn" title="Menu" onclick="openSidePanel()">
      <i id="menuIcon" class="material-icons">menu</i>
   </span>
-  HDX: <span id="filename">Select a file to display </span>
+  HDX: <span id="startUp">Select data to display using the controls in the upper left</span>
+  <span id="filename">Select a file to display </span>
   <span id="status"></span>
-  <span id="currentAlgorithm"> (Algorithm Chosen)</span>
+  <span id="currentAlgorithm"></span>
 </p>
 <div id="algorithmControls3">
 	<table id="newAlgControls">
