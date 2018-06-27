@@ -412,15 +412,19 @@ td.psuedocode {
 	<form name="algVis" action="#">
 		<table id="searchTable" class="gratable">
 			<thead>
-				<tr><th>Search for a graph:</th></tr>
+				<tr><th>Load Data:</th></tr>
 			</thead>
 			<tbody id="AVControlPanel">
-			<tr><td>
-					<div id="the-basics">
-					  <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
-					  
-					</div>
-			</td></tr>
+			<tr>
+				
+				<td>
+				Search for a graph:
+						<div id="the-basics">
+						  <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
+						  
+						</div>
+				</td>
+			</tr>
 			<tr>
 				<td>
 					<div>
