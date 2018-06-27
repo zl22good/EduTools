@@ -35,6 +35,7 @@ var hdxStates = {
 };
 
 var algSelectFlag = false;
+var defaultOptions = true;
 
 
 // group of variables used by many or all algorithm visualizations
@@ -443,7 +444,7 @@ var hdxVertexSelector = {
 // label is the label for the control
 // initVal is the waypoint number to use for initialization
 function buildWaypointSelector(id,label,initVal) {
-
+	
     return label + ' <input id="' + id +
 	'" onfocus="hdxVertexSelector.startSelection(\'' + id +
 	'\')" type="number" value="' + initVal + '" min="0" max="' +
@@ -451,6 +452,7 @@ function buildWaypointSelector(id,label,initVal) {
 	'onchange="waypointSelectorChanged(\'' + id + '\')"' +
 	'/><span id="' + id + 'Label">' + waypoints[initVal].label +
 	'</span>';
+	
 }
 
 // event handler for waypoint selectors
@@ -459,6 +461,7 @@ function waypointSelectorChanged(id) {
     let vNum = document.getElementById(id).value;
     //let vNum = document.querySelector(id).value;
     document.getElementById(id + "Label").innerHTML = waypoints[vNum].label;
+	
 }
 
 // variables and functions to highlight waypoints and connections
@@ -2259,6 +2262,7 @@ while LDV nonempty {
         hdxAV.algOptions.innerHTML = 'Order: <select id="traversalDiscipline"><option value="BFS">Breadth First</option><option value="DFS">Depth First</option><option value="RFS">Random</option></select>' +
 	    '<br /><input id="findConnected" type="checkbox" name="Find all connected components">&nbsp;Find all connected components' +
 	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0);
+		
 //            '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
 	addEntryToAVControlPanel("visiting", visualSettings.visiting);
 	addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
@@ -4848,6 +4852,14 @@ console.log("do we get to populating the options");
 	}
     }
 	document.getElementById("currentAlgorithm").innerHTML="Algorithm: " + hdxAV.currentAV.name;
+	/* if(hdxAV.currentAV.name == "Vertex Extremes Search" || hdxAV.currentAV.name == " Edge Extremes Search" || hdxAV.currentAV.name =="Brute-Force Convex Hull")
+	{
+		document.getElementById('algOptionsDone').disabled=false;
+	}
+	else
+	{
+		document.getElementById('algOptionsDone').disabled=true;
+	} */
     // set pseudocode
     document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
 
