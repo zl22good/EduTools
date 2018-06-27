@@ -464,7 +464,7 @@ td.psuedocode {
 	</form>
 	<div id="algStats">
 		<table id="algStatsTable" class="gratable">
-			<thead><tr><th>Algorithm Information</th></tr><thead>
+			<thead><tr><th>Algorithm Visualization Information</th></tr><thead>
 			<tbody id="algorithmVars">
 			<tr><td id="algorithmStatus"></td></tr>
 			<tr><td id="pseudo">
