@@ -1212,6 +1212,8 @@ shortest &larr; 0</td></tr>
 	// if the simulation is paused, we can do nothing, as this function
 	// will be called again when we restart
 	if (hdxAV.paused()) {
+		//document.getElementById('resetButton').disabled=false;
+		//document.getElementById('searchBarShow').disabled=false;
             return;
 	}
 

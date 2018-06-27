@@ -117,7 +117,7 @@ function showAlgorithmControls()
 function showAlgStats()
 {
 	console.log("do we get to showAlgStats");
-	document.getElementById("algStats").style.display="table";
+	document.getElementById("algStats").style.display="block";
 }
 
 function hideAlgStats()

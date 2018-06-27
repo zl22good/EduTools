@@ -330,7 +330,7 @@ td.psuedocode {
 	background-color: white;
 	position: absolute;
 	overflow: scroll;
-	max-width: 45%;
+	max-width: 35%;
 	max-height: 50%;
 	opacity: .95;
 	display: none;
@@ -351,11 +351,7 @@ td.psuedocode {
 	z-index: 11000;
 	display: none;
 }
-#algorithmVars{
-	overflow: auto;
-	max-height: 500px;
-	display: block;
-}
+
 
 
 
