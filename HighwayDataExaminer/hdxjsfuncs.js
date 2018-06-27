@@ -238,7 +238,7 @@ var hdxAV = {
 	    }
 	}
 	if (currentAction == null) {
-	    alert("HDX Internal error: bad AV action");
+	    alert("HDX Internal error: bad AV action: " + hdxAV.nextAction);
 	    hdxAV.setStatus(hdxStates.AV_PAUSED);
 	}
 
@@ -246,7 +246,7 @@ var hdxAV = {
 
 	// this won't stay, should have some other way to log or
 	// only enable it for debugging
-	//console.log("HDX ACTION START: " + currentAction.logMessage(this));
+	//console.log("HDX ACTION START: " + currentAction.logMessage(thisAV));
 
 	// undo any previous highlighting
 	unhighlightPseudocode();
@@ -1498,7 +1498,7 @@ shortestEdge &larr; 0</td></tr>
 							  thisAV.categories[i].index)
 		    );
 		}
-		thisAV.iterationDone = true;
+		hdxAV.iterationDone = true;
 		hdxAV.nextAction = "forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
@@ -1522,7 +1522,7 @@ shortestEdge &larr; 0</td></tr>
 		    updateAVControlEntry("undiscovered", (graphEdges.length - thisAV.nextToCheck) + " edges not yet visited");
 			updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + graphEdges[thisAV.nextToCheck].label);
 		}
-		thisAV.iterationDone = true;
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
 		return "Top of main for loop over vertices, check=" + thisAV.nextToCheck;
@@ -1630,7 +1630,7 @@ shortestEdge &larr; 0</td></tr>
 			updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
 
 		}
-		thisAV.iterationDone = true;
+		hdxAV.iterationDone = true;
 		hdxAV.nextAction = "forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
@@ -1646,7 +1646,7 @@ shortestEdge &larr; 0</td></tr>
 		updateAVControlEntry("undiscovered", "0 edges not yet visited");
 		updateAVControlEntry("visiting", "");
 		hdxAV.nextAction = "DONE";
-		thisAV.iterationDone = true;
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
 		return "Cleanup and finalize visualization";
