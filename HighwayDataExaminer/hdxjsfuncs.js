@@ -4835,6 +4835,7 @@ console.log("do we get to populating the options");
 	hideSearchBar();
 	showTopAlgControls();
 	algSelectFlag=true;
+	document.getElementById('algOptionsDone').disabled=false;
 	//hideAlgorithmControls();
 	//showAlgStats();
 	
@@ -4842,6 +4843,7 @@ console.log("do we get to populating the options");
 	else{
 		hideSearchBar();
 		showAlgorithmControls();
+		document.getElementById('algOptionsDone').disabled=true;
 	}
 
     // set the current algorithm
