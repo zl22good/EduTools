@@ -3478,7 +3478,7 @@ function TOSLabel() {
     
     var label = document.createElement("a");
     label.setAttribute("id", "ReferenceLink");
-    label.setAttribute("href", "http://tm.teresco.org/credits.php");
+    label.setAttribute("href", "http://travelmapping.net/credits.php");
     label.setAttribute("target", "_blank");
     label.innerHTML = "Credits and Sources";
     
