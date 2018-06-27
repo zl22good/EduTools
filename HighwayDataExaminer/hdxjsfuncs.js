@@ -1478,7 +1478,7 @@ shortestEdge &larr; 0</td></tr>
 		    thisAV.categories[i].index = 0;
 		}
 		
-		// highlight vertex 0 as leader in all categories and current
+		// highlight edge 0 as leader in all categories and current
 		thisAV.nextToCheck = 0;
 		thisAV.discarded = 0;
 	
@@ -1486,7 +1486,7 @@ shortestEdge &larr; 0</td></tr>
 		updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + graphEdges[thisAV.nextToCheck].label);
 		updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
 
-		// show marker 0 as the leader in each category
+		// show edge 0 as the leader in each category
 		// on the map and in the table
 		for (var i = 0; i < thisAV.categories.length; i++) {
 		    updatePolylineAndTable(thisAV.categories[i].index,
@@ -1507,7 +1507,7 @@ shortestEdge &larr; 0</td></tr>
 	},
 	{
 	    label: "forLoopTop",
-	    comment: "for loop to iterate over remaining waypoints",
+	    comment: "for loop to iterate over remaining edges",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 		thisAV.nextToCheck++;
@@ -1515,7 +1515,7 @@ shortestEdge &larr; 0</td></tr>
 		    hdxAV.nextAction = "cleanup";
 		}
 		else {
-		    // highlight nextToCheck as current vertex
+		    // highlight nextToCheck as current edge
 		    hdxAV.nextAction = "checkNextCategory";
 		    thisAV.nextCategory = 0;
 		    thisAV.foundNewLeader = false;
@@ -1525,16 +1525,15 @@ shortestEdge &larr; 0</td></tr>
 		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
-		return "Top of main for loop over vertices, check=" + thisAV.nextToCheck;
+		return "Top of main for loop over edges, check=" + thisAV.nextToCheck;
 	    }
 	},
 	{
 	    label: "checkNextCategory",
-	    comment: "check if current vertex is a new category leader",
+	    comment: "check if current edge is a new category leader",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label+thisAV.nextCategory,
 				    thisAV.categories[thisAV.nextCategory].visualSettings);
-		//console.log("checkNextCategory for vertex " + thisAV.nextToCheck + " in category " + thisAV.nextCategory);
 		if (thisAV.categories[thisAV.nextCategory].newLeader()) {
 		    hdxAV.nextAction = "updateNextCategory";
 		}
@@ -1585,7 +1584,7 @@ shortestEdge &larr; 0</td></tr>
 		}
 		    
 		// update this category to indicate its new leader
-		// but keep it shown as the vertex being visited on the
+		// but keep it shown as the edge being visited on the
 		// map and in the table until the end of the iteration
 		thisAV.categories[thisAV.nextCategory].index = thisAV.nextToCheck;
 		updateAVControlEntry(
@@ -1611,7 +1610,7 @@ shortestEdge &larr; 0</td></tr>
 	    comment: "end of for loop iteration",
 	    code: function(thisAV){
 
-		// if this waypoint is the leader in any category, show it,
+		// if this edge is the leader in any category, show it,
 		// otherwise it gets discarded
 		if (thisAV.foundNewLeader) {
 		    for (var i = 0; i < thisAV.categories.length; i++) {
@@ -1655,8 +1654,6 @@ shortestEdge &larr; 0</td></tr>
 	}
     ],
 	
-
-		// keep track of edges that were leaders but got beaten to be
     // required start function
     start() {
 
@@ -1683,15 +1680,6 @@ shortestEdge &larr; 0</td></tr>
 	}
 
 	updateMarkerAndTable(0, visualSettings.visiting, false);
-	// initialize to start looking at edge 0
-	//this.nextToCheck = 0;
-	//this.discarded = 0;
-
-	hdxAV.algStat.innerHTML = "In Progress";
-	updateAVControlEntry("undiscovered", graphEdges.length + "edges not yet visited");
-	updateAVControlEntry("visiting", "Preparing to visit: #0 " + graphEdges[0].label);
-	updateAVControlEntry("discarded", "0 edges discarded");
-	
 	
 	// set up for our first action
 	hdxAV.nextAction = "initialize";
