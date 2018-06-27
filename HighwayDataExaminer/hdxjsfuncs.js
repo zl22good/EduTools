@@ -105,7 +105,6 @@ var hdxAV = {
 
     // all setup that needs to happen on page load for HDX
     initOnLoad() {
-	console.log("does initOnLoad working?");
 	// populate the list of algorithms -- add new entries here
 	this.avList.push(hdxNoAV);
 	this.avList.push(hdxVertexExtremesSearchAV);
@@ -119,11 +118,9 @@ var hdxAV = {
 	let s = document.getElementById("AlgorithmSelection");
 	s.innerHTML = "";
 	for (var i = 0; i < this.avList.length; i++) {
-		console.log("is this loop spinning?");
 	    let av = this.avList[i];
 	    s.innerHTML += '<option value="' + av.value +
 		'">' + av.name + '</option>';
-			console.log(s.innerHTML);
 	}
 
 	/* // make the "selected" div resizable, was function makeResize()
@@ -3948,50 +3945,31 @@ function readServerSearch(file)
 {
 	//clearTables();
 	var tmgFile = file;
-	console.log(tmgFile);
 	var xmlhttp = new XMLHttpRequest();
-	console.log(xmlhttp);
 	xmlhttp.onreadystatechange = function() {
 		if(xmlhttp.readyState == 4 && xmlhttp.status == 200){
-			console.log("got to status change");
 			var file = new Blob([xmlhttp.responseText], {type : "text/plain"});
-			console.log("the blob works");
-			console.log(file);
 			file.name = tmgFile;
-			console.log(file.name);
-			console.log("file.name worked");
 			var menu = document.getElementById("showHideMenu");
-			console.log("was able to hide menu");
-			console.log(menu);
 			
 			if(tmgFile){
 				document.getElementById('filename').innerHTML = file.name;
 				var reader;
 				try{
 					reader = new FileReader();
-                    console.log("created Reader");					
-					console.log(reader);
 				}
 				catch(e){
-					console(e);
 					pointboxErrorMsg("Error: unable to access file (Perhaps no browser support?  Try recent Firefox or Chrome releases.).");
 					return;
 				}
 				reader.readAsText(file, "UTF-8");
-				console.log("able to read the text");
-				console.log(reader);
 				reader.onload = fileLoaded;
-				console.log("able to use fileLoaded");
-				console.log(reader.onload);
 			}
 			
 		}
 	};
 	xmlhttp.open("GET", "http://courses.teresco.org/metal/graphdata/"+tmgFile, true);
-	console.log("able to open the xml request");
-	console.log(xmlhttp);
 	xmlhttp.send();
-	console.log("got to xml send");
 }
 
 
@@ -4808,7 +4786,7 @@ function showLegend() {
 
 // Event handler for state change on the algorithm selection select control
 function algorithmSelected() {
-console.log("do we get to populating the options");
+
     // if we have an algorithm already selected, clean up its
     // UI first
     if (hdxAV.currentAV != null) {
