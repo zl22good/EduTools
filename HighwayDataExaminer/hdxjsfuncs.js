@@ -35,6 +35,7 @@ var hdxStates = {
 };
 
 var algSelectFlag = false;
+var defaultOptions = true;
 
 
 // group of variables used by many or all algorithm visualizations
@@ -529,7 +530,7 @@ var hdxVertexSelector = {
 // label is the label for the control
 // initVal is the waypoint number to use for initialization
 function buildWaypointSelector(id,label,initVal) {
-
+	
     return label + ' <input id="' + id +
 	'" onfocus="hdxVertexSelector.startSelection(\'' + id +
 	'\')" type="number" value="' + initVal + '" min="0" max="' +
@@ -537,6 +538,7 @@ function buildWaypointSelector(id,label,initVal) {
 	'onchange="waypointSelectorChanged(\'' + id + '\')"' +
 	'/><span id="' + id + 'Label">' + waypoints[initVal].label +
 	'</span>';
+	
 }
 
 // event handler for waypoint selectors
@@ -545,6 +547,7 @@ function waypointSelectorChanged(id) {
     let vNum = document.getElementById(id).value;
     //let vNum = document.querySelector(id).value;
     document.getElementById(id + "Label").innerHTML = waypoints[vNum].label;
+	
 }
 
 // variables and functions to highlight waypoints and connections
@@ -2072,6 +2075,7 @@ while LDV nonempty {
         hdxAV.algOptions.innerHTML = 'Order: <select id="traversalDiscipline"><option value="BFS">Breadth First</option><option value="DFS">Depth First</option><option value="RFS">Random</option></select>' +
 	    '<br /><input id="findConnected" type="checkbox" name="Find all connected components">&nbsp;Find all connected components' +
 	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0);
+		
 //            '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
 	addEntryToAVControlPanel("visiting", visualSettings.visiting);
 	addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
@@ -3835,26 +3839,32 @@ function processContents(fileContents) {
     var fileName = document.getElementById('filename').innerHTML;
     if (fileName.indexOf(".wpt") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseWPTContents(fileContents);
     }
     else if (fileName.indexOf(".pth") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint Path File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parsePTHContents(fileContents);
     }
     else if (fileName.indexOf(".nmp") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Near-Miss Point File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseNMPContents(fileContents);
     }
     else if (fileName.indexOf(".wpl") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint List File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseWPLContents(fileContents);
     }
     else if (fileName.indexOf(".gra") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseGRAContents(fileContents);
     }
     else if (fileName.indexOf(".tmg") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseTMGContents(fileContents);
 	showAlgorithmControls();
     }
@@ -4625,8 +4635,9 @@ function algorithmSelected() {
 	hdxAV.setStatus(hdxStates.AV_SELECTED);
 	hdxAV.startPause.disabled = false;
 	hideSearchBar();
-	showTopAlgControls();
+	//showTopAlgControls();
 	algSelectFlag=true;
+	document.getElementById('algOptionsDone').disabled=false;
 	//hideAlgorithmControls();
 	//showAlgStats();
 	
@@ -4634,6 +4645,7 @@ function algorithmSelected() {
 	else{
 		hideSearchBar();
 		showAlgorithmControls();
+		document.getElementById('algOptionsDone').disabled=true;
 	}
 
     // set the current algorithm
@@ -4643,7 +4655,15 @@ function algorithmSelected() {
 	    break;
 	}
     }
-	document.getElementById("currentAlgorithm").innerHTML="Algorithm: (" + hdxAV.currentAV.name +")";
+	document.getElementById("currentAlgorithm").innerHTML="Algorithm: " + hdxAV.currentAV.name;
+	/* if(hdxAV.currentAV.name == "Vertex Extremes Search" || hdxAV.currentAV.name == " Edge Extremes Search" || hdxAV.currentAV.name =="Brute-Force Convex Hull")
+	{
+		document.getElementById('algOptionsDone').disabled=false;
+	}
+	else
+	{
+		document.getElementById('algOptionsDone').disabled=true;
+	} */
     // set pseudocode
     document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
 
