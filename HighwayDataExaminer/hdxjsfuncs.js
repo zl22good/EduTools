@@ -1812,6 +1812,12 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		    updateMarkerAndTable(thisAV.v1, thisAV.visualSettings.v1,
 					 30, false);
 		    updateAVControlEntry("v1visiting", "v1: #" + thisAV.v1 + " " + waypoints[thisAV.v1].label);
+		    // all subsequent vertices will be looped over and should
+		    // go back to undiscovered for now
+		    for (var i = thisAV.v1+1; i < waypoints.length; i++) {
+			updateMarkerAndTable(i, visualSettings.undiscovered,
+					     20, false);
+		    }
 		}
 		hdxAV.iterationDone = true;
 	    },
@@ -1879,13 +1885,38 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    code: function(thisAV) {
 
 		highlightPseudocode(this.label, visualSettings.leader);
-		    
+
+		// if we had previous leaders, they're no longer leaders
+		if (thisAV.closest[0] != -1) {
+		    // old v1 leader is now either going to be leader again
+		    // below or is now discarded, so mark as discarded
+		    updateMarkerAndTable(thisAV.closest[0],
+					 visualSettings.discarded, 15, true);
+
+		    // old v2 leader is either discarded if it's less than
+		    // or equal to v1, unvisited on this inner iteration
+		    // otherwise
+		    if (thisAV.closest[1] <= thisAV.v1) {
+			updateMarkerAndTable(thisAV.closest[1],
+					     visualSettings.discarded, 15,
+					     true);
+		    }
+		    else {
+			updateMarkerAndTable(thisAV.closest[1],
+					     thisAV.visualSettings.discardedv2,
+					     15, false);
+		    }
+		}
 		// remember the current pair as the closest
 		thisAV.closest = [ thisAV.v1, thisAV.v2 ];
 		thisAV.d_closest = thisAV.d_this;
 
 		updateAVControlEntry("leader", "Closest: [" + 
 				     thisAV.v1 + "," + thisAV.v2 + "], d<sub>closest</sub>: " + thisAV.d_closest.toFixed(3));
+		updateMarkerAndTable(thisAV.v1, visualSettings.leader,
+				     40, true);
+		updateMarkerAndTable(thisAV.v2, visualSettings.leader,
+				     40, true);
 		hdxAV.nextAction = "v2forLoopBottom";
 	    },
 	    logMessage: function(thisAV) {
@@ -1897,6 +1928,13 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    comment: "end of outer for loop iteration",
 	    code: function(thisAV){
 
+		// if the current v2 isn't part of the current closest pair.
+		// we "v2" discard it
+		if (thisAV.v2 != thisAV.closest[0] && thisAV.v2 != thisAV.closest[1]) {
+		    updateMarkerAndTable(thisAV.v2,
+					 thisAV.visualSettings.discardedv2,
+					 15, false);
+		}
 		hdxAV.iterationDone = true;
 		hdxAV.nextAction = "v2forLoopTop";
 	    },
@@ -1909,6 +1947,12 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    comment: "end of outer for loop iteration",
 	    code: function(thisAV){
 
+		// if the current v1 isn't part of the current closest pair.
+		// we discard it
+		if (thisAV.v1 != thisAV.closest[0] && thisAV.v1 != thisAV.closest[1]) {
+		    updateMarkerAndTable(thisAV.v1,
+					 visualSettings.discarded, 15, true);
+		}
 		hdxAV.iterationDone = true;
 		hdxAV.nextAction = "v1forLoopTop";
 	    },
