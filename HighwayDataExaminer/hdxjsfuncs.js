@@ -60,6 +60,15 @@ var hdxAV = {
 
     // are we tracing psuedocode?
     traceCode: false,
+
+    // track the end of an iteration defined by a series of actions
+    iterationDone: false,
+
+    // next action to be executed, must refer to labels in the current
+    // AV's avActions array, set to the first before initial call
+    // to nextStep, and each algorithm must set to "DONE" to
+    // terminate
+    nextAction: "UNDEFINED",
     
     // reset values
     reset: function() {
@@ -106,7 +115,6 @@ var hdxAV = {
 
     // all setup that needs to happen on page load for HDX
     initOnLoad() {
-	console.log("does initOnLoad working?");
 	// populate the list of algorithms -- add new entries here
 	this.avList.push(hdxNoAV);
 	this.avList.push(hdxVertexExtremesSearchAV);
@@ -120,11 +128,9 @@ var hdxAV = {
 	let s = document.getElementById("AlgorithmSelection");
 	s.innerHTML = "";
 	for (var i = 0; i < this.avList.length; i++) {
-		console.log("is this loop spinning?");
 	    let av = this.avList[i];
 	    s.innerHTML += '<option value="' + av.value +
 		'">' + av.name + '</option>';
-			console.log(s.innerHTML);
 	}
 
 	/* // make the "selected" div resizable, was function makeResize()
@@ -163,6 +169,94 @@ var hdxAV = {
 
 	// register the HDX-specific event handler for waypoint clicks
 	registerMarkerClickListener(labelClickHDX);
+    },
+
+    // this will do an action, an iteration, or run to completion
+    // for the AV passed in
+    nextStep(thisAV) {
+
+	// if the simulation is paused, we can do nothing, as this function
+	// will be called again when we restart
+	if (hdxAV.paused()) {
+            return;
+	}
+
+	// run to completion option
+	if (hdxAV.delay == 0) {
+	    while (hdxAV.nextAction != "DONE") {
+		hdxAV.oneIteration(thisAV);
+	    }
+	    return;
+	}
+
+	// if delay has become -1, it means we took a single step and
+	// should pause now rather than perform more work
+	if (hdxAV.delay == -1) {
+	    hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+
+	// we are supposed to do some work, either a single action or
+	// a full iteration
+	if (hdxAV.traceCode) {
+	    hdxAV.oneAction(thisAV);
+	}
+	else {
+	    //console.log("nextStep() calling oneIteration()");
+	    hdxAV.oneIteration(thisAV);
+	}
+
+	// in either case, we now set the timeout for the next one
+	if (hdxAV.nextAction != "DONE") {
+	    //console.log("nextStep(): setting callback for " + hdxAV.delay);
+            setTimeout(function() { hdxAV.nextStep(thisAV) }, hdxAV.delay);
+	}
+	else {
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+	}
+    },
+
+    // one iteration is defined as a series of actions ending with
+    // one which sets hdxAV.iterationDone to true
+    oneIteration(thisAV) {
+
+	//console.log("oneIteration()");
+	hdxAV.iterationDone = false;
+	while (!hdxAV.iterationDone) {
+	    //console.log("oneIteration() calling oneAction(), nextAction=" + this.nextAction);
+	    hdxAV.oneAction(thisAV);
+	}
+    },
+
+    // do one action of thisAV's array of actions
+    oneAction(thisAV) {
+
+	// look up the action to execute next
+	let currentAction = null;
+	for (var i = 0; i < thisAV.avActions.length; i++) {
+	    if (hdxAV.nextAction == thisAV.avActions[i].label) {
+		currentAction = thisAV.avActions[i];
+		break;
+	    }
+	}
+	if (currentAction == null) {
+	    alert("HDX Internal error: bad AV action: " + hdxAV.nextAction);
+	    hdxAV.setStatus(hdxStates.AV_PAUSED);
+	}
+
+	// we have an action to execute
+
+	// this won't stay, should have some other way to log or
+	// only enable it for debugging
+	//console.log("HDX ACTION START: " + currentAction.logMessage(thisAV));
+
+	// undo any previous highlighting
+	unhighlightPseudocode();
+
+	// update status to this line of code's logMessage
+	hdxAV.algStat.innerHTML = currentAction.logMessage(thisAV);
+	
+	// execute the JS to continue the AV
+	currentAction.code(thisAV);
     }
 };
 
@@ -184,53 +278,45 @@ function clearForm(f){
     var frm_elements = f.elements;
     
     //clears the form
-    for (i = 0; i < frm_elements.length; i++)
-{
-    field_type = frm_elements[i].type.toLowerCase();
-    switch (field_type)
-    {
-    case "text":
-    case "password":
-    case "textarea":
-    case "hidden":
-        frm_elements[i].value = "";
-        break;
-    case "radio":
-    case "checkbox":
-        if (frm_elements[i].checked)
-        {
-            frm_elements[i].checked = false;
-        }
-        break;
-    case "select-one":
-    case "select-multi":
-    
-        frm_elements[i].selectedIndex = -1;
-        break;
-    default:
-        break;
+    for (i = 0; i < frm_elements.length; i++) {
+	field_type = frm_elements[i].type.toLowerCase();
+	switch (field_type) {
+	case "text":
+	case "password":
+	case "textarea":
+	case "hidden":
+            frm_elements[i].value = "";
+            break;
+	case "radio":
+	case "checkbox":
+            if (frm_elements[i].checked) {
+		frm_elements[i].checked = false;
+            }
+            break;
+	case "select-one":
+	case "select-multi":
+            frm_elements[i].selectedIndex = -1;
+            break;
+	default:
+            break;
+	}
     }
-}
-    if(hdxAV.status == hdxStates.AV_COMPLETE || hdxAV.paused() == true){
+    if(hdxAV.status == hdxStates.AV_COMPLETE || hdxAV.paused()){
     
-    //clearrs the ui
-     hdxAV.setStatus(hdxStates.GRAPH_LOADED);
-     hdxVertexExtremesSearchAV.cleanupUI();
-     hdxBFConvexHullAV.cleanupUI();
-     hdxDijkstraAV.cleanupUI();
-     hdxGraphTraversalsAV.cleanupUI();
-     hdxEdgeExtremesSearchAV.cleanupUI();
-     document.getElementById("connection").style.display = "table-row";
+	//clears the ui
+	hdxAV.setStatus(hdxStates.GRAPH_LOADED);
+	hdxAV.currentAV.cleanupUI();
+	
+	document.getElementById("connection").style.display = "table-row";
         //resets the table of waypoints
-     for (var i = 0; i < waypoints.length; i++) {
+	for (var i = 0; i < waypoints.length; i++) {
             var row = document.getElementById("waypoint"+i);
             markers[i].addTo(map);
             updateMarkerAndTable(i, visualSettings.reset, 0, false);
+	}   
     }
-        
-    }
-    
 }
+
 function speedChanged() {
 
     var speedChanger = document.getElementById("speedChanger");
@@ -802,7 +888,6 @@ shortest &larr; 0</td></tr>
     nextToCheck: 0,
     discarded: 0,
     foundNewLeader: false,
-    nextAction: "initialize",
     // list of polylines showing the directional bounds, updated by
     // directionalBoundingBox function below
     boundingPoly: [],
@@ -949,8 +1034,8 @@ shortest &larr; 0</td></tr>
 							  thisAV.categories[i].index)
 		    );
 		}
-		thisAV.iterationDone = true;
-		thisAV.nextAction = "forLoopTop";
+		hdxAV.iterationDone = true;
+		hdxAV.nextAction = "forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
 		return "Initializing leaders to vertex 0";
@@ -963,11 +1048,11 @@ shortest &larr; 0</td></tr>
 		highlightPseudocode(this.label, visualSettings.visiting);
 		thisAV.nextToCheck++;
 		if (thisAV.nextToCheck == waypoints.length) {
-		    thisAV.nextAction = "cleanup";
+		    hdxAV.nextAction = "cleanup";
 		}
 		else {
 		    // highlight nextToCheck as current vertex
-		    thisAV.nextAction = "checkNextCategory";
+		    hdxAV.nextAction = "checkNextCategory";
 		    thisAV.nextCategory = 0;
 		    thisAV.foundNewLeader = false;
 		    updateMarkerAndTable(thisAV.nextToCheck, visualSettings.visiting,
@@ -975,7 +1060,7 @@ shortest &larr; 0</td></tr>
 		    updateAVControlEntry("undiscovered", (waypoints.length - thisAV.nextToCheck) + " vertices not yet visited");
 		    updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + waypoints[thisAV.nextToCheck].label);
 		}
-		thisAV.iterationDone = true;
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
 		return "Top of main for loop over vertices, check=" + thisAV.nextToCheck;
@@ -989,15 +1074,15 @@ shortest &larr; 0</td></tr>
 				    thisAV.categories[thisAV.nextCategory].visualSettings);
 		//console.log("checkNextCategory for vertex " + thisAV.nextToCheck + " in category " + thisAV.nextCategory);
 		if (thisAV.categories[thisAV.nextCategory].newLeader()) {
-		    thisAV.nextAction = "updateNextCategory";
+		    hdxAV.nextAction = "updateNextCategory";
 		}
 		else {
 		    thisAV.nextCategory++;
 		    if (thisAV.nextCategory == thisAV.categories.length) {
-			thisAV.nextAction = "forLoopBottom";
+			hdxAV.nextAction = "forLoopBottom";
 		    }
 		    else {
-			thisAV.nextAction = "checkNextCategory";
+			hdxAV.nextAction = "checkNextCategory";
 		    }
 		}
 	    },
@@ -1053,10 +1138,10 @@ shortest &larr; 0</td></tr>
 		);
 		thisAV.nextCategory++;
 		if (thisAV.nextCategory == thisAV.categories.length) {
-		    thisAV.nextAction = "forLoopBottom";
+		    hdxAV.nextAction = "forLoopBottom";
 		}
 		else {
-		    thisAV.nextAction = "checkNextCategory";
+		    hdxAV.nextAction = "checkNextCategory";
 		}
 	    },
 	    logMessage: function(thisAV) {
@@ -1087,8 +1172,8 @@ shortest &larr; 0</td></tr>
 		    updateAVControlEntry("discarded", thisAV.discarded + " vertices discarded");
 
 		}
-		thisAV.iterationDone = true;
-		thisAV.nextAction = "forLoopTop";
+		hdxAV.iterationDone = true;
+		hdxAV.nextAction = "forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
 		return "Update/discard on map and table";
@@ -1102,8 +1187,8 @@ shortest &larr; 0</td></tr>
 		    "Done! Visited " + markers.length + " waypoints.";
 		updateAVControlEntry("undiscovered", "0 vertices not yet visited");
 		updateAVControlEntry("visiting", "");
-		thisAV.nextAction = "DONE";
-		thisAV.iterationDone = true;
+		hdxAV.nextAction = "DONE";
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
 		return "Cleanup and finalize visualization";
@@ -1196,102 +1281,14 @@ shortest &larr; 0</td></tr>
 	updateMarkerAndTable(0, visualSettings.visiting, 40, false);
 	
 	// set up for our first action
-	this.nextAction = "initialize";
+	hdxAV.nextAction = "initialize";
 
 	// to start, make just a simple call to nextStep, ignoring any
 	// delay until after the first action occurs
 
-	this.nextStep();
+	hdxAV.nextStep(this);
     },
 
-    // required nextStep function
-    // this will do an action, an iteration, or run to completion
-    // for vertex-based search
-    nextStep() {
-
-	// if the simulation is paused, we can do nothing, as this function
-	// will be called again when we restart
-	if (hdxAV.paused()) {
-            return;
-	}
-
-	// run to completion option
-	if (hdxAV.delay == 0) {
-	    while (this.moreActions()) {
-		this.oneIteration();
-	    }
-	    return;
-	}
-
-	// if delay has become -1, it means we took a single step and
-	// should pause now rather than perform more work
-	if (hdxAV.delay == -1) {
-	    hdxAV.setStatus(hdxStates.AV_PAUSED);
-	}
-
-	// we are supposed to do some work, either a single action or
-	// a full iteration
-	if (hdxAV.traceCode) {
-	    this.oneAction();
-	}
-	else {
-	    //console.log("nextStep() calling oneIteration()");
-	    this.oneIteration();
-	}
-
-	// in either case, we now set the timeout for the next one
-	if (this.moreActions()) {
-	    //console.log("nextStep(): setting callback for " + hdxAV.delay);
-            var self = this;
-            setTimeout(function() { self.nextStep() }, hdxAV.delay);
-	}
-	else {
-	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
-	}
-    },
-
-    // one iteration is now defined as a series of actions ending with
-    // one which sets hdxAV.iterationDone to true
-    oneIteration() {
-
-	//console.log("oneIteration()");
-	this.iterationDone = false;
-	while (!this.iterationDone) {
-	    //console.log("oneIteration() calling oneAction(), nextAction=" + this.nextAction);
-	    this.oneAction();
-	}
-    },
-
-    oneAction() {
-
-	// look up the action to execute next
-	let currentAction = null;
-	for (var i = 0; i < this.avActions.length; i++) {
-	    if (this.nextAction == this.avActions[i].label) {
-		currentAction = this.avActions[i];
-		break;
-	    }
-	}
-	if (currentAction == null) {
-	    alert("HDX Internal error: bad AV action");
-	    hdxAV.setStatus(hdxStates.AV_PAUSED);
-	}
-
-	// we have an action to execute
-
-	// this won't stay, should have some other way to log or
-	// only enable it for debugging
-	//console.log("HDX ACTION START: " + currentAction.logMessage(this));
-
-	// undo any previous highlighting
-	unhighlightPseudocode();
-
-	// update status to this line of code's logMessage
-	hdxAV.algStat.innerHTML = currentAction.logMessage(this);
-	
-	// execute the JS to continue the AV
-	currentAction.code(this);
-    },
 
     // set up UI for the start of this algorithm
     setupUI() {
@@ -1309,9 +1306,6 @@ shortest &larr; 0</td></tr>
 	}
     },
 	
-    moreActions() {
-	return this.nextAction != "DONE";
-    },
 	
     // remove UI modifications made for vertex extremes search
     cleanupUI() {
@@ -1393,8 +1387,7 @@ shortestEdge &larr; 0</td></tr>
     // next to examine
     nextToCheck: 0,
     discarded: 0,
-	foundNewLeader: false,
-	nextAction: "initialize",
+    foundNewLeader: false,
     // the categories for which we are finding our extremes,
     // with names for ids, labels to display, indicies of leader,
     // comparison function to determine if we have a new leader,
@@ -1480,7 +1473,7 @@ shortestEdge &larr; 0</td></tr>
 		    thisAV.categories[i].index = 0;
 		}
 		
-		// highlight vertex 0 as leader in all categories and current
+		// highlight edge 0 as leader in all categories and current
 		thisAV.nextToCheck = 0;
 		thisAV.discarded = 0;
 	
@@ -1488,7 +1481,7 @@ shortestEdge &larr; 0</td></tr>
 		updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + graphEdges[thisAV.nextToCheck].label);
 		updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
 
-		// show marker 0 as the leader in each category
+		// show edge 0 as the leader in each category
 		// on the map and in the table
 		for (var i = 0; i < thisAV.categories.length; i++) {
 		    updatePolylineAndTable(thisAV.categories[i].index,
@@ -1500,53 +1493,52 @@ shortestEdge &larr; 0</td></tr>
 							  thisAV.categories[i].index)
 		    );
 		}
-		thisAV.iterationDone = true;
-		thisAV.nextAction = "forLoopTop";
+		hdxAV.iterationDone = true;
+		hdxAV.nextAction = "forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
-		return "Initializing leaders to vertex 0";
+		return "Initializing leaders to edge 0";
 	    }
 	},
 	{
 	    label: "forLoopTop",
-	    comment: "for loop to iterate over remaining waypoints",
+	    comment: "for loop to iterate over remaining edges",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 		thisAV.nextToCheck++;
 		if (thisAV.nextToCheck == graphEdges.length) {
-		    thisAV.nextAction = "cleanup";
+		    hdxAV.nextAction = "cleanup";
 		}
 		else {
-		    // highlight nextToCheck as current vertex
-		    thisAV.nextAction = "checkNextCategory";
+		    // highlight nextToCheck as current edge
+		    hdxAV.nextAction = "checkNextCategory";
 		    thisAV.nextCategory = 0;
 		    thisAV.foundNewLeader = false;
 		    updateAVControlEntry("undiscovered", (graphEdges.length - thisAV.nextToCheck) + " edges not yet visited");
 			updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + graphEdges[thisAV.nextToCheck].label);
 		}
-		thisAV.iterationDone = true;
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
-		return "Top of main for loop over vertices, check=" + thisAV.nextToCheck;
+		return "Top of main for loop over edges, check=" + thisAV.nextToCheck;
 	    }
 	},
 	{
 	    label: "checkNextCategory",
-	    comment: "check if current vertex is a new category leader",
+	    comment: "check if current edge is a new category leader",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label+thisAV.nextCategory,
 				    thisAV.categories[thisAV.nextCategory].visualSettings);
-		//console.log("checkNextCategory for vertex " + thisAV.nextToCheck + " in category " + thisAV.nextCategory);
 		if (thisAV.categories[thisAV.nextCategory].newLeader()) {
-		    thisAV.nextAction = "updateNextCategory";
+		    hdxAV.nextAction = "updateNextCategory";
 		}
 		else {
 		    thisAV.nextCategory++;
 		    if (thisAV.nextCategory == thisAV.categories.length) {
-			thisAV.nextAction = "forLoopBottom";
+			hdxAV.nextAction = "forLoopBottom";
 		    }
 		    else {
-			thisAV.nextAction = "checkNextCategory";
+			hdxAV.nextAction = "checkNextCategory";
 		    }
 		}
 	    },
@@ -1587,7 +1579,7 @@ shortestEdge &larr; 0</td></tr>
 		}
 		    
 		// update this category to indicate its new leader
-		// but keep it shown as the vertex being visited on the
+		// but keep it shown as the edge being visited on the
 		// map and in the table until the end of the iteration
 		thisAV.categories[thisAV.nextCategory].index = thisAV.nextToCheck;
 		updateAVControlEntry(
@@ -1598,10 +1590,10 @@ shortestEdge &larr; 0</td></tr>
 		);
 		thisAV.nextCategory++;
 		if (thisAV.nextCategory == thisAV.categories.length) {
-		    thisAV.nextAction = "forLoopBottom";
+		    hdxAV.nextAction = "forLoopBottom";
 		}
 		else {
-		    thisAV.nextAction = "checkNextCategory";
+		    hdxAV.nextAction = "checkNextCategory";
 		}
 	    },
 	    logMessage: function(thisAV) {
@@ -1613,7 +1605,7 @@ shortestEdge &larr; 0</td></tr>
 	    comment: "end of for loop iteration",
 	    code: function(thisAV){
 
-		// if this waypoint is the leader in any category, show it,
+		// if this edge is the leader in any category, show it,
 		// otherwise it gets discarded
 		if (thisAV.foundNewLeader) {
 		    for (var i = 0; i < thisAV.categories.length; i++) {
@@ -1632,8 +1624,8 @@ shortestEdge &larr; 0</td></tr>
 			updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
 
 		}
-		thisAV.iterationDone = true;
-		thisAV.nextAction = "forLoopTop";
+		hdxAV.iterationDone = true;
+		hdxAV.nextAction = "forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
 		return "Update/discard on map and table";
@@ -1647,8 +1639,8 @@ shortestEdge &larr; 0</td></tr>
 		    "Done! Visited " + graphEdges.length + " edges.";
 		updateAVControlEntry("undiscovered", "0 edges not yet visited");
 		updateAVControlEntry("visiting", "");
-		thisAV.nextAction = "DONE";
-		thisAV.iterationDone = true;
+		hdxAV.nextAction = "DONE";
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
 		return "Cleanup and finalize visualization";
@@ -1657,8 +1649,6 @@ shortestEdge &larr; 0</td></tr>
 	}
     ],
 	
-
-		// keep track of edges that were leaders but got beaten to be
     // required start function
     start() {
 
@@ -1685,193 +1675,16 @@ shortestEdge &larr; 0</td></tr>
 	}
 
 	updateMarkerAndTable(0, visualSettings.visiting, false);
-	// initialize to start looking at edge 0
-	//this.nextToCheck = 0;
-	//this.discarded = 0;
-
-	hdxAV.algStat.innerHTML = "In Progress";
-	updateAVControlEntry("undiscovered", graphEdges.length + "edges not yet visited");
-	updateAVControlEntry("visiting", "Preparing to visit: #0 " + graphEdges[0].label);
-	updateAVControlEntry("discarded", "0 edges discarded");
-	
 	
 	// set up for our first action
-	this.nextAction = "initialize";
+	hdxAV.nextAction = "initialize";
 
 	// to start, make just a simple call to nextStep, ignoring any
 	// delay until after the first action occurs
 
-	this.nextStep();
-    },
-
-    // required nextStep function for edge search
-    nextStep() {
-
-	// if the simulation is paused, we can do nothing, as this function
-	// will be called again when we restart
-	if (hdxAV.paused()) {
-            return;
-	}
-
-	// run to completion option
-	if (hdxAV.delay == 0) {
-	    while (this.moreActions()) {
-		this.oneIteration();
-	    }
-	    return;
-	}
-
-	// if delay has become -1, it means we took a single step and
-	// should pause now rather than perform more work
-	if (hdxAV.delay == -1) {
-	    hdxAV.setStatus(hdxStates.AV_PAUSED);
-	}
-
-	// we are supposed to do some work, either a single action or
-	// a full iteration
-	if (hdxAV.traceCode) {
-	    this.oneAction();
-	}
-	else {
-	    //console.log("nextStep() calling oneIteration()");
-	    this.oneIteration();
-	}
-
-	// in either case, we now set the timeout for the next one
-	if (this.moreActions()) {
-	    //console.log("nextStep(): setting callback for " + hdxAV.delay);
-            var self = this;
-            setTimeout(function() { self.nextStep() }, hdxAV.delay);
-	}
-	else {
-	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
-	}
+	hdxAV.nextStep(this);
     },
 	
-	oneAction() {
-
-	// look up the action to execute next
-	let currentAction = null;
-	for (var i = 0; i < this.avActions.length; i++) {
-	    if (this.nextAction == this.avActions[i].label) {
-		currentAction = this.avActions[i];
-		break;
-	    }
-	}
-	if (currentAction == null) {
-	    alert("HDX Internal error: bad AV action");
-	    hdxAV.setStatus(hdxStates.AV_PAUSED);
-	}
-
-	// we have an action to execute
-
-	// this won't stay, should have some other way to log or
-	// only enable it for debugging
-	//console.log("HDX ACTION START: " + currentAction.logMessage(this));
-
-	// undo any previous highlighting
-	unhighlightPseudocode();
-
-	// update status to this line of code's logMessage
-	hdxAV.algStat.innerHTML = currentAction.logMessage(this);
-	
-	// execute the JS to continue the AV
-	currentAction.code(this);
-    },
-	
-	moreActions() {
-	return this.nextAction != "DONE";
-    },
-	
-	oneIteration(){
-	//console.log("oneIteration()");
-	this.iterationDone = false;
-	while (!this.iterationDone) {
-	    //console.log("oneIteration() calling oneAction(), nextAction=" + this.nextAction);
-	    this.oneAction();
-	}
-	},
-	
-	Iteration()
-	{
-
-	// keep track of edges that were leaders but got beaten to be
-	// colored grey if they are no longer a leader in any category
-	var defeated = [];
-	
-	// keep track of whether the current edge becomes a new leader
-	
-	// special case of first checked
-	if (this.nextToCheck == 0) {
-            // this was our first check, so this edge wins all to start
-	    for (var i = 0; i < this.categories.length; i++) {
-		this.categories[i].index = 0;
-	    }
-            foundNewLeader = true;
-	}
-	// we have to do real work to see if we have new winners
-	else {
-	    // check each category
-	    for (var i = 0; i < this.categories.length; i++) {
-		if (this.categories[i].newLeader()) {
-		    foundNewLeader = true;
-		    if (defeated.indexOf(this.categories[i].index) == -1) {
-			defeated.push(this.categories[i].index);
-		    }
-		    this.categories[i].index = this.nextToCheck;
-		}
-	    }
-	}
-
-	// any edge that was a leader but is no longer gets
-	// discarded, but need to check that it's not still a leader
-	// in another category
-	while (defeated.length > 0) {
-            let toCheck = defeated.pop();
-	    let discard = true;
-	    for (var i = 0; i < this.categories.length; i++) {
-		if (toCheck == this.categories[i].index) {
-		    discard = false;
-		    break;
-		}
-	    }
-            if (discard) {
-		updatePolylineAndTable(this.nexttoCheck, visualSettings.discarded,
-				       true);
-		this.discarded++;
-            }
-	}
-
-	// if we found a new leader, update leader edges and table entries
-	if (foundNewLeader) {
-
-	    for (var i = 0; i < this.categories.length; i++) {
-		updatePolylineAndTable(this.categories[i].index,
-				       this.categories[i].visualSettings,
-				       false);
-		updateAVControlEntry(
-		    thisAV.categories[i].name, 
-		    this.categories[i].leaderString(this.categories[i].label,
-						    this.categories[i].index)
-		);
-	    }
-	}
-	else {
-	    // no new leader, this edge gets discarded
-	    updatePolylineAndTable(thisAV.nextToCheck,
-				   visualSettings.discarded, true);
-	    this.discarded++;
-	}
-	
-	updateAVControlEntry("undiscovered", (graphEdges.length - this.nextToCheck) + " edges not yet visited");
-	updateAVControlEntry("visiting", "Visiting: #" + this.nextToCheck + " " + graphEdges[this.nextToCheck].label);
-	updateAVControlEntry("discarded", this.discarded + " edges discarded");
-	
-	// prepare for next iteration
-	this.nextToCheck++;
-	
-	},
-		
     // set up UI for the start of edge search
     setupUI() {
 
@@ -3482,7 +3295,7 @@ function TOSLabel() {
     
     var label = document.createElement("a");
     label.setAttribute("id", "ReferenceLink");
-    label.setAttribute("href", "http://tm.teresco.org/credits.php");
+    label.setAttribute("href", "http://travelmapping.net/credits.php");
     label.setAttribute("target", "_blank");
     label.innerHTML = "Credits and Sources";
     
@@ -3952,50 +3765,31 @@ function readServerSearch(file)
 {
 	//clearTables();
 	var tmgFile = file;
-	console.log(tmgFile);
 	var xmlhttp = new XMLHttpRequest();
-	console.log(xmlhttp);
 	xmlhttp.onreadystatechange = function() {
 		if(xmlhttp.readyState == 4 && xmlhttp.status == 200){
-			console.log("got to status change");
 			var file = new Blob([xmlhttp.responseText], {type : "text/plain"});
-			console.log("the blob works");
-			console.log(file);
 			file.name = tmgFile;
-			console.log(file.name);
-			console.log("file.name worked");
 			var menu = document.getElementById("showHideMenu");
-			console.log("was able to hide menu");
-			console.log(menu);
 			
 			if(tmgFile){
 				document.getElementById('filename').innerHTML = file.name;
 				var reader;
 				try{
 					reader = new FileReader();
-                    console.log("created Reader");					
-					console.log(reader);
 				}
 				catch(e){
-					console(e);
 					pointboxErrorMsg("Error: unable to access file (Perhaps no browser support?  Try recent Firefox or Chrome releases.).");
 					return;
 				}
 				reader.readAsText(file, "UTF-8");
-				console.log("able to read the text");
-				console.log(reader);
 				reader.onload = fileLoaded;
-				console.log("able to use fileLoaded");
-				console.log(reader.onload);
 			}
 			
 		}
 	};
 	xmlhttp.open("GET", "http://courses.teresco.org/metal/graphdata/"+tmgFile, true);
-	console.log("able to open the xml request");
-	console.log(xmlhttp);
 	xmlhttp.send();
-	console.log("got to xml send");
 }
 
 
@@ -4776,7 +4570,15 @@ function startPausePressed() {
 // function to resume a paused algorithm
 function continuePausedAlgorithm() {
 
-    hdxAV.currentAV.nextStep();
+    // this is temporary until all existing algorithms have been converted
+    // to the action-based approach, at which time only the body of the
+    // else clause will be needed here
+    if (hdxAV.currentAV.hasOwnProperty("nextStep")) {
+	hdxAV.currentAV.nextStep();
+    }
+    else {
+	hdxAV.nextStep(hdxAV.currentAV);
+    }
 }
 
 // function to begin the execution of a new AV
@@ -4818,7 +4620,7 @@ function showLegend() {
 
 // Event handler for state change on the algorithm selection select control
 function algorithmSelected() {
-console.log("do we get to populating the options");
+
     // if we have an algorithm already selected, clean up its
     // UI first
     if (hdxAV.currentAV != null) {
