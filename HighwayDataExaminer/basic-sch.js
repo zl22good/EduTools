@@ -97,6 +97,18 @@ console.log("did this run?");
 getGraphs();
 console.log(graphs);
 
+var appendCount = 0;
+
+function appendToTopAlgControls()
+{
+	var tableAppend = document.getElementById("newAlgControls");
+	var onlyRow = document.getElementById("newAlgControls").rows[0];
+	
+	var newCell3 = onlyRow.insertCell(3);
+	//var newCell4 = tableAppend.insertCell(4);
+	
+	newCell3.innerHTML='<input type="button" value="Show Algorithm Options" id="algOptionsShow2" onclick="showAlgorithmControls()">';
+}
 
 function showTopAlgControls()
 {
@@ -128,7 +140,16 @@ function showAlgorithmControls()
 }
 function hideAlgorithmControlsOnDismiss()
 {
+	if(appendCount == 0){
 	document.getElementById("algorithmControls2").style.display="none";
+	appendToTopAlgControls();
+	showTopAlgControls();
+	appendCount++;
+	}
+	else{
+		showTopAlgControls();
+	    document.getElementById("algorithmControls2").style.display="none";
+	}
 }
 function showAlgStats()
 {
