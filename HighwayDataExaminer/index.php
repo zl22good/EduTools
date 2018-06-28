@@ -47,7 +47,8 @@
 <script src="tmlib/tmjsfuncs.js" type="text/javascript"></script>
 <script src="hdxjsfuncs.js" type="text/javascript"></script>
 <link rel="stylesheet" type="text/css" href="supplmentalTypeAhead.css"/>
-
+<link rel="stylesheet" type="text/css" href="supplmentalTypeAhead.css"/>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
 
 <?php
@@ -301,7 +302,7 @@ td.psuedocode {
 #searchTest{
 	margin: auto;
 	background-color: white; 
-	z-index: 11000;
+	z-index: 14000;
 	position: absolute;
 }
 #searchTable{
@@ -314,7 +315,7 @@ td.psuedocode {
 #algorithmControls2{
 	margin: auto;
 	background-color: white; 
-	z-index: 70000;
+	z-index: 12000;
 	position: absolute;
 	display: none;
 }
@@ -330,7 +331,7 @@ td.psuedocode {
 	background-color: white;
 	position: absolute;
 	overflow: scroll;
-	max-width: 45%;
+	max-width: 35%;
 	max-height: 50%;
 	opacity: .95;
 	display: none;
@@ -356,6 +357,7 @@ td.psuedocode {
 
 
 
+
 </style>
 </head>
 <body onload="loadmap(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
@@ -363,11 +365,13 @@ td.psuedocode {
   <span id="panelBtn" title="Menu" onclick="openSidePanel()">
      <i id="menuIcon" class="material-icons">menu</i>
   </span>
-  HDX: <span id="filename">Select a file to display </span>
+  HDX: <span id="startUp">Select data to display using the controls in the upper left</span>
+  <span id="filename">Select a file to display </span>
   <span id="status"></span>
-  <span id="currentAlgorithm"> (Algorithm Chosen)</span>
+  <span id="currentAlgorithm"></span>
 </p>
 <div id="algorithmControls3">
+<form onclick= clearForm(this.form)>
 	<table id="newAlgControls">
 			<tbody>
 				<tr>
@@ -411,15 +415,19 @@ td.psuedocode {
 	<form name="algVis" action="#">
 		<table id="searchTable" class="gratable">
 			<thead>
-				<tr><th>Search for a graph:</th></tr>
+				<tr><th>Load Data:</th></tr>
 			</thead>
 			<tbody id="AVControlPanel">
-			<tr><td>
-					<div id="the-basics">
-					  <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
-					  
-					</div>
-			</td></tr>
+			<tr>
+				
+				<td>
+				Search for a graph:
+						<div id="the-basics">
+						  <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
+						  
+						</div>
+				</td>
+			</tr>
 			<tr>
 				<td>
 					<div>
@@ -429,7 +437,7 @@ td.psuedocode {
 			</tr>
 			
 	  
-			<tr><td> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled>
+			<tr><td id="hideButtonRow"> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled></td></tr>
 			</tbody>
 		</table>
 	</div>
@@ -454,16 +462,17 @@ td.psuedocode {
 				</tr>
 				<tr>
 					<td>
-						<input type="button" value="Done" id="algOptionsDone" onClick="hideAlgorithmControls()">
+						<input type="button" value="Done" id="algOptionsDone" onClick="hideAlgorithmControls()" disabled>
+						<input type="button" value="Dismiss Options" id="algoOptionsDismiss" onClick="hideAlgorithmControlsOnDismiss()">
 					</td>
 				</tr>
 			</tbody>
 		</table>
 	</div>
-	</form>
+	
 	<div id="algStats">
 		<table id="algStatsTable" class="gratable">
-			<thead><tr><th>Algorithm Information</th></tr><thead>
+			<thead><tr><th>Algorithm Visualization Information</th></tr><thead>
 			<tbody id="algorithmVars">
 			<tr><td id="algorithmStatus"></td></tr>
 			<tr><td id="pseudo">
@@ -483,7 +492,8 @@ td.psuedocode {
           </select>
 
         </div>
-        <div id="contents_table" draggable="true"  ondragstart="drag(event)" style="top:70px; left:70%; position: absolute; z-index:9999;">
+		</form>
+        <div id="contents_table" draggable="false"  ondragstart="drag(event)" style="top:70px; left:70%; position: absolute; z-index:9999;">
         </div>
         </body>
 </html>

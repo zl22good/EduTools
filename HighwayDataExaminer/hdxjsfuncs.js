@@ -35,6 +35,7 @@ var hdxStates = {
 };
 
 var algSelectFlag = false;
+var defaultOptions = true;
 
 
 // group of variables used by many or all algorithm visualizations
@@ -530,7 +531,7 @@ var hdxVertexSelector = {
 // label is the label for the control
 // initVal is the waypoint number to use for initialization
 function buildWaypointSelector(id,label,initVal) {
-
+	
     return label + ' <input id="' + id +
 	'" onfocus="hdxVertexSelector.startSelection(\'' + id +
 	'\')" type="number" value="' + initVal + '" min="0" max="' +
@@ -538,6 +539,7 @@ function buildWaypointSelector(id,label,initVal) {
 	'onchange="waypointSelectorChanged(\'' + id + '\')"' +
 	'/><span id="' + id + 'Label">' + waypoints[initVal].label +
 	'</span>';
+	
 }
 
 // event handler for waypoint selectors
@@ -546,6 +548,7 @@ function waypointSelectorChanged(id) {
     let vNum = document.getElementById(id).value;
     //let vNum = document.querySelector(id).value;
     document.getElementById(id + "Label").innerHTML = waypoints[vNum].label;
+	
 }
 
 // variables and functions to highlight waypoints and connections
@@ -2398,6 +2401,7 @@ while LDV nonempty {
         hdxAV.algOptions.innerHTML = 'Order: <select id="traversalDiscipline"><option value="BFS">Breadth First</option><option value="DFS">Depth First</option><option value="RFS">Random</option></select>' +
 	    '<br /><input id="findConnected" type="checkbox" name="Find all connected components">&nbsp;Find all connected components' +
 	    '<br />' + buildWaypointSelector("startPoint", "Start Vertex", 0);
+		
 //            '<br /><input id="showDataStructure" type="checkbox" onchange="toggleDS()" name="Show Data Structure">Show Data Structure';
 	addEntryToAVControlPanel("visiting", visualSettings.visiting);
 	addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
@@ -4161,26 +4165,32 @@ function processContents(fileContents) {
     var fileName = document.getElementById('filename').innerHTML;
     if (fileName.indexOf(".wpt") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseWPTContents(fileContents);
     }
     else if (fileName.indexOf(".pth") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint Path File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parsePTHContents(fileContents);
     }
     else if (fileName.indexOf(".nmp") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Near-Miss Point File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseNMPContents(fileContents);
     }
     else if (fileName.indexOf(".wpl") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint List File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseWPLContents(fileContents);
     }
     else if (fileName.indexOf(".gra") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseGRAContents(fileContents);
     }
     else if (fileName.indexOf(".tmg") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
+	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseTMGContents(fileContents);
 	showAlgorithmControls();
     }
@@ -4323,33 +4333,50 @@ function parseTMGContents(fileContents) {
     var lines = fileContents.replace(/\r\n/g,"\n").split('\n');
     var header = lines[0].split(' ');
     if (header[0] != "TMG") {
-	return '<table class="gratable"><thead><tr><th>Invalid TMG file (missing TMG marker on first line)</th></tr></table>';
+	return '<table class="table"><thead class = "thead-dark"><tr><th scope="col">Invalid TMG file (missing TMG marker on first line)</th></tr></table>';
     }
     if (header[1] != "1.0") {
-	return '<table class="gratable"><thead><tr><th>Unsupported TMG file version (' + header[1] + ')</th></tr></table>';
+	return '<table class="table"><thead class = "thead-dark"><tr><th scope="col">Unsupported TMG file version (' + header[1] + ')</th></tr></table>';
     }
     if ((header[2] != "simple") && (header[2] != "collapsed")) {
-	return '<table class="gratable"><thead><tr><th>Unsupported TMG graph format (' + header[2] + ')</th></tr></table>';
+	return '<table class="table"><thead class = "thead-dark"><tr><th scope="col">Unsupported TMG graph format (' + header[2] + ')</th></tr></table>';
     }
     var counts = lines[1].split(' ');
     var numV = parseInt(counts[0]);
     var numE = parseInt(counts[1]);
-    var summaryInfo = '<table class="gratable"><thead><tr><th>' + numV + " waypoints, " + numE + " connections.</th></tr></table>";
+    var summaryInfo = '<table class="table-sm"><thead class = "thead-dark"><tr><th scope="col">' + numV + " waypoints, " + numE + " connections.</th></tr></table>";
     
-    var vTable = '<table id="waypoints" class="gratable"><thead><tr><th colspan="3">Waypoints</th></tr><tr><th>#</th><th>Coordinates</th><th>Waypoint Name</th></tr></thead><tbody>';
+    var vTable = '<table id="waypoints" class="table table-light table-bordered"><thead class = "thead-dark"><tr><th scope="col" colspan="3">Waypoints</th></tr><tr><th>#</th><th scope="col">Coordinates</th><th scope="col">Waypoint Name</th></tr></thead><tbody>';
     
     waypoints = new Array(numV);
     for (var i = 0; i < numV; i++) {
 	var vertexInfo = lines[i+2].split(' ');
 	waypoints[i] = new Waypoint(vertexInfo[0], vertexInfo[1], vertexInfo[2], "", new Array());
-	vTable += '<tr id="waypoint' + i +'" onmouseover = "hoverV('+i+', false)" onmouseout = "hoverEndV('+i+', false)" onclick = "labelClickHDX('+i+')" ><td>' + i +
-	    '</td><td>(' + parseFloat(vertexInfo[1]).toFixed(3) + ',' +
-	    parseFloat(vertexInfo[2]).toFixed(3) + ')</td><td>'
-	    + waypoints[i].label + '</td></tr>';
+        
+        var vsubstr =  parseFloat(vertexInfo[1]).toFixed(3) + ',' +
+            parseFloat(vertexInfo[2]).toFixed(3) 
+	    +'</td>' + '<td style ="word-break:break-all;">' + (waypoints[i].label).substring(0,10);
+        var e = "...";
+        if(((waypoints[i]).label).length > 10){
+            
+            vsubstr =  parseFloat(vertexInfo[1]).toFixed(3) + ',' +
+		parseFloat(vertexInfo[2]).toFixed(3) 
+		+'</td>' + '<td style ="word-break:break-all;">' + (waypoints[i].label).substring(0,10) + e;
+        }
+        
+        var vsubstrL =  parseFloat(vertexInfo[1]).toFixed(3) + ',' +
+            parseFloat(vertexInfo[2]).toFixed(3) 
+	    + waypoints[i].label;
+        
+	vTable += '<tr id="waypoint' + i + '" title = "' + vsubstrL + '"'  +'" onmouseover = "hoverV('+i+', false)" onmouseout = "hoverEndV('+i+', false)" onclick = "labelClickHDX('+i+')" ><td style ="word-break:break-all;">' + i +'</td>';
+        
+        var vstr = '<td style ="word-break:break-all;"' ; 
+        var vstr2 = vstr +'>' + vsubstr + '</td></tr>';
+        vTable += vstr2;
     }
     vTable += '</tbody></table>';
     
-    var eTable = '<table  id="connection" class="gratable"><thead><tr  ><th colspan="3">Connections</th></tr><tr><th>#</th><th>Route Name(s)</th><th>Endpoints</th></tr></thead><tbody>';
+    var eTable = '<table  id="connection" class="table table-light"><thead class = "thead-dark"><tr><th scope="col" colspan="3">Connections</th></tr><tr><th scope="col">#</th><th scope="col">Route Name(s)</th><th scope="col">Endpoints</th></tr></thead><tbody>';
     graphEdges = new Array(numE);
     for (var i = 0; i < numE; i++) {
 	var edgeInfo = lines[i+numV+2].split(' ');
@@ -4365,16 +4392,25 @@ function parseTMGContents(fileContents) {
 	// add this new edge to my endpoint vertex adjacency lists
 	waypoints[newEdge.v1].edgeList.push(newEdge);
 	waypoints[newEdge.v2].edgeList.push(newEdge);
+	var test = edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label +
+            ' &harr; ' + edgeInfo[1] + ':&nbsp;'
+	    + waypoints[newEdge.v2].label;
+	var subst = '<td style ="word-break:break-all;">'
+            + edgeInfo[0] + ':&nbsp;' + (waypoints[newEdge.v1].label).substring(0,5) +
+            ' &harr; ' + edgeInfo[1] + ':&nbsp;'
+	    + (waypoints[newEdge.v2].label).substring(0,5) + '</td>';
+        
+        eTable += '<tr title = "' + test + '"' + 'onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="edgeClick('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td id = "connectname" style ="word-break:break-all;" >' + i + '</td>';
 	
-	eTable += '<tr onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="edgeClick('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td>' + i + '</td><td>' + edgeInfo[2] + '</td><td>'
-	    + edgeInfo[0] + ':&nbsp;' + waypoints[newEdge.v1].label +
-	    ' &harr; ' + edgeInfo[1] + ':&nbsp;'
-	    + waypoints[newEdge.v2].label + '</td></tr>';
-	
-	graphEdges[i] = newEdge;
+        var subst2 = '<td style ="word-break:break-all;"'; 
+        var subst3 = subst2 + '>' + edgeInfo[2] + subst;
+	eTable += subst3;
+        
+        graphEdges[i] = newEdge;
 	// record edge index in GraphEdge structure
 	newEdge.edgeListIndex = i;
     }
+    
     eTable += '</tbody></table>';
     genEdges = false;
     usingAdjacencyLists = true;
@@ -4951,8 +4987,9 @@ function algorithmSelected() {
 	hdxAV.setStatus(hdxStates.AV_SELECTED);
 	hdxAV.startPause.disabled = false;
 	hideSearchBar();
-	showTopAlgControls();
+	//showTopAlgControls();
 	algSelectFlag=true;
+	document.getElementById('algOptionsDone').disabled=false;
 	//hideAlgorithmControls();
 	//showAlgStats();
 	
@@ -4960,6 +4997,7 @@ function algorithmSelected() {
 	else{
 		hideSearchBar();
 		showAlgorithmControls();
+		document.getElementById('algOptionsDone').disabled=true;
 	}
 
     // set the current algorithm
@@ -4969,7 +5007,15 @@ function algorithmSelected() {
 	    break;
 	}
     }
-	document.getElementById("currentAlgorithm").innerHTML="Algorithm: (" + hdxAV.currentAV.name +")";
+	document.getElementById("currentAlgorithm").innerHTML="Algorithm: " + hdxAV.currentAV.name;
+	/* if(hdxAV.currentAV.name == "Vertex Extremes Search" || hdxAV.currentAV.name == " Edge Extremes Search" || hdxAV.currentAV.name =="Brute-Force Convex Hull")
+	{
+		document.getElementById('algOptionsDone').disabled=false;
+	}
+	else
+	{
+		document.getElementById('algOptionsDone').disabled=true;
+	} */
     // set pseudocode
     document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
 

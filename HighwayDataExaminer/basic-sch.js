@@ -69,6 +69,28 @@ xmlhttp.onreadystatechange = function() {
 }
 getGraphs();
 
+var appendCount = 0;
+
+function appendToTopAlgControls()
+{
+	var tableAppend = document.getElementById("newAlgControls");
+	var onlyRow = document.getElementById("newAlgControls").rows[0];
+	
+	var newCell3 = onlyRow.insertCell(3);
+	//var newCell4 = tableAppend.insertCell(4);
+	
+	newCell3.innerHTML='<input type="button" value="Show Algorithm Options" id="algOptionsShow2" onclick="showAlgorithmControls()">';
+}
+
+function showTopAlgControls()
+{
+	document.getElementById("algorithmControls3").style.display="table";
+}
+function hideTopAlgControls()
+{
+	document.getElementById("algorithmControls3").style.display="none";
+}
+
 function hideSearchBar(){
 	document.getElementById("searchTest").style.display ="none";
 }
@@ -76,18 +98,34 @@ function ShowSearchBar()
 {
 	document.getElementById("searchTest").style.display = "table";
 	document.getElementById("hideSearchBar").disabled=false;
+	//document.getElementById("hideButtonRow").display="table-cell";
 }
  function hideAlgorithmControls()
 {
 	document.getElementById("algorithmControls2").style.display="none";
+	showTopAlgControls();
+	
 } 
 function showAlgorithmControls()
 {
 	document.getElementById("algorithmControls2").style.display="table";
 }
+function hideAlgorithmControlsOnDismiss()
+{
+	if(appendCount == 0){
+	document.getElementById("algorithmControls2").style.display="none";
+	appendToTopAlgControls();
+	showTopAlgControls();
+	appendCount++;
+	}
+	else{
+		showTopAlgControls();
+	    document.getElementById("algorithmControls2").style.display="none";
+	}
+}
 function showAlgStats()
 {
-	document.getElementById("algStats").style.display="table";
+	document.getElementById("algStats").style.display="block";
 }
 
 function hideAlgStats()
@@ -103,6 +141,7 @@ function hideTopAlgControls()
 {
 	document.getElementById("algorithmControls3").style.display="none";
 }
+
 
 
 
