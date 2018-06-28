@@ -118,6 +118,7 @@ var hdxAV = {
 	this.avList.push(hdxNoAV);
 	this.avList.push(hdxVertexExtremesSearchAV);
 	this.avList.push(hdxEdgeExtremesSearchAV);
+	this.avList.push(hdxClosestPairsAV);
 	this.avList.push(hdxGraphTraversalsAV);
 	this.avList.push(hdxDijkstraAV);
 	this.avList.push(hdxBFConvexHullAV);
@@ -353,7 +354,7 @@ var visualSettings = {
 	opacity: 0.8
     },
     leader: {
-        color: "red",
+        color: "darkBlue",
         textColor: "white",
         scale: 6,
 	name: "leader",
@@ -1707,6 +1708,287 @@ shortestEdge &larr; 0</td></tr>
 	for (var i = 0; i < this.categories.length; i++) {
 	    removeEntryFromAVControlPanel(this.categories[i].name);
 	}
+    }
+};
+
+/* closest pairs of vertices, just brute force for now */
+var hdxClosestPairsAV = {
+
+    // entries for list of AVs
+    value: "closestpairs",
+    name: "Vertex Closest Pairs",
+    description: "Search for the closest pair of vertices (waypoints).",
+
+    // pseudocode
+    code: `
+<table class="pseudocode"><tr id="initialize" class="pseudocode"><td class="pseudocode">
+closest &larr; null<br />
+d<sub>closest</sub> &larr; &infin;</td></tr>
+<tr id="v1forLoopTop"><td>for (v<sub>1</sub> &larr; 0 to |V|-1)</td></tr>
+<tr id="v2forLoopTop"><td>&nbsp;&nbsp;for (v<sub>2</sub> &larr; v1+1 to |V|)</td></tr>
+<tr id="computeDistance"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;d &larr; dist(v<sub>1</sub>,v<sub>2</sub>)
+</td></tr>
+<tr id="checkLeader"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;if (d < d<sub>closest</sub>)
+</td></tr>
+<tr id="newLeader"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;closest &larr; [v<sub>1</sub>,v<sub>2</sub>]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d<sub>closest</sub> &larr; d
+</td></tr>
+</table>
+`,
+    
+    // state variables for closest pairs search
+    // loop indices
+    v1: 0,
+    v2: 0,
+
+    // computed distance between v1 and v2
+    d_this: 0,
+
+    // leader info
+    closest: [-1, -1],
+    d_closest: Number.MAX_VALUE,
+
+    // visual settings specific to closest pairs
+    // NOTE: these match BFCH and should probably be given
+    // common names and moved to hdxAV.visualSettings
+    visualSettings: {
+        v1: {
+            color: "darkRed",
+            textColor: "white",
+            scale: 6,
+	    name: "v1",
+	    value: 0
+	},
+        v2: {
+            color: "red",
+            textColor: "white",
+            scale: 6,
+	    name: "v2",
+	    value: 0
+	},
+	discardedv2: {
+	    color: "green",
+	    textColor: "black",
+	    scale: 2,
+	    name: "discardedv2",
+	    value: 0
+	}
+    },
+    
+    // the actions that make up this algorithm
+    avActions: [
+	{
+	    label: "initialize",
+	    comment: "initialize closest pair variables",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+		
+		updateAVControlEntry("leader", "no leader yet, d<sub>closest</sub> = &infty;");
+
+
+		hdxAV.iterationDone = true;
+		thisAV.v1 = -1;  // will increment to 0
+		hdxAV.nextAction = "v1forLoopTop";
+	    },
+	    logMessage: function(thisAV) {
+		return "Initializing closest pair variables";
+	    }
+	},
+	{
+	    label: "v1forLoopTop",
+	    comment: "outer for loop to visit all pairs of vertices",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+		thisAV.v1++;
+		if (thisAV.v1 == waypoints.length-1) {
+		    hdxAV.nextAction = "cleanup";
+		}
+		else {
+		    hdxAV.nextAction = "v2forLoopTop";
+		    thisAV.v2 = thisAV.v1;  // will increment to +1
+		    updateMarkerAndTable(thisAV.v1, thisAV.visualSettings.v1,
+					 30, false);
+		    updateAVControlEntry("v1visiting", "v1: #" + thisAV.v1 + " " + waypoints[thisAV.v1].label);
+		}
+		hdxAV.iterationDone = true;
+	    },
+	    logMessage: function(thisAV) {
+		return "Top of outer for loop over vertices, v1=" + thisAV.v1;
+	    }
+	},
+	{
+	    label: "v2forLoopTop",
+	    comment: "inner for loop to visit all pairs of vertices",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+		thisAV.v2++;
+		if (thisAV.v2 == waypoints.length) {
+		    hdxAV.nextAction = "v1forLoopBottom";
+		}
+		else {
+		    hdxAV.nextAction = "computeDistance";
+		    updateMarkerAndTable(thisAV.v2, thisAV.visualSettings.v2,
+					 30, false);
+		    updateAVControlEntry("v2visiting", "v2: #" + thisAV.v2 + " " + waypoints[thisAV.v2].label);
+		}
+		hdxAV.iterationDone = true;
+	    },
+	    logMessage: function(thisAV) {
+		return "Top of inner for loop over vertices, v2=" + thisAV.v2;
+	    }
+	},
+	{
+	    label: "computeDistance",
+	    comment: "compute distance of current candidate pair",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);	
+		thisAV.d_this = distanceInMiles(waypoints[thisAV.v1].lat,
+						waypoints[thisAV.v1].lon,
+						waypoints[thisAV.v2].lat,
+						waypoints[thisAV.v2].lon);
+		updateAVControlEntry("checkingDistance", "Distance: " + thisAV.d_this.toFixed(3));
+		hdxAV.nextAction = "checkLeader";
+
+	    },
+	    logMessage: function(thisAV) {
+		return "Compute distance between " + thisAV.v1 + " and " + thisAV.v2;
+	    }
+	},
+	{
+	    label: "checkLeader",
+	    comment: "check if current candidate pair is the new closest pair",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);	
+		if (thisAV.d_this < thisAV.d_closest) {
+		    hdxAV.nextAction = "newLeader";
+		}
+		else {
+		    hdxAV.nextAction = "v2forLoopBottom";
+		}
+	    },
+	    logMessage: function(thisAV) {
+		return "Check if this pair is the new closest pair";
+	    }
+	},
+	{
+	    label: "newLeader",
+	    comment: "update new closest pair",
+	    code: function(thisAV) {
+
+		highlightPseudocode(this.label, visualSettings.leader);
+		    
+		// remember the current pair as the closest
+		thisAV.closest = [ thisAV.v1, thisAV.v2 ];
+		thisAV.d_closest = thisAV.d_this;
+
+		updateAVControlEntry("leader", "Closest: [" + 
+				     thisAV.v1 + "," + thisAV.v2 + "], d<sub>closest</sub>: " + thisAV.d_closest.toFixed(3));
+		hdxAV.nextAction = "v2forLoopBottom";
+	    },
+	    logMessage: function(thisAV) {
+		return "[" + thisAV.v1 + "," + thisAV.v2 + "] new closest pair with d<sub>closest</sub>=" + thisAV.d_closest.toFixed(3);
+	    }
+	},
+	{
+	    label: "v2forLoopBottom",
+	    comment: "end of outer for loop iteration",
+	    code: function(thisAV){
+
+		hdxAV.iterationDone = true;
+		hdxAV.nextAction = "v2forLoopTop";
+	    },
+	    logMessage: function(thisAV) {
+		return "Mark v2 discarded or leader";
+	    }
+	},
+	{
+	    label: "v1forLoopBottom",
+	    comment: "end of outer for loop iteration",
+	    code: function(thisAV){
+
+		hdxAV.iterationDone = true;
+		hdxAV.nextAction = "v1forLoopTop";
+	    },
+	    logMessage: function(thisAV) {
+		return "Mark v1 discarded or leader";
+	    }
+	},
+	{
+	    label: "cleanup",
+	    comment: "cleanup and updates at the end of the visualization",
+	    code: function(thisAV) {
+		hdxAV.algStat.innerHTML =
+		    "Done!";
+		updateAVControlEntry("v1visiting", "");
+		updateAVControlEntry("v2visiting", "");
+		updateAVControlEntry("checkingDistance", "");
+		hdxAV.nextAction = "DONE";
+		hdxAV.iterationDone = true;
+	    },
+	    logMessage: function(thisAV) {
+		return "Cleanup and finalize visualization";
+	    }
+	}
+    ],
+
+    // required start function
+    // initialize a vertex-based search
+    start() {
+
+	hdxAV.algStat.innerHTML = "Initializing";
+	// start by showing all existing markers, even hidden
+	for (var i = 0; i < waypoints.length; i++) {
+            markers[i].addTo(map);
+            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
+	}
+	// we don't need edges here, so we remove those
+	for (var i = 0; i < connections.length; i++) {
+            connections[i].remove();
+	}
+	//we don't need connections table here, so we remove those
+	document.getElementById("connection").style.display = "none";
+
+	// we do need waypoints, so make sure they're displayed
+	document.getElementById("waypoints").style.display = "";
+	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
+	for (var i = 0; i < pointRows.length; i++) {
+	    pointRows[i].style.display = "";
+	}
+	
+	// set up for our first action
+	hdxAV.nextAction = "initialize";
+
+	// to start, make just a simple call to nextStep, ignoring any
+	// delay until after the first action occurs
+
+	hdxAV.nextStep(this);
+    },
+
+
+    // set up UI entries for closest pairs
+    setupUI() {
+
+	hdxAV.algStat.style.display = "";
+	hdxAV.algStat.innerHTML = "Setting up";
+        hdxAV.algOptions.innerHTML = '';
+
+	addEntryToAVControlPanel("v1visiting", this.visualSettings.v1);
+	addEntryToAVControlPanel("v2visiting", this.visualSettings.v2);
+	addEntryToAVControlPanel("checkingDistance", visualSettings.visiting);
+	addEntryToAVControlPanel("leader", visualSettings.leader);
+    },
+	
+	
+    // remove UI modifications made for vertex extremes search
+    cleanupUI() {
+
+	removeEntryFromAVControlPanel("v1visiting");
+	removeEntryFromAVControlPanel("v2visiting");
+	removeEntryFromAVControlPanel("checkingDistance");
+	removeEntryFromAVControlPanel("leader");
     }
 };
 
