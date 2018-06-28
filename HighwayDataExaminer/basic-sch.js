@@ -97,6 +97,16 @@ console.log("did this run?");
 getGraphs();
 console.log(graphs);
 
+
+function showTopAlgControls()
+{
+	document.getElementById("algorithmControls3").style.display="table";
+}
+function hideTopAlgControls()
+{
+	document.getElementById("algorithmControls3").style.display="none";
+}
+
 function hideSearchBar(){
 	document.getElementById("searchTest").style.display ="none";
 }
@@ -109,10 +119,16 @@ function ShowSearchBar()
  function hideAlgorithmControls()
 {
 	document.getElementById("algorithmControls2").style.display="none";
+	showTopAlgControls();
+	
 } 
 function showAlgorithmControls()
 {
 	document.getElementById("algorithmControls2").style.display="table";
+}
+function hideAlgorithmControlsOnDismiss()
+{
+	document.getElementById("algorithmControls2").style.display="none";
 }
 function showAlgStats()
 {
@@ -127,14 +143,7 @@ function hideAlgStats()
 
 console.log("do we see the algStatsTable");
 
-function showTopAlgControls()
-{
-	document.getElementById("algorithmControls3").style.display="table";
-}
-function hideTopAlgControls()
-{
-	document.getElementById("algorithmControls3").style.display="none";
-}
+
 
 
 

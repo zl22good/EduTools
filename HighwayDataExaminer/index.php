@@ -461,7 +461,7 @@ td.psuedocode {
 				<tr>
 					<td>
 						<input type="button" value="Done" id="algOptionsDone" onClick="hideAlgorithmControls()" disabled>
-						<input type="button" value="Dismiss Options" id="algoOptionsDismiss" onClick="hideAlgorithmControls()">
+						<input type="button" value="Dismiss Options" id="algoOptionsDismiss" onClick="hideAlgorithmControlsOnDismiss()">
 					</td>
 				</tr>
 			</tbody>

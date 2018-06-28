@@ -1212,8 +1212,6 @@ shortest &larr; 0</td></tr>
 	// if the simulation is paused, we can do nothing, as this function
 	// will be called again when we restart
 	if (hdxAV.paused()) {
-		//document.getElementById('resetButton').disabled=false;
-		//document.getElementById('searchBarShow').disabled=false;
             return;
 	}
 
@@ -4835,7 +4833,7 @@ console.log("do we get to populating the options");
 	hdxAV.setStatus(hdxStates.AV_SELECTED);
 	hdxAV.startPause.disabled = false;
 	hideSearchBar();
-	showTopAlgControls();
+	//showTopAlgControls();
 	algSelectFlag=true;
 	document.getElementById('algOptionsDone').disabled=false;
 	//hideAlgorithmControls();
