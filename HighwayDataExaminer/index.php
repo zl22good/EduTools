@@ -368,6 +368,7 @@ td.psuedocode {
   <span id="currentAlgorithm"> (Algorithm Chosen)</span>
 </p>
 <div id="algorithmControls3">
+<form onclick= clearForm(this.form)>
 	<table id="newAlgControls">
 			<tbody>
 				<tr>
@@ -460,7 +461,7 @@ td.psuedocode {
 			</tbody>
 		</table>
 	</div>
-	</form>
+	
 	<div id="algStats">
 		<table id="algStatsTable" class="gratable">
 			<thead><tr><th>Algorithm Information</th></tr><thead>
@@ -483,6 +484,7 @@ td.psuedocode {
           </select>
 
         </div>
+		</form>
         <div id="contents_table" draggable="true"  ondragstart="drag(event)" style="top:70px; left:70%; position: absolute; z-index:9999;">
         </div>
         </body>
