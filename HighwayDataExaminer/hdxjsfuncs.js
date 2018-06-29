@@ -1757,6 +1757,10 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
     closest: [-1, -1],
     d_closest: Number.MAX_VALUE,
 
+    // polylines for leader and visiting
+    lineClosest: null,
+    lineVisiting: null,
+
     // visual settings specific to closest pairs
     // NOTE: these match BFCH and should probably be given
     // common names and moved to hdxAV.visualSettings
@@ -1845,6 +1849,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		    updateMarkerAndTable(thisAV.v2, thisAV.visualSettings.v2,
 					 30, false);
 		    updateAVControlEntry("v2visiting", "v<sub>2</sub>: #" + thisAV.v2 + " " + waypoints[thisAV.v2].label);
+		    thisAV.drawLineVisiting();
 		}
 		hdxAV.iterationDone = true;
 	    },
@@ -1923,6 +1928,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 				     40, false);
 		updateMarkerAndTable(thisAV.v2, visualSettings.leader,
 				     40, false);
+		thisAV.updateLineClosest();
 		hdxAV.nextAction = "v2forLoopBottom";
 	    },
 	    logMessage: function(thisAV) {
@@ -1934,6 +1940,9 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    comment: "end of outer for loop iteration",
 	    code: function(thisAV){
 
+		// undisplay the visiting segment
+		thisAV.removeLineVisiting();
+		
 		// if the current v2 isn't part of the current closest pair.
 		// we "v2" discard it
 		if (thisAV.v2 != thisAV.closest[0] && thisAV.v2 != thisAV.closest[1]) {
@@ -2001,6 +2010,48 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	}
     ],
 
+    // function to draw the polyline connecting the current
+    // candidate pair of vertices
+    drawLineVisiting() {
+
+	let visitingLine = [];
+	visitingLine[0] = [waypoints[this.v1].lat, waypoints[this.v1].lon];
+	visitingLine[1] = [waypoints[this.v2].lat, waypoints[this.v2].lon];
+	this.lineVisiting = L.polyline(visitingLine, {
+	    color: visualSettings.visiting.color,
+	    opacity: 0.6,
+	    weight: 4
+	});
+	this.lineVisiting.addTo(map);	
+    },
+    
+    // function to remove the visiting polyline
+    removeLineVisiting() {
+
+	this.lineVisiting.remove();
+    },
+
+    // function to draw or update the polyline connecting the
+    // current closest pair
+    updateLineClosest() {
+
+	let closestLine = [];
+	closestLine[0] = [waypoints[this.closest[0]].lat, waypoints[this.closest[0]].lon];
+	closestLine[1] = [waypoints[this.closest[1]].lat, waypoints[this.closest[1]].lon];
+
+	if (this.lineClosest == null) {
+	    this.lineClosest = L.polyline(closestLine, {
+		color: visualSettings.leader.color,
+		opacity: 0.6,
+		weight: 4
+	    });
+	    this.lineClosest.addTo(map);	
+	}
+	else {
+	    this.lineClosest.setLatLngs(closestLine);
+	}
+    },
+
     // required start function
     // initialize a vertex-based search
     start() {
@@ -2049,13 +2100,16 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
     },
 	
 	
-    // remove UI modifications made for vertex extremes search
+    // remove UI modifications made for vertex closest pairs
     cleanupUI() {
 
 	removeEntryFromAVControlPanel("v1visiting");
 	removeEntryFromAVControlPanel("v2visiting");
 	removeEntryFromAVControlPanel("checkingDistance");
 	removeEntryFromAVControlPanel("leader");
+	if (this.lineClosest != null) {
+	    this.lineClosest.remove();
+	}
     }
 };
 
