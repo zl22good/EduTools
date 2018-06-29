@@ -253,11 +253,14 @@ var hdxAV = {
 	// undo any previous highlighting
 	unhighlightPseudocode();
 
-	// update status to this line of code's logMessage
-	hdxAV.algStat.innerHTML = currentAction.logMessage(thisAV);
-	
 	// execute the JS to continue the AV
 	currentAction.code(thisAV);
+
+	// update status to this line of code's logMessage, after
+	// code executes so any simulation variables updated through
+	// this step can be reflected in the update
+	hdxAV.algStat.innerHTML = currentAction.logMessage(thisAV);
+	//console.log("ACTION DONE: " + currentAction.logMessage(thisAV));
     }
 };
 
@@ -1814,7 +1817,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		    thisAV.v2 = thisAV.v1;  // will increment to +1
 		    updateMarkerAndTable(thisAV.v1, thisAV.visualSettings.v1,
 					 30, false);
-		    updateAVControlEntry("v1visiting", "v1: #" + thisAV.v1 + " " + waypoints[thisAV.v1].label);
+		    updateAVControlEntry("v1visiting", "v<sub>1</sub>: #" + thisAV.v1 + " " + waypoints[thisAV.v1].label);
 		    // all subsequent vertices will be looped over and should
 		    // go back to undiscovered for now
 		    for (var i = thisAV.v1+1; i < waypoints.length; i++) {
@@ -1825,7 +1828,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
-		return "Top of outer for loop over vertices, v1=" + thisAV.v1;
+		return "Top of outer for loop over vertices, v<sub>1</sub>=" + thisAV.v1;
 	    }
 	},
 	{
@@ -1841,12 +1844,12 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		    hdxAV.nextAction = "computeDistance";
 		    updateMarkerAndTable(thisAV.v2, thisAV.visualSettings.v2,
 					 30, false);
-		    updateAVControlEntry("v2visiting", "v2: #" + thisAV.v2 + " " + waypoints[thisAV.v2].label);
+		    updateAVControlEntry("v2visiting", "v<sub>2</sub>: #" + thisAV.v2 + " " + waypoints[thisAV.v2].label);
 		}
 		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
-		return "Top of inner for loop over vertices, v2=" + thisAV.v2;
+		return "Top of inner for loop over vertices, v<sub>2</sub>=" + thisAV.v2;
 	    }
 	},
 	{
@@ -1863,7 +1866,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 
 	    },
 	    logMessage: function(thisAV) {
-		return "Compute distance between " + thisAV.v1 + " and " + thisAV.v2;
+		return "Compute distance " + thisAV.d_this.toFixed(3) + " between v<sub>1</sub>=" + thisAV.v1 + " and v<sub>2</sub>=" + thisAV.v2;
 	    }
 	},
 	{
@@ -1879,7 +1882,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		}
 	    },
 	    logMessage: function(thisAV) {
-		return "Check if this pair is the new closest pair";
+		return "Check if [" + thisAV.v1 + "," + thisAV.v2 + "] is the new closest pair";
 	    }
 	},
 	{
@@ -1917,9 +1920,9 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		updateAVControlEntry("leader", "Closest: [" + 
 				     thisAV.v1 + "," + thisAV.v2 + "], d<sub>closest</sub>: " + thisAV.d_closest.toFixed(3));
 		updateMarkerAndTable(thisAV.v1, visualSettings.leader,
-				     40, true);
+				     40, false);
 		updateMarkerAndTable(thisAV.v2, visualSettings.leader,
-				     40, true);
+				     40, false);
 		hdxAV.nextAction = "v2forLoopBottom";
 	    },
 	    logMessage: function(thisAV) {
@@ -1938,11 +1941,16 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 					 thisAV.visualSettings.discardedv2,
 					 15, false);
 		}
+		else {
+		    updateMarkerAndTable(thisAV.v2,
+					 visualSettings.leader,
+					 40, false);
+		}
 		hdxAV.iterationDone = true;
 		hdxAV.nextAction = "v2forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
-		return "Mark v2 discarded or leader";
+		return "Done processing v<sub>2</sub>=" + thisAV.v2;
 	    }
 	},
 	{
@@ -1956,19 +1964,31 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		    updateMarkerAndTable(thisAV.v1,
 					 visualSettings.discarded, 15, true);
 		}
+		else {
+		    updateMarkerAndTable(thisAV.v1,
+					 visualSettings.leader,
+					 40, false);
+		}
 		hdxAV.iterationDone = true;
 		hdxAV.nextAction = "v1forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
-		return "Mark v1 discarded or leader";
+		return "Done processing v<sub>1</sub>=" + thisAV.v1;
 	    }
 	},
 	{
 	    label: "cleanup",
 	    comment: "cleanup and updates at the end of the visualization",
 	    code: function(thisAV) {
-		hdxAV.algStat.innerHTML =
-		    "Done!";
+
+		// if the last vertex is not one of the closest pair,
+		// we need to discard it
+		if (waypoints.length - 1 != thisAV.closest[0] &&
+		    waypoints.length - 1 != thisAV.closest[1]) {
+		    updateMarkerAndTable(waypoints.length - 1,
+					 visualSettings.discarded, 15, true);
+		}
+		
 		updateAVControlEntry("v1visiting", "");
 		updateAVControlEntry("v2visiting", "");
 		updateAVControlEntry("checkingDistance", "");
@@ -1976,7 +1996,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
-		return "Cleanup and finalize visualization";
+		return "Done!";
 	    }
 	}
     ],
