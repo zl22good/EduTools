@@ -246,10 +246,6 @@ var hdxAV = {
 
 	// we have an action to execute
 
-	// this won't stay, should have some other way to log or
-	// only enable it for debugging
-	//console.log("HDX ACTION START: " + currentAction.logMessage(thisAV));
-
 	// undo any previous highlighting
 	unhighlightPseudocode();
 
@@ -1091,7 +1087,12 @@ shortest &larr; 0</td></tr>
 		}
 	    },
 	    logMessage: function(thisAV) {
-		return "Check for new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+		if (hdxAV.nextAction == "updateNextCategory") {
+		    return "Check for new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+		}
+		else {
+		    return "Check for new " + thisAV.categories[thisAV.nextCategory-1].label + " leader";
+		}
 	    }
 	},
 	{
@@ -1149,7 +1150,7 @@ shortest &larr; 0</td></tr>
 		}
 	    },
 	    logMessage: function(thisAV) {
-		return thisAV.nextToCheck + " is new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+		return thisAV.nextToCheck + " is new " + thisAV.categories[thisAV.nextCategory-1].label + " leader";
 	    }
 	},
 	{
@@ -1547,7 +1548,12 @@ shortestEdge &larr; 0</td></tr>
 		}
 	    },
 	    logMessage: function(thisAV) {
-		return "Check for new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+		if (hdxAV.nextAction == "updateNextCategory") {
+		    return "Check for new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+		}
+		else {
+		    return "Check for new " + thisAV.categories[thisAV.nextCategory-1].label + " leader";
+		}
 	    }
 	},
 	{
@@ -1601,7 +1607,7 @@ shortestEdge &larr; 0</td></tr>
 		}
 	    },
 	    logMessage: function(thisAV) {
-		return thisAV.nextToCheck + " is new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+		return thisAV.nextToCheck + " is new " + thisAV.categories[thisAV.nextCategory-1].label + " leader";
 	    }
 	},
 	{
