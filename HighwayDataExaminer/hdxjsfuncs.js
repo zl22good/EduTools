@@ -1321,6 +1321,9 @@ shortest &larr; 0</td></tr>
 	for (var i = 0; i < this.categories.length; i++) {
 	    removeEntryFromAVControlPanel(this.categories[i].name);
 	}
+	for (var i = 0; i < this.boundingPoly.length; i++) {
+	    this.boundingPoly[i].remove();
+	}
     }
 };
 
