@@ -363,7 +363,7 @@ var visualSettings = {
     discarded: {
         color: "#a0a0a0",
         textColor: "black",
-        scale: 2,
+        scale: 3,
 	name: "discarded",
 	value: 0,
 	weight: 5,
@@ -697,15 +697,18 @@ function convertMiles(num) {
 // optionally hide also by setting display to none
 function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 
-   var options = {
-       iconShape: 'circle-dot',
-       iconAnchor: [vs.scale/2, vs.scale/2],
-       borderWidth: vs.scale,
-       borderColor: vs.color
-       };
+    if (!vs.hasOwnProperty('icon')) {
+	var options = {
+	    iconShape: 'circle-dot',
+	    iconSize: [vs.scale, vs.scale],
+	    iconAnchor: [vs.scale/2, vs.scale/2],
+	    borderWidth: vs.scale,
+	    borderColor: vs.color
+	};
 
-    var icon = L.BeautifyIcon.icon(options);
-    markers[waypointNum].setIcon(icon);
+	vs.icon = L.BeautifyIcon.icon(options);
+    }
+    markers[waypointNum].setIcon(vs.icon);
     markers[waypointNum].setZIndexOffset(2000+zIndex);
     var row = document.getElementById("waypoint"+waypointNum);
     row.style.backgroundColor = vs.color;
