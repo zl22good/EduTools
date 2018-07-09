@@ -120,8 +120,8 @@ var hdxAV = {
 	this.avList.push(hdxVertexExtremesSearchAV);
 	this.avList.push(hdxEdgeExtremesSearchAV);
 	this.avList.push(hdxClosestPairsAV);
-	this.avList.push(hdxGraphTraversalsAV);
-	this.avList.push(hdxDijkstraAV);
+	this.avList.push(hdxGraphTraversalsAVOLD);
+	this.avList.push(hdxDijkstraAVOLD);
 	this.avList.push(hdxBFConvexHullAV);
 	
 	// populate the algorithm selection select with options
@@ -2134,11 +2134,11 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 // graph traversals, with option to find connected components
 // ********************************************************************
 
-var hdxGraphTraversalsAV = {
+var hdxGraphTraversalsAVOLD = {
 
     // entries for list of AVs
-    value: "traversals",
-    name: "Graph Traversal/Connected Components",
+    value: "traversalsOLD",
+    name: "Graph Traversal/Connected Components (OLD)",
     description: "Perform graph traversal using breadth-first, depth-first, or random-first traversals, with the option of repeating to find all connected components of the graph.",
 
     // pseudocode
@@ -2806,11 +2806,11 @@ function DijkstraSP(vIndex, d, connection) {
     return this;
 }
 // core Dijkstra's algorithm code
-var hdxDijkstraAV = {
+var hdxDijkstraAVOLD = {
     
     // entries for list of AVs
-    value: "dijkstra",
-    name: "Dijkstra's Algorithm",
+    value: "dijkstraOLD",
+    name: "Dijkstra's Algorithm (OLD)",
     description: "Dijkstra's algorithm for single-source shortest paths.",
 
     // pseudocode
