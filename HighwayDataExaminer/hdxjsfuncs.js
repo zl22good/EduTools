@@ -1136,7 +1136,9 @@ shortest &larr; 0</td></tr>
 		thisAV.categories[thisAV.nextCategory].index = thisAV.nextToCheck;
 
 		// update bounding box
-		thisAV.directionalBoundingBox();
+		if (thisAV.showBB) {
+		    thisAV.directionalBoundingBox();
+		}
 		
 		updateAVControlEntry(
 		    thisAV.categories[thisAV.nextCategory].name, 
@@ -1284,6 +1286,9 @@ shortest &larr; 0</td></tr>
 	for (var i = 0; i < pointRows.length; i++) {
 	    pointRows[i].style.display = "";
 	}
+
+	// honor bounding box checkbox
+	this.showBB = document.getElementById("boundingBox").checked;
 	
 	// start the search by initializing with the value at pos 0
 	updateMarkerAndTable(0, visualSettings.visiting, 40, false);
@@ -1303,7 +1308,7 @@ shortest &larr; 0</td></tr>
 
 	hdxAV.algStat.style.display = "";
 	hdxAV.algStat.innerHTML = "Setting up";
-        hdxAV.algOptions.innerHTML = '';
+        hdxAV.algOptions.innerHTML = '<input id="boundingBox" type="checkbox" name="Show Bounding Box" checked />&nbsp;Show Extremes Bounding Box';
 
 	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
 	addEntryToAVControlPanel("visiting", visualSettings.visiting);
