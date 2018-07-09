@@ -701,7 +701,7 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 	var options = {
 	    iconShape: 'circle-dot',
 	    iconSize: [vs.scale, vs.scale],
-	    iconAnchor: [vs.scale/2, vs.scale/2],
+	    iconAnchor: [vs.scale, vs.scale],
 	    borderWidth: vs.scale,
 	    borderColor: vs.color
 	};
