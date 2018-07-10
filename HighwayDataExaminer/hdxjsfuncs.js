@@ -120,6 +120,9 @@ var hdxAV = {
 	this.avList.push(hdxVertexExtremesSearchAV);
 	this.avList.push(hdxEdgeExtremesSearchAV);
 	this.avList.push(hdxClosestPairsAV);
+	this.avList.push(hdxGraphTraversalsAV);
+	this.avList.push(hdxDijkstraAV);
+	this.avList.push(hdxPrimAV);
 	this.avList.push(hdxGraphTraversalsAVOLD);
 	this.avList.push(hdxDijkstraAVOLD);
 	this.avList.push(hdxBFConvexHullAV);
@@ -2129,6 +2132,147 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	}
     }
 };
+
+/* common functionality for graph traversals, Dijkstra's, and Prim's 
+   algorithms, which serves as a prototype for the actual AV objects
+   defined below */
+
+var hdxTraversalsSpanningAVCommon = {
+
+    // entries for value, name, description, code will be in
+    // AV-specific objects
+
+    // list of vertices discovered but not yet visited
+    // a stack for DFS, queue for BFS, just an
+    // arbirtrary list for RFS, PQ for Dijkstra's or Prim's.
+    
+    // elements here are objects with fields vIndex for the index of
+    // this vertex and connection for the Polyline connection followed
+    // to get here (so it can be colored appropriately when the
+    // element comes out)
+    // this is the "list of discovered vertices" or "LDV"
+    ldv: null,
+
+    // arrays of booleans to indicate if we've visited/discovered
+    // vertices and edges
+    // should these just be attached to the Waypoint and GraphEdge objects?
+    visitedV: [],
+    discoveredV: [],
+    discoveredE: [],
+
+    // are we finding all components?
+    findingAllComponents: false,
+
+    // when finding all, track the lists of vertices and edges that are
+    // forming the current spanning tree
+    componentVList: [],
+    componentEList: [],
+
+    // where to start the search for an unvisited vertex that will be
+    // the starting vertex for the next component
+    startUnvisitedVSearch: 0,
+
+    // some additional stats to maintain and display
+    numVSpanningTree: 0,
+    numESpanningTree: 0,
+    numVUndiscovered: 0,
+    numEUndiscovered: 0,
+    numEDiscardedOnDiscovery: 0,
+    numEDiscardedOnRemoval: 0,
+    componentNum: 0,
+
+    // color items specific to graph traversals/spanning trees
+    visualSettings: {
+	visitedEarlier: {
+            color: "orange",
+            textColor: "black",
+            scale: 4,
+	    name: "visitedEarlier",
+	    value: 0
+	},
+	completedComponent: {
+	    color: "white",
+	    textColor: "black",
+	    scale: 3,
+	    name: "completedComponent",
+	    value: 0,
+	    weight: 3,
+	    opacity: 0.6
+	}
+    },
+
+    // list of colors to fill in for completed components
+    componentColors: [
+	"orange",
+	"darkCyan",
+	"brown",
+	"crimson",
+	"lightCoral",
+	"moccasin",
+	"orchid",
+	"sienna",
+	"violet",
+	"yellowGreen",
+	"gold",
+	"aqua",
+	"dodgerblue",
+	"lawngreen",
+	"khaki",
+	"lime",
+	"firebrick",
+	"indianred",
+	"indigo",
+	"goldenrod"
+    ],
+
+    // set up common UI components
+    setupUI() {
+	hdxAV.algStat.style.display = "";
+	hdxAV.algStat.innerHTML = "Setting up";
+
+    }
+};
+
+/* graph traversals based on hdxTraversalsSpanningAVCommon */
+
+var hdxGraphTraversalsAV = Object.create(hdxTraversalsSpanningAVCommon);
+
+// entries for the list of AVs
+hdxGraphTraversalsAV.value = "traversals";
+hdxGraphTraversalsAV.name = "Graph Traversal/Connected Components";
+hdxGraphTraversalsAV.description = "Perform graph traversal using breadth-first, depth-first, or random-first traversals, with the option of repeating to find all connected components of the graph.";
+
+// graph traversals-specific psuedocode, note labels must match those
+// expected by hdxTraversalsSpanningAVCommon avActions
+hdxGraphTraversalsAV.code = "traversals code goes here";
+
+
+/* Dijkstra's algorithm based on hdxTraversalsSpanningAVCommon */
+
+var hdxDijkstraAV = Object.create(hdxTraversalsSpanningAVCommon);
+
+// entries for the list of AVs
+hdxDijkstraAV.value = "dijkstra";
+hdxDijkstraAV.name = "Dijkstra's Algorithm";
+hdxDijkstraAV.description = "Dijkstra's algorithm for single-source shortest paths.";
+
+// Dijkstra-specific psuedocode, note labels must match those
+// expected by hdxTraversalsSpanningAVCommon avActions
+hdxDijkstraAV.code = "Dijkstra code goes here";
+
+/* Prim's algorithm based on hdxTraversalsSpanningAVCommon */
+
+var hdxPrimAV = Object.create(hdxTraversalsSpanningAVCommon);
+
+// entries for the list of AVs
+hdxPrimAV.value = "prim";
+hdxPrimAV.name = "Prim's Algorithm";
+hdxPrimAV.description = "Prim's algorithm for minimum cost spanning trees.";
+
+// Prim-specific psuedocode, note labels must match those
+// expected by hdxTraversalsSpanningAVCommon avActions
+hdxPrimAV.code = "Prim code goes here";
+
 
 // ********************************************************************
 // graph traversals, with option to find connected components
