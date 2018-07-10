@@ -308,6 +308,7 @@ function clearForm(f){
     
 	//clears the ui
 	hdxAV.setStatus(hdxStates.GRAPH_LOADED);
+	cleanupAVControlPanel();
 	hdxAV.currentAV.cleanupUI();
 	
 	document.getElementById("connection").style.display = "table-row";
@@ -448,6 +449,7 @@ var visualSettings = {
 
 /* functions for algorithm visualization control panel */
 var AVCPsuffix = "AVCPEntry";
+var AVCPentries = [];
 
 /* add entry to the algorithm visualization control panel */
 function addEntryToAVControlPanel(namePrefix, vs) {
@@ -460,6 +462,15 @@ function addEntryToAVControlPanel(namePrefix, vs) {
 			 "; background-color:" + vs.color);
     infoBoxtr.appendChild(infoBox);
     avControlTbody.appendChild(infoBoxtr);
+    AVCPentries.push(namePrefix);
+}
+
+/* clean up all entries from algorithm visualization control panel */
+function cleanupAVControlPanel() {
+
+    while (AVCPentries.length > 0) {
+	removeEntryFromAVControlPanel(AVCPentries.pop());
+    }
 }
 
 /* remove entry from algorithm visualization control panel */
@@ -1326,12 +1337,6 @@ shortest &larr; 0</td></tr>
     // remove UI modifications made for vertex extremes search
     cleanupUI() {
 
-	removeEntryFromAVControlPanel("undiscovered");
-	removeEntryFromAVControlPanel("visiting");
-	removeEntryFromAVControlPanel("discared");
-	for (var i = 0; i < this.categories.length; i++) {
-	    removeEntryFromAVControlPanel(this.categories[i].name);
-	}
 	for (var i = 0; i < this.boundingPoly.length; i++) {
 	    this.boundingPoly[i].remove();
 	}
@@ -1728,12 +1733,6 @@ shortestEdge &larr; 0</td></tr>
     // clean up edge search UI
     cleanupUI() {
 
-    	removeEntryFromAVControlPanel("undiscovered");
-	removeEntryFromAVControlPanel("visiting");
-	removeEntryFromAVControlPanel("discared");
-	for (var i = 0; i < this.categories.length; i++) {
-	    removeEntryFromAVControlPanel(this.categories[i].name);
-	}
     }
 };
 
@@ -2123,10 +2122,6 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
     // remove UI modifications made for vertex closest pairs
     cleanupUI() {
 
-	removeEntryFromAVControlPanel("v1visiting");
-	removeEntryFromAVControlPanel("v2visiting");
-	removeEntryFromAVControlPanel("checkingDistance");
-	removeEntryFromAVControlPanel("leader");
 	if (this.lineClosest != null) {
 	    this.lineClosest.remove();
 	}
@@ -2229,6 +2224,25 @@ var hdxTraversalsSpanningAVCommon = {
     setupUI() {
 	hdxAV.algStat.style.display = "";
 	hdxAV.algStat.innerHTML = "Setting up";
+        hdxAV.algOptions.innerHTML =
+	    buildWaypointSelector("startPoint", "Start Vertex", 0) +
+	    "<br />" + buildWaypointSelector("endPoint", "End Vertex", 1);
+	addEntryToAVControlPanel("visiting", visualSettings.visiting);
+	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
+	addEntryToAVControlPanel("discovered", visualSettings.discovered);
+	addEntryToAVControlPanel("found", visualSettings.spanningTree);
+	updateAVControlEntry("found", `
+<span id="foundLabel">Table of shortest paths found: <span id="tableSize">0 (number of paths found so far)</span></span><br />
+<table class="gratable"><thead>
+<tr style="text-align:center"><th>Place</th><th>Distance</th><th>Arrive From</th><th>Via</th></tr>
+</thead><tbody id="dijkstraEntries"></tbody></table>
+`);
+	this.foundTBody = document.getElementById("dijkstraEntries");
+	this.foundLabel = document.getElementById("foundLabel");
+    },
+
+    // clean up common UI components
+    cleanupUI() {
 
     }
 };
@@ -2917,12 +2931,6 @@ while LDV nonempty {
     // clean up traversals UI
     cleanupUI() {
 
-	removeEntryFromAVControlPanel("visiting");
-	removeEntryFromAVControlPanel("currentSpanningTree");
-    	removeEntryFromAVControlPanel("undiscovered");
-    	removeEntryFromAVControlPanel("discovered");
-	removeEntryFromAVControlPanel("discardedOnDiscovery");
-	removeEntryFromAVControlPanel("discardedOnRemoval");
     }
 };
 
@@ -3427,12 +3435,7 @@ var hdxDijkstraAVOLD = {
 
     // clean up Dijkstra's UI
     cleanupUI() {
-
-	removeEntryFromAVControlPanel("visiting");
-    	removeEntryFromAVControlPanel("undiscovered");
-    	removeEntryFromAVControlPanel("discovered");
-	removeEntryFromAVControlPanel("found");
-        
+       
     }
 };
 
@@ -3823,9 +3826,6 @@ for (i <- 1 to n–1)
     // clean up convex hull UI
     cleanupUI() {
 
-    	removeEntryFromAVControlPanel("hullI");
-    	removeEntryFromAVControlPanel("hullJ");
-    	removeEntryFromAVControlPanel("checkingLine");
 	for (var i = 0; i < this.hullSegments.length; i++) {
 	    this.hullSegments[i].remove();
 	}
@@ -5211,7 +5211,7 @@ function algorithmSelected() {
     // if we have an algorithm already selected, clean up its
     // UI first
     if (hdxAV.currentAV != null) {
-
+	cleanupAVControlPanel();
 	hdxAV.currentAV.cleanupUI();
     }
     
