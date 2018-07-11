@@ -775,6 +775,66 @@ function updatePolylineAndTable(edgeNum, vs, hideTableLine) {
     } 
 }
 
+// function to show/hide/reinitialize waypoints and connections
+// at the initialization of an AV
+//
+// showW: boolean indicating whether to show waypoints on map and in table
+// showC: boolean indicating whether to show connections on map and in table
+// vs: a visualSettings object to use to color shown components
+function initWaypointsAndConnections(showW, showC, vs) {
+
+    if (showW) {
+	// make sure waypoints table is displayed
+	document.getElementById("waypoints").style.display = "";
+	
+	// show all existing markers on map and table
+	for (var i = 0; i < waypoints.length; i++) {
+            markers[i].addTo(map);
+            updateMarkerAndTable(i, vs, 0, false);
+	}
+
+	// ensure individual table rows are shown
+	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
+	for (var i = 0; i < pointRows.length; i++) {
+	    pointRows[i].style.display = "";
+	}
+    }
+    else {
+	// undisplay the waypoints table
+	document.getElementById("waypoints").style.display = "none";
+
+	// remove all markers from the map
+	for (var i = 0; i < waypoints.length; i++) {
+            markers[i].remove();
+	}
+    }
+
+    if (showC) {
+	// display the connections table
+	document.getElementById("connection").style.display = "";
+
+	// ensure individual table rows are shown
+	var pointRows = document.getElementById("connection").getElementsByTagName("*");
+	for (var i = 0; i < pointRows.length; i++) {
+	    pointRows[i].style.display = "";
+	}
+
+	// show edges
+	for (var i = 0; i < connections.length; i++) {
+	    updatePolylineAndTable(i, vs, false);
+	}
+    }
+    else {
+	// undisplay the connections table
+	document.getElementById("connection").style.display = "none";
+
+	// remove each connection from the map
+	for (var i = 0; i < connections.length; i++) {
+            connections[i].remove();
+	}
+    }
+}
+
 // update a chunk of pseudocode with an id based on given visualsettings
 function highlightPseudocode(id, vs) {
 
@@ -1282,24 +1342,10 @@ shortest &larr; 0</td></tr>
     start() {
 
 	hdxAV.algStat.innerHTML = "Initializing";
-	// start by showing all existing markers, even hidden
-	for (var i = 0; i < waypoints.length; i++) {
-            markers[i].addTo(map);
-            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
-	}
-	// we don't need edges here, so we remove those
-	for (var i = 0; i < connections.length; i++) {
-            connections[i].remove();
-	}
-	//we don't need connections table here, so we remove those
-	document.getElementById("connection").style.display = "none";
 
-	// we do need waypoints, so make sure they're displayed
-	document.getElementById("waypoints").style.display = "";
-	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
-	for (var i = 0; i < pointRows.length; i++) {
-	    pointRows[i].style.display = "";
-	}
+	// show waypoints, hide connections
+	initWaypointsAndConnections(true, false,
+				    visualSettings.undiscovered);
 
 	// honor bounding box checkbox
 	this.showBB = document.getElementById("boundingBox").checked;
@@ -1683,27 +1729,9 @@ shortestEdge &larr; 0</td></tr>
 
 	hdxAV.algStat.innerHTML = "Initializing";
 
-	// initialize all edges to have the "undiscovered" color
-	for (var i = 0; i < connections.length; i++) {
-	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
-	}
-
-	// waypoints not needed, so remove from the map
-	for (var i = 0; i < waypoints.length; i++) {
-            markers[i].remove();
-	}
-	
-	//we don't need waypoints table here, so we remove those
-	document.getElementById("waypoints").style.display = "none";
-
-	
-	document.getElementById("connection").style.display = "";
-	var pointRows = document.getElementById("connection").getElementsByTagName("*");
-	for (var i = 0; i < pointRows.length; i++) {
-	    pointRows[i].style.display = "";
-	}
-
-	updateMarkerAndTable(0, visualSettings.visiting, false);
+	// hide waypoints, show connections
+	initWaypointsAndConnections(false, true,
+				    visualSettings.undiscovered);
 	
 	// set up for our first action
 	hdxAV.nextAction = "initialize";
@@ -2072,28 +2100,14 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
     },
 
     // required start function
-    // initialize a vertex-based search
+    // initialize a vertex closest pairs search
     start() {
 
 	hdxAV.algStat.innerHTML = "Initializing";
-	// start by showing all existing markers, even hidden
-	for (var i = 0; i < waypoints.length; i++) {
-            markers[i].addTo(map);
-            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
-	}
-	// we don't need edges here, so we remove those
-	for (var i = 0; i < connections.length; i++) {
-            connections[i].remove();
-	}
-	//we don't need connections table here, so we remove those
-	document.getElementById("connection").style.display = "none";
 
-	// we do need waypoints, so make sure they're displayed
-	document.getElementById("waypoints").style.display = "";
-	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
-	for (var i = 0; i < pointRows.length; i++) {
-	    pointRows[i].style.display = "";
-	}
+	// show waypoints, hide connections
+	initWaypointsAndConnections(true, false,
+				    visualSettings.undiscovered);
 	
 	// set up for our first action
 	hdxAV.nextAction = "initialize";
@@ -2457,6 +2471,10 @@ while LDV nonempty {
     // initialize graph traversal process, required for all algorithms
     start() {
 
+	// show waypoints, show connections
+	initWaypointsAndConnections(true, true,
+				    visualSettings.undiscovered);
+
 	let d = document.getElementById("traversalDiscipline");
 	this.traversalDiscipline = d.options[d.selectedIndex].value;
 	if (this.traversalDiscipline == "BFS") {
@@ -2486,28 +2504,11 @@ while LDV nonempty {
 	this.findingAllComponents = c.checked;
 	c.style.disabled = true;
 
-	document.getElementById("connection").style.display = "";
-	document.getElementById("waypoints").style.display = "";
-	var pointRows = document.getElementById("waypoints").getElementsByTagName("*");
-	for (var i = 0; i < pointRows.length; i++) {
-	    pointRows[i].style.display = "";
-	}
-	
 	// initialize our visited/discovered arrays
 	this.visitedV = new Array(waypoints.length).fill(false);
 	this.discoveredV = new Array(waypoints.length).fill(false);
 	this.discoveredE = new Array(connections.length).fill(false);
 
-	// replace all markers with circles in the undiscovered color
-	for (var i = 0; i < markers.length; i++) {
-            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
-	}
-	
-	// color all edges in the undiscovered color also
-	for (var i = 0; i < connections.length; i++) {
-	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
-	}
-	
 	this.numVSpanningTree = 0;
 	this.numESpanningTree = 0;
 	this.numVUndiscovered = waypoints.length;
@@ -3074,6 +3075,11 @@ var hdxDijkstraAVOLD = {
 
     // required algorithm start method for Dijkstra's
     start() {
+
+	// show waypoints, hide connections
+	initWaypointsAndConnections(true, false,
+				    visualSettings.undiscovered);
+	
         highlighter(1, "blue");
 	// vertex indices for the start and end of the traversal
 	this.startingVertex = document.getElementById("startPoint").value;
@@ -3104,23 +3110,10 @@ var hdxDijkstraAVOLD = {
 		    item.dist.toFixed(3);
 	    });
 
-	// show both waypoint and connections tables
-	document.getElementById("connection").style.display = "";
-	document.getElementById("waypoints").style.display = "";
 	
 	// initialize our visited array to indicate which
 	// vertices to which we have a shortest path
 	this.visitedVertices = new Array(waypoints.length).fill(false);
-	
-	// indicate that all waypoints start out as undiscovered
-	for (var i = 0; i < markers.length; i++) {
-            updateMarkerAndTable(i, visualSettings.undiscovered, 0, false);
-	}
-	
-	// all edges undiscovered also
-	for (var i = 0; i < connections.length; i++) {
-	    updatePolylineAndTable(i, visualSettings.undiscovered, false);
-	}
 	
 	// initialize the process with this value
 	this.pq.add(new DijkstraSP(this.startingVertex, 0, -1));
@@ -3580,19 +3573,9 @@ for (i <- 1 to n–1)
     // TODO: where do we know we're done?
     start() {
 
-	// clear connections from the map, as this is a vertex-only
-	// algorithm
-	for (var outerLoop = 0; outerLoop < connections.length; outerLoop++) {
-	    connections[outerLoop].remove();
-	}
-
-	// also no need for connections table
-	document.getElementById("connection").style.display = "none";
-
-	// mark all vertices as "undiscovered"
-	for (var i = 0; i < waypoints.length; i++) {
-            updateMarkerAndTable(i, visualSettings.undiscovered, 30, false);
-	}
+	// show waypoints, hide connections
+	initWaypointsAndConnections(true, false,
+				    visualSettings.undiscovered);
 
 	// initialize our i and j for the main n^2 loop which forms
 	// the granularity of our visualization at this point
