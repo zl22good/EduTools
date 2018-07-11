@@ -2155,8 +2155,17 @@ var hdxTraversalsSpanningAVCommon = {
     discoveredV: [],
     discoveredE: [],
 
-    // are we finding all components?
-    findingAllComponents: false,
+    // algorithm-specific options to show in the algorithm options
+    // control panel should be set by any algorithm that needs them
+    // in this variable
+    extraAlgOptions: "",
+    
+    // does the algorithm support finding all components?  if so,
+    // the specific AV instance should set this variable to true
+    supportFindAllComponents: false,
+    
+    // are we finding a path to end, all in a component, or all components?
+    stoppingCondition: "StopAtEnd",
 
     // when finding all, track the lists of vertices and edges that are
     // forming the current spanning tree
@@ -2220,13 +2229,24 @@ var hdxTraversalsSpanningAVCommon = {
 	"goldenrod"
     ],
 
-    // set up common UI components
+    // set up common UI components for traversals/spanning trees
     setupUI() {
 	hdxAV.algStat.style.display = "";
 	hdxAV.algStat.innerHTML = "Setting up";
-        hdxAV.algOptions.innerHTML =
+	let newAO =
 	    buildWaypointSelector("startPoint", "Start Vertex", 0) +
-	    "<br />" + buildWaypointSelector("endPoint", "End Vertex", 1);
+	    "<br />" +
+	    buildWaypointSelector("endPoint", "End Vertex", 1) + `
+<br />
+<select id="stoppingCondition" onchange="stoppingConditionChanged();">
+<option value="StopAtEnd" selected>Stop When End Vertex Reached</option>
+<option value="FindReachable">Find All Vertices Reachable from Start</option>
+`;
+	if (this.supportFindAllComponents) {
+	    newAO += '<option value="FindAll">Find All Connected Components</option>';
+	}
+	newAO += '</select>';
+        hdxAV.algOptions.innerHTML = newAO + this.extraAlgOptions;
 	addEntryToAVControlPanel("visiting", visualSettings.visiting);
 	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
 	addEntryToAVControlPanel("discovered", visualSettings.discovered);
@@ -2247,18 +2267,38 @@ var hdxTraversalsSpanningAVCommon = {
     }
 };
 
+function stoppingConditionChanged() {
+
+    let selector = document.getElementById("stoppingCondition");
+    this.stoppingCondition = selector.options[selector.selectedIndex].value;
+    console.log("new stopping condition: " + this.stoppingCondition);
+    let endSelector = document.getElementById("endPoint");
+    endSelector.disabled = this.stoppingCondition != "StopAtEnd";
+}
+
 /* graph traversals based on hdxTraversalsSpanningAVCommon */
 
 var hdxGraphTraversalsAV = Object.create(hdxTraversalsSpanningAVCommon);
 
 // entries for the list of AVs
 hdxGraphTraversalsAV.value = "traversals";
-hdxGraphTraversalsAV.name = "Graph Traversal/Connected Components";
+hdxGraphTraversalsAV.name = "Graph Traversal/Connected Components (Under Construction)";
 hdxGraphTraversalsAV.description = "Perform graph traversal using breadth-first, depth-first, or random-first traversals, with the option of repeating to find all connected components of the graph.";
+
+// extra selector for traversal disciplines
+hdxGraphTraversalsAV.extraAlgOptions = `<br />
+Order: <select id="traversalDiscipline">
+<option value="BFS">Breadth First</option>
+<option value="DFS">Depth First</option>
+<option value="RFS">Random</option>
+</select>`;
 
 // graph traversals-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
 hdxGraphTraversalsAV.code = "traversals code goes here";
+
+// graph traversals allow the option to find all components
+hdxGraphTraversalsAV.supportFindAllComponents = true;
 
 
 /* Dijkstra's algorithm based on hdxTraversalsSpanningAVCommon */
@@ -2267,7 +2307,7 @@ var hdxDijkstraAV = Object.create(hdxTraversalsSpanningAVCommon);
 
 // entries for the list of AVs
 hdxDijkstraAV.value = "dijkstra";
-hdxDijkstraAV.name = "Dijkstra's Algorithm";
+hdxDijkstraAV.name = "Dijkstra's Algorithm (Under Construction)";
 hdxDijkstraAV.description = "Dijkstra's algorithm for single-source shortest paths.";
 
 // Dijkstra-specific psuedocode, note labels must match those
@@ -2280,12 +2320,15 @@ var hdxPrimAV = Object.create(hdxTraversalsSpanningAVCommon);
 
 // entries for the list of AVs
 hdxPrimAV.value = "prim";
-hdxPrimAV.name = "Prim's Algorithm";
+hdxPrimAV.name = "Prim's Algorithm (Under Construction)";
 hdxPrimAV.description = "Prim's algorithm for minimum cost spanning trees.";
 
 // Prim-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
 hdxPrimAV.code = "Prim code goes here";
+
+// Prim's allows the option to find all components
+hdxPrimAV.supportFindAllComponents = true;
 
 
 // ********************************************************************
