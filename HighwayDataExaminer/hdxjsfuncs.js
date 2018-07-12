@@ -2306,6 +2306,27 @@ var hdxTraversalsSpanningAVCommon = {
 	    comment: "initialize algorithm",
 	    code: function(thisAV) {
 
+		// initialize our visited/discovered arrays
+		thisAV.visitedV = new Array(waypoints.length).fill(false);
+		thisAV.discoveredV = new Array(waypoints.length).fill(false);
+		thisAV.discoveredE = new Array(connections.length).fill(false);
+		
+		thisAV.numVSpanningTree = 0;
+		thisAV.numESpanningTree = 0;
+		thisAV.numVUndiscovered = waypoints.length;
+		thisAV.numEUndiscovered = connections.length;
+		thisAV.numEDiscardedOnDiscovery = 0;
+		thisAV.numEDiscardedOnRemoval = 0;
+		thisAV.componentNum = 0;
+
+		// for the search for starting vertices for multiple
+		// component traversals
+		thisAV.startUnvisitedVSearch = 0;
+		
+		// vertex index to start the traversal
+		thisAV.startingVertex = document.getElementById("startPoint").value;
+
+		thisAV.updateControlEntries();
 		hdxAV.nextAction = "DONE";
 		hdxAV.iterationDone = true;
 	    },
@@ -2315,6 +2336,27 @@ var hdxTraversalsSpanningAVCommon = {
 	}
 
     ],
+
+    updateControlEntries() {
+	updateAVControlEntry("undiscovered", "Undiscovered: " +
+			     this.numVUndiscovered + " V, " +
+			     this.numEUndiscovered + " E");
+	let label;
+	if (this.findingAllComponents) {
+	    label = "Spanning Trees: ";
+	}
+	else {
+	    label = "Spanning Tree: "
+	}
+	updateAVControlEntry("currentSpanningTree", label +
+			     this.numVSpanningTree + " V, " +
+			     this.numESpanningTree + " E");
+	updateAVControlEntry("discardedOnDiscovery", "Discarded on discovery: " +
+			     this.numEDiscardedOnDiscovery + " E");
+	updateAVControlEntry("discardedOnRemoval", "Discarded on removal: " +
+			     this.numEDiscardedOnRemoval + " E");
+
+    },
     
     // required start function, here do things common to all
     // traversals/spanning algorithms
@@ -2367,9 +2409,10 @@ var hdxTraversalsSpanningAVCommon = {
 	addEntryToAVControlPanel("visiting", visualSettings.visiting);
 	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
 	addEntryToAVControlPanel("discovered", visualSettings.discovered);
-	addEntryToAVControlPanel("found", visualSettings.spanningTree);
+	addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
 	addEntryToAVControlPanel("discardedOnDiscovery", visualSettings.discardedOnDiscovery);
 	addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
+	addEntryToAVControlPanel("found", visualSettings.spanningTree);
 	let foundEntry = '<span id="foundTableLabel">' +
 	    this.foundTableHeader + '</span><br />' +
 	    '<table class="gratable"><thead>' +
@@ -2395,7 +2438,6 @@ function stoppingConditionChanged() {
 
     let selector = document.getElementById("stoppingCondition");
     this.stoppingCondition = selector.options[selector.selectedIndex].value;
-    console.log("new stopping condition: " + this.stoppingCondition);
     let endSelector = document.getElementById("endPoint");
     endSelector.disabled = this.stoppingCondition != "StopAtEnd";
 }
