@@ -2196,6 +2196,23 @@ var hdxTraversalsSpanningAVCommon = {
     // entries for value, name, description, code will be in
     // AV-specific objects
 
+    // algorithm-specific options to show in the algorithm options
+    // control panel should be set by any algorithm that needs them
+    // in this variable
+    extraAlgOptions: "",
+    
+    // does the algorithm support finding all components?  if so,
+    // the specific AV instance should set this variable to true
+    supportFindAllComponents: false,
+    
+    // The header for the table of found places
+    foundTableHeader: "MISSING",
+
+    // if an entry in the table should have a column for an edge
+    // length (as in Prim's) or cumulative distance (as in Dijkstra's)
+    // this should be set to the column header
+    distEntry: "",
+
     // list of vertices discovered but not yet visited (that is,
     // added to the spanning tree/forest being constructed)
     //
@@ -2216,15 +2233,6 @@ var hdxTraversalsSpanningAVCommon = {
     discoveredV: [],
     discoveredE: [],
 
-    // algorithm-specific options to show in the algorithm options
-    // control panel should be set by any algorithm that needs them
-    // in this variable
-    extraAlgOptions: "",
-    
-    // does the algorithm support finding all components?  if so,
-    // the specific AV instance should set this variable to true
-    supportFindAllComponents: false,
-    
     // are we finding a path to end, all in a component, or all components?
     stoppingCondition: "StopAtEnd",
 
@@ -2290,6 +2298,24 @@ var hdxTraversalsSpanningAVCommon = {
 	"goldenrod"
     ],
 
+    // actions to define the behavior of the common traversals
+    // and spanning tree algorithms
+    avActions: [
+	{
+	    label: "initialize",
+	    comment: "initialize algorithm",
+	    code: function(thisAV) {
+
+		hdxAV.nextAction = "DONE";
+		hdxAV.iterationDone = true;
+	    },
+	    logMessage: function(thisAV) {
+		return "Done!";
+	    }
+	}
+
+    ],
+    
     // required start function, here do things common to all
     // traversals/spanning algorithms
     start() {
@@ -2342,14 +2368,20 @@ var hdxTraversalsSpanningAVCommon = {
 	addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
 	addEntryToAVControlPanel("discovered", visualSettings.discovered);
 	addEntryToAVControlPanel("found", visualSettings.spanningTree);
-	updateAVControlEntry("found", `
-<span id="foundLabel">Table of shortest paths found: <span id="tableSize">0 (number of paths found so far)</span></span><br />
-<table class="gratable"><thead>
-<tr style="text-align:center"><th>Place</th><th>Distance</th><th>Arrive From</th><th>Via</th></tr>
-</thead><tbody id="dijkstraEntries"></tbody></table>
-`);
-	this.foundTBody = document.getElementById("dijkstraEntries");
-	this.foundLabel = document.getElementById("foundLabel");
+	addEntryToAVControlPanel("discardedOnDiscovery", visualSettings.discardedOnDiscovery);
+	addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
+	let foundEntry = '<span id="foundTableLabel">' +
+	    this.foundTableHeader + '</span><br />' +
+	    '<table class="gratable"><thead>' +
+	    '<tr style="text-align:center"><th>Place</th>';
+	if (this.distEntry != "") {
+	    foundEntry += '<th>' + this.distEntry + '</th>';
+	}
+	foundEntry += '<th>Arrive From</th><th>Via</th></tr>' +
+	    '</thead><tbody id="foundEntries"></tbody></table>';
+	updateAVControlEntry("found", foundEntry);
+	this.foundTBody = document.getElementById("foundEntries");
+	this.foundLabel = document.getElementById("foundTableLabel");
     },
 
     // clean up common UI components
@@ -2376,6 +2408,7 @@ var hdxGraphTraversalsAV = Object.create(hdxTraversalsSpanningAVCommon);
 hdxGraphTraversalsAV.value = "traversals";
 hdxGraphTraversalsAV.name = "Graph Traversal/Connected Components (Under Construction)";
 hdxGraphTraversalsAV.description = "Perform graph traversal using breadth-first, depth-first, or random-first traversals, with the option of repeating to find all connected components of the graph.";
+hdxGraphTraversalsAV.foundTableHeader = "Places in Spanning Tree";
 
 // extra selector for traversal disciplines
 hdxGraphTraversalsAV.extraAlgOptions = `<br />
@@ -2420,6 +2453,8 @@ var hdxDijkstraAV = Object.create(hdxTraversalsSpanningAVCommon);
 hdxDijkstraAV.value = "dijkstra";
 hdxDijkstraAV.name = "Dijkstra's Algorithm (Under Construction)";
 hdxDijkstraAV.description = "Dijkstra's algorithm for single-source shortest paths.";
+hdxDijkstraAV.foundTableHeader = "Shortest Paths Found So Far";
+hdxDijkstraAV.distEntry = "Distance";
 
 // required function to create an appropriate list of discovered vertices
 hdxDijkstraAV.createLDV = function() {
@@ -2440,6 +2475,8 @@ var hdxPrimAV = Object.create(hdxTraversalsSpanningAVCommon);
 hdxPrimAV.value = "prim";
 hdxPrimAV.name = "Prim's Algorithm (Under Construction)";
 hdxPrimAV.description = "Prim's algorithm for minimum cost spanning trees.";
+hdxPrimAV.foundTableHeader = "Places in Spanning Tree";
+hdxPrimAV.distEntry = "Length";
 
 // required function to create an appropriate list of discovered vertices
 hdxPrimAV.createLDV = function() {
