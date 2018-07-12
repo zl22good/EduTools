@@ -2142,19 +2142,66 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
     }
 };
 
-/* common functionality for graph traversals, Dijkstra's, and Prim's 
-   algorithms, which serves as a prototype for the actual AV objects
-   defined below */
+/* common functionality for graph traversals, Dijkstra's, and Prim's
+   algorithms, which serves as a prototype for the actual selectable
+   and executable AV objects defined below */
+
+// an object used to track entries in the LDV (see below) and
+// the table of places found
+//
+// vIndex is the vertex we are going to
+// val is a number used as the priority for Dijkstra's (as a
+//    cumulative distance) or Prim's (as an edge length) or
+//    a sequence number for graph traversals (informational)
+// connection is the edge number traversed to get there, and
+//    is -1 for the "dummy" entry that starts a spanning
+//    tree or graph traversal
+// the source vertex is determined from the connection
+function LDVEntry(vIndex, val, connection) {
+    
+    this.vIndex = vIndex;
+    this.val = val;
+    this.connection = connection;
+    // compute the other vertex of the endpoint as we'll need
+    // it in a couple places
+    this.fromVIndex = -1;
+    if (connection != -1) {
+	if (graphEdges[connection].v1 == vIndex) {
+	    this.fromVIndex = graphEdges[connection].v2;
+	}
+	else {
+	    this.fromVIndex = graphEdges[connection].v1;
+	}
+    }
+    
+    return this;
+}
+
+// function to display an LDVEntry object in HTML suitible for
+// HDXLinear, set as the HDXLinear's elementHTMLCallback for
+// traversal and spanning tree algorithms
+// required function to display an LDV entry
+function displayLDVItem(item) {
+    let edgeLabel = "START";
+    if (item.connection != -1) {
+	edgeLabel = graphEdges[item.connection].label;
+    }
+    return item.fromVIndex + "&rarr;" + item.vIndex + "<br />" +
+	edgeLabel + "<br />" + item.val;
+};
+
 
 var hdxTraversalsSpanningAVCommon = {
 
     // entries for value, name, description, code will be in
     // AV-specific objects
 
-    // list of vertices discovered but not yet visited
-    // a stack for DFS, queue for BFS, just an
-    // arbirtrary list for RFS, PQ for Dijkstra's or Prim's.
-    
+    // list of vertices discovered but not yet visited (that is,
+    // added to the spanning tree/forest being constructed)
+    //
+    // it is a stack for DFS, a queue for BFS, a list that randomly
+    // returns values for RFS, a PQ for Dijkstra's or Prim's.
+    //
     // elements here are objects with fields vIndex for the index of
     // this vertex and connection for the Polyline connection followed
     // to get here (so it can be colored appropriately when the
@@ -2243,6 +2290,36 @@ var hdxTraversalsSpanningAVCommon = {
 	"goldenrod"
     ],
 
+    // required start function, here do things common to all
+    // traversals/spanning algorithms
+    start() {
+	
+	hdxAV.algStat.innerHTML = "Initializing";
+
+	// show waypoints, show connections
+	initWaypointsAndConnections(true, true,
+				    visualSettings.undiscovered);
+
+	// each algorithm will be required to provide a function
+	// to create its LDV
+	this.ldv = this.createLDV();
+
+	// add LDV to display element and set its callback to
+	// display an individual entry
+	// note that this means each algorithm must provide a function
+	// named displayLDVItem that takes an LDV entry as its
+	// parameter
+	this.ldv.setDisplay(getAVControlEntryDocumentElement("discovered"),
+			    displayLDVItem);
+	
+	// set up for our first action
+	hdxAV.nextAction = "initialize";
+
+	// to start, we make just a simple call to nextStep, ignoring any
+	// delay until after the first action occurs
+	hdxAV.nextStep(this);
+    },
+
     // set up common UI components for traversals/spanning trees
     setupUI() {
 	hdxAV.algStat.style.display = "";
@@ -2281,6 +2358,7 @@ var hdxTraversalsSpanningAVCommon = {
     }
 };
 
+// event handler when stopping condition option selector changes
 function stoppingConditionChanged() {
 
     let selector = document.getElementById("stoppingCondition");
@@ -2307,6 +2385,25 @@ Order: <select id="traversalDiscipline">
 <option value="RFS">Random</option>
 </select>`;
 
+// required function to create an appropriate list of discovered vertices
+hdxGraphTraversalsAV.createLDV = function() {
+    
+    let d = document.getElementById("traversalDiscipline");
+    this.traversalDiscipline = d.options[d.selectedIndex].value;
+    if (this.traversalDiscipline == "BFS") {
+        return new HDXLinear(hdxLinearTypes.QUEUE,
+			     "BFS Discovered Queue");
+    }
+    
+    if (this.traversalDiscipline == "DFS") {
+        return new HDXLinear(hdxLinearTypes.STACK,
+			     "DFS Discovered Stack");
+    }
+
+    return new HDXLinear(hdxLinearTypes.RANDOM,
+			 "RFS Discovered List");
+};
+
 // graph traversals-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
 hdxGraphTraversalsAV.code = "traversals code goes here";
@@ -2324,6 +2421,13 @@ hdxDijkstraAV.value = "dijkstra";
 hdxDijkstraAV.name = "Dijkstra's Algorithm (Under Construction)";
 hdxDijkstraAV.description = "Dijkstra's algorithm for single-source shortest paths.";
 
+// required function to create an appropriate list of discovered vertices
+hdxDijkstraAV.createLDV = function() {
+    
+    return new HDXLinear(hdxLinearTypes.PRIORITY_QUEUE,
+			 "Priority Queue");
+};
+
 // Dijkstra-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
 hdxDijkstraAV.code = "Dijkstra code goes here";
@@ -2336,6 +2440,13 @@ var hdxPrimAV = Object.create(hdxTraversalsSpanningAVCommon);
 hdxPrimAV.value = "prim";
 hdxPrimAV.name = "Prim's Algorithm (Under Construction)";
 hdxPrimAV.description = "Prim's algorithm for minimum cost spanning trees.";
+
+// required function to create an appropriate list of discovered vertices
+hdxPrimAV.createLDV = function() {
+    
+    return new HDXLinear(hdxLinearTypes.PRIORITY_QUEUE,
+			 "Priority Queue");
+};
 
 // Prim-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
