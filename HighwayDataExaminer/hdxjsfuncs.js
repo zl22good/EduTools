@@ -855,6 +855,37 @@ function unhighlightPseudocode() {
     }
 }
 
+// function to help build the table of pseudocode for highlighting
+// indent: number of indentation levels
+// code: line or array of code lines to place in block
+// id: DOM id to give the enclosing td element
+function pcEntry(indent, code, id) {
+
+    let entry;
+    if (entry != "") {
+	entry = '<tr id="' + id + '"><td>';
+    }
+    else {
+	entry = '<tr><td>';
+    }
+    if (Array.isArray(code)) {
+	for (var i = 0; i < code.length; i++) {
+	    for (var j = 0; j < indent; j++) {
+		entry += "&nbsp;&nbsp;";
+	    }
+	    entry += code[i] + "<br />";
+	}
+    }
+    else {
+	for (var i = 0; i < indent; i++) {
+	    entry += "&nbsp;&nbsp;";
+	}
+	entry += code;
+    }
+    entry += '</td></tr>';
+    return entry;
+}
+
 // dummy AV entry for main menu
 var hdxNoAV = {
 
@@ -863,7 +894,7 @@ var hdxNoAV = {
     name: "Select an Algorithm",
     description: "No algorithm is selected, please select.",
 
-    code: "Select an algorithm to view pseudocode.",
+    code: "Select and start an algorithm to view pseudocode.",
     
     // provide start, nextStep, setupUI, just in case buttons are
     // somehow active when this option is selected
@@ -2306,6 +2337,8 @@ var hdxTraversalsSpanningAVCommon = {
 	    comment: "initialize algorithm",
 	    code: function(thisAV) {
 
+		highlightPseudocode(this.label, visualSettings.visiting);
+
 		// initialize our visited/discovered arrays
 		thisAV.visitedV = new Array(waypoints.length).fill(false);
 		thisAV.discoveredV = new Array(waypoints.length).fill(false);
@@ -2379,6 +2412,10 @@ var hdxTraversalsSpanningAVCommon = {
 	// parameter
 	this.ldv.setDisplay(getAVControlEntryDocumentElement("discovered"),
 			    displayLDVItem);
+
+	// pseudocode will depend on specific options chosen, so set up
+	// the code field based on the options in use
+	this.setupCode();
 	
 	// set up for our first action
 	hdxAV.nextAction = "initialize";
@@ -2481,7 +2518,35 @@ hdxGraphTraversalsAV.createLDV = function() {
 
 // graph traversals-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
-hdxGraphTraversalsAV.code = "traversals code goes here";
+hdxGraphTraversalsAV.setupCode = function() {
+    this.code = '<table class="pseudocode">' +
+	pcEntry(0, [ "d &larr; new " + this.ldv.displayName,
+		     "s &larr; starting vertex",
+		     "d." + this.ldv.addOperation() + "(s,null)" ],
+		"initialize");
+    if (this.stoppingCondition == "StopAtEnd") {
+	this.code +=
+	    pcEntry(0, "while (end not visited)", "checkEndVisited") +
+	    pcEntry(1, "if d.isEmpty", "checkLDVEmpty") +
+	    pcEntry(2, "error: no path", "LDVEmpty") +
+	    pcEntry(1, "(to,via) &larr; d." + this.ldv.removeOperation() +
+		    "()", "getPlaceFromLDV") +
+	    pcEntry(1, "if to.visited = true", "checkVisited") +
+	    pcEntry(2, "discard (to,via) // on removal", "wasVisited") +
+	    pcEntry(1, "else", "") +
+	    pcEntry(2, "to.visited = true; add (to,via) to tree",
+		    "wasNotVisited") +
+	    pcEntry(2, "for each neighbor vertex v by edge e",
+		    "checkNeighborsLoopTop") +
+	    pcEntry(3, "if v.visited = true", "checkNeighborsLoopIf") +
+	    pcEntry(4, "discard (v,e) // on discovery",
+		    "checkNeighborsLoopIfTrue") +
+	    pcEntry(3, "else", "") +
+	    pcEntry(4, "d." + this.ldv.addOperation() + "(v,e)", 
+		    "checkNeighborsLoopIfFalse");
+    }
+    this.code += "</table>";
+}
 
 // graph traversals allow the option to find all components
 hdxGraphTraversalsAV.supportFindAllComponents = true;
@@ -2507,7 +2572,18 @@ hdxDijkstraAV.createLDV = function() {
 
 // Dijkstra-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
-hdxDijkstraAV.code = "Dijkstra code goes here";
+hdxDijkstraAV.setupCode = function() {
+    this.code = `
+<table class="pseudocode"><tr id="initialize" class="pseudocode"><td class="pseudocode">
+` +
+	"pq &larr; new " + this.ldv.displayName + "<br />" +
+	"s &larr; starting vertex<br />" +
+	"pq." + this.ldv.addOperation() + "(s,null,0)<br />" +	
+`
+</td></tr>
+</table>
+`;
+}
 
 /* Prim's algorithm based on hdxTraversalsSpanningAVCommon */
 
@@ -2529,7 +2605,18 @@ hdxPrimAV.createLDV = function() {
 
 // Prim-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
-hdxPrimAV.code = "Prim code goes here";
+hdxPrimAV.setupCode = function() {
+    this.code = `
+<table class="pseudocode"><tr id="initialize" class="pseudocode"><td class="pseudocode">
+` +
+	"pq &larr; new " + this.ldv.displayName + "<br />" +
+	"s &larr; starting vertex<br />" +
+	"pq." + this.ldv.addOperation() + "(s,null,0)<br />" +	
+`
+</td></tr>
+</table>
+`;
+}
 
 // Prim's allows the option to find all components
 hdxPrimAV.supportFindAllComponents = true;
@@ -4271,6 +4358,33 @@ function HDXLinear(type, displayName) {
 	    this.tbody.innerHTML = t;
 	}
     };
+
+    // names to use when referring to add and remove operations
+    this.addOperation = function() {
+	switch(this.type) {
+
+	case hdxLinearTypes.STACK:
+	    return "push";
+	case hdxLinearTypes.PRIORITY_QUEUE:
+	case hdxLinearTypes.RANDOM:
+	    return "add";
+	case hdxLinearTypes.QUEUE:
+	    return "enqueue";
+	}
+    };
+
+    this.removeOperation = function() {
+	switch(this.type) {
+
+	case hdxLinearTypes.STACK:
+	    return "pop";
+	case hdxLinearTypes.PRIORITY_QUEUE:
+	case hdxLinearTypes.RANDOM:
+	    return "remove";
+	case hdxLinearTypes.QUEUE:
+	    return "dequeue";
+	}
+    };
     
     return this;
 }
@@ -5389,6 +5503,8 @@ function selectAlgorithmAndStart() {
 
     resetVars();
     hdxAV.currentAV.start();
+    // set pseudocode
+    document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
 }
 
 function showLegend() {
@@ -5467,8 +5583,6 @@ function algorithmSelected() {
 	{
 		document.getElementById('algOptionsDone').disabled=true;
 	} */
-    // set pseudocode
-    document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
 
     // call its function to set up its status and options
     hdxAV.currentAV.setupUI();
