@@ -2413,6 +2413,11 @@ var hdxTraversalsSpanningAVCommon = {
 	this.ldv.setDisplay(getAVControlEntryDocumentElement("discovered"),
 			    displayLDVItem);
 
+	// update stopping condition
+	let selector = document.getElementById("stoppingCondition");
+	this.stoppingCondition =
+	    selector.options[selector.selectedIndex].value;
+	
 	// pseudocode will depend on specific options chosen, so set up
 	// the code field based on the options in use
 	this.setupCode();
@@ -2474,9 +2479,9 @@ var hdxTraversalsSpanningAVCommon = {
 function stoppingConditionChanged() {
 
     let selector = document.getElementById("stoppingCondition");
-    this.stoppingCondition = selector.options[selector.selectedIndex].value;
     let endSelector = document.getElementById("endPoint");
-    endSelector.disabled = this.stoppingCondition != "StopAtEnd";
+    endSelector.disabled =
+	selector.options[selector.selectedIndex].value != "StopAtEnd";
 }
 
 /* graph traversals based on hdxTraversalsSpanningAVCommon */
@@ -2516,9 +2521,31 @@ hdxGraphTraversalsAV.createLDV = function() {
 			 "RFS Discovered List");
 };
 
+// helper function to help build pseudocode
+hdxGraphTraversalsAV.mainLoopBody = function(indent) {
+
+    return pcEntry(indent+1, "(to,via) &larr; d." +
+		   this.ldv.removeOperation() + "()", "getPlaceFromLDV") +
+	pcEntry(indent+1, "if to.visited = true", "checkVisited") +
+	pcEntry(indent+2, "discard (to,via) // on removal", "wasVisited") +
+	pcEntry(indent+1, "else", "") +
+	pcEntry(indent+2, "to.visited = true; add (to,via) to tree",
+		"wasNotVisited") +
+	pcEntry(indent+2, "for each neighbor vertex v by edge e",
+		"checkNeighborsLoopTop") +
+	pcEntry(indent+3, "if v.visited = true", "checkNeighborsLoopIf") +
+	pcEntry(indent+4, "discard (v,e) // on discovery",
+		"checkNeighborsLoopIfTrue") +
+	pcEntry(indent+3, "else", "") +
+	pcEntry(indent+4, "d." + this.ldv.addOperation() + "(v,e)", 
+		"checkNeighborsLoopIfFalse");
+
+};
+
 // graph traversals-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
 hdxGraphTraversalsAV.setupCode = function() {
+
     this.code = '<table class="pseudocode">' +
 	pcEntry(0, [ "d &larr; new " + this.ldv.displayName,
 		     "s &larr; starting vertex",
@@ -2526,25 +2553,31 @@ hdxGraphTraversalsAV.setupCode = function() {
 		"initialize");
     if (this.stoppingCondition == "StopAtEnd") {
 	this.code +=
-	    pcEntry(0, "while (end not visited)", "checkEndVisited") +
+	    pcEntry(0, "while not end.visited", "checkEndVisited") +
 	    pcEntry(1, "if d.isEmpty", "checkLDVEmpty") +
 	    pcEntry(2, "error: no path", "LDVEmpty") +
-	    pcEntry(1, "(to,via) &larr; d." + this.ldv.removeOperation() +
-		    "()", "getPlaceFromLDV") +
-	    pcEntry(1, "if to.visited = true", "checkVisited") +
-	    pcEntry(2, "discard (to,via) // on removal", "wasVisited") +
-	    pcEntry(1, "else", "") +
-	    pcEntry(2, "to.visited = true; add (to,via) to tree",
-		    "wasNotVisited") +
-	    pcEntry(2, "for each neighbor vertex v by edge e",
-		    "checkNeighborsLoopTop") +
-	    pcEntry(3, "if v.visited = true", "checkNeighborsLoopIf") +
-	    pcEntry(4, "discard (v,e) // on discovery",
-		    "checkNeighborsLoopIfTrue") +
-	    pcEntry(3, "else", "") +
-	    pcEntry(4, "d." + this.ldv.addOperation() + "(v,e)", 
-		    "checkNeighborsLoopIfFalse");
+	    this.mainLoopBody(0);
     }
+    else if (this.stoppingCondition == "FindReachable") {
+	this.code +=
+	    pcEntry(0, "while not d.isEmpty", "checkComponentDone") +
+	    this.mainLoopBody(0);
+
+    }
+    else { // this.stoppingCondition == "FindAll"
+	this.code +=
+	    pcEntry(0, "done &larr; false", "doneToFalse") +
+	    pcEntry(0, "while not done", "checkAllComponentsDone") +
+	    pcEntry(1, "while not d.isEmpty", "checkComponentDone") +
+	    this.mainLoopBody(1) +
+	    pcEntry(1, "if &exist; any unvisited vertices", "checkAnyUnvisited") +
+	    pcEntry(2, [ "v &larr; any unvisited vertex",
+			 "d." + this.ldv.addOperation() + "(v,null)" ],
+		    "StartNewComponent") +
+	    pcEntry(1, "else", "") +
+	    pcEntry(2, "done &larr; true", "doneToTrue");
+    }
+
     this.code += "</table>";
 }
 
