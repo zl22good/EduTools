@@ -2603,20 +2603,51 @@ hdxDijkstraAV.createLDV = function() {
 			 "Priority Queue");
 };
 
+// helper function to help build pseudocode
+hdxDijkstraAV.mainLoopBody = function(indent) {
+
+    return pcEntry(indent+1, "(to,via,d) &larr; pq." +
+		   this.ldv.removeOperation() + "()", "getPlaceFromLDV") +
+	pcEntry(indent+1, "if to.visited = true", "checkVisited") +
+	pcEntry(indent+2, "discard (to,via) // on removal", "wasVisited") +
+	pcEntry(indent+1, "else", "") +
+	pcEntry(indent+2, "to.visited = true; add (to,via,d) to tree",
+		"wasNotVisited") +
+	pcEntry(indent+2, "for each neighbor vertex v by edge e",
+		"checkNeighborsLoopTop") +
+	pcEntry(indent+3, "if v.visited = true", "checkNeighborsLoopIf") +
+	pcEntry(indent+4, "discard (v,e) // on discovery",
+		"checkNeighborsLoopIfTrue") +
+	pcEntry(indent+3, "else", "") +
+	pcEntry(indent+4, "pq." + this.ldv.addOperation() + "(v,e,d+len(e))", 
+		"checkNeighborsLoopIfFalse");
+
+};
+
 // Dijkstra-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
 hdxDijkstraAV.setupCode = function() {
-    this.code = `
-<table class="pseudocode"><tr id="initialize" class="pseudocode"><td class="pseudocode">
-` +
-	"pq &larr; new " + this.ldv.displayName + "<br />" +
-	"s &larr; starting vertex<br />" +
-	"pq." + this.ldv.addOperation() + "(s,null,0)<br />" +	
-`
-</td></tr>
-</table>
-`;
-}
+    this.code = '<table class="pseudocode">' +
+	pcEntry(0, ["pq &larr; new " + this.ldv.displayName,
+		    "s &larr; starting vertex", 
+		    "pq." + this.ldv.addOperation() + "(s,null,0)" ],
+		"initialize");
+    if (this.stoppingCondition == "StopAtEnd") {
+	this.code +=
+	    pcEntry(0, "while not end.visited", "checkEndVisited") +
+	    pcEntry(1, "if pq.isEmpty", "checkLDVEmpty") +
+	    pcEntry(2, "error: no path", "LDVEmpty") +
+	    this.mainLoopBody(0);
+    }
+    else if (this.stoppingCondition == "FindReachable") {
+	this.code +=
+	    pcEntry(0, "while not pq.isEmpty", "checkComponentDone") +
+	    this.mainLoopBody(0);
+
+    }
+
+    this.code += "</table>";
+};
 
 /* Prim's algorithm based on hdxTraversalsSpanningAVCommon */
 
@@ -2636,20 +2667,51 @@ hdxPrimAV.createLDV = function() {
 			 "Priority Queue");
 };
 
-// Prim-specific psuedocode, note labels must match those
+// helper function to help build pseudocode
+hdxPrimAV.mainLoopBody = function(indent) {
+
+    return pcEntry(indent+1, "(to,via,d) &larr; pq." +
+		   this.ldv.removeOperation() + "()", "getPlaceFromLDV") +
+	pcEntry(indent+1, "if to.visited = true", "checkVisited") +
+	pcEntry(indent+2, "discard (to,via) // on removal", "wasVisited") +
+	pcEntry(indent+1, "else", "") +
+	pcEntry(indent+2, "to.visited = true; add (to,via,d) to tree",
+		"wasNotVisited") +
+	pcEntry(indent+2, "for each neighbor vertex v by edge e",
+		"checkNeighborsLoopTop") +
+	pcEntry(indent+3, "if v.visited = true", "checkNeighborsLoopIf") +
+	pcEntry(indent+4, "discard (v,e) // on discovery",
+		"checkNeighborsLoopIfTrue") +
+	pcEntry(indent+3, "else", "") +
+	pcEntry(indent+4, "pq." + this.ldv.addOperation() + "(v,e,len(e))", 
+		"checkNeighborsLoopIfFalse");
+
+};
+
+// Prim's-specific psuedocode, note labels must match those
 // expected by hdxTraversalsSpanningAVCommon avActions
 hdxPrimAV.setupCode = function() {
-    this.code = `
-<table class="pseudocode"><tr id="initialize" class="pseudocode"><td class="pseudocode">
-` +
-	"pq &larr; new " + this.ldv.displayName + "<br />" +
-	"s &larr; starting vertex<br />" +
-	"pq." + this.ldv.addOperation() + "(s,null,0)<br />" +	
-`
-</td></tr>
-</table>
-`;
-}
+    this.code = '<table class="pseudocode">' +
+	pcEntry(0, ["pq &larr; new " + this.ldv.displayName,
+		    "s &larr; starting vertex", 
+		    "pq." + this.ldv.addOperation() + "(s,null,0)" ],
+		"initialize");
+    if (this.stoppingCondition == "StopAtEnd") {
+	this.code +=
+	    pcEntry(0, "while not end.visited", "checkEndVisited") +
+	    pcEntry(1, "if pq.isEmpty", "checkLDVEmpty") +
+	    pcEntry(2, "error: no path", "LDVEmpty") +
+	    this.mainLoopBody(0);
+    }
+    else if (this.stoppingCondition == "FindReachable") {
+	this.code +=
+	    pcEntry(0, "while not pq.isEmpty", "checkComponentDone") +
+	    this.mainLoopBody(0);
+
+    }
+
+    this.code += "</table>";
+};
 
 // Prim's allows the option to find all components
 hdxPrimAV.supportFindAllComponents = true;
