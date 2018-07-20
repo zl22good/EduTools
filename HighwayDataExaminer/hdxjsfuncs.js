@@ -2360,14 +2360,319 @@ var hdxTraversalsSpanningAVCommon = {
 		thisAV.startingVertex = document.getElementById("startPoint").value;
 
 		thisAV.updateControlEntries();
-		hdxAV.nextAction = "DONE";
+		if (thisAV.stoppingCondition == "StopAtEnd") {
+		    hdxAV.nextAction = "checkEndVisited";
+		}
+		else if (thisAV.stoppingCondition == "FindReachable") {
+		    hdxAV.nextAction = "checkComponentDone";
+		}
+		else {
+		    thisAV.allComponentsDone = false;
+		    hdxAV.nextAction = "checkAllComponentsDone";
+		}
 		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
-		return "Done!";
+		return "Initializing";
+	    }
+	},
+	{
+	    // this action happens only when finding all components
+	    label: "checkAllComponentsDone",
+	    comment: "Check if more components remain to be found",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		if (thisAV.allComponentsDone) {
+		    hdxAV.nextAction = "cleanup";
+		}
+		else {
+		    hdxAV.nextAction = "checkComponentDone";
+		}
+	    },
+	    logMessage: function(thisAV) {
+		return "Checking if all components have been found";
+	    }
+	},
+	{
+	    label: "checkComponentDone",
+	    comment: "Check if the current component is completely visited",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		// if the LDV is empty, we either need to move
+		// on to set up for a new component (if finding
+		// all) or are completely done if traversing
+		// only the component containing the starting
+		// vertex
+		if (thisAV.ldv.isEmpty()) {
+		    if (thisAV.stoppingCondition == "FindAll") {
+			hdxAV.nextAction = "startNewComponent";
+		    }
+		    else {
+			hdxAV.nextAction = "cleanup";
+		    }
+		}
+		else {
+		    hdxAV.nextAction = "getPlaceFromLDV";
+		}
+	    },
+	    logMessage: function(thisAV) {
+		return "Check if the " + thisAV.ldv.displayName + " is empty";
+	    }
+	},
+	{
+	    label: "checkEndVisited",
+	    comment: "Check if we have visited the end vertex",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		// check if end is visited, if so, cleanup, otherwise,
+		// check that there are more values in the LDV to see
+		// if we can continue
+		
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "Check if the end vertex has been visited.";
+	    }
+	},
+	{
+	    label: "checkLDVEmpty",
+	    comment: "Check if the LDV is empty",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		// if empty, go to LDVEmpty to report failure,
+		// otherwise carry on
+		if (thisAV.ldv.isEmpty()) {
+		    hdxAV.nextAction = "LDVEmpty";
+		}
+		else {
+		    hdxAV.nextAction = "getPlaceFromLDV";
+		}
+	    },
+	    logMessage: function(thisAV) {
+		return "Check if the " + thisAV.ldv.displayName + " is empty";
+	    }
+	},
+	{
+	    label: "LDVEmpty",
+	    comment: "LDV is empty, no path exists",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "getPlaceFromLDV",
+	    comment: "Get an edge from the LDV",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "startNewComponent",
+	    comment: "Set up to start the next component: check for any unvisited vertex",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "Checking if any unvisited vertices remain";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return this.label + " TBD";
+	    }
+	},
+	{
+	    label: "cleanup",
+	    comment: "Clean up and finalize visualization",
+	    code: function(thisAV) {
+
+		// do some stuff here
+		
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "Cleanup and finalize visualization";
 	    }
 	}
-
     ],
 
     updateControlEntries() {
@@ -2546,11 +2851,14 @@ hdxGraphTraversalsAV.mainLoopBody = function(indent) {
 // expected by hdxTraversalsSpanningAVCommon avActions
 hdxGraphTraversalsAV.setupCode = function() {
 
+    let initializeCode = [ "d &larr; new " + this.ldv.displayName,
+			   "s &larr; starting vertex",
+			   "d." + this.ldv.addOperation() + "(s,null)" ];
+    if (this.stoppingCondition == "FindAll") {
+	initializeCode.append("done &larr; false");
+    }
     this.code = '<table class="pseudocode">' +
-	pcEntry(0, [ "d &larr; new " + this.ldv.displayName,
-		     "s &larr; starting vertex",
-		     "d." + this.ldv.addOperation() + "(s,null)" ],
-		"initialize");
+	pcEntry(0, initializeCode, "initialize");
     if (this.stoppingCondition == "StopAtEnd") {
 	this.code +=
 	    pcEntry(0, "while not end.visited", "checkEndVisited") +
@@ -2566,14 +2874,13 @@ hdxGraphTraversalsAV.setupCode = function() {
     }
     else { // this.stoppingCondition == "FindAll"
 	this.code +=
-	    pcEntry(0, "done &larr; false", "doneToFalse") +
 	    pcEntry(0, "while not done", "checkAllComponentsDone") +
 	    pcEntry(1, "while not d.isEmpty", "checkComponentDone") +
 	    this.mainLoopBody(1) +
 	    pcEntry(1, "if &exist; any unvisited vertices", "checkAnyUnvisited") +
 	    pcEntry(2, [ "v &larr; any unvisited vertex",
 			 "d." + this.ldv.addOperation() + "(v,null)" ],
-		    "StartNewComponent") +
+		    "startNewComponent") +
 	    pcEntry(1, "else", "") +
 	    pcEntry(2, "done &larr; true", "doneToTrue");
     }
