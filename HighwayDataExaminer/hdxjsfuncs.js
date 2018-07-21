@@ -2580,7 +2580,7 @@ var hdxTraversalsSpanningAVCommon = {
 		    // visitedEarlier, and will be discarded or marked
 		    // as discoveredEarlier on the next iteration
 		    updateMarkerAndTable(thisAV.visiting.vIndex,
-					 thisAV.visualSettings.adddEarlier,
+					 thisAV.visualSettings.addedEarlier,
 					 4, false);
 		}
 		else {
