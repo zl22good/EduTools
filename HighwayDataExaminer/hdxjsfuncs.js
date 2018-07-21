@@ -2210,7 +2210,6 @@ function LDVEntry(vIndex, val, connection) {
 	else {
 	    this.fromVIndex = graphEdges[connection].v1;
 	}
-	console.log("Set fromVIndex to " + this.fromVIndex);
     }
     
     return this;
@@ -2220,15 +2219,21 @@ function LDVEntry(vIndex, val, connection) {
 // HDXLinear, set as the HDXLinear's elementHTMLCallback for
 // traversal and spanning tree algorithms
 // required function to display an LDV entry
-function displayLDVItem(item) {
+function displayLDVItem(item, ldv) {
     let edgeLabel = "START";
     let showFrom = "(none)";
     if (item.connection != -1) {
 	edgeLabel = graphEdges[item.connection].label;
+	if (edgeLabel.length > ldv.maxLabelLength) {
+	    edgeLabel =
+		edgeLabel.substring(0,ldv.maxLabelLength/2-1) + ".." +
+		edgeLabel.substring(edgeLabel.length -
+				    (ldv.maxLabelLength/2-1));
+	}
 	showFrom = item.fromVIndex;
     }
     return showFrom + "&rarr;" + item.vIndex + "<br />" +
-	edgeLabel + "<br />" + item.val;
+	edgeLabel + "<br />" + item.val.toFixed(ldv.valPrecision);
 };
 
 
@@ -2600,6 +2605,8 @@ var hdxTraversalsSpanningAVCommon = {
 					 5, false);
 		}
 
+		thisAV.updateControlEntries();
+
 		// continue at the top of the appropriate loop
 		if (thisAV.stoppingCondition == "StopAtEnd") {
 		    hdxAV.nextAction = "checkEndAdded";
@@ -2637,6 +2644,7 @@ var hdxTraversalsSpanningAVCommon = {
 					   false);
 		}
 
+		thisAV.updateControlEntries();
 		hdxAV.nextAction = "checkNeighborsLoopTop";
 	    },
 	    logMessage: function(thisAV) {
@@ -2720,6 +2728,8 @@ var hdxTraversalsSpanningAVCommon = {
 		    updatePolylineAndTable(thisAV.nextNeighbor.via,
 					   visualSettings.discardedOnDiscovery,
 					   false);
+
+		thisAV.updateControlEntries();
 		
 		// either go back to the top of the loop or jump over it if
 		// there are no more neighbors
@@ -2774,6 +2784,8 @@ var hdxTraversalsSpanningAVCommon = {
 		    console.log("Unexpected -1 connection");
                 }
 		
+		thisAV.updateControlEntries();
+
 		// either go back to the top of the loop or jump over it if
 		// there are no more neighbors
 		if (thisAV.neighborsToLoop.length > 0) {
@@ -3060,18 +3072,21 @@ hdxGraphTraversalsAV.createLDV = function() {
     
     let d = document.getElementById("traversalDiscipline");
     this.traversalDiscipline = d.options[d.selectedIndex].value;
+    let ldv;
     if (this.traversalDiscipline == "BFS") {
-        return new HDXLinear(hdxLinearTypes.QUEUE,
-			     "BFS Discovered Queue");
+        ldv = new HDXLinear(hdxLinearTypes.QUEUE,
+			    "BFS Discovered Queue");
     }
-    
-    if (this.traversalDiscipline == "DFS") {
-        return new HDXLinear(hdxLinearTypes.STACK,
-			     "DFS Discovered Stack");
+    else if (this.traversalDiscipline == "DFS") {
+        ldv = new HDXLinear(hdxLinearTypes.STACK,
+			    "DFS Discovered Stack");
     }
-
-    return new HDXLinear(hdxLinearTypes.RANDOM,
-			 "RFS Discovered List");
+    else {
+	ldv= new HDXLinear(hdxLinearTypes.RANDOM,
+			   "RFS Discovered List");
+    }
+    ldv.valPrecision = 0;  // whole numbers here
+    return ldv;
 };
 
 // function to determine the next "val" field for a new LDV entry
@@ -3177,7 +3192,7 @@ hdxDijkstraAV.createLDV = function() {
 hdxDijkstraAV.valForLDVEntry = function(oldEntry, nextNeighbor) {
 
     return oldEntry.val + edgeLengthInMiles(graphEdges[nextNeighbor.via]);
-}
+};
 
 // helper function to help build pseudocode
 hdxDijkstraAV.mainLoopBody = function(indent) {
@@ -4871,6 +4886,8 @@ function HDXLinear(type, displayName) {
     this.type = type;
     this.displayName = displayName;
     this.idNum = HDXLinearCounter;
+    this.maxLabelLength = 10;
+    this.valPrecision = 3;
     HDXLinearCounter++;
 
     // the actual array representing this linear structure
@@ -4999,7 +5016,7 @@ function HDXLinear(type, displayName) {
 	    }
 	    if (maxDisplay >= this.items.length) {
 		for (var i = 0; i < this.items.length; i++) {
-		    t += "<td>" + this.elementHTMLCallback(this.items[i]) + "</td>";
+		    t += "<td>" + this.elementHTMLCallback(this.items[i], this) + "</td>";
 		}
 	    }
 	    else {
@@ -5011,7 +5028,7 @@ function HDXLinear(type, displayName) {
 		    t += "<td>...</td>";
 		    for (var i = this.items.length - maxDisplay;
 			 i < this.items.length; i++) {
-			t += "<td>" + this.elementHTMLCallback(this.items[i]) + "</td>";
+			t += "<td>" + this.elementHTMLCallback(this.items[i], this) + "</td>";
 		    }
 		}
 		// queues will ignore the middle
@@ -5020,7 +5037,7 @@ function HDXLinear(type, displayName) {
 		    // half of the displayable elements from the front
 		    let firstChunk = Math.floor(maxDisplay / 2);
 		    for (var i = 0; i < firstChunk; i++) {
-			t += "<td>" + this.elementHTMLCallback(this.items[i]) + "</td>";
+			t += "<td>" + this.elementHTMLCallback(this.items[i], this) + "</td>";
 		    }
 		    // next a placeholder entry
 		    t += "<td>...</td>";
@@ -5028,7 +5045,7 @@ function HDXLinear(type, displayName) {
 		    for (var i = this.items.length -
 			     (maxDisplay - firstChunk);
 			 i < this.items.length; i++) {
-			t += "<td>" + this.elementHTMLCallback(this.items[i]) + "</td>";
+			t += "<td>" + this.elementHTMLCallback(this.items[i], this) + "</td>";
 		    }
 		}
 	    }
