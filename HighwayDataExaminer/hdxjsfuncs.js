@@ -364,6 +364,13 @@ var visualSettings = {
 	name: "leader",
 	value: 0
     },
+    searchFailed: {
+        color: "red",
+        textColor: "white",
+        scale: 6,
+	name: "searchFailed",
+	value: 0
+    },
     discarded: {
         color: "#a0a0a0",
         textColor: "black",
@@ -2203,6 +2210,7 @@ function LDVEntry(vIndex, val, connection) {
 	else {
 	    this.fromVIndex = graphEdges[connection].v1;
 	}
+	console.log("Set fromVIndex to " + this.fromVIndex);
     }
     
     return this;
@@ -2214,10 +2222,12 @@ function LDVEntry(vIndex, val, connection) {
 // required function to display an LDV entry
 function displayLDVItem(item) {
     let edgeLabel = "START";
+    let showFrom = "(none)";
     if (item.connection != -1) {
 	edgeLabel = graphEdges[item.connection].label;
+	showFrom = item.fromVIndex;
     }
-    return item.fromVIndex + "&rarr;" + item.vIndex + "<br />" +
+    return showFrom + "&rarr;" + item.vIndex + "<br />" +
 	edgeLabel + "<br />" + item.val;
 };
 
@@ -2244,8 +2254,8 @@ var hdxTraversalsSpanningAVCommon = {
     // this should be set to the column header
     distEntry: "",
 
-    // list of vertices discovered but not yet visited (that is,
-    // added to the spanning tree/forest being constructed)
+    // list of vertices discovered but not yet added to the spanning
+    // tree/forest being constructed
     //
     // it is a stack for DFS, a queue for BFS, a list that randomly
     // returns values for RFS, a PQ for Dijkstra's or Prim's.
@@ -2257,25 +2267,41 @@ var hdxTraversalsSpanningAVCommon = {
     // this is the "list of discovered vertices" or "LDV"
     ldv: null,
 
-    // arrays of booleans to indicate if we've visited/discovered
+    // arrays of booleans to indicate if we've added/discovered
     // vertices and edges
     // should these just be attached to the Waypoint and GraphEdge objects?
-    visitedV: [],
+    // advantage of separate arrays is no additional cleanup needed
+    addedV: [],
     discoveredV: [],
     discoveredE: [],
 
     // are we finding a path to end, all in a component, or all components?
     stoppingCondition: "StopAtEnd",
 
+    // why did we stop?  Used in the cleanup action.
+    stoppedBecause: "StillRunning",
+
     // when finding all, track the lists of vertices and edges that are
     // forming the current spanning tree
     componentVList: [],
     componentEList: [],
 
-    // where to start the search for an unvisited vertex that will be
+    // starting and ending vertices for the search, as specified by the UI
+    startingVertex: -1,
+    endingVertex: -1,
+    
+    // where to start the search for an unadded vertex that will be
     // the starting vertex for the next component
-    startUnvisitedVSearch: 0,
+    startUnaddedVSearch: 0,
 
+    // last place to come out of the LDV, currently "visiting"
+    visiting: null,
+
+    // neighbors to loop over when a new vertex is added to the tree
+    // and the one being visited
+    neighborsToLoop: [],
+    nextNeighbor: -1,
+    
     // some additional stats to maintain and display
     numVSpanningTree: 0,
     numESpanningTree: 0,
@@ -2287,11 +2313,11 @@ var hdxTraversalsSpanningAVCommon = {
 
     // color items specific to graph traversals/spanning trees
     visualSettings: {
-	visitedEarlier: {
+	addedEarlier: {
             color: "orange",
             textColor: "black",
             scale: 4,
-	    name: "visitedEarlier",
+	    name: "addedEarlier",
 	    value: 0
 	},
 	completedComponent: {
@@ -2339,8 +2365,8 @@ var hdxTraversalsSpanningAVCommon = {
 
 		highlightPseudocode(this.label, visualSettings.visiting);
 
-		// initialize our visited/discovered arrays
-		thisAV.visitedV = new Array(waypoints.length).fill(false);
+		// initialize our added/discovered arrays
+		thisAV.addedV = new Array(waypoints.length).fill(false);
 		thisAV.discoveredV = new Array(waypoints.length).fill(false);
 		thisAV.discoveredE = new Array(connections.length).fill(false);
 		
@@ -2354,14 +2380,33 @@ var hdxTraversalsSpanningAVCommon = {
 
 		// for the search for starting vertices for multiple
 		// component traversals
-		thisAV.startUnvisitedVSearch = 0;
+		thisAV.startUnaddedVSearch = 0;
 		
 		// vertex index to start the traversal
-		thisAV.startingVertex = document.getElementById("startPoint").value;
-
-		thisAV.updateControlEntries();
+		thisAV.startingVertex =
+		    document.getElementById("startPoint").value;
+		// if going to an end vertex, get that as well
 		if (thisAV.stoppingCondition == "StopAtEnd") {
-		    hdxAV.nextAction = "checkEndVisited";
+		    thisAV.endingVertex =
+			document.getElementById("endPoint").value;
+		}
+
+		// start vertex is "discovered"
+		thisAV.discoveredV[thisAV.startingVertex] = true;
+		thisAV.numVUndiscovered--;
+		
+		// mark as discovered, will be redrawn as starting vertex
+		// color in nextStep
+		updateMarkerAndTable(thisAV.startingVertex,
+				     visualSettings.discovered, 10, false);
+		
+		// add null edge to start vertex to LDV
+		thisAV.ldv.add(new LDVEntry(thisAV.startingVertex, 0, -1));
+		
+		thisAV.updateControlEntries();
+		
+		if (thisAV.stoppingCondition == "StopAtEnd") {
+		    hdxAV.nextAction = "checkEndAdded";
 		}
 		else if (thisAV.stoppingCondition == "FindReachable") {
 		    hdxAV.nextAction = "checkComponentDone";
@@ -2389,6 +2434,7 @@ var hdxTraversalsSpanningAVCommon = {
 		else {
 		    hdxAV.nextAction = "checkComponentDone";
 		}
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
 		return "Checking if all components have been found";
@@ -2396,7 +2442,7 @@ var hdxTraversalsSpanningAVCommon = {
 	},
 	{
 	    label: "checkComponentDone",
-	    comment: "Check if the current component is completely visited",
+	    comment: "Check if the current component is completely added",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
@@ -2422,24 +2468,30 @@ var hdxTraversalsSpanningAVCommon = {
 	    }
 	},
 	{
-	    label: "checkEndVisited",
-	    comment: "Check if we have visited the end vertex",
+	    // this is the top of the main loop when looking for a
+	    // path to a specific end vertex
+	    label: "checkEndAdded",
+	    comment: "Check if we have added the end vertex",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
 		// check if end is visited, if so, cleanup, otherwise,
 		// check that there are more values in the LDV to see
 		// if we can continue
-		
-		hdxAV.nextAction = "DONE";
+		if (thisAV.addedV[thisAV.endVertex]) {
+		    hdxAV.nextAction = "cleanup";
+		}
+		else {
+		    hdxAV.nextAction = "checkLDVEmpty";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return "Check if the end vertex has been visited.";
+		return "Check if the end vertex has been added.";
 	    }
 	},
 	{
 	    label: "checkLDVEmpty",
-	    comment: "Check if the LDV is empty",
+	    comment: "Check if the LDV is empty (in which case no path exists)",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
@@ -2460,108 +2512,284 @@ var hdxTraversalsSpanningAVCommon = {
 	    label: "LDVEmpty",
 	    comment: "LDV is empty, no path exists",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
+		highlightPseudocode(this.label, visualSettings.searchFailed);
 
-		hdxAV.nextAction = "DONE";
+		thisAV.stoppedBecause = "SearchFailed";
+		
+		hdxAV.nextAction = "cleanup";
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "The " + thisAV.ldv.displayName +
+		    " is empty, no path to end vertex exists.";
 	    }
 	},
 	{
 	    label: "getPlaceFromLDV",
-	    comment: "Get an edge from the LDV",
+	    comment: "Get a place from the LDV",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
-		hdxAV.nextAction = "DONE";
+		// get next place from the LDV
+		thisAV.visiting = thisAV.ldv.remove();
+		updateAVControlEntry("visiting", "Visiting " +
+				     thisAV.formatLDVEntry(thisAV.visiting));
+		hdxAV.nextAction = "checkAdded";
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "Removed " +
+		    thisAV.formatLDVEntry(thisAV.visiting) + " from " +
+		    thisAV.ldv.displayName;
 	    }
 	},
 	{
-	    label: "",
-	    comment: "",
+	    label: "checkAdded",
+	    comment: "Check if the place being visited was previously added",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
-		hdxAV.nextAction = "DONE";
+		if (thisAV.addedV[thisAV.visiting.vIndex]) {
+		    // already in the tree, discard "on removal"
+		    hdxAV.nextAction = "wasAdded";
+		}
+		else {
+		    hdxAV.nextAction = "wasNotAdded";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "Checking if #" + thisAV.visiting.vIndex +
+		    " was previously added";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "",
+	    label: "wasAdded",
+	    comment: "Place being visited already added, so discard",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
+		highlightPseudocode(this.label, visualSettings.discarded);
 
-		hdxAV.nextAction = "DONE";
+		thisAV.numEDiscardedOnRemoval++;
+
+		// check if this vertex is still in the LDV, will be
+		// discarded or added later
+		if (thisAV.ldv.containsFieldMatching("vIndex", thisAV.visiting.vIndex)) {
+		    // not there anymore, indicated this as
+		    // visitedEarlier, and will be discarded or marked
+		    // as discoveredEarlier on the next iteration
+		    updateMarkerAndTable(thisAV.visiting.vIndex,
+					 thisAV.visualSettings.visitedEarlier,
+					 4, false);
+		}
+		else {
+		    // still to be seen again, so mark is as discovered on
+		    // removal
+		    updateMarkerAndTable(thisAV.visiting.vIndex,
+					 visualSettings.discarded,
+					 5, false);
+		}
+            
+		
+		// in either case here, the edge that got us here is not
+		// part of the ultimate spanning tree, so it should be the
+		// "discardedOnRemoval" color
+		if (thisAV.visiting.connection != -1) {
+		    updatePolylineAndTable(thisAV.visiting.connection,
+					   visualSettings.discarded,
+					   false);
+		    
+		    updateMarkerAndTable(thisAV.visiting.vIndex,
+					 visualSettings.discarded,
+					 5, false);
+		}
+
+		// continue at the top of the appropriate loop
+		if (thisAV.stoppingCondition == "StopAtEnd") {
+		    hdxAV.nextAction = "checkEndAdded";
+		}
+		else {
+		    hdxAV.nextAction = "checkComponentDone";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "Discarding " +
+		    thisAV.formatLDVEntry(thisAV.visiting) + " on removal";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "",
+	    label: "wasNotAdded",
+	    comment: "Found path to new place, so add it to tree",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
+		highlightPseudocode(this.label,
+				    visualSettings.spanningTree);
 
-		hdxAV.nextAction = "DONE";
+		thisAV.addedV[thisAV.visiting.vIndex] = true;
+		updateMarkerAndTable(thisAV.visiting.vIndex,
+				     visualSettings.spanningTree,
+				     10, false);
+		// was just discovered, now part of spanning tree
+		thisAV.componentVList.push(thisAV.visiting.vIndex);
+		thisAV.numVSpanningTree++;
+	    
+		// we used the edge to get here, so let's mark it as such
+		if (thisAV.visiting.connection != -1) {
+		    thisAV.numESpanningTree++;
+		    thisAV.componentEList.push(thisAV.visiting.connection);
+		    updatePolylineAndTable(thisAV.visiting.connection,
+					   visualSettings.spanningTree,
+					   false);
+		}
+
+		hdxAV.nextAction = "checkNeighborsLoopTop";
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "Adding " + thisAV.formatLDVEntry(thisAV.visiting) + " to tree";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "",
+	    label: "checkNeighborsLoopTop",
+	    comment: "Top of loop over edges from vertex just added",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
-		hdxAV.nextAction = "DONE";
+		// build list of neighbors to visit
+		let neighbors = getAdjacentPoints(thisAV.visiting.vIndex);
+		for (var i = 0; i < neighbors.length; i++) {
+                    let connection = waypoints[thisAV.visiting.vIndex].edgeList[i].edgeListIndex;
+		    // add to list of neighbors unless it's where we just
+		    // came from
+		    if (connection != thisAV.visiting.connection) {
+			thisAV.neighborsToLoop.push({
+			    to: neighbors[i],
+			    via: connection
+			});
+		    }
+		}
+
+		// either go into the loop or jump over it if
+		// there are no neighbors
+		if (thisAV.neighborsToLoop.length > 0) {
+		    hdxAV.nextAction = "checkNeighborsLoopIf";
+		}
+		else if (thisAV.stoppingCondition == "StopAtEnd") {
+		    hdxAV.nextAction = "checkEndAdded";
+		}
+		else {
+		    hdxAV.nextAction = "checkComponentDone";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		if (thisAV.neighborsToLoop.length > 0) {
+		    return "Looping over " + thisAV.neighborsToLoop.length +
+			" neighbors";
+		}
+		else {
+		    return "No neighbors to loop over";
+		}
 	    }
 	},
 	{
-	    label: "",
-	    comment: "",
+	    label: "checkNeighborsLoopIf",
+	    comment: "Check the next neighbor of an added vertex",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
-		hdxAV.nextAction = "DONE";
+		// grab the next neighbor and check if it's in the
+		// tree already
+		thisAV.nextNeighbor = thisAV.neighborsToLoop.pop();
+
+		if (thisAV.addedV[thisAV.nextNeighbor.to]) {
+		    hdxAV.nextAction = "checkNeighborsLoopIfTrue";
+		}
+		else {
+		    hdxAV.nextAction = "checkNeighborsLoopIfFalse";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "Checking if #" + thisAV.nextNeighbor.to +
+		    " is in the tree";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "",
+	    label: "checkNeighborsLoopIfTrue",
+	    comment: "Neighbor already visited, discard on discovery",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
-
-		hdxAV.nextAction = "DONE";
+		highlightPseudocode(this.label, visualSettings.discardedOnDiscovery);
+		thisAV.numEDiscardedOnDiscovery++;
+		if (!thisAV.discoveredE[thisAV.nextNeighbor.via]) {
+			thisAV.numEUndiscovered--;
+			thisAV.discoveredE[thisAV.nextNeighbor.via] = true;
+		    }
+		    updatePolylineAndTable(thisAV.nextNeighbor.via,
+					   visualSettings.discardedOnDiscovery,
+					   false);
+		
+		// either go back to the top of the loop or jump over it if
+		// there are no more neighbors
+		if (thisAV.neighborsToLoop.length > 0) {
+		    hdxAV.nextAction = "checkNeighborsLoopIf";
+		}
+		else if (thisAV.stoppingCondition == "StopAtEnd") {
+		    hdxAV.nextAction = "checkEndAdded";
+		}
+		else {
+		    hdxAV.nextAction = "checkComponentDone";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "#" + thisAV.nextNeighbor.to + " via " +
+		    graphEdges[thisAV.nextNeighbor.via].label +
+		    " already visited, discarding on discovery";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "",
+	    label: "checkNeighborsLoopIfFalse",
+	    comment: "Neighbor not yet visited, add to LDV",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
+		highlightPseudocode(this.label, visualSettings.discovered);
 
-		hdxAV.nextAction = "DONE";
+		// not been here, we've discovered somewhere new
+		// possibly discovered a new vertex and
+		// definitely discovered a new edge
+		if (!thisAV.discoveredV[thisAV.nextNeighbor.to]) {
+			thisAV.numVUndiscovered--;
+			thisAV.discoveredV[thisAV.nextNeighbor.to] = true;
+		}
+		thisAV.numEUndiscovered--;
+		thisAV.discoveredE[thisAV.nextNeighbor.via] = true;
+                thisAV.ldv.add(new LDVEntry(thisAV.nextNeighbor.to,
+					    thisAV.valForLDVEntry(thisAV.visiting, thisAV.nextNeighbor),
+					    thisAV.nextNeighbor.via));
+		updateMarkerAndTable(thisAV.nextNeighbor.to,
+				     visualSettings.discovered,
+				     5, false);
+		
+                // also color the edge we followed to get to this
+                // neighbor as the same color to indicate it's a candidate
+                // edge followed to find a current discovered but
+                // unvisited vertex
+                if (thisAV.nextNeighbor.via != -1) {
+		    updatePolylineAndTable(thisAV.nextNeighbor.via,
+					   visualSettings.discovered,
+					   false);
+                }
+		else {
+		    console.log("Unexpected -1 connection");
+                }
+		
+		// either go back to the top of the loop or jump over it if
+		// there are no more neighbors
+		if (thisAV.neighborsToLoop.length > 0) {
+		    hdxAV.nextAction = "checkNeighborsLoopIf";
+		}
+		else if (thisAV.stoppingCondition == "StopAtEnd") {
+		    hdxAV.nextAction = "checkEndAdded";
+		}
+		else {
+		    hdxAV.nextAction = "checkComponentDone";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "#" + thisAV.nextNeighbor.to + " via " +
+		    graphEdges[thisAV.nextNeighbor.via].label +
+		    " added to " + thisAV.ldv.displayName;
 	    }
 	},
 	{
@@ -2638,14 +2866,14 @@ var hdxTraversalsSpanningAVCommon = {
 	},
 	{
 	    label: "startNewComponent",
-	    comment: "Set up to start the next component: check for any unvisited vertex",
+	    comment: "Set up to start the next component: check for any unadded vertex",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
 		hdxAV.nextAction = "DONE";
 	    },
 	    logMessage: function(thisAV) {
-		return "Checking if any unvisited vertices remain";
+		return "Checking if any unadded vertices remain";
 	    }
 	},
 	{
@@ -2670,7 +2898,12 @@ var hdxTraversalsSpanningAVCommon = {
 		hdxAV.nextAction = "DONE";
 	    },
 	    logMessage: function(thisAV) {
-		return "Cleanup and finalize visualization";
+		if (thisAV.stoppedBecause == "searchFailed") {
+		    return "No path found";
+		}
+		else {
+		    return "Fill in other reasons for stopping.";
+		}
 	    }
 	}
     ],
@@ -2694,6 +2927,21 @@ var hdxTraversalsSpanningAVCommon = {
 	updateAVControlEntry("discardedOnRemoval", "Discarded on removal: " +
 			     this.numEDiscardedOnRemoval + " E");
 
+    },
+
+    // format an LDV entry for display in a log message
+    formatLDVEntry(item) {
+
+	let vIndex = item.vIndex;
+	let edgeLabel;
+	if (item.connection == -1) {
+	    edgeLabel = ", the starting vertex";
+	}
+	else {
+	    edgeLabel = " found via " +
+		graphEdges[item.connection].label;
+	}
+	return "#" + vIndex + " " + waypoints[vIndex].label + edgeLabel;
     },
     
     // required start function, here do things common to all
@@ -2826,19 +3074,30 @@ hdxGraphTraversalsAV.createLDV = function() {
 			 "RFS Discovered List");
 };
 
+// function to determine the next "val" field for a new LDV entry
+// in this case, 1 more than the old, so the values indicate the
+// number of hops from the start
+//
+// first parameter is the LDV entry being visited at this point,
+// second parameter is the destination vertex and edge traversed
+// to get from the vertex being visited
+hdxGraphTraversalsAV.valForLDVEntry = function(oldEntry, nextNeighbor) {
+
+    return oldEntry.val + 1;
+}
+
 // helper function to help build pseudocode
 hdxGraphTraversalsAV.mainLoopBody = function(indent) {
 
     return pcEntry(indent+1, "(to,via) &larr; d." +
 		   this.ldv.removeOperation() + "()", "getPlaceFromLDV") +
-	pcEntry(indent+1, "if to.visited = true", "checkVisited") +
-	pcEntry(indent+2, "discard (to,via) // on removal", "wasVisited") +
+	pcEntry(indent+1, "if tree.contains(to)", "checkAdded") +
+	pcEntry(indent+2, "discard (to,via) // on removal", "wasAdded") +
 	pcEntry(indent+1, "else", "") +
-	pcEntry(indent+2, "to.visited = true; add (to,via) to tree",
-		"wasNotVisited") +
-	pcEntry(indent+2, "for each neighbor vertex v by edge e",
+	pcEntry(indent+2, "tree,add(to,via)", "wasNotAdded") +
+	pcEntry(indent+2, "for each e = (to,v) // neighbors",
 		"checkNeighborsLoopTop") +
-	pcEntry(indent+3, "if v.visited = true", "checkNeighborsLoopIf") +
+	pcEntry(indent+3, "if tree.contains(v)", "checkNeighborsLoopIf") +
 	pcEntry(indent+4, "discard (v,e) // on discovery",
 		"checkNeighborsLoopIfTrue") +
 	pcEntry(indent+3, "else", "") +
@@ -2852,8 +3111,7 @@ hdxGraphTraversalsAV.mainLoopBody = function(indent) {
 hdxGraphTraversalsAV.setupCode = function() {
 
     let initializeCode = [ "d &larr; new " + this.ldv.displayName,
-			   "s &larr; starting vertex",
-			   "d." + this.ldv.addOperation() + "(s,null)" ];
+			   "d." + this.ldv.addOperation() + "(start,null)" ];
     if (this.stoppingCondition == "FindAll") {
 	initializeCode.append("done &larr; false");
     }
@@ -2861,7 +3119,7 @@ hdxGraphTraversalsAV.setupCode = function() {
 	pcEntry(0, initializeCode, "initialize");
     if (this.stoppingCondition == "StopAtEnd") {
 	this.code +=
-	    pcEntry(0, "while not end.visited", "checkEndVisited") +
+	    pcEntry(0, "while not tree.contains(end)", "checkEndAdded") +
 	    pcEntry(1, "if d.isEmpty", "checkLDVEmpty") +
 	    pcEntry(2, "error: no path", "LDVEmpty") +
 	    this.mainLoopBody(0);
@@ -2877,8 +3135,8 @@ hdxGraphTraversalsAV.setupCode = function() {
 	    pcEntry(0, "while not done", "checkAllComponentsDone") +
 	    pcEntry(1, "while not d.isEmpty", "checkComponentDone") +
 	    this.mainLoopBody(1) +
-	    pcEntry(1, "if &exist; any unvisited vertices", "checkAnyUnvisited") +
-	    pcEntry(2, [ "v &larr; any unvisited vertex",
+	    pcEntry(1, "if &exist; any unadded vertices", "checkAnyUnadded") +
+	    pcEntry(2, [ "v &larr; any unadded vertex",
 			 "d." + this.ldv.addOperation() + "(v,null)" ],
 		    "startNewComponent") +
 	    pcEntry(1, "else", "") +
@@ -2910,19 +3168,29 @@ hdxDijkstraAV.createLDV = function() {
 			 "Priority Queue");
 };
 
+// function to determine the next "val" field for a new LDV entry
+// in this case, the old cumulative distance plus the edge length
+//
+// first parameter is the LDV entry being visited at this point,
+// second parameter is the destination vertex and edge traversed
+// to get from the vertex being visited
+hdxDijkstraAV.valForLDVEntry = function(oldEntry, nextNeighbor) {
+
+    return oldEntry.val + edgeLengthInMiles(graphEdges[nextNeighbor.via]);
+}
+
 // helper function to help build pseudocode
 hdxDijkstraAV.mainLoopBody = function(indent) {
 
     return pcEntry(indent+1, "(to,via,d) &larr; pq." +
 		   this.ldv.removeOperation() + "()", "getPlaceFromLDV") +
-	pcEntry(indent+1, "if to.visited = true", "checkVisited") +
-	pcEntry(indent+2, "discard (to,via) // on removal", "wasVisited") +
+	pcEntry(indent+1, "if tree.contains(to)", "checkAdded") +
+	pcEntry(indent+2, "discard (to,via) // on removal", "wasAdded") +
 	pcEntry(indent+1, "else", "") +
-	pcEntry(indent+2, "to.visited = true; add (to,via,d) to tree",
-		"wasNotVisited") +
-	pcEntry(indent+2, "for each neighbor vertex v by edge e",
+	pcEntry(indent+2, "tree.add(to,via,d)", "wasNotAdded") +
+	pcEntry(indent+2, "for each e=(to,v) // neighbors",
 		"checkNeighborsLoopTop") +
-	pcEntry(indent+3, "if v.visited = true", "checkNeighborsLoopIf") +
+	pcEntry(indent+3, "if tree.contains(v)", "checkNeighborsLoopIf") +
 	pcEntry(indent+4, "discard (v,e) // on discovery",
 		"checkNeighborsLoopIfTrue") +
 	pcEntry(indent+3, "else", "") +
@@ -2936,12 +3204,11 @@ hdxDijkstraAV.mainLoopBody = function(indent) {
 hdxDijkstraAV.setupCode = function() {
     this.code = '<table class="pseudocode">' +
 	pcEntry(0, ["pq &larr; new " + this.ldv.displayName,
-		    "s &larr; starting vertex", 
-		    "pq." + this.ldv.addOperation() + "(s,null,0)" ],
+		    "pq." + this.ldv.addOperation() + "(start,null,0)" ],
 		"initialize");
     if (this.stoppingCondition == "StopAtEnd") {
 	this.code +=
-	    pcEntry(0, "while not end.visited", "checkEndVisited") +
+	    pcEntry(0, "while not tree.contains(end)", "checkEndAdded") +
 	    pcEntry(1, "if pq.isEmpty", "checkLDVEmpty") +
 	    pcEntry(2, "error: no path", "LDVEmpty") +
 	    this.mainLoopBody(0);
@@ -2974,19 +3241,29 @@ hdxPrimAV.createLDV = function() {
 			 "Priority Queue");
 };
 
+// function to determine the next "val" field for a new LDV entry
+// in this case, the edge length
+//
+// first parameter is the LDV entry being visited at this point,
+// second parameter is the destination vertex and edge traversed
+// to get from the vertex being visited
+hdxPrimAV.valForLDVEntry = function(oldEntry, nextNeighbor) {
+
+    return edgeLengthInMiles(graphEdges[nextNeighbor.via]);
+}
+
 // helper function to help build pseudocode
 hdxPrimAV.mainLoopBody = function(indent) {
 
     return pcEntry(indent+1, "(to,via,d) &larr; pq." +
 		   this.ldv.removeOperation() + "()", "getPlaceFromLDV") +
-	pcEntry(indent+1, "if to.visited = true", "checkVisited") +
-	pcEntry(indent+2, "discard (to,via) // on removal", "wasVisited") +
+	pcEntry(indent+1, "if tree.contains(to)", "checkAdded") +
+	pcEntry(indent+2, "discard (to,via) // on removal", "wasAdded") +
 	pcEntry(indent+1, "else", "") +
-	pcEntry(indent+2, "to.visited = true; add (to,via,d) to tree",
-		"wasNotVisited") +
-	pcEntry(indent+2, "for each neighbor vertex v by edge e",
+	pcEntry(indent+2, "tree.add(to,via,d)", "wasNotAdded") +
+	pcEntry(indent+2, "for each e=(to,v) // neighbors",
 		"checkNeighborsLoopTop") +
-	pcEntry(indent+3, "if v.visited = true", "checkNeighborsLoopIf") +
+	pcEntry(indent+3, "if tree.contains(v)", "checkNeighborsLoopIf") +
 	pcEntry(indent+4, "discard (v,e) // on discovery",
 		"checkNeighborsLoopIfTrue") +
 	pcEntry(indent+3, "else", "") +
@@ -3000,12 +3277,11 @@ hdxPrimAV.mainLoopBody = function(indent) {
 hdxPrimAV.setupCode = function() {
     this.code = '<table class="pseudocode">' +
 	pcEntry(0, ["pq &larr; new " + this.ldv.displayName,
-		    "s &larr; starting vertex", 
-		    "pq." + this.ldv.addOperation() + "(s,null,0)" ],
+		    "pq." + this.ldv.addOperation() + "(start,null,0)" ],
 		"initialize");
     if (this.stoppingCondition == "StopAtEnd") {
 	this.code +=
-	    pcEntry(0, "while not end.visited", "checkEndVisited") +
+	    pcEntry(0, "while not tree.contains(end)", "checkEndAdded") +
 	    pcEntry(1, "if pq.isEmpty", "checkLDVEmpty") +
 	    pcEntry(2, "error: no path", "LDVEmpty") +
 	    this.mainLoopBody(0);
