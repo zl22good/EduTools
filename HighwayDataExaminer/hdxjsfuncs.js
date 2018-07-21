@@ -893,6 +893,17 @@ function pcEntry(indent, code, id) {
     return entry;
 }
 
+// function to limit the given string to the given length, replacing
+// characters in the middle with ".." if needed to shorten
+function shortLabel(label, max) {
+    
+    if (label.length > max) {
+	return label.substring(0,max/2-1) + ".." +
+	    label.substring(label.length - (max/2-1));
+    }
+    return label;
+}
+
 // dummy AV entry for main menu
 var hdxNoAV = {
 
@@ -2223,13 +2234,8 @@ function displayLDVItem(item, ldv) {
     let edgeLabel = "START";
     let showFrom = "(none)";
     if (item.connection != -1) {
-	edgeLabel = graphEdges[item.connection].label;
-	if (edgeLabel.length > ldv.maxLabelLength) {
-	    edgeLabel =
-		edgeLabel.substring(0,ldv.maxLabelLength/2-1) + ".." +
-		edgeLabel.substring(edgeLabel.length -
-				    (ldv.maxLabelLength/2-1));
-	}
+	edgeLabel = shortLabel(graphEdges[item.connection].label,
+			       ldv.maxLabelLength);
 	showFrom = item.fromVIndex;
     }
     return showFrom + "&rarr;" + item.vIndex + "<br />" +
@@ -2644,6 +2650,10 @@ var hdxTraversalsSpanningAVCommon = {
 					   false);
 		}
 
+		thisAV.addLDVEntryToFoundTable(thisAV.visiting,
+					       thisAV.ldv.maxLabelLength,
+					       thisAV.ldv.valPrecision,
+					       thisAV.numESpanningTree);
 		thisAV.updateControlEntries();
 		hdxAV.nextAction = "checkNeighborsLoopTop";
 	    },
@@ -2941,6 +2951,33 @@ var hdxTraversalsSpanningAVCommon = {
 
     },
 
+    // format an LDV entry for addition to the found table
+    addLDVEntryToFoundTable(item, maxLabelLength, precision, count) {
+
+	let newtr = document.createElement("tr");
+	let edgeLabel;
+	let fromLabel;
+	let vLabel = shortLabel(waypoints[item.vIndex].label, 10);
+	if (item.connection == -1) {
+	    edgeLabel = "(START)";
+	    fromLabel = "";
+	}
+	else {
+	    edgeLabel = shortLabel(graphEdges[item.connection].label, 10);
+	    fromLabel = shortLabel(waypoints[item.fromVIndex].label, 10);
+	}
+
+	newtr.innerHTML = 
+	    '<td>' + vLabel + '</td>' +
+	    '<td>' + item.val.toFixed(precision) + '</td>' +
+	    '<td>' + fromLabel + '</td>' +
+	    '<td>' + edgeLabel + '</td>';
+	
+	this.foundTBody.appendChild(newtr);
+	document.getElementById("foundEntriesCount").innerHTML =
+	    this.numESpanningTree;	
+    },
+
     // format an LDV entry for display in a log message
     formatLDVEntry(item) {
 
@@ -3020,7 +3057,8 @@ var hdxTraversalsSpanningAVCommon = {
 	addEntryToAVControlPanel("discardedOnDiscovery", visualSettings.discardedOnDiscovery);
 	addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
 	addEntryToAVControlPanel("found", visualSettings.spanningTree);
-	let foundEntry = '<span id="foundTableLabel">' +
+	let foundEntry = '<span id="foundEntriesCount">0</span>' +
+	    ' <span id="foundTableLabel">' +
 	    this.foundTableHeader + '</span><br />' +
 	    '<table class="gratable"><thead>' +
 	    '<tr style="text-align:center"><th>Place</th>';
@@ -3066,6 +3104,8 @@ Order: <select id="traversalDiscipline">
 <option value="DFS">Depth First</option>
 <option value="RFS">Random</option>
 </select>`;
+
+hdxGraphTraversalsAV.distEntry = "Hops";
 
 // required function to create an appropriate list of discovered vertices
 hdxGraphTraversalsAV.createLDV = function() {
