@@ -2232,14 +2232,23 @@ function LDVEntry(vIndex, val, connection) {
 // required function to display an LDV entry
 function displayLDVItem(item, ldv) {
     let edgeLabel = "START";
+    let edgeLabelFull = "START";
     let showFrom = "(none)";
+    let showFromFull = "(none)";
     if (item.connection != -1) {
-	edgeLabel = shortLabel(graphEdges[item.connection].label,
-			       ldv.maxLabelLength);
+	edgeLabelFull = graphEdges[item.connection].label;
+	edgeLabel = shortLabel(edgeLabelFull, ldv.maxLabelLength);
 	showFrom = item.fromVIndex;
+	showFromFull = "#" + item.fromVIndex + ":" +
+	    waypoints[item.fromVIndex].label;
     }
-    return showFrom + "&rarr;" + item.vIndex + "<br />" +
-	edgeLabel + "<br />" + item.val.toFixed(ldv.valPrecision);
+    return '<span title="Edge #' + item.connection + " " + showFromFull +
+	"&rarr; #" + item.vIndex + ":" + waypoints[item.vIndex].label +
+	", label: " + edgeLabelFull + ", value: " +
+	item.val.toFixed(ldv.valPrecision) +
+	'">' + showFrom + "&rarr;" + item.vIndex + "<br />" +
+	edgeLabel + "<br />" + item.val.toFixed(ldv.valPrecision) +
+	"</span>";
 };
 
 
