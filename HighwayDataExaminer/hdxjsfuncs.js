@@ -2965,17 +2965,33 @@ var hdxTraversalsSpanningAVCommon = {
 
 	let newtr = document.createElement("tr");
 	let edgeLabel;
+	let fullEdgeLabel;
 	let fromLabel;
+	let fullFromLabel;
 	let vLabel = shortLabel(waypoints[item.vIndex].label, 10);
 	if (item.connection == -1) {
 	    edgeLabel = "(START)";
+	    fullEdgeLabel = "(START)";
 	    fromLabel = "";
+	    fullFrom = "";
 	}
 	else {
-	    edgeLabel = shortLabel(graphEdges[item.connection].label, 10);
+	    fullEdgeLabel = graphEdges[item.connection].label;
+	    edgeLabel = shortLabel(fullEdgeLabel, 10);
 	    fromLabel = shortLabel(waypoints[item.fromVIndex].label, 10);
+	    fullFrom = "From #" + item.fromVIndex + ":" +
+		waypoints[item.fromVIndex].label;
 	}
 
+	// mouseover title
+	newtr.setAttribute("title",
+			   "Path to #" + item.vIndex + ":" +
+			   waypoints[item.vIndex].label + ", " +
+			   this.distEntry + ": " +
+			   item.val.toFixed(precision) + ", " + fullFrom +
+			   ", via " + fullEdgeLabel);
+
+	// actual table row to display
 	newtr.innerHTML = 
 	    '<td>' + vLabel + '</td>' +
 	    '<td>' + item.val.toFixed(precision) + '</td>' +
