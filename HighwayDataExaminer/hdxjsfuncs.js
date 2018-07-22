@@ -3032,6 +3032,11 @@ var hdxTraversalsSpanningAVCommon = {
 	// to create its LDV
 	this.ldv = this.createLDV();
 
+	// set the comparator if there is one (for priority queue LDVs)
+	if (this.hasOwnProperty("comparator")) {
+	    this.ldv.setComparator(this.comparator);
+	}
+
 	// add LDV to display element and set its callback to
 	// display an individual entry
 	// note that this means each algorithm must provide a function
@@ -3248,6 +3253,11 @@ hdxDijkstraAV.createLDV = function() {
 			 "Priority Queue");
 };
 
+// comparator for priority queue
+hdxDijkstraAV.comparator = function(a, b) {
+    return a.val < b.val;
+};
+
 // function to determine the next "val" field for a new LDV entry
 // in this case, the old cumulative distance plus the edge length
 //
@@ -3319,6 +3329,11 @@ hdxPrimAV.createLDV = function() {
     
     return new HDXLinear(hdxLinearTypes.PRIORITY_QUEUE,
 			 "Priority Queue");
+};
+
+// comparator for priority queue
+hdxPrimAV.comparator = function(a, b) {
+    return a.val < b.val;
 };
 
 // function to determine the next "val" field for a new LDV entry
