@@ -252,6 +252,8 @@ var hdxAV = {
 	// undo any previous highlighting
 	unhighlightPseudocode();
 
+	console.log("ACTION: " + hdxAV.nextAction);
+	
 	// execute the JS to continue the AV
 	currentAction.code(thisAV);
 
@@ -2505,7 +2507,7 @@ var hdxTraversalsSpanningAVCommon = {
 		// check if end is visited, if so, cleanup, otherwise,
 		// check that there are more values in the LDV to see
 		// if we can continue
-		if (thisAV.addedV[thisAV.endVertex]) {
+		if (thisAV.addedV[thisAV.endingVertex]) {
 		    hdxAV.nextAction = "cleanup";
 		}
 		else {
