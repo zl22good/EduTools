@@ -2553,6 +2553,16 @@ var hdxTraversalsSpanningAVCommon = {
 		thisAV.visiting = thisAV.ldv.remove();
 		updateAVControlEntry("visiting", "Visiting " +
 				     thisAV.formatLDVEntry(thisAV.visiting));
+		// show on map as visiting color
+		updateMarkerAndTable(thisAV.visiting.vIndex,
+				     visualSettings.visiting,
+				     10, false);
+		if (thisAV.visiting.connection != -1) {
+		    updatePolylineAndTable(thisAV.visiting.connection,
+					   visualSettings.visiting,
+					   false);
+		}
+		
 		hdxAV.nextAction = "checkAdded";
 	    },
 	    logMessage: function(thisAV) {
