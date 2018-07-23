@@ -2411,6 +2411,13 @@ var hdxTraversalsSpanningAVCommon = {
 			document.getElementById("endPoint").value;
 		}
 
+		// show end vertex
+		if (thisAV.stoppingCondition == "StopAtEnd") {
+		    updateMarkerAndTable(thisAV.endingVertex,
+					 visualSettings.endVertex,
+					 4, false);
+		}
+		
 		// start vertex is "discovered"
 		thisAV.discoveredV[thisAV.startingVertex] = true;
 		thisAV.numVUndiscovered--;
@@ -2600,7 +2607,17 @@ var hdxTraversalsSpanningAVCommon = {
 
 		// check if this vertex is still in the LDV, will be
 		// discarded or added later
-		if (thisAV.ldv.containsFieldMatching("vIndex", thisAV.visiting.vIndex)) {
+		if (thisAV.visiting.vIndex == thisAV.startingVertex) {
+		    updateMarkerAndTable(thisAV.visiting.vIndex,
+					 visualSettings.startVertex,
+					 4, false);
+		}
+		else if (thisAV.visiting.vIndex == thisAV.endingVertex) {
+		    updateMarkerAndTable(thisAV.visiting.vIndex,
+					 visualSettings.endVertex,
+					 4, false);
+		}
+		else if (thisAV.ldv.containsFieldMatching("vIndex", thisAV.visiting.vIndex)) {
 		    // not there anymore, indicated this as
 		    // visitedEarlier, and will be discarded or marked
 		    // as discoveredEarlier on the next iteration
@@ -2653,9 +2670,21 @@ var hdxTraversalsSpanningAVCommon = {
 				    visualSettings.spanningTree);
 
 		thisAV.addedV[thisAV.visiting.vIndex] = true;
-		updateMarkerAndTable(thisAV.visiting.vIndex,
-				     visualSettings.spanningTree,
-				     10, false);
+		if (thisAV.visiting.vIndex == thisAV.startingVertex) {
+		    updateMarkerAndTable(thisAV.visiting.vIndex,
+					 visualSettings.startVertex,
+					 4, false);
+		}
+		else if (thisAV.visiting.vIndex == thisAV.endingVertex) {
+		    updateMarkerAndTable(thisAV.visiting.vIndex,
+					 visualSettings.endVertex,
+					 4, false);
+		}
+		else {
+		    updateMarkerAndTable(thisAV.visiting.vIndex,
+					 visualSettings.spanningTree,
+					 10, false);
+		}
 		// was just discovered, now part of spanning tree
 		thisAV.componentVList.push(thisAV.visiting.vIndex);
 		thisAV.numVSpanningTree++;
@@ -2796,10 +2825,18 @@ var hdxTraversalsSpanningAVCommon = {
                 thisAV.ldv.add(new LDVEntry(thisAV.nextNeighbor.to,
 					    thisAV.valForLDVEntry(thisAV.visiting, thisAV.nextNeighbor),
 					    thisAV.nextNeighbor.via));
-		updateMarkerAndTable(thisAV.nextNeighbor.to,
-				     visualSettings.discovered,
-				     5, false);
-		
+
+		// keep ending vertex color if it's the end
+		if (thisAV.endingVertex == thisAV.nextNeighbor.to) {
+		    updateMarkerAndTable(thisAV.nextNeighbor.to,
+					 visualSettings.endVertex,
+					 4, false);
+		}
+		else {
+		    updateMarkerAndTable(thisAV.nextNeighbor.to,
+					 visualSettings.discovered,
+					 5, false);
+		}
                 // also color the edge we followed to get to this
                 // neighbor as the same color to indicate it's a candidate
                 // edge followed to find a current discovered but
