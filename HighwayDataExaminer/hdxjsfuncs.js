@@ -252,7 +252,7 @@ var hdxAV = {
 	// undo any previous highlighting
 	unhighlightPseudocode();
 
-	console.log("ACTION: " + hdxAV.nextAction);
+	//console.log("ACTION: " + hdxAV.nextAction);
 	
 	// execute the JS to continue the AV
 	currentAction.code(thisAV);
@@ -2343,8 +2343,8 @@ var hdxTraversalsSpanningAVCommon = {
 	    value: 0
 	},
 	completedComponent: {
-	    color: "white",
-	    textColor: "black",
+	    color: "black",
+	    textColor: "white",
 	    scale: 3,
 	    name: "completedComponent",
 	    value: 0,
@@ -2482,7 +2482,7 @@ var hdxTraversalsSpanningAVCommon = {
 		// vertex
 		if (thisAV.ldv.isEmpty()) {
 		    if (thisAV.stoppingCondition == "FindAll") {
-			hdxAV.nextAction = "startNewComponent";
+			hdxAV.nextAction = "finalizeComponent";
 		    }
 		    else {
 			hdxAV.nextAction = "cleanup";
@@ -2491,6 +2491,7 @@ var hdxTraversalsSpanningAVCommon = {
 		else {
 		    hdxAV.nextAction = "getPlaceFromLDV";
 		}
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
 		return "Check if the " + thisAV.ldv.displayName + " is empty";
@@ -2873,99 +2874,116 @@ var hdxTraversalsSpanningAVCommon = {
 	    }
 	},
 	{
-	    label: "",
-	    comment: "",
+	    label: "finalizeComponent",
+	    comment: "Finalize completed component",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
 
-		hdxAV.nextAction = "DONE";
+		// we'll be using the "completedComponent"  visualSettings
+		// object to highlight the component, just need to set its
+		// color to the one for the component number first
+
+		let vs = {
+		    textColor: "white",
+		    scale: 3,
+		    name: "completedComponent" + thisAV.componentNum,
+		    value: 0,
+		    weight: 3,
+		    opacity: 0.6
+		};
+		
+		if (thisAV.componentNum < thisAV.componentColors.length) {
+		    vs.color = thisAV.componentColors[thisAV.componentNum];
+		}
+		else {
+		    // out of pre-defined colors, so generate a random one
+		    // credit https://www.paulirish.com/2009/random-hex-color-code-snippets/
+		    vs.color = '#'+Math.floor(Math.random()*16777215).toString(16);
+		}
+
+		highlightPseudocode(this.label, vs);
+
+		// color all vertices and edges in this complete component color
+		for (var i = 0; i < thisAV.componentVList.length; i++) {
+		    updateMarkerAndTable(thisAV.componentVList[i], vs, false);
+		}
+		for (var i = 0; i < thisAV.componentEList.length; i++) {
+		    updatePolylineAndTable(thisAV.componentEList[i], vs, false);
+		}
+		
+		hdxAV.nextAction = "checkAnyUnadded";
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "Finalized component " + thisAV.componentNum + " with " +
+		    thisAV.componentVList.length + " vertices, " +
+		    thisAV.componentEList.length + " edges.";
+		    
 	    }
 	},
 	{
-	    label: "",
-	    comment: "",
+	    label: "checkAnyUnadded",
+	    comment: "Check if there are more vertices not yet in the forest",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
-		hdxAV.nextAction = "DONE";
+		if (waypoints.length != thisAV.numVSpanningTree) {
+		    hdxAV.nextAction = "startNewComponent";
+		}
+		else {
+		    hdxAV.nextAction = "doneToTrue";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
-	    }
-	},
-	{
-	    label: "",
-	    comment: "",
-	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
-
-		hdxAV.nextAction = "DONE";
-	    },
-	    logMessage: function(thisAV) {
-		return this.label + " TBD";
-	    }
-	},
-	{
-	    label: "",
-	    comment: "",
-	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
-
-		hdxAV.nextAction = "DONE";
-	    },
-	    logMessage: function(thisAV) {
-		return this.label + " TBD";
-	    }
-	},
-	{
-	    label: "",
-	    comment: "",
-	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
-
-		hdxAV.nextAction = "DONE";
-	    },
-	    logMessage: function(thisAV) {
-		return this.label + " TBD";
-	    }
-	},
-	{
-	    label: "",
-	    comment: "",
-	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
-
-		hdxAV.nextAction = "DONE";
-	    },
-	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "Checking if all vertices have been added to a tree";
 	    }
 	},
 	{
 	    label: "startNewComponent",
-	    comment: "Set up to start the next component: check for any unadded vertex",
+	    comment: "Start work on the next connected component",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
-		hdxAV.nextAction = "DONE";
+		// clear components
+		thisAV.componentVList = [];
+		thisAV.componentEList = [];
+
+		// increment to next component
+		thisAV.componentNum++;
+
+		// select a starting vertex for the next component
+		while (thisAV.addedV[thisAV.startUnaddedVSearch]) {
+		    thisAV.startUnaddedVSearch++;
+		}
+
+		// start up new component at this vertex
+		thisAV.discoveredV[thisAV.startUnaddedVSearch] = true;
+		thisAV.numVUndiscovered--;
+		
+		updateMarkerAndTable(thisAV.startUnaddedVSearch,
+				     visualSettings.discovered, 10, false);
+		
+		thisAV.ldv.add(new LDVEntry(thisAV.startUnaddedVSearch, 0, -1));
+
+		thisAV.updateControlEntries();
+
+		hdxAV.iterationDone = true;
+		hdxAV.nextAction = "checkAllComponentsDone";
 	    },
 	    logMessage: function(thisAV) {
-		return "Checking if any unadded vertices remain";
+		return "Starting component " + thisAV.componentNum +
+		    " with vertex " + thisAV.startUnaddedVSearch;
 	    }
 	},
 	{
-	    label: "",
-	    comment: "",
+	    label: "doneToTrue",
+	    comment: "All vertices added, so no more components",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
-		hdxAV.nextAction = "DONE";
+		thisAV.allComponentsDone = true;
+		hdxAV.nextAction = "checkAllComponentsDone";
 	    },
 	    logMessage: function(thisAV) {
-		return this.label + " TBD";
+		return "All components found, setting done flag to true";
 	    }
 	},
 	{
@@ -3247,7 +3265,7 @@ hdxGraphTraversalsAV.setupCode = function() {
     let initializeCode = [ "d &larr; new " + this.ldv.displayName,
 			   "d." + this.ldv.addOperation() + "(start,null)" ];
     if (this.stoppingCondition == "FindAll") {
-	initializeCode.append("done &larr; false");
+	initializeCode.push("done &larr; false");
     }
     this.code = '<table class="pseudocode">' +
 	pcEntry(0, initializeCode, "initialize");
@@ -3269,6 +3287,7 @@ hdxGraphTraversalsAV.setupCode = function() {
 	    pcEntry(0, "while not done", "checkAllComponentsDone") +
 	    pcEntry(1, "while not d.isEmpty", "checkComponentDone") +
 	    this.mainLoopBody(1) +
+	    pcEntry(1, "// finalize component", "finalizeComponent") +
 	    pcEntry(1, "if &exist; any unadded vertices", "checkAnyUnadded") +
 	    pcEntry(2, [ "v &larr; any unadded vertex",
 			 "d." + this.ldv.addOperation() + "(v,null)" ],
