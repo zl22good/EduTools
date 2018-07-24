@@ -123,8 +123,6 @@ var hdxAV = {
 	this.avList.push(hdxGraphTraversalsAV);
 	this.avList.push(hdxDijkstraAV);
 	this.avList.push(hdxPrimAV);
-	this.avList.push(hdxGraphTraversalsAVOLD);
-	this.avList.push(hdxDijkstraAVOLD);
 	this.avList.push(hdxBFConvexHullAV);
 	
 	// populate the algorithm selection select with options
@@ -3274,8 +3272,8 @@ var hdxGraphTraversalsAV = Object.create(hdxTraversalsSpanningAVCommon);
 
 // entries for the list of AVs
 hdxGraphTraversalsAV.value = "traversals";
-hdxGraphTraversalsAV.name = "Graph Traversal/Connected Components (Under Construction)";
-hdxGraphTraversalsAV.description = "Perform graph traversal using breadth-first, depth-first, or random-first traversals, with the option of repeating to find all connected components of the graph.";
+hdxGraphTraversalsAV.name = "Graph Traversals/Connected Components";
+hdxGraphTraversalsAV.description = "Perform graph traversal using breadth-first, depth-first, or random-first traversals, with the option of iterating to find all connected components of the graph.";
 hdxGraphTraversalsAV.foundTableHeader = "Edges in Spanning Tree/Forest";
 
 // extra selector for traversal disciplines
@@ -3393,7 +3391,7 @@ var hdxDijkstraAV = Object.create(hdxTraversalsSpanningAVCommon);
 
 // entries for the list of AVs
 hdxDijkstraAV.value = "dijkstra";
-hdxDijkstraAV.name = "Dijkstra's Algorithm (Under Construction)";
+hdxDijkstraAV.name = "Dijkstra's Algorithm";
 hdxDijkstraAV.description = "Dijkstra's algorithm for single-source shortest paths.";
 hdxDijkstraAV.foundTableHeader = "Shortest Paths Found So Far";
 hdxDijkstraAV.distEntry = "Distance";
@@ -3471,7 +3469,7 @@ var hdxPrimAV = Object.create(hdxTraversalsSpanningAVCommon);
 
 // entries for the list of AVs
 hdxPrimAV.value = "prim";
-hdxPrimAV.name = "Prim's Algorithm (Under Construction)";
+hdxPrimAV.name = "Prim's Algorithm";
 hdxPrimAV.description = "Prim's algorithm for minimum cost spanning trees.";
 hdxPrimAV.foundTableHeader = "Edges in Spanning Tree/Forest";
 hdxPrimAV.distEntry = "Length";
