@@ -3011,15 +3011,17 @@ var hdxTraversalsSpanningAVCommon = {
 			     this.numVUndiscovered + " V, " +
 			     this.numEUndiscovered + " E");
 	let label;
-	if (this.findingAllComponents) {
-	    label = "Spanning Trees: ";
+	let componentCount = "";
+	if (this.stoppingCondition == "FindAll") {
+	    label = "Spanning Forest: ";
+	    componentCount = ", " + this.componentNum + " components";
 	}
 	else {
 	    label = "Spanning Tree: "
 	}
 	updateAVControlEntry("currentSpanningTree", label +
 			     this.numVSpanningTree + " V, " +
-			     this.numESpanningTree + " E");
+			     this.numESpanningTree + " E" + componentCount);
 	updateAVControlEntry("discardedOnDiscovery", "Discarded on discovery: " +
 			     this.numEDiscardedOnDiscovery + " E");
 	updateAVControlEntry("discardedOnRemoval", "Discarded on removal: " +
@@ -3192,7 +3194,7 @@ var hdxGraphTraversalsAV = Object.create(hdxTraversalsSpanningAVCommon);
 hdxGraphTraversalsAV.value = "traversals";
 hdxGraphTraversalsAV.name = "Graph Traversal/Connected Components (Under Construction)";
 hdxGraphTraversalsAV.description = "Perform graph traversal using breadth-first, depth-first, or random-first traversals, with the option of repeating to find all connected components of the graph.";
-hdxGraphTraversalsAV.foundTableHeader = "Places in Spanning Tree";
+hdxGraphTraversalsAV.foundTableHeader = "Edges in Spanning Tree/Forest";
 
 // extra selector for traversal disciplines
 hdxGraphTraversalsAV.extraAlgOptions = `<br />
@@ -3389,7 +3391,7 @@ var hdxPrimAV = Object.create(hdxTraversalsSpanningAVCommon);
 hdxPrimAV.value = "prim";
 hdxPrimAV.name = "Prim's Algorithm (Under Construction)";
 hdxPrimAV.description = "Prim's algorithm for minimum cost spanning trees.";
-hdxPrimAV.foundTableHeader = "Places in Spanning Tree";
+hdxPrimAV.foundTableHeader = "Edges in Spanning Tree/Forest";
 hdxPrimAV.distEntry = "Length";
 
 // required function to create an appropriate list of discovered vertices
@@ -3458,12 +3460,12 @@ hdxPrimAV.setupCode = function() {
     else { // this.stoppingCondition == "FindAll"
 	this.code +=
 	    pcEntry(0, "while not done", "checkAllComponentsDone") +
-	    pcEntry(1, "while not d.isEmpty", "checkComponentDone") +
+	    pcEntry(1, "while not pq.isEmpty", "checkComponentDone") +
 	    this.mainLoopBody(1) +
 	    pcEntry(1, "// finalize component", "finalizeComponent") +
 	    pcEntry(1, "if &exist; any unadded vertices", "checkAnyUnadded") +
 	    pcEntry(2, [ "v &larr; any unadded vertex",
-			 "d." + this.ldv.addOperation() + "(v,null)" ],
+			 "pq." + this.ldv.addOperation() + "(v,null)" ],
 		    "startNewComponent") +
 	    pcEntry(1, "else", "") +
 	    pcEntry(2, "done &larr; true", "doneToTrue");
