@@ -2333,6 +2333,10 @@ var hdxTraversalsSpanningAVCommon = {
     numEDiscardedOnRemoval: 0,
     componentNum: 0,
 
+    // when finding a path from start to end, we need a list of tree
+    // edges to traverse to find the path
+    treeEdges: [],
+
     // color items specific to graph traversals/spanning trees
     visualSettings: {
 	addedEarlier: {
@@ -2349,6 +2353,14 @@ var hdxTraversalsSpanningAVCommon = {
 	    name: "completedComponent",
 	    value: 0,
 	    weight: 3,
+	    opacity: 0.6
+	},
+	foundPath: {
+	    color: "darkRed",
+	    textColor: "white",
+	    scale: 4,
+	    name: "foundPath",
+	    weight: 4,
 	    opacity: 0.6
 	}
     },
@@ -2458,6 +2470,7 @@ var hdxTraversalsSpanningAVCommon = {
 		highlightPseudocode(this.label, visualSettings.visiting);
 
 		if (thisAV.allComponentsDone) {
+		    thisAV.stoppedBecause = "FoundAllComponents";
 		    hdxAV.nextAction = "cleanup";
 		}
 		else {
@@ -2485,6 +2498,7 @@ var hdxTraversalsSpanningAVCommon = {
 			hdxAV.nextAction = "finalizeComponent";
 		    }
 		    else {
+			thisAV.stoppedBecause = "FoundComponent";
 			hdxAV.nextAction = "cleanup";
 		    }
 		}
@@ -2509,6 +2523,7 @@ var hdxTraversalsSpanningAVCommon = {
 		// check that there are more values in the LDV to see
 		// if we can continue
 		if (thisAV.addedV[thisAV.endingVertex]) {
+		    thisAV.stoppedBecause = "FoundPath";
 		    hdxAV.nextAction = "cleanup";
 		}
 		else {
@@ -2545,7 +2560,6 @@ var hdxTraversalsSpanningAVCommon = {
 		highlightPseudocode(this.label, visualSettings.searchFailed);
 
 		thisAV.stoppedBecause = "SearchFailed";
-		
 		hdxAV.nextAction = "cleanup";
 	    },
 	    logMessage: function(thisAV) {
@@ -2705,6 +2719,14 @@ var hdxTraversalsSpanningAVCommon = {
 					       thisAV.ldv.maxLabelLength,
 					       thisAV.ldv.valPrecision,
 					       thisAV.numESpanningTree);
+
+		// if we're finding a path from a start to an end, update
+		// our array of tree edges to trace back through to find
+		// paths
+		if (thisAV.stoppingCondition == "StopAtEnd") {
+		    thisAV.treeEdges.push(thisAV.visiting);
+		}
+		
 		thisAV.updateControlEntries();
 		hdxAV.nextAction = "checkNeighborsLoopTop";
 	    },
@@ -2991,16 +3013,73 @@ var hdxTraversalsSpanningAVCommon = {
 	    comment: "Clean up and finalize visualization",
 	    code: function(thisAV) {
 
-		// do some stuff here
-		
+		// if we found a path start to end, we replace the
+		// full table of found places with just the path found
+		if (thisAV.stoppedBecause == "FoundPath") {
+		    // build the path we have found from end to start, showing
+		    // each on the map and in the tables
+		    let place = thisAV.endingVertex;
+		    let plIndex = thisAV.treeEdges.length - 1;
+		    let hops = 0;
+		    // work our way back up the table from vertex to vertex
+		    // along the path from the end back to the start
+		    while (place != thisAV.startingVertex) {
+			let treeEdge = thisAV.treeEdges[plIndex];
+			while (place != treeEdge.vIndex) {
+			    // hide line, it's not part of the path
+			    if (place != thisAV.endingVertex) {
+				let tr = document.getElementById("foundPaths" + plIndex);
+				tr.style.display = "none";
+			    }
+			    plIndex--;
+			    treeEdge = thisAV.treeEdges[plIndex];
+			}
+
+			hops++;
+			// we are at the next place on the path, update vertex
+			updateMarkerAndTable(place,
+					     thisAV.visualSettings.foundPath,
+					     5, false);
+			// and update edge to get here
+			updatePolylineAndTable(treeEdge.connection,
+					       thisAV.visualSettings.foundPath,
+					       false);
+			
+			// update place to the previous in the path
+			plIndex--;
+			place = treeEdge.fromVIndex;
+		    }
+		    updateAVControlVisualSettings("found",
+						  thisAV.visualSettings.foundPath);
+		    document.getElementById("foundEntriesCount").innerHTML = "";
+		    thisAV.foundLabel.innerHTML = "Path found with " + hops + " hops:";
+		}
 		hdxAV.nextAction = "DONE";
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
-		if (thisAV.stoppedBecause == "searchFailed") {
-		    return "No path found";
+		if (thisAV.stoppedBecause == "SearchFailed") {
+		    return "No path found from #" + thisAV.startingVertex +
+			" " + waypoints[thisAV.startingVertex].label + " to #" +
+			thisAV.endingVertex + " " +
+			waypoints[thisAV.endingVertex].label;
+		}
+		else if (thisAV.stoppedBecause == "FoundPath") {
+		    return "Found path from #" + thisAV.startingVertex +
+			" " + waypoints[thisAV.startingVertex].label + " to #" +
+			thisAV.endingVertex + " " +
+			waypoints[thisAV.endingVertex].label;
+		}
+		else if (thisAV.stoppedBecause == "FoundComponent") {
+		    return "Found all paths from #" + thisAV.startingVertex +
+			" " + waypoints[thisAV.startingVertex].label;
+		}
+		else if (thisAV.stoppedBecause == "FoundAllComponents") {
+		    return "Found all " + (thisAV.componentNum+1) +
+			" components";
 		}
 		else {
-		    return "Fill in other reasons for stopping.";
+		    return "There should be no other reasons for stopping...";
 		}
 	    }
 	}
@@ -3060,6 +3139,9 @@ var hdxTraversalsSpanningAVCommon = {
 			   item.val.toFixed(precision) + ", " + fullFrom +
 			   ", via " + fullEdgeLabel);
 
+	// id to show shortest paths later
+	newtr.setAttribute("id", "foundPaths" + count);
+	
 	// actual table row to display
 	newtr.innerHTML = 
 	    '<td>' + vLabel + '</td>' +
