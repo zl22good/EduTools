@@ -3455,6 +3455,19 @@ hdxPrimAV.setupCode = function() {
 	    this.mainLoopBody(0);
 
     }
+    else { // this.stoppingCondition == "FindAll"
+	this.code +=
+	    pcEntry(0, "while not done", "checkAllComponentsDone") +
+	    pcEntry(1, "while not d.isEmpty", "checkComponentDone") +
+	    this.mainLoopBody(1) +
+	    pcEntry(1, "// finalize component", "finalizeComponent") +
+	    pcEntry(1, "if &exist; any unadded vertices", "checkAnyUnadded") +
+	    pcEntry(2, [ "v &larr; any unadded vertex",
+			 "d." + this.ldv.addOperation() + "(v,null)" ],
+		    "startNewComponent") +
+	    pcEntry(1, "else", "") +
+	    pcEntry(2, "done &larr; true", "doneToTrue");
+    }
 
     this.code += "</table>";
 };
