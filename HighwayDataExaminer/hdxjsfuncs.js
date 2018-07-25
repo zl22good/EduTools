@@ -3091,7 +3091,7 @@ var hdxTraversalsSpanningAVCommon = {
 	let componentCount = "";
 	if (this.stoppingCondition == "FindAll") {
 	    label = "Spanning Forest: ";
-	    componentCount = ", " + this.componentNum + " components";
+	    componentCount = ", " + (this.componentNum+1) + " components";
 	}
 	else {
 	    label = "Spanning Tree: "

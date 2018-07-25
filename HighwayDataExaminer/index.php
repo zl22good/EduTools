@@ -300,6 +300,7 @@ td.psuedocode {
 	padding-left: 30px;
 }
 #searchTest{
+	top: 100px;
 	margin: auto;
 	background-color: white; 
 	z-index: 14000;
@@ -313,6 +314,7 @@ td.psuedocode {
 	width: 365px;
 }
 #algorithmControls2{
+	top: 100px;
 	margin: auto;
 	background-color: white; 
 	z-index: 12000;
@@ -327,18 +329,19 @@ td.psuedocode {
 }
 #algStats{
 	margin:auto;
+	top: 100px;
 	z-index: 10000;
-	background-color: white;
+	background-color: blue;
 	position: absolute;
 	overflow: scroll;
-	max-width: 35%;
-	max-height: 50%;
+	width: 30%;
+	max-height: calc(100vh - 125px);
 	opacity: .95;
 	display: none;
 }
 #algStatsTable{
 	border: 1px solid black;
-	width: 365px;
+	max-width: 100%;
 	
 	
 }
