@@ -168,14 +168,14 @@ height: 1px;
 #contents_table{
   display: inline-block;
   position: absolute;
-  right: 42px;
-  top: 70px;
-  bottom: 10px;
   overflow: scroll;
-  max-width: 50%;
-  max-height: 85%;
+  right:2%;
+  max-width: 30%;
+  max-height: 95%;
   opacity: .95;
+  z-index:750; // above leaflet tiles and overlays, below map tile selector
 }
+
 #pseudoTable{
   position: absolute;
   padding: 5px;
@@ -496,7 +496,7 @@ td.psuedocode {
 
         </div>
 		</form>
-        <div id="contents_table" draggable="false"  ondragstart="drag(event)" style="top:70px; left:70%; position: absolute; z-index:9999;">
+        <div id="contents_table" draggable="false"  ondragstart="drag(event)">
         </div>
         </body>
 </html>
