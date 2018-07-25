@@ -2532,6 +2532,7 @@ var hdxTraversalsSpanningAVCommon = {
 		else {
 		    hdxAV.nextAction = "checkLDVEmpty";
 		}
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
 		return "Check if the end vertex has been added.";
