@@ -213,6 +213,11 @@ var hdxAV = {
             setTimeout(function() { hdxAV.nextStep(thisAV) }, hdxAV.delay);
 	}
 	else {
+	    // if pseudocode is displayed, undisplay at the end to ensure
+	    // better visibility for results
+	    document.getElementById("pseudoCheckbox").checked = false;
+	    document.getElementById("pseudoText").style.display = "none";
+	    
 	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
 	}
     },
