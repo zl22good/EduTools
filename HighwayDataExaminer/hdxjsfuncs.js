@@ -853,7 +853,7 @@ function highlightPseudocode(id, vs) {
     let codeChunk = document.getElementById(id);
     if (codeChunk != null) {
 	codeChunk.style.backgroundColor = vs.color;
-	codeChunk.style.textColor = vs.textColor;
+	codeChunk.style.color = vs.textColor;
 	hdxAV.previousHighlight = id;
     }
 }
@@ -875,7 +875,7 @@ function pcEntry(indent, code, id) {
 
     let entry;
     if (entry != "") {
-	entry = '<tr id="' + id + '"><td>';
+	entry = '<tr><td id="' + id + '">';
     }
     else {
 	entry = '<tr><td>';
