@@ -263,19 +263,27 @@ padding:0px;
 
 
 table.pseudocode {
-    font-size: 10pt;
+    font-size: 9pt;
     font-family: "Courier New", Courier, monospace;
     border: none;
     border-spacing: 0px;
+    border-collapse: collapse;
     margin-left: auto;
     margin-right: auto;
     background-color: white;
     color: black;
 }
 
-td.psuedocode {
+td.pseudocode {
     border: none;
     border-collapse: collapse;
+    padding-top: 0;
+}
+
+tr.pseudocode {
+    border: none;
+    border-collapse: collapse;
+    padding-top: 0;
 }
 
 .highlight {
