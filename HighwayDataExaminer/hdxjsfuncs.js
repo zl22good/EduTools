@@ -3596,32 +3596,30 @@ var hdxBFConvexHullAV = {
 	pcEntry(0, "for (v<sub>1</sub> &larr; 0 to |V|-2)", "v1forLoopTop") +
 	pcEntry(1, "for (v<sub>2</sub> &larr; v<sub>1</sub> to |V|-1)", "v2forLoopTop") +
 	pcEntry(2, [ "// find line through V[v<sub>1</sub>] and V[v<sub>2</sub>]",
-		     "a &larr; V[v<sub>2</sub>].y - V[v<sub>1</sub>].y",
-		     "b &larr; V[v<sub>1</sub>].x - V[v<sub>2</sub>].x",
-		     "c &larr; V[v<sub>1</sub>].x*V[v<sub>2</sub>].y - V[v<sub>1</sub>].y*V[v<sub>2</sub>].x",
+		     "a &larr; V[v<sub>2</sub>].lat - V[v<sub>1</sub>].lat",
+		     "b &larr; V[v<sub>1</sub>].lon - V[v<sub>2</sub>].lon",
+		     "c &larr; V[v<sub>1</sub>].lon*V[v<sub>2</sub>].lat - V[v<sub>1</sub>].lat*V[v<sub>2</sub>].lon",
 		     "eliminated &larr; false",
 		     "lookingFor &larr; UNKNOWN" ],
 		"calculateLine") +
-	pcEntry(2, "for (v<sub>test</sub> &larr; v<sub>0</sub> to |V|-1)", "vtestforLoopTop") +
-	pcEntry(3, "if v<sub>test</sub> &ne; v<sub>1</sub> and v<sub>test</sub> &ne; v<sub>2</sub>",
-		"checkNotv1v2") +
-	pcEntry(4, "checkVal &larr; a*V[v<sub>test</sub>].x + b*V[v<sub>test</sub>].y - c",
+	pcEntry(2, "for (v<sub>test</sub> &larr; 0 to |V|-1), skip v<sub>1</sub>, v<sub>2</sub>", "vtestforLoopTop") +
+	pcEntry(3, "checkVal &larr; a*V[v<sub>test</sub>].lon + b*V[v<sub>test</sub>].lat - c",
 		"computeCheckVal") +
-	pcEntry(4, "if checkVal = 0", "isCheckVal0") +
-	pcEntry(5, "if V[v<sub>test</sub>] not between V[v<sub>1</sub>] and V[v<sub>2</sub>]", "checkBetween") +
-	pcEntry(6, "eliminated &larr; true; break", "isColinearNotBetween") +
-	pcEntry(4, "else", "") +
-	pcEntry(5, "if lookingFor = UNKNOWN", "checkFirst") +
-	pcEntry(6, "if checkVal < 0", "isCheckValNegative") +
-	pcEntry(7, "lookingFor &larr; NEGATIVE", "setNegative") +
-	pcEntry(6, "else", "") +
-	pcEntry(7, "lookingFor &larr; POSITIVE", "setPositive") +
+	pcEntry(3, "if checkVal = 0", "isCheckVal0") +
+	pcEntry(4, "if V[v<sub>test</sub>] not between V[v<sub>1</sub>] and V[v<sub>2</sub>]", "checkBetween") +
+	pcEntry(5, "eliminated &larr; true; break", "isColinearNotBetween") +
+	pcEntry(3, "else", "") +
+	pcEntry(4, "if lookingFor = UNKNOWN", "checkFirst") +
+	pcEntry(5, "if checkVal < 0", "isCheckValNegative") +
+	pcEntry(6, "lookingFor &larr; NEGATIVE", "setNegative") +
 	pcEntry(5, "else", "") +
-	pcEntry(6, "if lookingFor = POSITIVE and checkVal < 0 or lookingFor = NEGATIVE and checkVal > 0",
+	pcEntry(6, "lookingFor &larr; POSITIVE", "setPositive") +
+	pcEntry(4, "else", "") +
+	pcEntry(5, "if lookingFor = POSITIVE and checkVal < 0 or lookingFor = NEGATIVE and checkVal > 0",
 		"checkSameSide") +
-	pcEntry(7, "eliminated &larr; true; break", "notSameSide") +
-	pcEntry(4, "if not eliminated", "checkEliminated") +
-	pcEntry(5, "hull.add(V[v<sub>1</sub>],V[v<sub>2</sub>])", "addToHull") +
+	pcEntry(6, "eliminated &larr; true; break", "notSameSide") +
+	pcEntry(3, "if not eliminated", "checkEliminated") +
+	pcEntry(4, "hull.add(V[v<sub>1</sub>],V[v<sub>2</sub>])", "addToHull") +
 	'</table>',
 
     // the list of points in the convex hull being computed
@@ -3630,39 +3628,66 @@ var hdxBFConvexHullAV = {
     // the list of Polylines that make up the hull so far
     hullSegments: [],
 
-    // the i and j loop indices for our deconstructed nested loop
-    hullI: 0,
-    hullJ: 0,
+    // the v1, v2, and btest loop indices for our deconstructed nested loop
+    hullv1: 0,
+    hullv1: 0,
+    hullvtest: 0,
     
     convexLineHull: [],
     visitingLine: [],
     currentSegment: null,
- 
-    // boolean to determine whether to set up or do an iteration of
-    // the inner loop, to allow the candidate line to be seen on
-    // the map before it is determined to be part of the hull or not
-    setupNewLine: false,
 
+    // coeffients for equation of the line connecting pairs of points
+    a: 0,
+    b: 0,
+    c: 0,
+
+    // additional variables needed for search to determine if a
+    // segment is part of the hull
+    eliminated: false,
+    lookingFor: "UNKNOWN",
+    
     visualSettings: {
-        hullI: {
+        hullv1: {
             color: "darkRed",
             textColor: "white",
             scale: 6,
-	    name: "hullI",
+	    name: "hullv1",
 	    value: 0
 	},
-        hullJ: {
+        hullv2: {
             color: "red",
             textColor: "white",
             scale: 6,
-	    name: "hullJ",
+	    name: "hullv2",
 	    value: 0
 	},
-	discardedInner: {
+        hullvtest: {
+            color: "pink",
+            textColor: "black",
+            scale: 6,
+	    name: "hullvtest",
+	    value: 0
+	},
+	discardedv2: {
 	    color: "green",
 	    textColor: "black",
 	    scale: 2,
-	    name: "discardedInner",
+	    name: "discardedv2",
+	    value: 0
+	},
+	checkedPositive: {
+	    color: "purple",
+	    textColor: "white",
+	    scale: 2,
+	    name: "checkedPositive",
+	    value: 0
+	},
+	checkedNegative: {
+	    color: "violet",
+	    textColor: "white",
+	    scale: 2,
+	    name: "checkedNegative",
 	    value: 0
 	},
 	hullComponent: visualSettings.spanningTree
@@ -3672,8 +3697,8 @@ var hdxBFConvexHullAV = {
     mapCurrentSegment() {
 
 	let visitingLine = [];
-	visitingLine[0] = [waypoints[this.hullI].lat, waypoints[this.hullI].lon];
-	visitingLine[1] = [waypoints[this.hullJ].lat, waypoints[this.hullJ].lon];
+	visitingLine[0] = [waypoints[this.hullv1].lat, waypoints[this.hullv1].lon];
+	visitingLine[1] = [waypoints[this.hullv2].lat, waypoints[this.hullv2].lon];
 	this.currentSegment = L.polyline(visitingLine, {
 	    color: visualSettings.visiting.color,
 	    opacity: 0.6,
@@ -3682,28 +3707,322 @@ var hdxBFConvexHullAV = {
 	this.currentSegment.addTo(map);
     },
 
+    // the actions that make up the brute-force convex hull
+    avActions: [
+	{
+	    label: "initialize",
+	    comment: "initialize brute-force convex hull variables",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+		
+		updateAVControlEntry("hullsegments", "No hull segments found yet");
+
+
+		hdxAV.iterationDone = true;
+		thisAV.hullv1 = -1;  // will increment to 0
+		hdxAV.nextAction = "v1forLoopTop";
+	    },
+	    logMessage: function(thisAV) {
+		return "Initializing brute-force convex hull variables";
+	    }
+	},
+	{
+	    label: "v1forLoopTop",
+	    comment: "v1 loop, outer loop to visit all pairs",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, thisAV.visualSettings.hullv1);
+		thisAV.hullv1++;
+		if (thisAV.hullv1 == waypoints.length-1) {
+		    hdxAV.nextAction = "cleanup";
+		}
+		else {
+		    hdxAV.nextAction = "v2forLoopTop";
+		    thisAV.hullv2 = thisAV.hullv1;  // will increment to +1
+		    updateMarkerAndTable(thisAV.hullv1, thisAV.visualSettings.hullv1,
+					 30, false);
+		    updateAVControlEntry("hullv1", "v<sub>1</sub>: #" + thisAV.hullv1 + " " + waypoints[thisAV.hullv1].label);
+
+		}
+		hdxAV.iterationDone = true;
+	    },
+	    logMessage: function(thisAV) {
+		return "Top of outer for loop over vertices, v<sub>1</sub>=" + thisAV.hullv1;
+	    }
+	},
+	{
+	    label: "v2forLoopTop",
+	    comment: "v2 loop, inner loop to visit all pairs",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, thisAV.visualSettings.hullv2);
+		thisAV.hullv2++;
+		if (thisAV.hullv2 == waypoints.length) {
+		    hdxAV.nextAction = "v1forLoopBottom";
+		}
+		else {
+		    hdxAV.nextAction = "calculateLine";
+		    updateMarkerAndTable(thisAV.hullv2,
+					 thisAV.visualSettings.hullv2,
+					 30, false);
+		    updateAVControlEntry("hullv2", "v<sub>2</sub>: #" + thisAV.hullv2 + " " + waypoints[thisAV.hullv2].label);
+		    thisAV.mapCurrentSegment();
+		}
+
+		hdxAV.iterationDone = true;
+	    },
+	    logMessage: function(thisAV) {
+		return "Top of inner for loop over vertices, v<sub>2</sub>=" + thisAV.hullv2;
+	    }
+	},
+	{
+	    label: "calculateLine",
+	    comment: "Calculate the equation of the line between v1 and v2",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);
+		let pointv1 = waypoints[thisAV.hullv1];
+		let pointv2 = waypoints[thisAV.hullv2];
+    
+		// compute the coefficients for ax + by = c
+		// of the line connecting v1 and v2
+		thisAV.a = pointv2.lat - pointv1.lat;
+		thisAV.b = pointv1.lon - pointv2.lon;
+		thisAV.c = pointv1.lon * pointv2.lat - pointv1.lat * pointv2.lon;
+		
+		updateAVControlEntry("checkingLine",
+				     "Considering line: " +
+				     thisAV.a.toFixed(3) + "lat + " +
+				     thisAV.b.toFixed(3) + "lng = " +
+				     thisAV.c.toFixed(3));
+
+		// additional search variables to help determine if
+		// this pair is part of the hull
+		thisAV.eliminated = false;
+		thisAV.lookingFor = "UNKNOWN";
+
+		// set up for innermost loop
+		thisAV.hullvtest = -1;  // will increment to 0 to start
+		hdxAV.nextAction = "vtestforLoopTop";
+	    },
+	    logMessage: function(thisAV) {
+		return "Computed coefficients of line connecting #" +
+		    thisAV.hullv1 + " and #" + thisAV.hullv2;
+	    }
+	},
+	{
+	    label: "vtestforLoopTop",
+	    comment: "Top of loop over all vertices to check if the given segment is in the hull",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, thisAV.visualSettings.hullvtest);
+		thisAV.hullvtest++;
+		// skip v1, v2
+		while (thisAV.hullvtest == thisAV.hullv1 ||
+		       thisAV.hullvtest == thisAV.hullv2) {
+		    thisAV.hullvtest++;
+		}
+		if (thisAV.hullvtest == waypoints.length) {
+		    hdxAV.nextAction = "v2forLoopBottom";
+		}
+		else {
+		    hdxAV.nextAction = "computeCheckVal";
+		    updateMarkerAndTable(thisAV.hullvtest,
+					 thisAV.visualSettings.hullvtest,
+					 30, false);
+		    updateAVControlEntry("hullvtest", "v<sub>test</sub>: #" + thisAV.hullvtest + " " + waypoints[thisAV.hullvtest].label);
+		
+		}
+	    },
+	    logMessage: function(thisAV) {
+		return "Top of loop over vertices testing line connecting #" +
+		    thisAV.hullv1 + " and #" + thisAV.hullv2;
+	    }
+	},
+	{
+	    label: "computeCheckVal",
+	    comment: "Plug vertex into the equation of the candidate segment",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, thisAV.visualSettings.hullvtest);
+		let pointvtest = waypoints[thisAV.hullvtest];
+		thisAV.checkVal = thisAV.a * pointvtest.lon +
+		    thisAV.b * pointvtest.lat - thisAV.c;
+		hdxAV.nextAction = "isCheckVal0";
+	    },
+	    logMessage: function(thisAV) {
+		return "Computed checkVal = " + thisAV.checkVal.toFixed(3);
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+	{
+	    label: "",
+	    comment: "TBD",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, vs);
+
+		hdxAV.nextAction = "DONE";
+	    },
+	    logMessage: function(thisAV) {
+		return "TBD";
+	    }
+	},
+    ],
+
     // required start method for brute force convex hull
-    // TODO: where do we know we're done?
     start() {
+
+	hdxAV.algStat.innerHTML = "Initializing";
 
 	// show waypoints, hide connections
 	initWaypointsAndConnections(true, false,
 				    visualSettings.undiscovered);
 
-	// initialize our i and j for the main n^2 loop which forms
-	// the granularity of our visualization at this point
-	
-	this.hullI = 0;
-	this.hullJ = 1;
-	this.setupNewLine = true;
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	
-	if (!hdxAV.paused()&& hdxAV.delay != -1) {
-	    let self = this;
-	    setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-	}
+	// set up for our first action
+	hdxAV.nextAction = "initialize";
+
+	// to start, make just a simple call to nextStep, ignoring any
+	// delay until after the first action occurs
+
+	hdxAV.nextStep(this);
     },
 
     // update display elements for a new i, j combination
@@ -3721,35 +4040,7 @@ var hdxBFConvexHullAV = {
     },
 
     // required nextStep function for brute-force convex hull
-    nextStep() {
 	
-	if (hdxAV.paused()) {
-           return;
-	}
-	
-	if (hdxAV.delay == 0) {
-		this.runToCompletion();
-	}
-	
-	if (hdxAV.delay == -1) {
-		hdxAV.setStatus(hdxStates.AV_PAUSED);
-	}
-	
-	// depending on the value of setupNewLine, we either draw a
-	// line from the hullI to hullJ to show the next segment to
-	// be considered, or we actually consider that segment (and
-	// either remove it or add it to the hull, then advance to
-	// the next hullI, hullJ
-	
-	this.oneIteration();
-	if(this.moreWork())
-	{
-		let self = this;
-		setTimeout(function() { self.nextStep(); }, hdxAV.delay);
-	}
-	
-	},
-		
 	oneIteration()
 	{
 		
@@ -3951,14 +4242,16 @@ var hdxBFConvexHullAV = {
     // set up UI for convex hull
     setupUI() {
 	
-	if (waypoints.length > 100) {
-	    alert("This is an O(n^3) algorithm in the worst case, so you might wish to choose a smaller graph.");
-	}
+	//if (waypoints.length > 100) {
+	//    alert("This is an O(n^3) algorithm in the worst case, so you might wish to choose a smaller graph.");
+	//}
 	hdxAV.algStat.style.display = "";
 	hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.algOptions.innerHTML = '';
-	addEntryToAVControlPanel("hullI", this.visualSettings.hullI);
-	addEntryToAVControlPanel("hullJ", this.visualSettings.hullJ);
+	addEntryToAVControlPanel("hullsegments", this.visualSettings.hullComponent);
+	addEntryToAVControlPanel("hullv1", this.visualSettings.hullv1);
+	addEntryToAVControlPanel("hullv2", this.visualSettings.hullv2);
+	addEntryToAVControlPanel("hullvtest", this.visualSettings.hullvtest);
 	addEntryToAVControlPanel("checkingLine", visualSettings.visiting);
     },
 
