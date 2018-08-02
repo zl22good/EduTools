@@ -3591,14 +3591,39 @@ var hdxBFConvexHullAV = {
     description: "Compute the convex hull of the waypoints using the brute-force algorithm.",
     
     // pseudocode
-    code:`<pre>
-for (i <- 1 to n–1)
-  for (j <- i+1 to n)
-     L <- line through waypoints[i] and waypoints[j]
-       if (all other points lie on the same side of L)
-          add L to hull
-</pre>`,
-    
+    code:'<table class="pseudocode">' +
+	pcEntry(0, "hull &larr; new list", "initialize") +
+	pcEntry(0, "for (v<sub>1</sub> &larr; 0 to |V|-2)", "v1forLoopTop") +
+	pcEntry(1, "for (v<sub>2</sub> &larr; v<sub>1</sub> to |V|-1)", "v2forLoopTop") +
+	pcEntry(2, [ "// find line through V[v<sub>1</sub>] and V[v<sub>2</sub>]",
+		     "a &larr; V[v<sub>2</sub>].y - V[v<sub>1</sub>].y",
+		     "b &larr; V[v<sub>1</sub>].x - V[v<sub>2</sub>].x",
+		     "c &larr; V[v<sub>1</sub>].x*V[v<sub>2</sub>].y - V[v<sub>1</sub>].y*V[v<sub>2</sub>].x",
+		     "eliminated &larr; false",
+		     "lookingFor &larr; UNKNOWN" ],
+		"calculateLine") +
+	pcEntry(2, "for (v<sub>test</sub> &larr; v<sub>0</sub> to |V|-1)", "vtestforLoopTop") +
+	pcEntry(3, "if v<sub>test</sub> &ne; v<sub>1</sub> and v<sub>test</sub> &ne; v<sub>2</sub>",
+		"checkNotv1v2") +
+	pcEntry(4, "checkVal &larr; a*V[v<sub>test</sub>].x + b*V[v<sub>test</sub>].y - c",
+		"computeCheckVal") +
+	pcEntry(4, "if checkVal = 0", "isCheckVal0") +
+	pcEntry(5, "if V[v<sub>test</sub>] not between V[v<sub>1</sub>] and V[v<sub>2</sub>]", "checkBetween") +
+	pcEntry(6, "eliminated &larr; true; break", "isColinearNotBetween") +
+	pcEntry(4, "else", "") +
+	pcEntry(5, "if lookingFor = UNKNOWN", "checkFirst") +
+	pcEntry(6, "if checkVal < 0", "isCheckValNegative") +
+	pcEntry(7, "lookingFor &larr; NEGATIVE", "setNegative") +
+	pcEntry(6, "else", "") +
+	pcEntry(7, "lookingFor &larr; POSITIVE", "setPositive") +
+	pcEntry(5, "else", "") +
+	pcEntry(6, "if lookingFor = POSITIVE and checkVal < 0 or lookingFor = NEGATIVE and checkVal > 0",
+		"checkSameSide") +
+	pcEntry(7, "eliminated &larr; true; break", "notSameSide") +
+	pcEntry(4, "if not eliminated", "checkEliminated") +
+	pcEntry(5, "hull.add(V[v<sub>1</sub>],V[v<sub>2</sub>])", "addToHull") +
+	'</table>',
+
     // the list of points in the convex hull being computed
     hull: [],
 
