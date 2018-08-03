@@ -3612,7 +3612,7 @@ var hdxBFConvexHullAV = {
 	pcEntry(4, "if lookingFor = UNKNOWN", "checkFirst") +
 	pcEntry(5, "if checkVal < 0", "isCheckValNegative") +
 	pcEntry(6, "lookingFor &larr; NEGATIVE", "setNegative") +
-	pcEntry(5, "else", "") +
+	pcEntry(5, "else if checkVal > 0", "isCheckValPositive") +
 	pcEntry(6, "lookingFor &larr; POSITIVE", "setPositive") +
 	pcEntry(4, "else", "") +
 	pcEntry(5, "if lookingFor = POSITIVE and checkVal < 0 or lookingFor = NEGATIVE and checkVal > 0",
@@ -3679,14 +3679,14 @@ var hdxBFConvexHullAV = {
 	checkedPositive: {
 	    color: "purple",
 	    textColor: "white",
-	    scale: 2,
+	    scale: 6,
 	    name: "checkedPositive",
 	    value: 0
 	},
 	checkedNegative: {
 	    color: "violet",
 	    textColor: "white",
-	    scale: 2,
+	    scale: 6,
 	    name: "checkedNegative",
 	    value: 0
 	},
@@ -3705,6 +3705,12 @@ var hdxBFConvexHullAV = {
 	    weight: 4
 	});
 	this.currentSegment.addTo(map);
+    },
+
+    currentSegmentString() {
+
+	return "segment connecting #" + this.hullv1 + " and #" +
+	    this.hullv2;
     },
 
     // the actions that make up the brute-force convex hull
@@ -3756,10 +3762,14 @@ var hdxBFConvexHullAV = {
 		highlightPseudocode(this.label, thisAV.visualSettings.hullv2);
 		thisAV.hullv2++;
 		if (thisAV.hullv2 == waypoints.length) {
-		    hdxAV.nextAction = "v1forLoopBottom";
+		    hdxAV.nextAction = "v1forLoopTop";
 		}
 		else {
 		    hdxAV.nextAction = "calculateLine";
+		    // make sure v1 is still highlighted appropriately
+		    updateMarkerAndTable(thisAV.hullv1,
+					 thisAV.visualSettings.hullv1,
+					 30, false);
 		    updateMarkerAndTable(thisAV.hullv2,
 					 thisAV.visualSettings.hullv2,
 					 30, false);
@@ -3789,8 +3799,8 @@ var hdxBFConvexHullAV = {
 		
 		updateAVControlEntry("checkingLine",
 				     "Considering line: " +
-				     thisAV.a.toFixed(3) + "lat + " +
-				     thisAV.b.toFixed(3) + "lng = " +
+				     thisAV.a.toFixed(3) + "*lat + " +
+				     thisAV.b.toFixed(3) + "*lng = " +
 				     thisAV.c.toFixed(3));
 
 		// additional search variables to help determine if
@@ -3800,6 +3810,14 @@ var hdxBFConvexHullAV = {
 
 		// set up for innermost loop
 		thisAV.hullvtest = -1;  // will increment to 0 to start
+
+		// mark all as unvisited except v1 and v2
+		for (var i = 0; i < waypoints.length; i++) {
+		    if (i != thisAV.hullv1 && i != thisAV.hullv2) {
+			updateMarkerAndTable(i, visualSettings.undiscovered);
+		    }
+		}
+		
 		hdxAV.nextAction = "vtestforLoopTop";
 	    },
 	    logMessage: function(thisAV) {
@@ -3819,7 +3837,7 @@ var hdxBFConvexHullAV = {
 		    thisAV.hullvtest++;
 		}
 		if (thisAV.hullvtest == waypoints.length) {
-		    hdxAV.nextAction = "v2forLoopBottom";
+		    hdxAV.nextAction = "checkEliminated";
 		}
 		else {
 		    hdxAV.nextAction = "computeCheckVal";
@@ -3831,8 +3849,8 @@ var hdxBFConvexHullAV = {
 		}
 	    },
 	    logMessage: function(thisAV) {
-		return "Top of loop over vertices testing line connecting #" +
-		    thisAV.hullv1 + " and #" + thisAV.hullv2;
+		return "Top of loop over vertices testing " +
+		    thisAV.currentSegmentString();
 	    }
 	},
 	{
@@ -3850,144 +3868,243 @@ var hdxBFConvexHullAV = {
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "isCheckVal0",
+	    comment: "Test for checkVal=0",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
-
-		hdxAV.nextAction = "DONE";
+		highlightPseudocode(this.label, thisAV.visualSettings.hullvtest);
+		if (thisAV.checkVal == 0) {
+		    hdxAV.nextAction = "checkBetween";
+		}
+		else {
+		    hdxAV.nextAction = "checkFirst";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Checking if checkVal=" +
+		    thisAV.checkVal.toFixed(3) + " is 0";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "checkBetween",
+	    comment: "checkVal is 0, checking if colinear point is between candidate segment endpoints",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
-
-		hdxAV.nextAction = "DONE";
+		highlightPseudocode(this.label, thisAV.visualSettings.hullvtest);
+		if (isBetween(waypoints[thisAV.hullv1],
+			      waypoints[thisAV.hullv2],
+			      waypoints[thisAV.hullvtest])) {
+		    hdxAV.nextAction = "checkFirst";
+		}
+		else {
+		    hdxAV.nextAction = "isColinearNotBetween";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Checking if colinear point is on " +
+		    thisAV.currentSegmentString();
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "isColinearNotBetween",
+	    comment: "point is colinear but not between, so eliminate the segment",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
-
-		hdxAV.nextAction = "DONE";
+		highlightPseudocode(this.label, thisAV.visualSettings.hullvtest);
+		thisAV.eliminated = true;
+		hdxAV.nextAction = "checkEliminated";
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Eliminating " + thisAV.currentSegmentString() +
+		    " because of colinear point between";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "checkFirst",
+	    comment: "checking if we are doing the first point for the segment",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
-
-		hdxAV.nextAction = "DONE";
+		highlightPseudocode(this.label, thisAV.visualSettings.hullvtest);
+		if (thisAV.lookingFor == "UNKNOWN") {
+		    hdxAV.nextAction = "isCheckValNegative";
+		}
+		else {
+		    hdxAV.nextAction = "checkSameSide";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "checking if we are doing the first point for the segment";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "isCheckValNegative",
+	    comment: "test for a negative initial checkVal",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
-
-		hdxAV.nextAction = "DONE";
+		highlightPseudocode(this.label, thisAV.visualSettings.hullvtest);
+		if (thisAV.checkVal < 0) {
+		    hdxAV.nextAction = "setNegative";
+		}
+		else {
+		    hdxAV.nextAction = "isCheckValPositive";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Testing if checkVal=" + thisAV.checkVal +
+		    " is negative";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "setNegative",
+	    comment: "set the lookingFor variable to indicate that the first checkVal was negative",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
-
-		hdxAV.nextAction = "DONE";
+		highlightPseudocode(this.label, thisAV.visualSettings.checkedNegative);
+		thisAV.lookingFor = "NEGATIVE";
+		updateMarkerAndTable(thisAV.hullvtest,
+				     thisAV.visualSettings.checkedNegative,
+				     20, false);
+		hdxAV.nextAction = "vtestforLoopTop";
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Setting to look for all negative checkVal values";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "isCheckValPositive",
+	    comment: "test for a positive initial checkVal",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
-
-		hdxAV.nextAction = "DONE";
+		highlightPseudocode(this.label, thisAV.visualSettings.hullvtest);
+		if (thisAV.checkVal > 0) {
+		    hdxAV.nextAction = "setPositive";
+		}
+		else {
+		    hdxAV.nextAction = "vtestforLoopTop";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Testing if checkVal=" + thisAV.checkVal +
+		    " is positive";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "setPositive",
+	    comment: "set the lookingFor variable to indicate that the first checkVal was positive",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
-
-		hdxAV.nextAction = "DONE";
+		highlightPseudocode(this.label, thisAV.visualSettings.checkedPositive);
+		thisAV.lookingFor = "POSITIVE";
+		updateMarkerAndTable(thisAV.hullvtest,
+				     thisAV.visualSettings.checkedPositive,
+				     20, false);
+		hdxAV.nextAction = "vtestforLoopTop";
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Setting to look for all negative checkVal values";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "checkSameSide",
+	    comment: "check if the current point is on the same side of the candidate segment as all previous",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
-
-		hdxAV.nextAction = "DONE";
+		highlightPseudocode(this.label, thisAV.visualSettings.hullvtest);
+		if ((thisAV.lookingFor == "POSITIVE" &&
+		     thisAV.checkVal < 0) ||
+		    (thisAV.lookingFor == "NEGATIVE" &&
+		     thisAV.checkVal > 0)) {
+		    hdxAV.nextAction = "notSameSide";
+		}
+		else {
+		    // draw as the positive or negative color
+		    if (thisAV.checkVal < 0) {
+			updateMarkerAndTable(thisAV.hullvtest,
+					     thisAV.visualSettings.checkedNegative,
+					     20, false);
+		    }
+		    else {
+			updateMarkerAndTable(thisAV.hullvtest,
+					     thisAV.visualSettings.checkedPositive,
+					     20, false);
+		    }
+		    hdxAV.nextAction = "vtestforLoopTop";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Checking if " + thisAV.hullvtest +
+		    " is on the same side as previously checked points";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "notSameSide",
+	    comment: "found a point on the opposite side of the line segment",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
-
-		hdxAV.nextAction = "DONE";
+		if (thisAV.checkVal > 0) {
+		    highlightPseudocode(this.label, thisAV.visualSettings.checkedNegative);
+		}
+		else {
+		    highlightPseudocode(this.label, thisAV.visualSettings.checkedPositive);
+		}
+		thisAV.eliminated = true;
+		hdxAV.nextAction = "checkEliminated";
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Point #" + thisAV.hullvtest +
+		    "is on the opposite side as previous point, discarding segment";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "checkEliminated",
+	    comment: "end of loop over all checks for this candidate segment",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
+		highlightPseudocode(this.label, visualSettings.visiting);
 
-		hdxAV.nextAction = "DONE";
+		// restore coloring
+		// mark all as unvisited except v1 and v2
+		for (var i = 0; i < waypoints.length; i++) {
+		    if (i != thisAV.hullv1 && i != thisAV.hullv2) {
+			updateMarkerAndTable(i, visualSettings.undiscovered);
+		    }
+		}
+		// restore coloring of hull segment endpoints
+		for (var i = 0; i < thisAV.hull.length; i++) {
+		    updateMarkerAndTable(i, thisAV.visualSettings.hullComponent);
+		}
+
+		if (thisAV.eliminated) {
+		    // remove the current segment from the map
+		    thisAV.currentSegment.remove();
+		    hdxAV.nextAction = "v2forLoopTop";
+		}
+		else {
+		    hdxAV.nextAction = "addToHull";
+		}
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Checking if " + thisAV.currentSegmentString() +
+		    " has been eliminated";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "addToHull",
+	    comment: "add current segment to the convex hull",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
+		highlightPseudocode(this.label, thisAV.visualSettings.hullComponent);
+		// add to hull
+		if (!thisAV.hull.includes(thisAV.hullv1)) {
+		    updateMarkerAndTable(thisAV.hullv1,
+					 thisAV.visualSettings.hullComponent,
+					 20, false);
+		    thisAV.hull.push(thisAV.hullv1);
+		}
+		if (!thisAV.hull.includes(thisAV.hullv2)) {
+		    updateMarkerAndTable(thisAV.hullv2,
+					 thisAV.visualSettings.hullComponent,
+					 20, false);
+		    thisAV.hull.push(thisAV.hullv2);
+		}
 
-		hdxAV.nextAction = "DONE";
+		// color current segment and remember as part of the hull
+		thisAV.hullSegments.push(thisAV.currentSegment);
+		thisAV.currentSegment.setStyle({
+		    color: thisAV.visualSettings.hullComponent.color
+		});
+		updateAVControlEntry("hullsegments",
+				     thisAV.hullSegments.length +
+				     " hull segments found");
+		hdxAV.nextAction = "v2forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
 		return "TBD";
