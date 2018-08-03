@@ -3821,8 +3821,8 @@ var hdxBFConvexHullAV = {
 		hdxAV.nextAction = "vtestforLoopTop";
 	    },
 	    logMessage: function(thisAV) {
-		return "Computed coefficients of line connecting #" +
-		    thisAV.hullv1 + " and #" + thisAV.hullv2;
+		return "Computed coefficients of " +
+		    thisAV.currentSegmentString();
 	    }
 	},
 	{
@@ -4107,19 +4107,23 @@ var hdxBFConvexHullAV = {
 		hdxAV.nextAction = "v2forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Added " + thisAV.currentSegmentString() +
+		    " to hull";
 	    }
 	},
 	{
-	    label: "",
-	    comment: "TBD",
+	    label: "cleanup",
+	    comment: "Clean up and finalize visualization",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, vs);
 
+		updateAVControlEntry("hullv1", "");
+		updateAVControlEntry("hullv2", "");
+		updateAVControlEntry("hullvtest", "");
+		updateAVControlEntry("checkingLine", "");
 		hdxAV.nextAction = "DONE";
 	    },
 	    logMessage: function(thisAV) {
-		return "TBD";
+		return "Clean up and finalize visualization";
 	    }
 	},
     ],
