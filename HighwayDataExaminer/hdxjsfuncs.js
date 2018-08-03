@@ -3645,6 +3645,10 @@ var hdxBFConvexHullAV = {
     b: 0,
     c: 0,
 
+    // algorithm statistics
+    segmentsConsidered: 0,
+    checkValComputations: 0,
+
     // additional variables needed for search to determine if a
     // segment is part of the hull
     eliminated: false,
@@ -3717,6 +3721,17 @@ var hdxBFConvexHullAV = {
 	    this.hullv2;
     },
 
+    // update the stats panel entry with latest counts
+    updateStatsEntry() {
+
+	let avg = (this.checkValComputations*1.0/this.segmentsConsidered).toFixed(1);
+	updateAVControlEntry("stats",
+			     "Considered " + this.segmentsConsidered +
+			     " segments<br />Checked " +
+			     this.checkValComputations +
+			     " points, average of " + avg + " per segment");
+    },
+
     // format a table row with waypoint i for the display of entries
     // at the end
     hullTableRow(i) {
@@ -3735,6 +3750,7 @@ var hdxBFConvexHullAV = {
 		highlightPseudocode(this.label, visualSettings.visiting);
 		
 		updateAVControlEntry("hullsegments", "No hull segments found yet");
+		updateAVControlEntry("stats", "No segments considered yet");
 
 
 		hdxAV.iterationDone = true;
@@ -3816,6 +3832,10 @@ var hdxBFConvexHullAV = {
 				     thisAV.b.toFixed(3) + "*lng = " +
 				     thisAV.c.toFixed(3));
 
+		// record this segment being checked
+		thisAV.segmentsConsidered++;
+		thisAV.updateStatsEntry();
+		
 		// additional search variables to help determine if
 		// this pair is part of the hull
 		thisAV.eliminated = false;
@@ -3874,6 +3894,11 @@ var hdxBFConvexHullAV = {
 		let pointvtest = waypoints[thisAV.hullvtest];
 		thisAV.checkVal = thisAV.a * pointvtest.lon +
 		    thisAV.b * pointvtest.lat - thisAV.c;
+
+		// count this checkVal computation
+		thisAV.checkValComputations++;
+		thisAV.updateStatsEntry();
+		
 		hdxAV.nextAction = "isCheckVal0";
 	    },
 	    logMessage: function(thisAV) {
@@ -4208,6 +4233,7 @@ var hdxBFConvexHullAV = {
 	hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.algOptions.innerHTML = '';
 	addEntryToAVControlPanel("hullsegments", this.visualSettings.hullComponent);
+	addEntryToAVControlPanel("stats", visualSettings.pseudocodeDefault);
 	addEntryToAVControlPanel("hullv1", this.visualSettings.hullv1);
 	addEntryToAVControlPanel("hullv2", this.visualSettings.hullv2);
 	addEntryToAVControlPanel("hullvtest", this.visualSettings.hullvtest);
