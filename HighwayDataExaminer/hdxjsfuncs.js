@@ -4047,6 +4047,7 @@ var hdxBFConvexHullAV = {
 	    label: "notSameSide",
 	    comment: "found a point on the opposite side of the line segment",
 	    code: function(thisAV) {
+		highlightPseudocode(this.label, thisAV.visualSettings.mismatch);
 
 		thisAV.eliminated = true;
 		hdxAV.nextAction = "checkEliminated";
