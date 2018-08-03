@@ -3652,26 +3652,20 @@ var hdxBFConvexHullAV = {
     
     visualSettings: {
         hullv1: {
-            color: "darkRed",
-            textColor: "white",
+            color: "Gold",
+            textColor: "black",
             scale: 6,
 	    name: "hullv1",
 	    value: 0
 	},
         hullv2: {
-            color: "red",
-            textColor: "white",
+            color: "Goldenrod",
+            textColor: "black",
             scale: 6,
 	    name: "hullv2",
 	    value: 0
 	},
-        hullvtest: {
-            color: "pink",
-            textColor: "black",
-            scale: 6,
-	    name: "hullvtest",
-	    value: 0
-	},
+        hullvtest: visualSettings.visiting,
 	discardedv2: {
 	    color: "green",
 	    textColor: "black",
@@ -3680,17 +3674,24 @@ var hdxBFConvexHullAV = {
 	    value: 0
 	},
 	checkedPositive: {
-	    color: "purple",
+	    color: "green",
 	    textColor: "white",
 	    scale: 6,
 	    name: "checkedPositive",
 	    value: 0
 	},
 	checkedNegative: {
-	    color: "violet",
+	    color: "purple",
 	    textColor: "white",
 	    scale: 6,
 	    name: "checkedNegative",
+	    value: 0
+	},
+	mismatch: {
+	    color: "red",
+	    textColor: "white",
+	    scale: 6,
+	    name: "mismatch",
 	    value: 0
 	},
 	hullComponent: visualSettings.spanningTree
@@ -4017,6 +4018,9 @@ var hdxBFConvexHullAV = {
 		     thisAV.checkVal < 0) ||
 		    (thisAV.lookingFor == "NEGATIVE" &&
 		     thisAV.checkVal > 0)) {
+		    updateMarkerAndTable(thisAV.hullvtest,
+					 thisAV.visualSettings.mismatch,
+					 20, false);
 		    hdxAV.nextAction = "notSameSide";
 		}
 		else {
@@ -4043,12 +4047,7 @@ var hdxBFConvexHullAV = {
 	    label: "notSameSide",
 	    comment: "found a point on the opposite side of the line segment",
 	    code: function(thisAV) {
-		if (thisAV.checkVal > 0) {
-		    highlightPseudocode(this.label, thisAV.visualSettings.checkedNegative);
-		}
-		else {
-		    highlightPseudocode(this.label, thisAV.visualSettings.checkedPositive);
-		}
+
 		thisAV.eliminated = true;
 		hdxAV.nextAction = "checkEliminated";
 	    },
