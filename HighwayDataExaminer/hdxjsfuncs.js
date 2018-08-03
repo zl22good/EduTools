@@ -3623,10 +3623,13 @@ var hdxBFConvexHullAV = {
 	'</table>',
 
     // the list of points in the convex hull being computed
-    hull: [],
+    hullPoints: [],
 
     // the list of Polylines that make up the hull so far
     hullSegments: [],
+
+    // the list of segments by endpoints that make up the hull
+    hullSegmentEndpoints: [],
 
     // the v1, v2, and btest loop indices for our deconstructed nested loop
     hullv1: 0,
@@ -3711,6 +3714,15 @@ var hdxBFConvexHullAV = {
 
 	return "segment connecting #" + this.hullv1 + " and #" +
 	    this.hullv2;
+    },
+
+    // format a table row with waypoint i for the display of entries
+    // at the end
+    hullTableRow(i) {
+
+	return '<tr><td>' + i + '</td><td>' + waypoints[i].label +
+	    '</td><td>(' + waypoints[i].lat + ',' + waypoints[i].lon +
+	    ')</td></tr>';
     },
 
     // the actions that make up the brute-force convex hull
@@ -4054,13 +4066,12 @@ var hdxBFConvexHullAV = {
 		// restore coloring
 		// mark all as unvisited except v1 and v2
 		for (var i = 0; i < waypoints.length; i++) {
-		    if (i != thisAV.hullv1 && i != thisAV.hullv2) {
-			updateMarkerAndTable(i, visualSettings.undiscovered);
-		    }
+		    updateMarkerAndTable(i, visualSettings.undiscovered);
 		}
 		// restore coloring of hull segment endpoints
-		for (var i = 0; i < thisAV.hull.length; i++) {
-		    updateMarkerAndTable(i, thisAV.visualSettings.hullComponent);
+		for (var i = 0; i < thisAV.hullPoints.length; i++) {
+		    updateMarkerAndTable(thisAV.hullPoints[i],
+					 thisAV.visualSettings.hullComponent);
 		}
 
 		if (thisAV.eliminated) {
@@ -4083,20 +4094,22 @@ var hdxBFConvexHullAV = {
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, thisAV.visualSettings.hullComponent);
 		// add to hull
-		if (!thisAV.hull.includes(thisAV.hullv1)) {
+		if (!thisAV.hullPoints.includes(thisAV.hullv1)) {
 		    updateMarkerAndTable(thisAV.hullv1,
 					 thisAV.visualSettings.hullComponent,
 					 20, false);
-		    thisAV.hull.push(thisAV.hullv1);
+		    thisAV.hullPoints.push(thisAV.hullv1);
 		}
-		if (!thisAV.hull.includes(thisAV.hullv2)) {
+		if (!thisAV.hullPoints.includes(thisAV.hullv2)) {
 		    updateMarkerAndTable(thisAV.hullv2,
 					 thisAV.visualSettings.hullComponent,
 					 20, false);
-		    thisAV.hull.push(thisAV.hullv2);
+		    thisAV.hullPoints.push(thisAV.hullv2);
 		}
 
 		// color current segment and remember as part of the hull
+		thisAV.hullSegmentEndpoints.push([thisAV.hullv1,
+						  thisAV.hullv2]);
 		thisAV.hullSegments.push(thisAV.currentSegment);
 		thisAV.currentSegment.setStyle({
 		    color: thisAV.visualSettings.hullComponent.color
@@ -4120,7 +4133,46 @@ var hdxBFConvexHullAV = {
 		updateAVControlEntry("hullv2", "");
 		updateAVControlEntry("hullvtest", "");
 		updateAVControlEntry("checkingLine", "");
+
+		// build table of points in order along the hull
+		let table = '<table class="gratable"><thead>' +
+		    '<tr style="text-align:center"><th>#</th><th>Label</th><th>Coordinates</th></tr></thead><tbody>';
+
+		// grab the two endpoints from the last segment that
+		// was added to get started
+		let lastSegment = thisAV.hullSegmentEndpoints.pop();
+		table += thisAV.hullTableRow(lastSegment[0]) +
+		    thisAV.hullTableRow(lastSegment[1]);
+		let connectTo = lastSegment[1];
+		
+		// now search for ones connected around the loop
+		while (thisAV.hullSegmentEndpoints.length > 0) {
+		    for (let i = thisAV.hullSegmentEndpoints.length-1;
+			 i >= 0; i--) {
+			let segment = thisAV.hullSegmentEndpoints[i];
+			if (segment[0] == connectTo) {
+			    // we want to add segment[1]
+			    table += thisAV.hullTableRow(segment[1]);
+			    connectTo = segment[1];
+			    thisAV.hullSegmentEndpoints.splice(i, 1);
+			}
+			else if (segment[1] == connectTo) {
+			    // we want to add segment[0]
+			    table += thisAV.hullTableRow(segment[0]);
+			    connectTo = segment[0];
+			    thisAV.hullSegmentEndpoints.splice(i, 1);
+			}
+		    }
+		}
+
+		table += '</tbody></table>';
+		updateAVControlEntry("hullsegments",
+				     thisAV.hullSegments.length +
+				     " hull segments found<br />" +
+				    table);
+
 		hdxAV.nextAction = "DONE";
+		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
 		return "Clean up and finalize visualization";
