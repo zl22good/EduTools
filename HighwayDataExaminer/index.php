@@ -314,8 +314,12 @@ tr.pseudocode {
 	display: none;
 }
 #algControlsPanel{
-	border: 1px solid black;
+border: 1px solid black;
+left: 5px;
+position: absolute;
+z-index: 10000;
 }
+
 #selected{
 	display: none;
 }
@@ -440,12 +444,18 @@ tr.pseudocode {
 <div id="algorithmControls2" style="display=none;">
   <table id="algControlsPanel" style="display=none;" class="gratable">
     <thead>
-      <tr><th>Algorithm Options</th></tr>
+      <tr><th>Algorithm Visualization Selection and Options</th></tr>
     </thead>
     <tbody>
+      <tr><td><p>To perform an algorithm visualization on
+	  the data currently displayed, choose an algorithm and the
+	  options you would like to use, then press "Done".<br />  To
+	  explore the data on the map manually, you can dismiss this
+	  panel with the "Dismiss Algorithm Options" button.</p>
+      </td></tr>
       <tr>
 	<td>
-	  Algorithm to Visualize:
+	  Select an Algorithm to Visualize:
 	  <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
 	    <!-- filled in with options by JS code in hdxAV.initOnLoad() -->
 	  </select>
@@ -459,7 +469,7 @@ tr.pseudocode {
       <tr>
 	<td>
 	  <input type="button" value="Done" id="algOptionsDone" onClick="hideAlgorithmControls()" disabled>
-	  <input type="button" value="Dismiss Options" id="algoOptionsDismiss" onClick="hideAlgorithmControlsOnDismiss()">
+	  <input type="button" value="Dismiss Algorithm Options" id="algoOptionsDismiss" onClick="hideAlgorithmControlsOnDismiss()">
 	</td>
       </tr>
     </tbody>
