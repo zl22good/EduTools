@@ -350,15 +350,10 @@ tr.pseudocode {
 	z-index: 11000;
 	display: none;
 }
-
-
-
-
-
-
 </style>
 </head>
-<body onload="loadmap(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
+
+<body onload="loadmap(); getDescriptions(); getGraphs(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
 <p class="menubar">
   HDX: <span id="startUp">Select data to display using the controls in the upper left</span>
   <span id="filename">Select a file to display </span>

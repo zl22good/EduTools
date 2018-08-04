@@ -5617,7 +5617,6 @@ var substringMatcher = function(strs) {
     };
 };
 
-
 function returnInput() {
     
     var input = document.getElementById("searchBox").value;
@@ -5644,8 +5643,6 @@ function getDescriptions(){
     xmlhttp.send();
 }
 
-getDescriptions();
-
 // Make a new ajax request for the graphs object created in php
 var graphs = {};
 function getGraphs(){
@@ -5660,7 +5657,6 @@ function getGraphs(){
     xmlhttp.open("GET", "jsLoadDataGraphs.php", true);
     xmlhttp.send();
 }
-getGraphs();
 
 var appendCount = 0;
 
