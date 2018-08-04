@@ -380,34 +380,34 @@ tr.pseudocode {
 </p>
 <div id="algorithmControls3">
 <form onclick= clearForm(this.form)>
-	<table id="newAlgControls">
-			<tbody>
-				<tr>
-					<td id="speedtr">
-						<button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
-						<select id="speedChanger" onchange="speedChanged()">
-						<option value="0">Run To Completion</option>
-						  <option value="1">Fastest possible</option>
-						  <option value="5">Extremely fast</option>
-						  <option value="20">Very fast</option>
-						  <option value="50" selected>Fast</option>
-						  <option value="100">Medium speed</option>
-						  <option value="250">Pretty slow</option>
-						  <option value="500">Slow</option>
-						  <option value="1000">Painfully slow</option>
-						  <option value="-1">Step</option>
-						</select>
-					</td>
-					<td>
-						<input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br>
-					</td>
-					<td>
-						<input type="button" value="Reset AV" onClick="clearForm(this.form)"/>
-						<input type="button" value="Load Options" id="searchBarShow" onClick="ShowSearchBar()"/>
-					</td>
-				</tr>
-			</tbody>
-	</table>
+  <table id="newAlgControls">
+    <tbody>
+      <tr>
+	<td id="speedtr">
+	  <button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
+	  <select id="speedChanger" onchange="speedChanged()">
+	    <option value="0">Run To Completion</option>
+	    <option value="1">Fastest possible</option>
+	    <option value="5">Extremely fast</option>
+	    <option value="20">Very fast</option>
+	    <option value="50" selected>Fast</option>
+	    <option value="100">Medium speed</option>
+	    <option value="250">Pretty slow</option>
+	    <option value="500">Slow</option>
+	    <option value="1000">Painfully slow</option>
+	    <option value="-1">Step</option>
+	  </select>
+	</td>
+	<td>
+	  <input id="pseudoCheckbox" type="checkbox" name="Show selected algorithm pseudocode" onclick="showHidePseudocode()" >&nbsp;Pseudocode<br>
+	</td>
+	<td>
+	  <input id="resetButton" type="button" value="Reset AV" onClick="clearForm(this.form)"/>
+	  <input id="loadOptionsButton" type="button" value="Load Options" id="searchBarShow" onClick="ShowSearchBar()"/>
+	</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 <div id="map">
 </div>

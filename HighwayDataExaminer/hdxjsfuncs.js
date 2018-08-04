@@ -135,32 +135,6 @@ var hdxAV = {
 		'">' + av.name + '</option>';
 	}
 
-	/* // make the "selected" div resizable, was function makeResize()
-	$( "#selected" ).resizable();
-	var div = document.createElement("div");
-	div.setAttribute("id", "resize");
-	document.getElementById("selected").appendChild(div);
-	$( "#contents_table" ).resizable(); */
-
-	// initalize table for upper right side dropdown
-	//toggleTable();
-
-	// set up main area, was function mainArea()
-	//var main = document.createElement("div");
-	//main.setAttribute("id", "main");
-	//main.appendChild(document.getElementById("map"));
-	//main.appendChild(document.getElementById("togglecontents_table"));
-	//main.appendChild(document.getElementById("distUnits"));
-	//main.appendChild(document.getElementById("selected"));
-	//main.appendChild(document.getElementById("options"));
-	//main.appendChild(document.getElementById("pointbox"));
-	//main.appendChild(document.getElementById("AlgorithmVisualization"));
-	//main.appendChild(document.getElementById("controlbox"));
-	//main.appendChild(document.getElementById("contents_table"));
-	//main.appendChild(document.getElementById("panelBtn"));
-	//main.appendChild(document.getElementById("toggleselected"));
-	//document.body.appendChild(main);
-
 	// set up some references to commonly-used document elements
 	this.algStat = document.getElementById("algorithmStatus");
 	this.algOptions = document.getElementById("algorithmOptions");
