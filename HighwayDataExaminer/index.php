@@ -111,17 +111,6 @@ ENDOFSTUFF;
 <link rel="stylesheet" type="text/css" href="http://travelmapping.net/css/travelMapping.css"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style type="text/css">
-#controlbox {
-  width: 25%;*/
-  position: fixed;
-  top:50px;
-  bottom:100px;
-  height:100%;
-  left:400px;
-  right:0px;
-  overflow:auto;
-  padding:5px;
-}
 #map {
   position: absolute;
   top: 25px;
@@ -419,90 +408,81 @@ tr.pseudocode {
 	<option value="meters">Meters</option>
 </select>
 -->
-	<div id="searchTest">
-	<form name="algVis" action="#">
-		<table id="searchTable" class="gratable">
-			<thead>
-				<tr><th>Load Data:</th></tr>
-			</thead>
-			<tbody id="AVControlPanel">
-			<tr>
-				
-				<td>
-				Search for a graph:
-						<div id="the-basics">
-						  <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
-						  
-						</div>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<div>
-						<?php hdx_load_file_entries(); ?>
-					</div>
-				</td>
-			</tr>
-			
-	  
-			<tr><td id="hideButtonRow"> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled></td></tr>
-			</tbody>
-		</table>
-	</div>
-	<div id="algorithmControls2" style="display=none;">
-		<table id="algControlsPanel" style="display=none;" class="gratable">
-			<thead>
-				<tr><th>Algorithm Options</th></tr>
-			</thead>
-			<tbody>
-			<tr>
-			<td>
-				Algorithm to Visualize:
-			<select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
-		<!-- filled in with options by JS code in hdxAV.initOnLoad() -->
-			</select>
-
-      </td>
-			</tr>
-				<tr>
-					<td id="algorithmOptions"></td>
-					
-				</tr>
-				<tr>
-					<td>
-						<input type="button" value="Done" id="algOptionsDone" onClick="hideAlgorithmControls()" disabled>
-						<input type="button" value="Dismiss Options" id="algoOptionsDismiss" onClick="hideAlgorithmControlsOnDismiss()">
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+<div id="searchTest">
+  <form name="algVis" action="#">
+    <table id="searchTable" class="gratable">
+      <thead>
+	<tr><th>Load Data:</th></tr>
+      </thead>
+      <tbody id="AVControlPanel">
+	<tr>
+	  <td>
+	    Search for a graph:
+	    <div id="the-basics">
+	      <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
+	      
+	    </div>
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    <div>
+	      <?php hdx_load_file_entries(); ?>
+	    </div>
+	  </td>
+	</tr>
 	
-	<div id="algStats">
-		<table id="algStatsTable" class="gratable">
-			<thead><tr><th>Algorithm Visualization Information</th></tr><thead>
-			<tbody id="algorithmVars">
-			<tr><td id="algorithmStatus"></td></tr>
-			<tr><td id="pseudo">
-						<span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span>
-					</td>
-			</tr>
-			</tbody>
-		</table>
-	</div>
+	
+	<tr><td id="hideButtonRow"> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled></td></tr>
+      </tbody>
+    </table>
+</div>
+<div id="algorithmControls2" style="display=none;">
+  <table id="algControlsPanel" style="display=none;" class="gratable">
+    <thead>
+      <tr><th>Algorithm Options</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+	<td>
+	  Algorithm to Visualize:
+	  <select id="AlgorithmSelection" onchange="algorithmSelected()" disabled>
+	    <!-- filled in with options by JS code in hdxAV.initOnLoad() -->
+	  </select>
+	  
+	</td>
+      </tr>
+      <tr>
+	<td id="algorithmOptions"></td>
+	
+      </tr>
+      <tr>
+	<td>
+	  <input type="button" value="Done" id="algOptionsDone" onClick="hideAlgorithmControls()" disabled>
+	  <input type="button" value="Dismiss Options" id="algoOptionsDismiss" onClick="hideAlgorithmControlsOnDismiss()">
+	</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-    <div id="controlbox" style="z-index:2000;">
-        <select id="showHideMenu" onchange="toggleTable();">
-           <!-- <option value="maponly">Map Only</option>-->
-            <option value="options" >Show/Load Map Options</option>
-            <option value="pointbox">Show Highway Data</option>
-            <option value= "AlgorithmVisualization" selected="selected">Show Algorithm Visualization</option>
-          </select>
-
-        </div>
-		</form>
-        <div id="contents_table" draggable="false"  ondragstart="drag(event)">
-        </div>
-        </body>
+<div id="algStats">
+  <table id="algStatsTable" class="gratable">
+    <thead><tr><th>Algorithm Visualization Information</th></tr><thead>
+      <tbody id="algorithmVars">
+	<tr><td id="algorithmStatus"></td></tr>
+	<tr><td id="pseudo">
+	    <span id="pseudoText" style="display:none;">Select an algorithm to view pseudocode.</span>
+	  </td>
+	</tr>
+      </tbody>
+  </table>
+</div>
+  
+</div>
+</form>
+<div id="contents_table" draggable="false"  ondragstart="drag(event)">
+</div>
+</body>
 </html>
 <?php tmdb_close(); ?>
