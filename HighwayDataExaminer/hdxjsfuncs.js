@@ -4590,7 +4590,6 @@ function pointboxErrorMsg(msg) {
 // when a file is selected, this will be called
 function startRead() {
 
-    clearTables();
     // first, retrieve the selected file (as a File object)
     // which must be done before we toggle the table to force
     // the pointbox to be displayed
@@ -4632,7 +4631,7 @@ function startRead() {
 }
 
 function readServer(event) {
-    clearTables();
+
     var index = document.getElementById("graphList").selectedIndex;
     var value = document.getElementById("graphList").options[index].value;
     
@@ -4685,7 +4684,6 @@ function readServer(event) {
 
 function readServerSearch(file)
 {
-	//clearTables();
 	var tmgFile = file;
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function() {
@@ -4791,14 +4789,8 @@ function processContents(fileContents) {
 	showAlgorithmControls();
     }
     
-    // document.getElementById('pointbox').innerHTML = pointboxContents;
-    var newEle = document.createElement("div");
-    newEle.setAttribute("id", "newEle");
-    newEle.innerHTML = pointboxContents;
-    document.getElementById('contents_table').appendChild(newEle);
-    //createDataTable("#waypoints");
-    //createDataTable("#connection");
-	hideSearchBar();
+    document.getElementById('contents_table').innerHTML = pointboxContents;
+    hideSearchBar();
     updateMap();
 	/* if(algSelectFlag == false)
 	{
@@ -4873,27 +4865,6 @@ function fillGraphList(e) {
 	    }
 	}
     });
-}
-
-function clearTables() {
-    if ($("#waypoints").length != 0) {
-	document.getElementById("waypoints_wrapper").parentNode.parentNode.removeChild(document.getElementById("waypoints_wrapper").parentNode);
-    }
-    if ($("#connection").length!=0) {
-	document.getElementById("connection_wrapper").parentNode.parentNode.removeChild(document.getElementById("connection_wrapper").parentNode);
-    }
-}
-
-function createDataTable(id) {
-
-    if ($(id).length > 0) {
-	$(id).dataTable({
-	    "destroy":true,
-	    "paging":false,
-	    "searching":false,
-	    "info":false
-	});
-    }	
 }
 
 // in case we get an error from the FileReader
