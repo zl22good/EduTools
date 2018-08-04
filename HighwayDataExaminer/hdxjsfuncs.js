@@ -4694,32 +4694,8 @@ function fileLoaded(event) {
     processContents(event.target.result);
 }
 
-// event handler for "Show Load Options" button
-// which replaces it with the load options panels
-function undoCollapse(event) {
-    var container = event.target.parentNode;
-    var clss = "."+container.id.substring(0,container.id.indexOf("btn"));
-    var elems = document.querySelectorAll(clss);
-    for (var i = 0; i < elems.length; i++) {
-	elems[i].style.display = "";
-    }
-    container.style.display = "none";
-}
-
-// function to hide the load options and show the "Show Load Options"
-// button in the AV control panel
-function collapseElements(clss) {
-    var elems = document.querySelectorAll("."+clss);
-    var btn = document.getElementById(clss+"btn");
-    for (var i = 0; i < elems.length; i++) {
-	elems[i].style.display = "none";
-    }
-    btn.style.display = "";
-}
-
 // process the contents of a String which came from a file or elsewhere
 function processContents(fileContents) {
-    collapseElements("loadcollapse");
     
     // place the contents into the file contents area (will improve later)
     // document.getElementById('pointbox').innerHTML = "<pre>" + fileContents + "</pre>";

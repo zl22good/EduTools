@@ -55,7 +55,7 @@
 function hdx_load_file_entries() {
   echo <<<ENDOFSTUFF
 		<tr><td id="selects" class="loadcollapse">
-		Load METAL graph: (select filters then press "Get Graph List") <br>
+		<b>Option 2: </b> Load METAL graph: (select filters then press "Get Graph List") <br>
 		Sort criteria:
 		<select id = "orderOptions">
 			<option value = "alpha">Alphabetical</option>
@@ -91,12 +91,9 @@ ENDOFSTUFF;
 		<br>
 		<input type="button" value="Get Graph List" onclick="fillGraphList(event)">
 	  </td>
-	  <td id="loadcollapsebtn" style="display:none;">
-		<input type="button" onclick="undoCollapse(event)" value="Show Load Options">
-	  </td>
 	  </tr>	  
       <tr><td class="loadcollapse">
-		or upload file:
+	  <b>Option 3:</b> Upload file from your computer:<br />
         <input id="filesel" type="file"  value="Start" onchange="startRead()">
       </td></tr>
 ENDOFSTUFF;
@@ -355,8 +352,8 @@ tr.pseudocode {
 
 <body onload="loadmap(); getDescriptions(); getGraphs(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
 <p class="menubar">
-  HDX: <span id="startUp">Select data to display using the controls in the upper left</span>
-  <span id="filename">Select a file to display </span>
+  HDX: <span id="startUp">To begin, select data to display using the Load Data panel at the upper left of the map</span>
+  <span id="filename"></span>
   <span id="status"></span>
   <span id="currentAlgorithm"></span>
 </p>
@@ -408,13 +405,21 @@ tr.pseudocode {
 	<tr><th>Load Data:</th></tr>
       </thead>
       <tbody id="AVControlPanel">
+	<tr><td>
+	    Use this panel to load one of METAL's graphs right
+	    from METAL's database (Options 1 and 2),<br />
+	    or any data file
+	    in a format recognized by HDX from your computer (Option
+	    3).
+	</td></tr>
 	<tr>
 	  <td>
-	    Search for a graph:
+	    <b>Option 1: </b>Search for a METAL graph by name (start typing in the box below for suggestions):
 	    <div id="the-basics">
 	      <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
 	      
 	    </div>
+	    Once you have selected a graph from the list of suggestions, press Enter to load it.
 	  </td>
 	</tr>
 	<tr>
