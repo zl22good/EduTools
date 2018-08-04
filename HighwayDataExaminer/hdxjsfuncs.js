@@ -3647,6 +3647,7 @@ var hdxBFConvexHullAV = {
 
     // algorithm statistics
     segmentsConsidered: 0,
+    checkValThisSegment: 0,
     checkValComputations: 0,
 
     // additional variables needed for search to determine if a
@@ -3730,6 +3731,13 @@ var hdxBFConvexHullAV = {
 			     " segments<br />Checked " +
 			     this.checkValComputations +
 			     " points, average of " + avg + " per segment");
+	let segCheck = document.getElementById("segmentCheckValCount");
+	if (this.checkValThisSegment == 1) {
+	    segCheck.innerHTML = "Checked 1 point";
+	}
+	else {
+	    segCheck.innerHTML = "Checked " + this.checkValThisSegment + " points";
+	}
     },
 
     // format a table row with waypoint i for the display of entries
@@ -3755,6 +3763,9 @@ var hdxBFConvexHullAV = {
 
 		hdxAV.iterationDone = true;
 		thisAV.hullv1 = -1;  // will increment to 0
+		thisAV.segmentsConsidered = 0;
+		thisAV.checkValComputations = 0;
+		
 		hdxAV.nextAction = "v1forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
@@ -3830,10 +3841,12 @@ var hdxBFConvexHullAV = {
 				     "Considering line: " +
 				     thisAV.a.toFixed(3) + "*lat + " +
 				     thisAV.b.toFixed(3) + "*lng = " +
-				     thisAV.c.toFixed(3));
+				     thisAV.c.toFixed(3) +
+				    '<br /><span id="segmentCheckValCount">Checked 0 points</span>');
 
 		// record this segment being checked
 		thisAV.segmentsConsidered++;
+		thisAV.checkValThisSegment = 0;
 		thisAV.updateStatsEntry();
 		
 		// additional search variables to help determine if
@@ -3897,6 +3910,7 @@ var hdxBFConvexHullAV = {
 
 		// count this checkVal computation
 		thisAV.checkValComputations++;
+		thisAV.checkValThisSegment++;
 		thisAV.updateStatsEntry();
 		
 		hdxAV.nextAction = "isCheckVal0";
@@ -4110,7 +4124,8 @@ var hdxBFConvexHullAV = {
 	    },
 	    logMessage: function(thisAV) {
 		return "Checking if " + thisAV.currentSegmentString() +
-		    " has been eliminated";
+		    " has been eliminated after " +
+		    thisAV.checkValThisSegment + " points";
 	    }
 	},
 	{
