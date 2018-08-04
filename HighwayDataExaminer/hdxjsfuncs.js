@@ -59,7 +59,7 @@ var hdxAV = {
     previousAlgorithm: null,
 
     // are we tracing psuedocode?
-    traceCode: false,
+    traceCode: true,
 
     // track the end of an iteration defined by a series of actions
     iterationDone: false,
@@ -5481,6 +5481,7 @@ function selectAlgorithmAndStart() {
     hdxAV.currentAV.start();
     // set pseudocode
     document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
+    showHidePseudocode();
 }
 
 function showLegend() {

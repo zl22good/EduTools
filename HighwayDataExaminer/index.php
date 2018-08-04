@@ -388,7 +388,7 @@ tr.pseudocode {
 	  </select>
 	</td>
 	<td>
-	  <input id="pseudoCheckbox" type="checkbox" name="Pseudocode-level AV" onclick="showHidePseudocode()" >&nbsp;Trace Pseudocode<br>
+	  <input id="pseudoCheckbox" type="checkbox" name="Pseudocode-level AV" checked onclick="showHidePseudocode()" >&nbsp;Trace Pseudocode<br>
 	</td>
 	<td>
 	  <input id="resetButton" type="button" value="Reset AV" onClick="clearForm(this.form)"/>
