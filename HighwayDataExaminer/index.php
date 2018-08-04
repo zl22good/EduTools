@@ -296,7 +296,7 @@ tr.pseudocode {
 #boxContainer{
 	padding-left: 30px;
 }
-#searchTest{
+#loadDataPanel{
 	top: 100px;
 	margin: auto;
 	background-color: white; 
@@ -408,7 +408,7 @@ tr.pseudocode {
 	<option value="meters">Meters</option>
 </select>
 -->
-<div id="searchTest">
+<div id="loadDataPanel">
   <form name="algVis" action="#">
     <table id="searchTable" class="gratable">
       <thead>

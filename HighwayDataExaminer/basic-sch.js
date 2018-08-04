@@ -92,11 +92,11 @@ function hideTopAlgControls()
 }
 
 function hideSearchBar(){
-	document.getElementById("searchTest").style.display ="none";
+	document.getElementById("loadDataPanel").style.display ="none";
 }
 function ShowSearchBar()
 {
-	document.getElementById("searchTest").style.display = "table";
+	document.getElementById("loadDataPanel").style.display = "table";
 	document.getElementById("hideSearchBar").disabled=false;
 	//document.getElementById("hideButtonRow").display="table-cell";
 }
