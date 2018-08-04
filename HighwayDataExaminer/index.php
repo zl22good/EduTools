@@ -373,9 +373,6 @@ tr.pseudocode {
 </head>
 <body onload="loadmap(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
 <p class="menubar">
-  <span id="panelBtn" title="Menu" onclick="openSidePanel()">
-     <i id="menuIcon" class="material-icons">menu</i>
-  </span>
   HDX: <span id="startUp">Select data to display using the controls in the upper left</span>
   <span id="filename">Select a file to display </span>
   <span id="status"></span>

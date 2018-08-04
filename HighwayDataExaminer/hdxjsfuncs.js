@@ -145,9 +145,6 @@ var hdxAV = {
 	// initalize table for upper right side dropdown
 	//toggleTable();
 
-	// set up side panel
-	sidePanel();
-
 	// set up main area, was function mainArea()
 	//var main = document.createElement("div");
 	//main.setAttribute("id", "main");
@@ -4552,103 +4549,6 @@ function HDXDisplayVariable(displayLabel,docElement,initVal) {
 
     this.paint();
     return this;
-}
-
-/*
-function createSidePanelBtn() {
-    //Creates the menu icon
-    var showPanel = document.createElement("button");
-    showPanel.setAttribute("id", "panelBtn");
-    showPanel.innerHTML = '<i id="menuIcon" xxxclass="material-icons">menu</i>';
-    showPanel.setAttribute("title", "Menu");
-    showPanel.addEventListener("click", openSidePanel);
-    document.body.appendChild(showPanel);
-}
-*/
-
-var sidePanelContent = ["Legend"];
-function sidePanel() {
-
-    var div = document.createElement("div");
-    div.setAttribute("id", "sidePanel");
-    var xButton = document.createElement("a");
-    xButton.setAttribute("id", "closeButton");
-    xButton.setAttribute("href", "javascript:void(0)");
-    xButton.innerHTML = "&times;";
-    xButton.addEventListener("click", closeSidePanel);
-    div.appendChild(xButton);
-    for (var i = 0; i < sidePanelContent.length; i++) {
-	var contentArea = document.createElement("div");
-	contentArea.setAttribute("id", "contentArea_" + sidePanelContent[i]);
-	
-	var panelContentLabels = document.createElement("a");
-	panelContentLabels.setAttribute("id", sidePanelContent[i]);
-	panelContentLabels.innerHTML = sidePanelContent[i];
-	contentArea.appendChild(panelContentLabels);
-	div.appendChild(contentArea);
-    }
-    div.appendChild(TOSLabel());
-    document.body.appendChild(div);
-}
-
-function openSidePanel() {
-
-    if (document.getElementById("sidePanel") != null) {
-	document.getElementById("sidePanel").style.width = "250px";
-	document.getElementById("main").style.marginLeft = "250px";
-    }
-}
-
-function closeSidePanel() {
-
-    document.getElementById("sidePanel").style.width = "0";
-    document.getElementById("main").style.marginLeft= "0";
-}
-
-var legendArray = [
-    "undiscovered",
-    "visiting",
-    "leader",
-    "discarded",
-    "northLeader",
-    "southLeader",
-    "eastLeader",
-    "westLeader",
-    "shortLabelLeader",
-    "longLabelLeader",
-    "startVertex",
-    "discoveredEarlier",
-    "visitedEarlier",
-    "spanningTree",
-    "discovered",
-    "hoverV",
-    "hullK",
-    "hullI"
-];
-
-function legendArea(vis) {
-    var legendDiv = document.getElementById("contentArea_Legend");
-    for (var i = 0; i < legendArray.length; i++) {
-	if (vis.name == legendArray[i] && vis.name != null) {
-	    if (vis.value == 1) {
-		continue;
-	    }
-	    else {
-		vis.value = 1;
-		var boxContainer = document.createElement("div");
-		boxContainer.setAttribute("id", "boxContainer");
-		var box = document.createElement("div");
-		var label = document.createElement("span");
-		label.setAttribute("id", legendArray[i]);
-		label.innerHTML = legendArray[i];
-		box.setAttribute("class", "box");
-		box.style.backgroundColor =  vis.color;
-		boxContainer.appendChild(box);
-		boxContainer.appendChild(label);
-		legendDiv.appendChild(boxContainer);
-	    }
-	}
-    }
 }
 
 // loadfromqs used to be part of loadmap, likely to be replaced with
