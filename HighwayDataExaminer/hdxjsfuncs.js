@@ -5258,7 +5258,7 @@ function WPTLine2Waypoint(line) {
 	return Waypoint('bad-line', 0, 0);
     }
     var label = xline[0];
-    var url = xline[1];
+    var url = xline[xline.length-1];
     var latlon = Url2LatLon(url);
     return new Waypoint(label, latlon[0], latlon[1], 0, "");
 }
