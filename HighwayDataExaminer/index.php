@@ -302,9 +302,8 @@ tr.pseudocode {
 	z-index: 14000;
 	position: absolute;
 }
-#searchTable{
-	border: 1px solid black;
-	
+#loadDataTable {
+	border: 1px solid black;	
 }
 #searchBox{
 	width: 365px;
@@ -391,7 +390,7 @@ tr.pseudocode {
 	</td>
 	<td>
 	  <input id="resetButton" type="button" value="Reset AV" onClick="clearForm(this.form)"/>
-	  <input id="loadOptionsButton" type="button" value="Load Options" id="searchBarShow" onClick="ShowSearchBar()"/>
+	  <input id="loadOptionsButton" type="button" value="Load Data Options" id="loadDataPanelShow" onClick="showLoadDataPanel()"/>
 	</td>
       </tr>
     </tbody>
@@ -409,7 +408,7 @@ tr.pseudocode {
 -->
 <div id="loadDataPanel">
   <form name="algVis" action="#">
-    <table id="searchTable" class="gratable">
+    <table id="loadDataTable" class="gratable">
       <thead>
 	<tr><th>Load Data:</th></tr>
       </thead>
@@ -432,7 +431,9 @@ tr.pseudocode {
 	</tr>
 	
 	
-	<tr><td id="hideButtonRow"> <input type="button" value="Hide Search Bar" id="hideSearchBar" onClick="hideSearchBar()" disabled></td></tr>
+	<tr><td>
+	    <input type="button" value="Cancel" id="hideLoadDataPanel" onClick="hideLoadDataPanel()" disabled>
+	</td></tr>
       </tbody>
     </table>
 </div>

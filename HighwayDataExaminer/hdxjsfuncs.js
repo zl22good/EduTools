@@ -4764,18 +4764,8 @@ function processContents(fileContents) {
     }
     
     document.getElementById('contents_table').innerHTML = pointboxContents;
-    hideSearchBar();
+    hideLoadDataPanel();
     updateMap();
-	/* if(algSelectFlag == false)
-	{
-		showSearchBar();
-	}
-	else
-	{
-		hideSearchBar();
-	} */
-	
-	
 }
 
 // TODO: make sure maps cannot be selected when an AV is running
@@ -5530,20 +5520,16 @@ function algorithmSelected() {
     if (value != hdxNoAV.value) {
 	hdxAV.setStatus(hdxStates.AV_SELECTED);
 	hdxAV.startPause.disabled = false;
-	hideSearchBar();
-	//showTopAlgControls();
+	hideLoadDataPanel();
 	algSelectFlag=true;
 	document.getElementById('algOptionsDone').disabled=false;
-	//hideAlgorithmControls();
-	//showAlgStats();
-	
     }
-	else{
-		hideSearchBar();
-		showAlgorithmControls();
-		document.getElementById('algOptionsDone').disabled=true;
-	}
-
+    else {
+	hideLoadDataPanel();
+	showAlgorithmControls();
+	document.getElementById('algOptionsDone').disabled=true;
+    }
+    
     // set the current algorithm
     for (var i = 1; i < hdxAV.avList.length; i++) {
 	if (value == hdxAV.avList[i].value) {
@@ -5551,7 +5537,7 @@ function algorithmSelected() {
 	    break;
 	}
     }
-	document.getElementById("currentAlgorithm").innerHTML="Algorithm: " + hdxAV.currentAV.name;
+    document.getElementById("currentAlgorithm").innerHTML="Algorithm: " + hdxAV.currentAV.name;
 
     // call its function to set up its status and options
     hdxAV.currentAV.setupUI();
@@ -5696,14 +5682,13 @@ function hideTopAlgControls() {
     document.getElementById("algorithmControls3").style.display="none";
 }
 
-function hideSearchBar() {
+function hideLoadDataPanel() {
     document.getElementById("loadDataPanel").style.display ="none";
 }
 
-function ShowSearchBar() {
+function showLoadDataPanel() {
     document.getElementById("loadDataPanel").style.display = "table";
-    document.getElementById("hideSearchBar").disabled=false;
-    //document.getElementById("hideButtonRow").display="table-cell";
+    document.getElementById("hideLoadDataPanel").disabled=false;
 }
 
 function hideAlgorithmControls() {
@@ -5765,11 +5750,11 @@ $(document).ready(function(){
 	    readServerSearch(getFile);
 	}
     });
-    $("#hideSearchBar").click(function() {
-	hideSearchBar();
+    $("#hideLoadDataPanel").click(function() {
+	hideLoadDataPanel();
     });
-    $("#searchBarShow").click(function() {
-	ShowSearchBar();
+    $("#loadDataPanelShow").click(function() {
+	showLoadDataPanel();
     });
     $("#algOptionsDone").click(function() {
 	hideAlgorithmControls();
