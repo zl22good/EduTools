@@ -5552,44 +5552,10 @@ function algorithmSelected() {
 	}
     }
 	document.getElementById("currentAlgorithm").innerHTML="Algorithm: " + hdxAV.currentAV.name;
-	/* if(hdxAV.currentAV.name == "Vertex Extremes Search" || hdxAV.currentAV.name == " Edge Extremes Search" || hdxAV.currentAV.name =="Brute-Force Convex Hull")
-	{
-		document.getElementById('algOptionsDone').disabled=false;
-	}
-	else
-	{
-		document.getElementById('algOptionsDone').disabled=true;
-	} */
 
     // call its function to set up its status and options
     hdxAV.currentAV.setupUI();
 }
-
-//function toggleDS() {
-//    if (hdxAV.algStat.style.display == "none") {/
-//	hdxAV.algStat.style.display = "";
-//    }
-//    else {
-//	hdxAV.algStat.style.display = "none";
-//   }
-//}
-
-/* SEEMS TO BE UNUSED
-function selectAlgorithmAndReset() {
-    for (var i = 0; i < connections.length; i++) {
-        connections[i].remove();
-        document.getElementById('connection' + i).style.backgroundColor = "white";
-    }
-    connections = new Array();
-    polypoints = new Array();
-    for (var i = 0; i < markers.length; i++) {
-        markers[i].remove();
-        document.getElementById('waypoint' + i).style.backgroundColor = "white";
-    }
-    markers = new Array();
-    markerinfo = new Array();
-}
-*/
 
 function drag(event) {
     var x = event.target.style.left;
@@ -5616,21 +5582,6 @@ function drop(event) {
 function allowdrop(event) {
     event.preventDefault();
 }   
-
-/* function toggleUI(event) {
-    var button = event.target;
-    var panel1 = document.getElementById(button.id.substring(6));
-    if (button.value.substring(0,4) == "Hide") {
-	button.value = "Show"+ button.value.substring(4);
-	panel1.style.display = "none";
-    }
-    else {
-	button.value = "Hide"+button.value.substring(4);
-	panel1.style.display = "";
-    }
- }
- */
-
 
 // moved to the end for now, until all variables are grouped by algorithm
 function resetVars() {
