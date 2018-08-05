@@ -5488,6 +5488,9 @@ function hideAVStatusPanel() {
     document.getElementById("avStatusPanel").style.display="none";
 }
 
+/* function is currently obsolete, but remains as a starting point
+   for its eventual replacement:
+
 function showLegend() {
     var show = document.getElementById("showLegend").checked;
     var value = getCurrentAlgorithm();
@@ -5517,6 +5520,7 @@ function showLegend() {
         document.getElementById('legends').innerHTML = "";
     }
 }
+*/
 
 // Event handler for state change on the algorithm selection select control
 function algorithmSelected() {
