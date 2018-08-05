@@ -34,7 +34,6 @@ var hdxStates = {
     AV_COMPLETE: 10
 };
 
-var algSelectFlag = false;
 var defaultOptions = true;
 
 
@@ -5529,7 +5528,6 @@ function algorithmSelected() {
 	hdxAV.setStatus(hdxStates.AV_SELECTED);
 	hdxAV.startPause.disabled = false;
 	hideLoadDataPanel();
-	algSelectFlag=true;
 	document.getElementById('algOptionsDone').disabled=false;
     }
     else {
