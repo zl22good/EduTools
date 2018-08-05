@@ -34,9 +34,6 @@ var hdxStates = {
     AV_COMPLETE: 10
 };
 
-var defaultOptions = true;
-
-
 // group of variables used by many or all algorithm visualizations
 var hdxAV = {
     // current state of HDX
