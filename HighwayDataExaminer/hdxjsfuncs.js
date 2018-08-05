@@ -243,7 +243,6 @@ var hdxAV = {
 /**********************************************************************
  * General AV functions
  **********************************************************************/
-// speedChanger dropdown callback
 function highlighter (x, color){
     document.getElementById(x).style.color = color;
 }
@@ -297,6 +296,7 @@ function clearForm(f){
     }
 }
 
+// speedChanger dropdown callback
 function speedChanged() {
 
     var speedChanger = document.getElementById("speedChanger");
