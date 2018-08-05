@@ -5442,7 +5442,7 @@ function algOptionsDonePressed() {
 
     hideAlgorithmSelectionPanel();
     showTopControlPanel();
-    showAlgStats();    
+    showAVStatusPanel();
 }
 
 // Functions to show and hide panels that are displayed only
@@ -5478,12 +5478,14 @@ function showAlgorithmSelectionPanel() {
     document.getElementById("algorithmSelectionPanel").style.display="table";
 }
 
-function showAlgStats() {
-    document.getElementById("algStats").style.display="block";
+// the algorithm status panel, including messages, code, data, and
+// other information showing the status of an AV
+function showAVStatusPanel() {
+    document.getElementById("avStatusPanel").style.display="block";
 }
 
-function hideAlgStats() {
-    document.getElementById("algStats").style.display="none";
+function hideAVStatusPanel() {
+    document.getElementById("avStatusPanel").style.display="none";
 }
 
 function showLegend() {

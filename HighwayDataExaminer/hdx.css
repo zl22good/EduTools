@@ -238,7 +238,7 @@ tr.pseudocode {
     display: none;
 }
 
-#algStats {
+#avStatusPanel {
     margin:auto;
     top: 100px;
     z-index: 10000;
@@ -251,7 +251,7 @@ tr.pseudocode {
     display: none;
 }
 
-#algStatsTable {
+#avStatusTable {
     border: 1px solid black;
     max-width: 100%;
 }

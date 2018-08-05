@@ -231,9 +231,9 @@ ENDOFSTUFF;
   </table>
 </div>
 
-<div id="algStats">
-  <table id="algStatsTable" class="gratable">
-    <thead><tr><th>Algorithm Visualization Information</th></tr><thead>
+<div id="avStatusPanel">
+  <table id="avStatusTable" class="gratable">
+    <thead><tr><th>Algorithm Visualization Status</th></tr><thead>
       <tbody id="algorithmVars">
 	<tr><td id="algorithmStatus"></td></tr>
 	<tr><td id="pseudo">
