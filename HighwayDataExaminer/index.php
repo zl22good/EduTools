@@ -116,7 +116,6 @@ ENDOFSTUFF;
   <span id="currentAlgorithm"></span>
 </p>
 <div id="topControlPanel">
-<form onclick= clearForm(this.form)>
   <table id="topControlPanelTable">
     <tbody>
       <tr>
@@ -138,7 +137,7 @@ ENDOFSTUFF;
 	  </td><td id="topControlPanelAV3">
 	  <input id="pseudoCheckbox" type="checkbox" name="Pseudocode-level AV" checked onclick="showHidePseudocode()" >&nbsp;Trace Pseudocode<br>
 	  </td><td id="topControlPanelAV4">
-	  <input id="resetButton" type="button" value="Reset AV" onClick="clearForm(this.form)"/>
+	  <input id="resetButton" type="button" value="Reset AV""/>
 	  </td><td id="topControlPanelAV5">
 	  <input id="changeAlgorithm" type="button" value="Change AV" onClick="showAlgorithmControls()"/>
 	</td>
@@ -160,7 +159,6 @@ ENDOFSTUFF;
 </select>
 -->
 <div id="loadDataPanel">
-  <form name="algVis" action="#">
     <table id="loadDataTable" class="gratable">
       <thead>
 	<tr><th>Load Data:</th></tr>
@@ -247,7 +245,6 @@ ENDOFSTUFF;
 </div>
   
 </div>
-</form>
 <div id="contents_table" draggable="false"  ondragstart="drag(event)">
 </div>
 </body>
