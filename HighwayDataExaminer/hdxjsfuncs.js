@@ -132,7 +132,12 @@ var hdxAV = {
 	}
 
 	// set up some references to commonly-used document elements
+
+	// the algorithm status message bar on the algorithm
+	// visualization information panel
 	this.algStat = document.getElementById("algorithmStatus");
+
+	
 	this.algOptions = document.getElementById("algorithmOptions");
 	this.startPause = document.getElementById("startPauseButton");
 
@@ -4732,7 +4737,7 @@ function processContents(fileContents) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
 	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseTMGContents(fileContents);
-	showAlgorithmControls();
+	showAlgorithmSelectionPanel();
     }
     
     document.getElementById('contents_table').innerHTML = pointboxContents;
@@ -5429,6 +5434,16 @@ function selectAlgorithmAndStart() {
     showHidePseudocode();
 }
 
+// event handler for the "Done" button on the algorithm options panel
+function algOptionsDonePressed() {
+
+    // TODO: any additional validation needed to make sure
+    // good options are chosen before we allow this to be dismissed?
+
+    hideAlgorithmSelectionPanel();
+    showTopControlPanel();
+    showAlgStats();    
+}
 
 function showTopControlPanel() {
     document.getElementById("topControlPanel").style.display="";
@@ -5447,16 +5462,16 @@ function showLoadDataPanel() {
     document.getElementById("hideLoadDataPanel").disabled=false;
 }
 
-function hideAlgorithmControls() {
+
+function hideAlgorithmSelectionPanel() {
     document.getElementById("algorithmSelectionPanel").style.display="none";
-    showTopControlPanel();
 }
 
-function showAlgorithmControls() {
+function showAlgorithmSelectionPanel() {
     document.getElementById("algorithmSelectionPanel").style.display="table";
 }
 
-function hideAlgorithmControlsOnDismiss() {
+function hideAlgorithmSelectionPanelOnDismiss() {
 
     document.getElementById("algorithmSelectionPanel").style.display="none";
     showTopControlPanel();
@@ -5529,7 +5544,7 @@ function algorithmSelected() {
     }
     else {
 	hideLoadDataPanel();
-	showAlgorithmControls();
+	showAlgorithmSelectionPanel();
 	document.getElementById('algOptionsDone').disabled=true;
     }
     
@@ -5682,6 +5697,7 @@ $(document).ready(function(){
 	    readServerSearch(getFile);
 	}
     });
+/*
     $("#hideLoadDataPanel").click(function() {
 	hideLoadDataPanel();
     });
@@ -5689,10 +5705,9 @@ $(document).ready(function(){
 	showLoadDataPanel();
     });
     $("#algOptionsDone").click(function() {
-	hideAlgorithmControls();
-	showAlgStats();
 	
     });
+*/
 });
 
 /**********************************************************************
