@@ -5445,6 +5445,10 @@ function algOptionsDonePressed() {
     showAlgStats();    
 }
 
+// Functions to show and hide panels that are displayed only
+// in certain modes of HDX operation
+
+// top control panel (algorithm controls, reset/load buttons)
 function showTopControlPanel() {
     document.getElementById("topControlPanel").style.display="";
 }
@@ -5453,28 +5457,25 @@ function hideTopControlPanel() {
     document.getElementById("topControlPanel").style.display="none";
 }
 
-function hideLoadDataPanel() {
-    document.getElementById("loadDataPanel").style.display ="none";
-}
-
+// the load data panel, where graphs and other data are specified
+// to be loaded into HDX
 function showLoadDataPanel() {
     document.getElementById("loadDataPanel").style.display = "table";
     document.getElementById("hideLoadDataPanel").disabled=false;
 }
 
+function hideLoadDataPanel() {
+    document.getElementById("loadDataPanel").style.display ="none";
+}
 
+// the algorithm selection panel, where an algorithm is selected
+// and its parameters are specified
 function hideAlgorithmSelectionPanel() {
     document.getElementById("algorithmSelectionPanel").style.display="none";
 }
 
 function showAlgorithmSelectionPanel() {
     document.getElementById("algorithmSelectionPanel").style.display="table";
-}
-
-function hideAlgorithmSelectionPanelOnDismiss() {
-
-    document.getElementById("algorithmSelectionPanel").style.display="none";
-    showTopControlPanel();
 }
 
 function showAlgStats() {
