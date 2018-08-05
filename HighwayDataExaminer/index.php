@@ -137,7 +137,7 @@ ENDOFSTUFF;
 	  </td><td id="topControlPanelAV3">
 	  <input id="pseudoCheckbox" type="checkbox" name="Pseudocode-level AV" checked onclick="showHidePseudocode()" >&nbsp;Trace Pseudocode<br>
 	  </td><td id="topControlPanelAV4">
-	  <input id="resetButton" type="button" value="Reset AV""/>
+	  <input id="resetButton" type="button" value="Reset AV"/>
 	  </td><td id="topControlPanelAV5">
 	  <input id="changeAlgorithm" type="button" value="Change AV" onClick="showAlgorithmControls()"/>
 	</td>
