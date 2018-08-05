@@ -5634,24 +5634,12 @@ function getGraphs(){
     xmlhttp.send();
 }
 
-var appendCount = 0;
-
-function appendToTopAlgControls() {
-    
-    var tableAppend = document.getElementById("newAlgControls");
-    var onlyRow = document.getElementById("newAlgControls").rows[0];
-    
-    var newCell3 = onlyRow.insertCell(3);
-    
-    newCell3.innerHTML='<input type="button" value="Show Algorithm Options" id="algOptionsShow2" onclick="showAlgorithmControls()">';
+function showTopControlPanel() {
+    document.getElementById("topControlPanel").style.display="";
 }
 
-function showTopAlgControls() {
-    document.getElementById("algorithmControls3").style.display="table";
-}
-
-function hideTopAlgControls() {
-    document.getElementById("algorithmControls3").style.display="none";
+function hideTopControlPanel() {
+    document.getElementById("topControlPanel").style.display="none";
 }
 
 function hideLoadDataPanel() {
@@ -5664,25 +5652,18 @@ function showLoadDataPanel() {
 }
 
 function hideAlgorithmControls() {
-    document.getElementById("algorithmControls2").style.display="none";
-    showTopAlgControls();
+    document.getElementById("algorithmSelectionPanel").style.display="none";
+    showTopControlPanel();
 }
 
 function showAlgorithmControls() {
-    document.getElementById("algorithmControls2").style.display="table";
+    document.getElementById("algorithmSelectionPanel").style.display="table";
 }
 
 function hideAlgorithmControlsOnDismiss() {
-    if (appendCount == 0){
-	document.getElementById("algorithmControls2").style.display="none";
-	appendToTopAlgControls();
-	showTopAlgControls();
-	appendCount++;
-    }
-    else {
-	showTopAlgControls();
-	document.getElementById("algorithmControls2").style.display="none";
-    }
+
+    document.getElementById("algorithmSelectionPanel").style.display="none";
+    showTopControlPanel();
 }
 
 function showAlgStats() {
@@ -5693,12 +5674,12 @@ function hideAlgStats() {
     document.getElementById("algStats").style.display="none";
 }
 
-function showTopAlgControls() {
-    document.getElementById("algorithmControls3").style.display="table";
+function showTopControlPanel() {
+    document.getElementById("topControlPanel").style.display="table";
 }
 
-function hideTopAlgControls() {
-    document.getElementById("algorithmControls3").style.display="none";
+function hideTopControlPanel() {
+    document.getElementById("topControlPanel").style.display="none";
 }
 
 $(document).ready(function(){

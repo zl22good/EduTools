@@ -58,7 +58,7 @@
     max-width: 30%;
     max-height: 95%;
     opacity: .95;
-    z-index:750; // above leaflet tiles and overlays, below map tile selector
+    z-index:750; /* above leaflet tiles and overlays, below map tile selector */
 }
 
 #pseudoTable {
@@ -218,7 +218,7 @@ tr.pseudocode {
     width: 365px;
 }
 
-#algorithmControls2 {
+#algorithmSelectionPanel {
     top: 100px;
     margin: auto;
     background-color: white; 
@@ -227,7 +227,7 @@ tr.pseudocode {
     display: none;
 }
 
-#algControlsPanel {
+#algorithmSelectionPanelTable {
     border: 1px solid black;
     left: 5px;
     position: absolute;
@@ -256,13 +256,16 @@ tr.pseudocode {
     max-width: 100%;
 }
 
-#algorithmControls3 {
+/* centering and zindex together, based on example from 
+https://stackoverflow.com/questions/19343331/how-do-i-center-an-absolutely-positioned-element
+*/
+
+#topControlPanel {
     background-color: white;
-    margin: auto;
-    top: 25px;
-    left: 40%;
-    margin-left: -80px;
     position: absolute;
+    top: 25px;
+    left: 150px;
     z-index: 11000;
     display: none;
 }
+

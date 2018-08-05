@@ -115,13 +115,14 @@ ENDOFSTUFF;
   <span id="status"></span>
   <span id="currentAlgorithm"></span>
 </p>
-<div id="algorithmControls3">
+<div id="topControlPanel">
 <form onclick= clearForm(this.form)>
-  <table id="newAlgControls">
+  <table id="topControlPanelTable">
     <tbody>
       <tr>
-	<td id="speedtr">
+	<td id="topControlPanelAV1">
 	  <button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
+	  </td><td id="topControlPanelAV2">
 	  <select id="speedChanger" onchange="speedChanged()">
 	    <option value="0">Run To Completion</option>
 	    <option value="1">Fastest possible</option>
@@ -134,12 +135,14 @@ ENDOFSTUFF;
 	    <option value="1000">Painfully slow</option>
 	    <option value="-1">Step</option>
 	  </select>
-	</td>
-	<td>
+	  </td><td id="topControlPanelAV3">
 	  <input id="pseudoCheckbox" type="checkbox" name="Pseudocode-level AV" checked onclick="showHidePseudocode()" >&nbsp;Trace Pseudocode<br>
+	  </td><td id="topControlPanelAV4">
+	  <input id="resetButton" type="button" value="Reset AV" onClick="clearForm(this.form)"/>
+	  </td><td id="topControlPanelAV5">
+	  <input id="changeAlgorithm" type="button" value="Change AV" onClick="showAlgorithmControls()"/>
 	</td>
 	<td>
-	  <input id="resetButton" type="button" value="Reset AV" onClick="clearForm(this.form)"/>
 	  <input id="loadOptionsButton" type="button" value="Load Data Options" id="loadDataPanelShow" onClick="showLoadDataPanel()"/>
 	</td>
       </tr>
@@ -162,7 +165,7 @@ ENDOFSTUFF;
       <thead>
 	<tr><th>Load Data:</th></tr>
       </thead>
-      <tbody id="AVControlPanel">
+      <tbody>
 	<tr><td>
 	    Use this panel to load one of METAL's graphs right
 	    from METAL's database (Options 1 and 2),<br />
@@ -195,8 +198,8 @@ ENDOFSTUFF;
       </tbody>
     </table>
 </div>
-<div id="algorithmControls2" style="display=none;">
-  <table id="algControlsPanel" style="display=none;" class="gratable">
+<div id="algorithmSelectionPanel" style="display=none;">
+  <table id="algorithmSelectionPanelTable" style="display=none;" class="gratable">
     <thead>
       <tr><th>Algorithm Visualization Selection and Options</th></tr>
     </thead>
