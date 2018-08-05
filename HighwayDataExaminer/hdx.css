@@ -1,0 +1,268 @@
+/* CSS for the METAL Highway Data Examiner */
+
+#map {
+    position: absolute;
+    top: 25px;
+    bottom:0px;
+    width: 100%;
+    overflow:hidden;
+}
+
+#map * {
+    cursor:crosshair;
+}
+
+#selected {
+    position: relative;
+    overflow: scroll;
+    display: inline-block;
+    max-width: 50%;
+    max-height: 85%;
+    width:auto;
+    height:auto;
+    opacity: .95;  /* also forces stacking order */
+}
+
+#pointbox {
+    visibility: hidden;
+    left: 0px;
+    width: 1px;
+    height: 1px;
+}
+
+#options {
+    visibility: hidden;
+    left: 0px;
+    width: 1px;
+    height: 1px;
+}
+
+#showHideMenu {
+    position: fixed;
+    right: 10px;
+    opacity: .75;  /* also forces stacking order */
+}
+
+#AlgorithmVisualization {
+    visibility: hidden;
+    left: 0px;
+    width: 1px;
+    height: 1px;
+}
+
+#contents_table {
+    display: inline-block;
+    position: absolute;
+    overflow: scroll;
+    right:2%;
+    max-width: 30%;
+    max-height: 95%;
+    opacity: .95;
+    z-index:750; // above leaflet tiles and overlays, below map tile selector
+}
+
+#pseudoTable {
+    position: absolute;
+    padding: 5px;
+    bottom: 150px;
+    overflow-y: scroll;
+    max-width: 33%;
+    opacity: .95;
+}
+
+#graphList {
+    width:150px;
+}
+
+table.dataTable tbody td {
+    padding:0px;
+}
+
+#menuIcon {
+    padding: 0px;
+    margin: 0px;
+    top: 1px;
+    position: fixed;
+    display: inline-block;
+    border: none;
+    color: white;
+}
+
+#panelBtn {
+    padding: 0px;
+    margin: 0px;
+    top: 3px;
+    left: 10px;
+    position: fixed;
+    display: inline-block;
+    text-align: center;
+    border: none;
+    text-decoration: none;
+    z-index: 10;
+}
+
+#menuIcon:hover {
+    color: lightgrey;
+}
+
+#sidePanel {
+    height: 100%;
+    width: 0;
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+}
+
+#sidePanel a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+
+#sidePanel a:hover, .offcanvas a:focus {
+    color: #f1f1f1;
+}
+
+.sidePanel .closeButton {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+@media screen and (max-height: 450px) {
+    .sidePanel {padding-top: 15px;}
+    .sidePanel a {font-size: 18px;}
+}
+
+#togglecontents_table{
+    position: absolute;
+    top: 35px;
+}
+
+#toggleselected{
+    position: absolute;
+    top: 35px;
+}
+
+table.pseudocode {
+    font-size: 9pt;
+    font-family: "Courier New", Courier, monospace;
+    border: none;
+    border-spacing: 0px;
+    border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+    color: black;
+}
+
+td.pseudocode {
+    border: none;
+    border-collapse: collapse;
+    padding-top: 0;
+}
+
+tr.pseudocode {
+    border: none;
+    border-collapse: collapse;
+    padding-top: 0;
+}
+
+.highlight {
+    background-color: yellow;
+}
+.for1{}
+.for2{}
+.for3{}
+.if1{}
+.if2{}
+
+.box {
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    border: 2px solid;
+}
+
+#contentArea_legend{
+    background-color: white;
+}
+
+#boxContainer{
+    padding-left: 30px;
+}
+
+#loadDataPanel{
+    top: 100px;
+    margin: auto;
+    background-color: white; 
+    z-index: 14000;
+    position: absolute;
+}
+
+#loadDataTable {
+    border: 1px solid black;	
+}
+
+#searchBox {
+    width: 365px;
+}
+
+#algorithmControls2 {
+    top: 100px;
+    margin: auto;
+    background-color: white; 
+    z-index: 12000;
+    position: absolute;
+    display: none;
+}
+
+#algControlsPanel {
+    border: 1px solid black;
+    left: 5px;
+    position: absolute;
+    z-index: 10000;
+}
+
+#selected {
+    display: none;
+}
+
+#algStats {
+    margin:auto;
+    top: 100px;
+    z-index: 10000;
+    background-color: blue;
+    position: absolute;
+    overflow: scroll;
+    width: 30%;
+    max-height: calc(100vh - 125px);
+    opacity: .95;
+    display: none;
+}
+
+#algStatsTable {
+    border: 1px solid black;
+    max-width: 100%;
+}
+
+#algorithmControls3 {
+    background-color: white;
+    margin: auto;
+    top: 25px;
+    left: 40%;
+    margin-left: -80px;
+    position: absolute;
+    z-index: 11000;
+    display: none;
+}
