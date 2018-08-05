@@ -5486,14 +5486,6 @@ function hideAlgStats() {
     document.getElementById("algStats").style.display="none";
 }
 
-function showTopControlPanel() {
-    document.getElementById("topControlPanel").style.display="table";
-}
-
-function hideTopControlPanel() {
-    document.getElementById("topControlPanel").style.display="none";
-}
-
 function showLegend() {
     var show = document.getElementById("showLegend").checked;
     var value = getCurrentAlgorithm();
