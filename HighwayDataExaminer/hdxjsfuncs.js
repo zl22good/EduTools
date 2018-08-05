@@ -5429,15 +5429,7 @@ function startPausePressed() {
 // function to resume a paused algorithm
 function continuePausedAlgorithm() {
 
-    // this is temporary until all existing algorithms have been converted
-    // to the action-based approach, at which time only the body of the
-    // else clause will be needed here
-    if (hdxAV.currentAV.hasOwnProperty("nextStep")) {
-	hdxAV.currentAV.nextStep();
-    }
-    else {
-	hdxAV.nextStep(hdxAV.currentAV);
-    }
+    hdxAV.nextStep(hdxAV.currentAV);
 }
 
 // function to begin the execution of a new AV
