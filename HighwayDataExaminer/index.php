@@ -135,14 +135,14 @@ ENDOFSTUFF;
 	    <option value="-1">Step</option>
 	  </select>
 	  </td><td id="topControlPanelAV3">
-	  <input id="pseudoCheckbox" type="checkbox" name="Pseudocode-level AV" checked onclick="showHidePseudocode()" >&nbsp;Trace Pseudocode<br>
+	  <input id="pseudoCheckbox" type="checkbox" name="Pseudocode-level AV" checked onclick="showHidePseudocode()" />&nbsp;Trace Pseudocode<br>
 	  </td><td id="topControlPanelAV4">
-	  <input id="resetButton" type="button" value="Reset AV"/>
+	  <input id="resetButton" type="button" value="Reset AV" onclick="resetPressed()" />
 	  </td><td id="topControlPanelAV5">
-	  <input id="changeAlgorithm" type="button" value="Change AV" onClick="showAlgorithmControls()"/>
+	  <input id="changeAlgorithm" type="button" value="Change AV" onClick="changeAVPressed()"/>
 	</td>
 	<td>
-	  <input id="loadOptionsButton" type="button" value="Load Data Options" id="loadDataPanelShow" onClick="showLoadDataPanel()"/>
+	  <input id="loadOptionsButton" type="button" value="Load Data Options" id="loadDataPanelShow" onClick="loadDataOptionsPressed()"/>
 	</td>
       </tr>
     </tbody>
@@ -223,8 +223,8 @@ ENDOFSTUFF;
       </tr>
       <tr>
 	<td>
-	  <input type="button" value="Done" id="algOptionsDone" onClick="hideAlgorithmControls()" disabled>
-	  <input type="button" value="Dismiss Algorithm Options" id="algoOptionsDismiss" onClick="hideAlgorithmControlsOnDismiss()">
+	  <input type="button" value="Done" id="algOptionsDone" onClick="algOptionsDonePressed()" disabled>
+	  <input type="button" value="Dismiss Algorithm Options" id="algOptionsDismiss" onClick="algOptionsDismissPressed()">
 	</td>
       </tr>
     </tbody>

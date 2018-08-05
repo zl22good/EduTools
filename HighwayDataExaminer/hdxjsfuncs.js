@@ -5361,6 +5361,8 @@ function getCurrentAlgorithm() {
 }
 
 // pseudocode display event handler
+// function both sets the traceCode variable and shows/hides
+// the actual code on the display as appropriate
 function showHidePseudocode() {
 
     hdxAV.traceCode = document.getElementById("pseudoCheckbox").checked;
