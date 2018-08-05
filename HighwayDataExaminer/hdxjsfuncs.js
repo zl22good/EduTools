@@ -5442,6 +5442,55 @@ function selectAlgorithmAndStart() {
     showHidePseudocode();
 }
 
+
+function showTopControlPanel() {
+    document.getElementById("topControlPanel").style.display="";
+}
+
+function hideTopControlPanel() {
+    document.getElementById("topControlPanel").style.display="none";
+}
+
+function hideLoadDataPanel() {
+    document.getElementById("loadDataPanel").style.display ="none";
+}
+
+function showLoadDataPanel() {
+    document.getElementById("loadDataPanel").style.display = "table";
+    document.getElementById("hideLoadDataPanel").disabled=false;
+}
+
+function hideAlgorithmControls() {
+    document.getElementById("algorithmSelectionPanel").style.display="none";
+    showTopControlPanel();
+}
+
+function showAlgorithmControls() {
+    document.getElementById("algorithmSelectionPanel").style.display="table";
+}
+
+function hideAlgorithmControlsOnDismiss() {
+
+    document.getElementById("algorithmSelectionPanel").style.display="none";
+    showTopControlPanel();
+}
+
+function showAlgStats() {
+    document.getElementById("algStats").style.display="block";
+}
+
+function hideAlgStats() {
+    document.getElementById("algStats").style.display="none";
+}
+
+function showTopControlPanel() {
+    document.getElementById("topControlPanel").style.display="table";
+}
+
+function hideTopControlPanel() {
+    document.getElementById("topControlPanel").style.display="none";
+}
+
 function showLegend() {
     var show = document.getElementById("showLegend").checked;
     var value = getCurrentAlgorithm();
@@ -5624,54 +5673,6 @@ function getGraphs(){
     };
     xmlhttp.open("GET", "jsLoadDataGraphs.php", true);
     xmlhttp.send();
-}
-
-function showTopControlPanel() {
-    document.getElementById("topControlPanel").style.display="";
-}
-
-function hideTopControlPanel() {
-    document.getElementById("topControlPanel").style.display="none";
-}
-
-function hideLoadDataPanel() {
-    document.getElementById("loadDataPanel").style.display ="none";
-}
-
-function showLoadDataPanel() {
-    document.getElementById("loadDataPanel").style.display = "table";
-    document.getElementById("hideLoadDataPanel").disabled=false;
-}
-
-function hideAlgorithmControls() {
-    document.getElementById("algorithmSelectionPanel").style.display="none";
-    showTopControlPanel();
-}
-
-function showAlgorithmControls() {
-    document.getElementById("algorithmSelectionPanel").style.display="table";
-}
-
-function hideAlgorithmControlsOnDismiss() {
-
-    document.getElementById("algorithmSelectionPanel").style.display="none";
-    showTopControlPanel();
-}
-
-function showAlgStats() {
-    document.getElementById("algStats").style.display="block";
-}
-
-function hideAlgStats() {
-    document.getElementById("algStats").style.display="none";
-}
-
-function showTopControlPanel() {
-    document.getElementById("topControlPanel").style.display="table";
-}
-
-function hideTopControlPanel() {
-    document.getElementById("topControlPanel").style.display="none";
 }
 
 $(document).ready(function(){
