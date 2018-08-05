@@ -55,7 +55,7 @@
 function hdx_load_file_entries() {
   echo <<<ENDOFSTUFF
 		<tr><td id="selects" class="loadcollapse">
-		<b>Option 2: </b> Load METAL graph: (select filters then press "Get Graph List") <br>
+		<b>Option 2: </b>Search for a METAL graph by characteristics.<br />Select desired graph characteristics then press "Get Graph List" to see matching graphs.<br>
 		Sort criteria:
 		<select id = "orderOptions">
 			<option value = "alpha">Alphabetical</option>
@@ -93,7 +93,7 @@ ENDOFSTUFF;
 	  </td>
 	  </tr>	  
       <tr><td class="loadcollapse">
-	  <b>Option 3:</b> Upload file from your computer:<br />
+	  <b>Option 3:</b>Select and upload a data file from your computer.<br />
         <input id="filesel" type="file"  value="Start" onchange="startRead()">
       </td></tr>
 ENDOFSTUFF;
@@ -412,13 +412,13 @@ z-index: 10000;
 	<tr><td>
 	    Use this panel to load one of METAL's graphs right
 	    from METAL's database (Options 1 and 2),<br />
-	    or any data file
+	    or upload any data file
 	    in a format recognized by HDX from your computer (Option
 	    3).
 	</td></tr>
 	<tr>
 	  <td>
-	    <b>Option 1: </b>Search for a METAL graph by name (start typing in the box below for suggestions):
+	    <b>Option 1: </b>Search for a METAL graph by name.<br />Start typing in the box below for suggestions.
 	    <div id="the-basics">
 	      <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
 	      
