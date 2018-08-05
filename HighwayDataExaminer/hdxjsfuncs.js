@@ -5450,7 +5450,7 @@ function algOptionsDonePressed() {
 
 // top control panel (algorithm controls, reset/load buttons)
 function showTopControlPanel() {
-    document.getElementById("topControlPanel").style.display="";
+    document.getElementById("topControlPanel").style.display="table";
 }
 
 function hideTopControlPanel() {
