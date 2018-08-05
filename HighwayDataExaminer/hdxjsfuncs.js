@@ -5379,59 +5379,48 @@ function startPausePressed() {
 	// if we have selected but not yet started an algorithm,
 	// this is a start button
 	hdxAV.setStatus(hdxStates.AV_RUNNING);
-	if ( hdxAV.delay == -1)
-	{
-		hdxAV.startPause.innerHTML = "Next Step";
+	if (hdxAV.delay == -1) {
+	    hdxAV.startPause.innerHTML = "Next Step";
 	}
-	else
-	{
-		hdxAV.startPause.innerHTML = "Pause";
+	else {
+	    hdxAV.startPause.innerHTML = "Pause";
 	}
 	document.getElementById("AlgorithmSelection").disabled = true;
 	selectAlgorithmAndStart();
 	break;
-
+	
     case hdxStates.AV_RUNNING:
 	// if we are in a running algorithm, this is a pause button
 	// the running algorithm will pause when its next
 	// timer event fires	
 	hdxAV.setStatus(hdxStates.AV_PAUSED);
-	if ( hdxAV.delay == -1)
-	{
-		hdxAV.startPause.innerHTML = "Next Step";
+	if (hdxAV.delay == -1){
+	    hdxAV.startPause.innerHTML = "Next Step";
 	}
-	else
-	{
-		hdxAV.startPause.innerHTML = "Resume";
+	else {
+	    hdxAV.startPause.innerHTML = "Resume";
 	}
 	break;
 	
     case hdxStates.AV_PAUSED:
-	if ( hdxAV.delay == -1)
-	{
-		hdxAV.setStatus(hdxStates.AV_RUNNING);
-		hdxAV.startPause.innerHTML = "Next Step";
-		continuePausedAlgorithm();
+
+	// depending on whether we're stepping or not, button
+	// will need different labels
+	if (hdxAV.delay == -1) {
+	    hdxAV.startPause.innerHTML = "Next Step";
 	}
-	else
-	{
-		// if we are in paused algorithm, this is a resume button
-		hdxAV.setStatus(hdxStates.AV_RUNNING);
-		hdxAV.startPause.innerHTML = "Pause";
-		continuePausedAlgorithm();
+	else {
+	    hdxAV.startPause.innerHTML = "Pause";
 	}
+
+	// in all cases, we set status to running and perform the next step
+	hdxAV.setStatus(hdxStates.AV_RUNNING);
+	hdxAV.nextStep(hdxAV.currentAV);
 	break;
 
     default:
 	alert("startPausePressed, unexpected status=" + hdxAV.status);
     }
-}
-
-
-// function to resume a paused algorithm
-function continuePausedAlgorithm() {
-
-    hdxAV.nextStep(hdxAV.currentAV);
 }
 
 // function to begin the execution of a new AV
