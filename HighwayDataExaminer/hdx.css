@@ -105,45 +105,6 @@ table.dataTable tbody td {
     color: lightgrey;
 }
 
-#sidePanel {
-    height: 100%;
-    width: 0;
-    position: absolute;
-    z-index: 10;
-    top: 0;
-    left: 0;
-    background-color: #111;
-    overflow-x: hidden;
-    transition: 0.5s;
-    padding-top: 60px;
-}
-
-#sidePanel a {
-    padding: 8px 8px 8px 32px;
-    text-decoration: none;
-    font-size: 25px;
-    color: #818181;
-    display: block;
-    transition: 0.3s;
-}
-
-#sidePanel a:hover, .offcanvas a:focus {
-    color: #f1f1f1;
-}
-
-.sidePanel .closeButton {
-    position: absolute;
-    top: 0;
-    right: 25px;
-    font-size: 36px;
-    margin-left: 50px;
-}
-
-@media screen and (max-height: 450px) {
-    .sidePanel {padding-top: 15px;}
-    .sidePanel a {font-size: 18px;}
-}
-
 table.pseudocode {
     font-size: 9pt;
     font-family: "Courier New", Courier, monospace;
