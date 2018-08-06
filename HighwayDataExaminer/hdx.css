@@ -191,7 +191,8 @@ tr.pseudocode {
 
 #avStatusTable {
     border: 1px solid black;
-    max-width: 100%;
+    width: 100%;
+    overflow: scroll;
 }
 
 /* centering and zindex together, based on example from 
