@@ -4568,10 +4568,11 @@ function startRead() {
     // the pointbox to be displayed
     var file = document.getElementById('filesel').files[0];
     
-    // force highway data box to be displayed
-    var menu = document.getElementById("showHideMenu");
-    // menu.options[2].selected = true;
-    // toggleTable();
+    // force data table to be displayed
+    let datatable = document.getElementById("datatable");
+    datatable.style.display = "";
+    let checkbox = document.getElementById("datatablesCheckbox");
+    checkbox.selected = true;
 
     if (file) {
 	//DBG.write("file: " + file.name);
@@ -4618,11 +4619,6 @@ function readServer(event) {
  		var file = new Blob([xmlhttp.responseText], {type : "text/plain"});
  		file.name = value;
  		
- 		// force highway data box to be displayed
- 		var menu = document.getElementById("showHideMenu");
- 		// menu.options[2].selected = true;
- 		// toggleTable();
-		
  		if (file) {
  		    //DBG.write("file: " + file.name);
  		    document.getElementById('filename').innerHTML = file.name;
@@ -4663,8 +4659,6 @@ function readServerSearch(file)
 		if(xmlhttp.readyState == 4 && xmlhttp.status == 200){
 			var file = new Blob([xmlhttp.responseText], {type : "text/plain"});
 			file.name = tmgFile;
-			var menu = document.getElementById("showHideMenu");
-			
 			if(tmgFile){
 				document.getElementById('filename').innerHTML = file.name;
 				var reader;
@@ -4742,7 +4736,7 @@ function processContents(fileContents) {
 	showAlgorithmSelectionPanel();
     }
     
-    document.getElementById('contents_table').innerHTML = pointboxContents;
+    document.getElementById('datatable').innerHTML = pointboxContents;
     hideLoadDataPanel();
     updateMap();
 }
@@ -5528,6 +5522,19 @@ function loadDataOptionsPressed() {
     // in all cases, we hide the top panel, show the load panel
     hideTopControlPanel();
     showLoadDataPanel();
+}
+
+// event handler for "Show Data Tables" checkbox
+function showHideDatatables() {
+
+    let checked = document.getElementById("datatablesCheckbox").checked;
+    let datatable = document.getElementById("datatable");
+    if (checked) {
+	datatable.style.display = "";
+    }
+    else {
+	datatable.style.display = "none";
+    }
 }
 
 // Functions to show and hide panels that are displayed only

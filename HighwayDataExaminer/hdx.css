@@ -50,7 +50,7 @@
     height: 1px;
 }
 
-#contents_table {
+#datatable {
     display: inline-block;
     position: absolute;
     overflow: scroll;
@@ -142,16 +142,6 @@ table.dataTable tbody td {
 @media screen and (max-height: 450px) {
     .sidePanel {padding-top: 15px;}
     .sidePanel a {font-size: 18px;}
-}
-
-#togglecontents_table{
-    position: absolute;
-    top: 35px;
-}
-
-#toggleselected{
-    position: absolute;
-    top: 35px;
 }
 
 table.pseudocode {

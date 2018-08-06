@@ -143,6 +143,9 @@ ENDOFSTUFF;
 	<td>
 	  <input id="loadOptionsButton" type="button" value="Load Data Options" id="loadDataPanelShow" onClick="loadDataOptionsPressed()"/>
 	</td>
+	<td>
+	  <input id="datatablesCheckbox" type="checkbox" name="Datatables" checked onclick="showHideDatatables()" />&nbsp;Show Data Tables<br>
+	</td>
       </tr>
     </tbody>
   </table>
@@ -243,7 +246,7 @@ ENDOFSTUFF;
 </div>
   
 </div>
-<div id="contents_table" draggable="false"  ondragstart="drag(event)">
+<div id="datatable" draggable="false"  ondragstart="drag(event)">
 </div>
 </body>
 </html>
