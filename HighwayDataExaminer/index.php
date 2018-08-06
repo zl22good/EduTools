@@ -141,6 +141,8 @@ ENDOFSTUFF;
 	  </td><td id="topControlPanelAV5">
 	  <input id="changeAlgorithm" type="button" value="Change AV" onClick="changeAVPressed()"/>
 	</td>
+	<!-- if any more AV-specific entries are added, they need to
+	     be dealt with in showTopControlPanel() -->
 	<td>
 	  <input id="loadOptionsButton" type="button" value="Load Data Options" id="loadDataPanelShow" onClick="loadDataOptionsPressed()"/>
 	</td>

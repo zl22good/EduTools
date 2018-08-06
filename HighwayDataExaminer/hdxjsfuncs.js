@@ -4712,21 +4712,25 @@ function processContents(fileContents) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint File)";
 	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseWPTContents(fileContents);
+	showTopControlPanel();
     }
     else if (fileName.indexOf(".pth") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint Path File)";
 	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parsePTHContents(fileContents);
+	showTopControlPanel();
     }
     else if (fileName.indexOf(".nmp") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Near-Miss Point File)";
 	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseNMPContents(fileContents);
+	showTopControlPanel();
     }
     else if (fileName.indexOf(".wpl") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Waypoint List File)";
 	document.getElementById('startUp').innerHTML="";
 	pointboxContents = parseWPLContents(fileContents);
+	showTopControlPanel();
     }
     else if (fileName.indexOf(".gra") >= 0) {
 	document.getElementById('filename').innerHTML = fileName + " (Highway Graph File)";
@@ -5490,6 +5494,54 @@ function algOptionsDismissPressed() {
 
 // top control panel (algorithm controls, reset/load buttons)
 function showTopControlPanel() {
+
+    let av1 = document.getElementById("topControlPanelAV1");
+    let av2 = document.getElementById("topControlPanelAV2");
+    let av3 = document.getElementById("topControlPanelAV3");
+    let av4 = document.getElementById("topControlPanelAV4");
+    let av5 = document.getElementById("topControlPanelAV5");
+    let av5button = document.getElementById("changeAlgorithm");
+    
+    // show only the relevant components given the current
+    // state of HDX
+    switch (hdxAV.status) {
+    case hdxStates.WPT_LOADED:
+    case hdxStates.NMP_LOADED:
+    case hdxStates.WPL_LOADED:
+    case hdxStates.PTH_LOADED:
+	// undisplay all AV-related controls
+	av1.style.display = "none";
+	av2.style.display = "none";
+	av3.style.display = "none";
+	av4.style.display = "none";
+	av5.style.display = "none";
+	break;
+
+    case hdxStates.GRAPH_LOADED:
+	// only display the "Change AV" button (but relabel it
+	// as "Select AV" since this means no AV is currently
+	// selected
+	av1.style.display = "none";
+	av2.style.display = "none";
+	av3.style.display = "none";
+	av4.style.display = "none";
+	av5.style.display = "";
+	av5button.value = "Select AV";
+	break;
+
+    default:
+	// An AV is selected and possibly running, paused, or complete
+	// so show all AV-related controls and make sure the "Change AV"
+	// button is labeled that way
+	av1.style.display = "";
+	av2.style.display = "";
+	av3.style.display = "";
+	av4.style.display = "";
+	av5.style.display = "";
+	av5button.value = "Change AV";
+	break;
+    }
+    
     document.getElementById("topControlPanel").style.display="table";
 }
 
