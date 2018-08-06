@@ -120,7 +120,7 @@ ENDOFSTUFF;
     <tbody>
       <tr>
 	<td id="topControlPanelAV1">
-	  <button id="startPauseButton" type="button" onclick="startPausePressed()" disabled>Start</button>
+	  <button id="startPauseButton" type="button" onclick="startPausePressed()">Start</button>
 	  </td><td id="topControlPanelAV2">
 	  <select id="speedChanger" onchange="speedChanged()">
 	    <option value="0">Run To Completion</option>
@@ -138,9 +138,6 @@ ENDOFSTUFF;
 	  <input id="pseudoCheckbox" type="checkbox" name="Pseudocode-level AV" checked onclick="showHidePseudocode()" />&nbsp;Trace Pseudocode<br>
 	  </td><td id="topControlPanelAV4">
 	  <input id="resetButton" type="button" value="Reset AV" onclick="resetPressed()" />
-	  </td><td id="topControlPanelAV5">
-	  <input id="changeAlgorithm" type="button" value="Change AV" onClick="changeAVPressed()"/>
-	</td>
 	<!-- if any more AV-specific entries are added, they need to
 	     be dealt with in showTopControlPanel() -->
 	<td>
@@ -204,11 +201,11 @@ ENDOFSTUFF;
       <tr><th>Algorithm Visualization Selection and Options</th></tr>
     </thead>
     <tbody>
-      <tr><td><p>To perform an algorithm visualization on
-	  the data currently displayed, choose an algorithm and the
-	  options you would like to use, then press "Done".<br />  To
-	  explore the data on the map manually, you can dismiss this
-	  panel with the "Dismiss Algorithm Options" button.</p>
+      <tr><td><p>To perform an algorithm visualization on the data
+	  currently displayed, choose an algorithm and the options you
+	  would like to use, then press "Done".<br />  To explore the
+	  data on the map manually with no algorithm visualization,
+	  choose the "No Algorithm Visualization" option.</p>
       </td></tr>
       <tr>
 	<td>
@@ -225,8 +222,7 @@ ENDOFSTUFF;
       </tr>
       <tr>
 	<td>
-	  <input type="button" value="Done" id="algOptionsDone" onClick="algOptionsDonePressed()" disabled>
-	  <input type="button" value="Dismiss Algorithm Options" id="algOptionsDismiss" onClick="algOptionsDismissPressed()">
+	  <input type="button" value="Done" id="algOptionsDone" onClick="algOptionsDonePressed()">
 	</td>
       </tr>
     </tbody>

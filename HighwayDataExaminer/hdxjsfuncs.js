@@ -51,9 +51,6 @@ var hdxAV = {
     // remember the currently-selected AV
     currentAV: null,
     
-    // what was the most recent algorithm?
-    previousAlgorithm: null,
-
     // are we tracing psuedocode?
     traceCode: true,
 
@@ -66,11 +63,6 @@ var hdxAV = {
     // terminate
     nextAction: "UNDEFINED",
     
-    // reset values
-    reset: function() {
-	this.previousAlgorithm = null;
-    },
-
     // for pseudocode highlighting, id of element to unhighlight
     previousHighlight: null,
 
@@ -100,6 +92,10 @@ var hdxAV = {
 	case hdxStates.AV_COMPLETE:
 	    this.startPause.disabled = true;
 	    this.startPause.innerHTML = "Start";
+	    break;
+	default:
+	    // other AV in progress states
+	    this.startPause.disabled = false;
 	    break;
 	}
     },
@@ -451,6 +447,8 @@ function addEntryToAVControlPanel(namePrefix, vs) {
 /* clean up all entries from algorithm visualization control panel */
 function cleanupAVControlPanel() {
 
+    document.getElementById("algorithmStatus").innerHTML = "";
+    document.getElementById("pseudoText").innerHTML = "";
     while (AVCPentries.length > 0) {
 	removeEntryFromAVControlPanel(AVCPentries.pop());
     }
@@ -885,7 +883,7 @@ var hdxNoAV = {
 
     // entries for list of AVs
     value: "NONE",
-    name: "Select an Algorithm",
+    name: "No Algorithm Visualization",
     description: "No algorithm is selected, please select.",
 
     code: "Select and start an algorithm to view pseudocode.",
@@ -1411,6 +1409,7 @@ shortest &larr; 0</td></tr>
 	for (var i = 0; i < this.boundingPoly.length; i++) {
 	    this.boundingPoly[i].remove();
 	}
+	this.boundingPoly = [];
     }
 };
 
@@ -3147,7 +3146,7 @@ var hdxTraversalsSpanningAVCommon = {
     // required start function, here do things common to all
     // traversals/spanning algorithms
     start() {
-	
+
 	hdxAV.algStat.innerHTML = "Initializing";
 
 	// show waypoints, show connections
@@ -5427,11 +5426,36 @@ function startPausePressed() {
 // function to begin the execution of a new AV
 function selectAlgorithmAndStart() {
 
-    resetVars();
     hdxAV.currentAV.start();
     // set pseudocode
     document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
     showHidePseudocode();
+}
+
+// Event handler for state change on the algorithm selection select control
+function algorithmSelectionChanged() {
+
+    // cleanup anything from the previous algorithm
+    if (hdxAV.currentAV != null) {
+	cleanupAVControlPanel();
+	hdxAV.currentAV.cleanupUI();
+    }
+    
+    let value = getSelectedAlgorithm();
+
+    // set the current algorithm
+    for (var i = 1; i < hdxAV.avList.length; i++) {
+	if (value == hdxAV.avList[i].value) {
+	    hdxAV.currentAV = hdxAV.avList[i];
+	    break;
+	}
+    }
+
+    document.getElementById("currentAlgorithm").innerHTML =
+	hdxAV.currentAV.name;
+
+    // call its function to set up its status and options
+    hdxAV.currentAV.setupUI();
 }
 
 // event handler for the "Done" button on the algorithm options panel
@@ -5440,61 +5464,40 @@ function algOptionsDonePressed() {
     // TODO: make sure no additional validation is needed to make sure
     // good options are chosen before we allow this to be dismissed.
 
-    let value = getSelectedAlgorithm();
-
-    // if the same algorithm as before was selected, we do not need
-    // to do anything
-    if (hdxAV.currentAV != null && value == hdxAV.currentAV.value) {
-	return;
-    }
-
-    // we've selected a new algorithm, so if a different one was
-    // previously set up, clean it up first
-    if (hdxAV.currentAV != null) {
-	cleanupAVControlPanel();
-	hdxAV.currentAV.cleanupUI();
+    if (hdxAV.currentAV == null) {
+	hdxAV.currentAV = hdxNoAV;
     }
     
-    // set the current algorithm
-    for (var i = 1; i < hdxAV.avList.length; i++) {
-	if (value == hdxAV.avList[i].value) {
-	    hdxAV.currentAV = hdxAV.avList[i];
-	    break;
-	}
+    // set status depending on whether an AV was selected
+    if (hdxAV.currentAV.value == hdxNoAV.value) {
+	hdxAV.setStatus(hdxStates.GRAPH_LOADED);
     }
-    document.getElementById("currentAlgorithm").innerHTML =
-	"Algorithm: " + hdxAV.currentAV.name;
-
-    // set up to start this new algorithm
-    hdxAV.setStatus(hdxStates.AV_SELECTED);
-    hdxAV.startPause.disabled = false;
-
-    // call its function to set up its status and options
-    hdxAV.currentAV.setupUI();
-    
-    hideAlgorithmSelectionPanel();
-    showTopControlPanel();
-    showAVStatusPanel();
-}
-
-// event handler for the "Dismiss Algorithm Options" button on the
-// algorithm options panel
-function algOptionsDismissPressed() {
+    else {
+	hdxAV.setStatus(hdxStates.AV_SELECTED);
+	showAVStatusPanel();
+    }
 
     hideAlgorithmSelectionPanel();
     showTopControlPanel();
 }
 
-// event handler for "Change AV" button press
-function changeAVPressed() {
+// event handler for "Reset AV" button press
+function resetPressed() {
 
     // if there's an AV running, we need to pause it
     if (hdxAV.status == hdxStates.AV_RUNNING) {
-	// easiest to accomplish this by pretending we pressed
-	// the pause button
-	startPausePressed();
+	hdxAV.setStatus(hdxStates.AV_PAUSED);
+	hdxAV.startPause.innerHTML = "Start";
     }
+
+    // show waypoints, show connections
+    initWaypointsAndConnections(true, true,
+				visualSettings.undiscovered);
+
     hideTopControlPanel();
+    cleanupAVControlPanel();
+    algorithmSelectionChanged();
+    hideAVStatusPanel();
     showAlgorithmSelectionPanel();
 }
 
@@ -5508,8 +5511,7 @@ function showTopControlPanel() {
     let av2 = document.getElementById("topControlPanelAV2");
     let av3 = document.getElementById("topControlPanelAV3");
     let av4 = document.getElementById("topControlPanelAV4");
-    let av5 = document.getElementById("topControlPanelAV5");
-    let av5button = document.getElementById("changeAlgorithm");
+    let av4button = document.getElementById("resetButton");
     
     // show only the relevant components given the current
     // state of HDX
@@ -5523,31 +5525,28 @@ function showTopControlPanel() {
 	av2.style.display = "none";
 	av3.style.display = "none";
 	av4.style.display = "none";
-	av5.style.display = "none";
 	break;
 
     case hdxStates.GRAPH_LOADED:
-	// only display the "Change AV" button (but relabel it
+	// only display the "Reset AV" button (but relabel it
 	// as "Select AV" since this means no AV is currently
 	// selected
 	av1.style.display = "none";
 	av2.style.display = "none";
 	av3.style.display = "none";
-	av4.style.display = "none";
-	av5.style.display = "";
-	av5button.value = "Select AV";
+	av4.style.display = "";
+	av4button.value = "Select AV";
 	break;
 
     default:
 	// An AV is selected and possibly running, paused, or complete
-	// so show all AV-related controls and make sure the "Change AV"
+	// so show all AV-related controls and make sure the "Reset AV"
 	// button is labeled that way
 	av1.style.display = "";
 	av2.style.display = "";
 	av3.style.display = "";
 	av4.style.display = "";
-	av5.style.display = "";
-	av5button.value = "Change AV";
+	av4button.value = "Reset AV";
 	break;
     }
     
@@ -5623,16 +5622,6 @@ function showLegend() {
 }
 */
 
-// Event handler for state change on the algorithm selection select control
-function algorithmSelectionChanged() {
-
-    let value = getSelectedAlgorithm();
-    // enable/disable the "Done" button based on whether an
-    // algorithm was selected
-    document.getElementById('algOptionsDone').disabled =
-	(value == hdxNoAV.value);
-}
-
 function drag(event) {
     var x = event.target.style.left;
     var y = event.target.style.top;
@@ -5658,21 +5647,6 @@ function drop(event) {
 function allowdrop(event) {
     event.preventDefault();
 }   
-
-// moved to the end for now, until all variables are grouped by algorithm
-function resetVars() {
-    if (hdxAV.status == hdxStates.AV_COMPLETE ||
-	hdxAV.previousAlgorithm != document.getElementById("AlgorithmSelection").value) {
-	//hdxAV.done = false;
-	hdxAV.reset();
-	updateMap();
-	
-	if ($("#piecesTD").length > 0) {
-	    document.getElementById("piecesTD").parentNode.parentNode.removeChild(document.getElementById("piecesTD").parentNode);
-	}
-	hdxAV.algStat.innerHTML = "";
-    }
-}
 
 /***********************************************************************/
 /* Code formerly in basic-sch.js mainly, Michael Dagostino Summer 2018 */
@@ -5769,17 +5743,6 @@ $(document).ready(function(){
 	    readServerSearch(getFile);
 	}
     });
-/*
-    $("#hideLoadDataPanel").click(function() {
-	hideLoadDataPanel();
-    });
-    $("#loadDataPanelShow").click(function() {
-	showLoadDataPanel();
-    });
-    $("#algOptionsDone").click(function() {
-	
-    });
-*/
 });
 
 /**********************************************************************
