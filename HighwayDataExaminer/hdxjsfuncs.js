@@ -5355,7 +5355,7 @@ function PTHLineInfo(line, from) {
 
 // get the selected algorithm from the AlgorithmSelection menu
 // (factored out here to avoid repeated code)
-function getCurrentAlgorithm() {
+function getSelectedAlgorithm() {
     var menuSelection = document.getElementById("AlgorithmSelection");
     var selectionIndex = menuSelection.selectedIndex;
     return menuSelection.options[selectionIndex].value;
@@ -5437,12 +5437,52 @@ function selectAlgorithmAndStart() {
 // event handler for the "Done" button on the algorithm options panel
 function algOptionsDonePressed() {
 
-    // TODO: any additional validation needed to make sure
-    // good options are chosen before we allow this to be dismissed?
+    // TODO: make sure no additional validation is needed to make sure
+    // good options are chosen before we allow this to be dismissed.
 
+    let value = getSelectedAlgorithm();
+
+    // if the same algorithm as before was selected, we do not need
+    // to do anything
+    if (hdxAV.currentAV != null && value == hdxAV.currentAV.value) {
+	return;
+    }
+
+    // we've selected a new algorithm, so if a different one was
+    // previously set up, clean it up first
+    if (hdxAV.currentAV != null) {
+	cleanupAVControlPanel();
+	hdxAV.currentAV.cleanupUI();
+    }
+    
+    // set the current algorithm
+    for (var i = 1; i < hdxAV.avList.length; i++) {
+	if (value == hdxAV.avList[i].value) {
+	    hdxAV.currentAV = hdxAV.avList[i];
+	    break;
+	}
+    }
+    document.getElementById("currentAlgorithm").innerHTML =
+	"Algorithm: " + hdxAV.currentAV.name;
+
+    // set up to start this new algorithm
+    hdxAV.setStatus(hdxStates.AV_SELECTED);
+    hdxAV.startPause.disabled = false;
+
+    // call its function to set up its status and options
+    hdxAV.currentAV.setupUI();
+    
     hideAlgorithmSelectionPanel();
     showTopControlPanel();
     showAVStatusPanel();
+}
+
+// event handler for the "Dismiss Algorithm Options" button on the
+// algorithm options panel
+function algOptionsDismissPressed() {
+
+    hideAlgorithmSelectionPanel();
+    showTopControlPanel();
 }
 
 // Functions to show and hide panels that are displayed only
@@ -5523,39 +5563,13 @@ function showLegend() {
 */
 
 // Event handler for state change on the algorithm selection select control
-function algorithmSelected() {
+function algorithmSelectionChanged() {
 
-    // if we have an algorithm already selected, clean up its
-    // UI first
-    if (hdxAV.currentAV != null) {
-	cleanupAVControlPanel();
-	hdxAV.currentAV.cleanupUI();
-    }
-    
-    var value = getCurrentAlgorithm();
-
-    // if we selected a valid algorithm, enable the start button
-    if (value != hdxNoAV.value) {
-	hdxAV.setStatus(hdxStates.AV_SELECTED);
-	hdxAV.startPause.disabled = false;
-	document.getElementById('algOptionsDone').disabled=false;
-    }
-    else {
-	showAlgorithmSelectionPanel();
-	document.getElementById('algOptionsDone').disabled=true;
-    }
-    
-    // set the current algorithm
-    for (var i = 1; i < hdxAV.avList.length; i++) {
-	if (value == hdxAV.avList[i].value) {
-	    hdxAV.currentAV = hdxAV.avList[i];
-	    break;
-	}
-    }
-    document.getElementById("currentAlgorithm").innerHTML="Algorithm: " + hdxAV.currentAV.name;
-
-    // call its function to set up its status and options
-    hdxAV.currentAV.setupUI();
+    let value = getSelectedAlgorithm();
+    // enable/disable the "Done" button based on whether an
+    // algorithm was selected
+    document.getElementById('algOptionsDone').disabled =
+	(value == hdxNoAV.value);
 }
 
 function drag(event) {
