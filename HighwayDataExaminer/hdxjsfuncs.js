@@ -5548,6 +5548,7 @@ function showTopControlPanel() {
     let av3 = document.getElementById("topControlPanelAV3");
     let av4 = document.getElementById("topControlPanelAV4");
     let av4button = document.getElementById("resetButton");
+    let showHidden = document.getElementById("topControlPanelShowHidden");
     
     // show only the relevant components given the current
     // state of HDX
@@ -5561,6 +5562,7 @@ function showTopControlPanel() {
 	av2.style.display = "none";
 	av3.style.display = "none";
 	av4.style.display = "none";
+	showHidden.style.display = "";
 	break;
 
     case hdxStates.GRAPH_LOADED:
@@ -5572,6 +5574,7 @@ function showTopControlPanel() {
 	av3.style.display = "none";
 	av4.style.display = "";
 	av4button.value = "Select AV";
+	showHidden.style.display = "";
 	break;
 
     default:
@@ -5583,6 +5586,7 @@ function showTopControlPanel() {
 	av3.style.display = "";
 	av4.style.display = "";
 	av4button.value = "Reset AV";
+	showHidden.style.display = "none";
 	break;
     }
     

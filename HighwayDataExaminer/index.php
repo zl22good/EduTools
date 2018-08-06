@@ -146,6 +146,9 @@ ENDOFSTUFF;
 	<td>
 	  <input id="datatablesCheckbox" type="checkbox" name="Datatables" checked onclick="showHideDatatables()" />&nbsp;Show Data Tables<br>
 	</td>
+	<td id="topControlPanelShowHidden">
+          <input id="showHidden" type="checkbox" name="Show Hidden Markers" onclick="showHiddenClicked()" />&nbsp;Show Hidden Markers
+	</td>
       </tr>
     </tbody>
   </table>
