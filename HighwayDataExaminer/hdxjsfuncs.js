@@ -5538,11 +5538,9 @@ function algorithmSelected() {
     if (value != hdxNoAV.value) {
 	hdxAV.setStatus(hdxStates.AV_SELECTED);
 	hdxAV.startPause.disabled = false;
-	hideLoadDataPanel();
 	document.getElementById('algOptionsDone').disabled=false;
     }
     else {
-	hideLoadDataPanel();
 	showAlgorithmSelectionPanel();
 	document.getElementById('algOptionsDone').disabled=true;
     }
