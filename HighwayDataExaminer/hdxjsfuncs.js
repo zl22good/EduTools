@@ -5501,6 +5501,35 @@ function resetPressed() {
     showAlgorithmSelectionPanel();
 }
 
+// event handler for "Load Data Options" button
+function loadDataOptionsPressed() {
+
+    switch (hdxAV.status) {
+
+    case hdxStates.AV_RUNNING:
+	// if there's an AV running, we need to pause it
+	hdxAV.setStatus(hdxStates.AV_PAUSED);
+	hdxAV.startPause.innerHTML = "Start";
+	// break intentionally omitted
+
+    case hdxStates.AV_PAUSED:
+    case hdxStates.AV_COMPLETE:
+    case hdxStates.GRAPH_LOADED:
+	// show waypoints, show connections
+	initWaypointsAndConnections(true, true,
+				    visualSettings.undiscovered);
+	
+	cleanupAVControlPanel();
+	algorithmSelectionChanged();
+	hideAVStatusPanel();
+	break;
+    }
+
+    // in all cases, we hide the top panel, show the load panel
+    hideTopControlPanel();
+    showLoadDataPanel();
+}
+
 // Functions to show and hide panels that are displayed only
 // in certain modes of HDX operation
 
