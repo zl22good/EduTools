@@ -253,7 +253,6 @@ function resetHighlight(x){
 function clearForm(f){
     //enables the the start/pause and algorithm selection buttons/drop down
     document.getElementById("startPauseButton").disabled = false;
-    document.getElementById("AlgorithmSelection").disabled = false;
     var frm_elements = f.elements;
     
     //clears the form
@@ -4927,7 +4926,6 @@ function parseTMGContents(fileContents) {
     genEdges = false;
     usingAdjacencyLists = true;
     hdxAV.setStatus(hdxStates.GRAPH_LOADED);
-    document.getElementById("AlgorithmSelection").disabled = false;
     return summaryInfo + '<p />' + vTable + '<p />' + eTable;
 }
 
@@ -4975,7 +4973,6 @@ function parseGRAContents(fileContents) {
     eTable += '</tbody></table>';
     genEdges = false;
     hdxAV.setStatus(hdxStates.GRAPH_LOADED);
-    document.getElementById("AlgorithmSelection").disabled = false;
     return sideInfo + '<p />' + vTable + '<p />' + eTable;
 }
 
@@ -5390,7 +5387,6 @@ function startPausePressed() {
 	else {
 	    hdxAV.startPause.innerHTML = "Pause";
 	}
-	document.getElementById("AlgorithmSelection").disabled = true;
 	selectAlgorithmAndStart();
 	break;
 	
@@ -5487,6 +5483,19 @@ function algOptionsDismissPressed() {
 
     hideAlgorithmSelectionPanel();
     showTopControlPanel();
+}
+
+// event handler for "Change AV" button press
+function changeAVPressed() {
+
+    // if there's an AV running, we need to pause it
+    if (hdxAV.status == hdxStates.AV_RUNNING) {
+	// easiest to accomplish this by pretending we pressed
+	// the pause button
+	startPausePressed();
+    }
+    hideTopControlPanel();
+    showAlgorithmSelectionPanel();
 }
 
 // Functions to show and hide panels that are displayed only

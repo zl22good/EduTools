@@ -213,7 +213,7 @@ ENDOFSTUFF;
       <tr>
 	<td>
 	  Select an Algorithm to Visualize:
-	  <select id="AlgorithmSelection" onchange="algorithmSelectionChanged()" disabled>
+	  <select id="AlgorithmSelection" onchange="algorithmSelectionChanged()">
 	    <!-- filled in with options by JS code in hdxAV.initOnLoad() -->
 	  </select>
 	  
