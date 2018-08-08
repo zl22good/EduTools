@@ -51,8 +51,8 @@ var hdxAV = {
     // remember the currently-selected AV
     currentAV: null,
     
-    // are we tracing psuedocode?
-    traceCode: true,
+    // are we tracing at the action level rather than the iteration level
+    traceActions: true,
 
     // track the end of an iteration defined by a series of actions
     iterationDone: false,
@@ -167,7 +167,7 @@ var hdxAV = {
 
 	// we are supposed to do some work, either a single action or
 	// a full iteration
-	if (hdxAV.traceCode) {
+	if (hdxAV.traceActions) {
 	    hdxAV.oneAction(thisAV);
 	}
 	else {
@@ -5356,13 +5356,13 @@ function getSelectedAlgorithm() {
 }
 
 // pseudocode display event handler
-// function both sets the traceCode variable and shows/hides
+// function both sets the traceActions variable and shows/hides
 // the actual code on the display as appropriate
 function showHidePseudocode() {
 
-    hdxAV.traceCode = document.getElementById("pseudoCheckbox").checked;
+    hdxAV.traceActions = document.getElementById("pseudoCheckbox").checked;
     document.getElementById("pseudoText").style.display =
-	(hdxAV.traceCode ? "" : "none");
+	(hdxAV.traceActions ? "" : "none");
 }
 
 // generic event handler for start/pause/resume button
