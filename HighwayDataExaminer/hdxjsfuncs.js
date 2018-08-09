@@ -1852,7 +1852,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 		
-		updateAVControlEntry("leader", "no leader yet, d<sub>closest</sub> = &infty;");
+		updateAVControlEntry("leader", "no leader yet, d<sub>closest</sub> = &infin;");
 
 
 		hdxAV.iterationDone = true;
