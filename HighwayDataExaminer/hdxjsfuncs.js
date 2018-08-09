@@ -888,9 +888,9 @@ var hdxNoAV = {
 
     code: "Select and start an algorithm to view pseudocode.",
     
-    // provide start, nextStep, setupUI, just in case buttons are
+    // provide prepToStart, nextStep, setupUI, just in case buttons are
     // somehow active when this option is selected
-    start() {
+    prepToStart() {
 
 	alert("Please select an algorithm first.");
     },
@@ -1360,9 +1360,9 @@ shortest &larr; 0</td></tr>
 	}
     },
     
-    // required start function
+    // required prepToStart function
     // initialize a vertex-based search
-    start() {
+    prepToStart() {
 
 	hdxAV.algStat.innerHTML = "Initializing";
 
@@ -1376,13 +1376,6 @@ shortest &larr; 0</td></tr>
 	// start the search by initializing with the value at pos 0
 	updateMarkerAndTable(0, visualSettings.visiting, 40, false);
 	
-	// set up for our first action
-	hdxAV.nextAction = "initialize";
-
-	// to start, make just a simple call to nextStep, ignoring any
-	// delay until after the first action occurs
-
-	hdxAV.nextStep(this);
     },
 
 
@@ -1748,22 +1741,14 @@ shortestEdge &larr; 0</td></tr>
 	}
     ],
 	
-    // required start function
-    start() {
+    // required prepToStart function
+    prepToStart() {
 
 	hdxAV.algStat.innerHTML = "Initializing";
 
 	// hide waypoints, show connections
 	initWaypointsAndConnections(false, true,
 				    visualSettings.undiscovered);
-	
-	// set up for our first action
-	hdxAV.nextAction = "initialize";
-
-	// to start, make just a simple call to nextStep, ignoring any
-	// delay until after the first action occurs
-
-	hdxAV.nextStep(this);
     },
 	
     // set up UI for the start of edge search
@@ -2123,25 +2108,16 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	}
     },
 
-    // required start function
+    // required prepToStart function
     // initialize a vertex closest pairs search
-    start() {
+    prepToStart() {
 
 	hdxAV.algStat.innerHTML = "Initializing";
 
 	// show waypoints, hide connections
 	initWaypointsAndConnections(true, false,
 				    visualSettings.undiscovered);
-	
-	// set up for our first action
-	hdxAV.nextAction = "initialize";
-
-	// to start, make just a simple call to nextStep, ignoring any
-	// delay until after the first action occurs
-
-	hdxAV.nextStep(this);
     },
-
 
     // set up UI entries for closest pairs
     setupUI() {
@@ -3143,9 +3119,9 @@ var hdxTraversalsSpanningAVCommon = {
 	return "#" + vIndex + " " + waypoints[vIndex].label + edgeLabel;
     },
     
-    // required start function, here do things common to all
+    // required prepToStart function, here do things common to all
     // traversals/spanning algorithms
-    start() {
+    prepToStart() {
 
 	hdxAV.algStat.innerHTML = "Initializing";
 
@@ -3178,13 +3154,6 @@ var hdxTraversalsSpanningAVCommon = {
 	// pseudocode will depend on specific options chosen, so set up
 	// the code field based on the options in use
 	this.setupCode();
-	
-	// set up for our first action
-	hdxAV.nextAction = "initialize";
-
-	// to start, we make just a simple call to nextStep, ignoring any
-	// delay until after the first action occurs
-	hdxAV.nextStep(this);
     },
 
     // set up common UI components for traversals/spanning trees
@@ -4190,22 +4159,14 @@ var hdxBFConvexHullAV = {
 	},
     ],
 
-    // required start method for brute force convex hull
-    start() {
+    // required prepToStart method for brute force convex hull
+    prepToStart() {
 
 	hdxAV.algStat.innerHTML = "Initializing";
 
 	// show waypoints, hide connections
 	initWaypointsAndConnections(true, false,
 				    visualSettings.undiscovered);
-
-	// set up for our first action
-	hdxAV.nextAction = "initialize";
-
-	// to start, make just a simple call to nextStep, ignoring any
-	// delay until after the first action occurs
-
-	hdxAV.nextStep(this);
     },
 
     // set up UI for convex hull
@@ -5380,7 +5341,15 @@ function startPausePressed() {
 	else {
 	    hdxAV.startPause.innerHTML = "Pause";
 	}
-	selectAlgorithmAndStart();
+	hdxAV.currentAV.prepToStart();
+	// set pseudocode
+	document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
+	showHidePseudocode();
+
+	// get the simulation going, always start with the "initialize"
+	// action, then do it
+	hdxAV.nextAction = "initialize";
+	hdxAV.nextStep(hdxAV.currentAV);
 	break;
 	
     case hdxStates.AV_RUNNING:
@@ -5415,15 +5384,6 @@ function startPausePressed() {
     default:
 	alert("startPausePressed, unexpected status=" + hdxAV.status);
     }
-}
-
-// function to begin the execution of a new AV
-function selectAlgorithmAndStart() {
-
-    hdxAV.currentAV.start();
-    // set pseudocode
-    document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
-    showHidePseudocode();
 }
 
 // Event handler for state change on the algorithm selection select control
