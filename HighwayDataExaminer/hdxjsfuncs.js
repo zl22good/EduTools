@@ -1905,6 +1905,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		    updateMarkerAndTable(thisAV.v2, thisAV.visualSettings.v2,
 					 30, false);
 		    updateAVControlEntry("v2visiting", "v<sub>2</sub>: #" + thisAV.v2 + " " + waypoints[thisAV.v2].label);
+		    updateAVControlEntry("checkingDistance", "Distance: ");
 		    thisAV.drawLineVisiting();
 		}
 		hdxAV.iterationDone = true;
