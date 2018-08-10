@@ -937,7 +937,7 @@ var hdxVertexExtremesSearchAV = {
 
     // pseudocode
     code: `
-<table class="pseudocode"><tr id="initialize" class="pseudocode"><td class="pseudocode">
+<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">
 north &larr; 0<br />
 south &larr; 0<br />
 east &larr; 0<br />
@@ -1106,7 +1106,7 @@ shortest &larr; 0</td></tr>
     // the actions that make up this algorithm
     avActions: [
 	{
-	    label: "initialize",
+	    label: "START",
 	    comment: "initialize all leader indices to 0",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
@@ -1437,7 +1437,7 @@ var hdxEdgeExtremesSearchAV = {
 
     // pseudocode
     code:`
-<table class="pseudocode"><tr id="initialize" class="pseudocode"><td class="pseudocode">
+<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">
 longestLabel &larr; 0<br />
 shortestLabel &larr; 0<br />
 longestEdge &larr; 0<br />
@@ -1552,7 +1552,7 @@ shortestEdge &larr; 0</td></tr>
 	// the actions that make up this algorithm
     avActions: [
 	{
-	    label: "initialize",
+	    label: "START",
 	    comment: "initialize all leader indices to 0",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
@@ -1783,7 +1783,7 @@ var hdxClosestPairsAV = {
 
     // pseudocode
     code: `
-<table class="pseudocode"><tr id="initialize" class="pseudocode"><td class="pseudocode">
+<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">
 closest &larr; null<br />
 d<sub>closest</sub> &larr; &infin;</td></tr>
 <tr id="v1forLoopTop"><td>for (v<sub>1</sub> &larr; 0 to |V|-1)</td></tr>
@@ -1847,7 +1847,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
     // the actions that make up this algorithm
     avActions: [
 	{
-	    label: "initialize",
+	    label: "START",
 	    comment: "initialize closest pair variables",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
@@ -2358,7 +2358,7 @@ var hdxTraversalsSpanningAVCommon = {
     // and spanning tree algorithms
     avActions: [
 	{
-	    label: "initialize",
+	    label: "START",
 	    comment: "initialize algorithm",
 	    code: function(thisAV) {
 
@@ -3311,7 +3311,7 @@ hdxGraphTraversalsAV.setupCode = function() {
 	initializeCode.push("done &larr; false");
     }
     this.code = '<table class="pseudocode">' +
-	pcEntry(0, initializeCode, "initialize");
+	pcEntry(0, initializeCode, "START");
     if (this.stoppingCondition == "StopAtEnd") {
 	this.code +=
 	    pcEntry(0, "while not tree.contains(end)", "checkEndAdded") +
@@ -3406,7 +3406,7 @@ hdxDijkstraAV.setupCode = function() {
     this.code = '<table class="pseudocode">' +
 	pcEntry(0, ["pq &larr; new " + this.ldv.displayName,
 		    "pq." + this.ldv.addOperation() + "(start,null,0)" ],
-		"initialize");
+		"START");
     if (this.stoppingCondition == "StopAtEnd") {
 	this.code +=
 	    pcEntry(0, "while not tree.contains(end)", "checkEndAdded") +
@@ -3484,7 +3484,7 @@ hdxPrimAV.setupCode = function() {
     this.code = '<table class="pseudocode">' +
 	pcEntry(0, ["pq &larr; new " + this.ldv.displayName,
 		    "pq." + this.ldv.addOperation() + "(start,null,0)" ],
-		"initialize");
+		"START");
     if (this.stoppingCondition == "StopAtEnd") {
 	this.code +=
 	    pcEntry(0, "while not tree.contains(end)", "checkEndAdded") +
@@ -3547,7 +3547,7 @@ var hdxBFConvexHullAV = {
     
     // pseudocode
     code:'<table class="pseudocode">' +
-	pcEntry(0, "hull &larr; new list", "initialize") +
+	pcEntry(0, "hull &larr; new list", "START") +
 	pcEntry(0, "for (v<sub>1</sub> &larr; 0 to |V|-2)", "v1forLoopTop") +
 	pcEntry(1, "for (v<sub>2</sub> &larr; v<sub>1</sub> to |V|-1)", "v2forLoopTop") +
 	pcEntry(2, [ "// find line through V[v<sub>1</sub>] and V[v<sub>2</sub>]",
@@ -3707,7 +3707,7 @@ var hdxBFConvexHullAV = {
     // the actions that make up the brute-force convex hull
     avActions: [
 	{
-	    label: "initialize",
+	    label: "START",
 	    comment: "initialize brute-force convex hull variables",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
@@ -5362,9 +5362,9 @@ function startPausePressed() {
 	document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
 	showHidePseudocode();
 
-	// get the simulation going, always start with the "initialize"
+	// get the simulation going, always start with the "START"
 	// action, then do it
-	hdxAV.nextAction = "initialize";
+	hdxAV.nextAction = "START";
 	hdxAV.nextStep(hdxAV.currentAV);
 	break;
 	
