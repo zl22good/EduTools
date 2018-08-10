@@ -3289,7 +3289,7 @@ hdxGraphTraversalsAV.mainLoopBody = function(indent) {
 	pcEntry(indent+1, "if tree.contains(to)", "checkAdded") +
 	pcEntry(indent+2, "discard (to,via) // on removal", "wasAdded") +
 	pcEntry(indent+1, "else", "") +
-	pcEntry(indent+2, "tree,add(to,via)", "wasNotAdded") +
+	pcEntry(indent+2, "tree.add(to,via)", "wasNotAdded") +
 	pcEntry(indent+2, "for each e = (to,v) // neighbors",
 		"checkNeighborsLoopTop") +
 	pcEntry(indent+3, "if tree.contains(v)", "checkNeighborsLoopIf") +
