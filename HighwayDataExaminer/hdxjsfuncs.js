@@ -1885,7 +1885,6 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 					     20, false);
 		    }
 		}
-		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
 		return "Top of outer for loop over vertices, v<sub>1</sub>=" + thisAV.v1;
@@ -2035,7 +2034,6 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 					 visualSettings.leader,
 					 40, false);
 		}
-		hdxAV.iterationDone = true;
 		hdxAV.nextAction = "v1forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
