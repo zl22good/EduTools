@@ -1887,7 +1887,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		}
 	    },
 	    logMessage: function(thisAV) {
-		return "Top of outer for loop over vertices, v<sub>1</sub>=" + thisAV.v1;
+		return "Next v<sub>1</sub>=" + thisAV.v1;
 	    }
 	},
 	{
@@ -1910,7 +1910,11 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		hdxAV.iterationDone = true;
 	    },
 	    logMessage: function(thisAV) {
-		return "Top of inner for loop over vertices, v<sub>2</sub>=" + thisAV.v2;
+		if (hdxAV.traceActions) {
+		    return "Next v<sub>2</sub>=" + thisAV.v2;
+		}
+		return "Checking v<sub>1</sub>=" + thisAV.v1 +
+		    "and v<sub>2</sub>=" + thisAV.v2;
 	    }
 	},
 	{
@@ -2015,7 +2019,20 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		hdxAV.nextAction = "v2forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
-		return "Done processing v<sub>2</sub>=" + thisAV.v2;
+		// since this is an iterationDone action, we give a
+		// different log message with more info
+		if (hdxAV.traceActions) {
+		    return "Done processing v<sub>2</sub>=" + thisAV.v2;
+		}
+		let leaderOrNot;
+		if (thisAV.closest[0] == thisAV.v1 &&
+		    thisAV.closest[1] == thisAV.v2) {
+		    leaderOrNot = "New leader";
+		}
+		else {
+		    leaderOrNot = "Discarding";
+		}
+		return leaderOrNot + ": distance " + thisAV.d_this.toFixed(3) + " between v<sub>1</sub>=" + thisAV.v1 + " and v<sub>2</sub>=" + thisAV.v2;
 	    }
 	},
 	{
