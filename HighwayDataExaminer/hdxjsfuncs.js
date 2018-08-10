@@ -1867,7 +1867,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    label: "v1forLoopTop",
 	    comment: "outer for loop to visit all pairs of vertices",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
+		highlightPseudocode(this.label, thisAV.visualSettings.v1);
 		thisAV.v1++;
 		if (thisAV.v1 == waypoints.length-1) {
 		    hdxAV.nextAction = "cleanup";
@@ -1894,7 +1894,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    label: "v2forLoopTop",
 	    comment: "inner for loop to visit all pairs of vertices",
 	    code: function(thisAV) {
-		highlightPseudocode(this.label, visualSettings.visiting);
+		highlightPseudocode(this.label, thisAV.visualSettings.v2);
 		thisAV.v2++;
 		if (thisAV.v2 == waypoints.length) {
 		    hdxAV.nextAction = "v1forLoopBottom";
