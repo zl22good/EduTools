@@ -5051,11 +5051,23 @@ function parseNMPContents(fileContents) {
     // all lines describe waypoints
     var lines = fileContents.replace(/\r\n/g,"\n").split('\n');
     waypoints = new Array();
+    waypointColors = new Array();
     for (var i = 0; i < lines.length; i++) {
 	if (lines[i].length > 0) {
 	    var xline = lines[i].split(' ');
-	    if (xline.length == 3) {
+	    if (xline.length == 3 || xline.length == 4) {
 		waypoints[waypoints.length] = new Waypoint(xline[0], xline[1], xline[2], "", "");
+		if (xline.length == 3) {
+		    waypointColors[waypointColors.length] = "red";
+		}
+		else {
+		    if (xline[3] == "FP" || xline[3] == "FPLI") {
+			waypointColors[waypointColors.length] = "green";
+		    }
+		    else { // must be "LI"
+			waypointColors[waypointColors.length] = "yellow";
+		    }
+		}
 	    }
 	}
     }
