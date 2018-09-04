@@ -5085,7 +5085,8 @@ function parseNMPContents(fileContents) {
 	var feet = distanceInFeet(waypoints[2*i].lat, waypoints[2*i].lon,
 				  waypoints[2*i+1].lat,
 				  waypoints[2*i+1].lon).toFixed(2);
-	table += "<tr><td><table class=\"nmptable2\"><thead /><tbody><tr><td>"
+	table += "<tr style=\"background-color:" + waypointColors[2*i] +
+	    "\"><td><table class=\"nmptable2\"><thead /><tbody><tr><td>"
 	    + "<a onclick=\"javascript:labelClickHDX(" + 2*i + ");\">"
 	    + waypoints[2*i].label + "</a></td><td>("
 	    + waypoints[2*i].lat + ","
