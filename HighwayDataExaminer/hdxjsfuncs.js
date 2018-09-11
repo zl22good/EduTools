@@ -5091,7 +5091,7 @@ function parseNMPContents(fileContents) {
 	    + waypoints[2*i].label + "</a></td><td>("
 	    + waypoints[2*i].lat + ","
 	    + waypoints[2*i].lon + ")</td></tr><tr><td>"
-	    + "<a onclick=\"javascript:labelClickHDX(" + 2*i+1 + ");\">"
+	    + "<a onclick=\"javascript:labelClickHDX(" + (2*i+1) + ");\">"
 	    + waypoints[2*i+1].label + "</a></td><td>("
 	    + waypoints[2*i+1].lat + ","
 	    + waypoints[2*i+1].lon + ")</td></tr>"
@@ -5103,6 +5103,8 @@ function parseNMPContents(fileContents) {
     table += "</tbody></table>";
     genEdges = false;
     hdxAV.setStatus(hdxStates.NMP_LOADED);
+    // register the HDX-specific event handler for waypoint clicks
+    registerMarkerClickListener(labelClickHDX);
     return table;
 }
 
