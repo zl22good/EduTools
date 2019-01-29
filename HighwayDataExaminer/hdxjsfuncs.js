@@ -1792,7 +1792,7 @@ var hdxExtremePairsAV = {
     code: `
 <table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">
 closest &larr; null<br />
-d<sub>closest</sub> &larr; &infin;</td></tr>
+d<sub>closest</sub> &larr; &infin;<br />
 farthest &larr; null<br />
 d<sub>farthest</sub> &larr; 0</td></tr>
 <tr id="v1forLoopTop"><td>for (v<sub>1</sub> &larr; 0 to |V|-1)</td></tr>
