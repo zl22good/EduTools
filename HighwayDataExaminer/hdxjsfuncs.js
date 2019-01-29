@@ -336,6 +336,13 @@ var visualSettings = {
 	name: "leader",
 	value: 0
     },
+    leader2: {
+        color: "blue",
+        textColor: "white",
+        scale: 6,
+	name: "leader",
+	value: 0
+    },
     searchFailed: {
         color: "red",
         textColor: "white",
@@ -2029,7 +2036,7 @@ d<sub>farthest</sub> &larr; 0</td></tr>
 	    comment: "update new farthest pair",
 	    code: function(thisAV) {
 
-		highlightPseudocode(this.label, visualSettings.leader);
+		highlightPseudocode(this.label, visualSettings.leader2);
 
 		// if we had previous leaders, they're no longer leaders
 		if (thisAV.farthest[0] != -1) {
@@ -2057,10 +2064,10 @@ d<sub>farthest</sub> &larr; 0</td></tr>
 		thisAV.d_farthest = thisAV.d_this;
 
 		updateAVControlEntry("farLeader", "Farthest: [" + 
-				     thisAV.v1 + "," + thisAV.v2 + "], d<sub>farthest</sub>: " + thisAV.d_closest.toFixed(3));
-		updateMarkerAndTable(thisAV.v1, visualSettings.leader,
+				     thisAV.v1 + "," + thisAV.v2 + "], d<sub>farthest</sub>: " + thisAV.d_farthest.toFixed(3));
+		updateMarkerAndTable(thisAV.v1, visualSettings.leader2,
 				     40, false);
-		updateMarkerAndTable(thisAV.v2, visualSettings.leader,
+		updateMarkerAndTable(thisAV.v2, visualSettings.leader2,
 				     40, false);
 		thisAV.updateLineFarthest();
 		hdxAV.nextAction = "v2forLoopBottom";
@@ -2079,18 +2086,22 @@ d<sub>farthest</sub> &larr; 0</td></tr>
 		
 		// if the current v2 isn't part of the current closest pair
 		// or current farthest pair, discard it
-		if (thisAV.v2 != thisAV.closest[0] &&
-		    thisAV.v2 != thisAV.closest[1] &&
-		    thisAV.v2 != thisAV.farthest[0] &&
-		    thisAV.v2 != thisAV.farthest[1]) {
-		    updateMarkerAndTable(thisAV.v2,
-					 thisAV.visualSettings.discardedv2,
-					 15, false);
-		}
-		else {
+		if (thisAV.v2 == thisAV.closest[0] ||
+		    thisAV.v2 == thisAV.closest[1]) {
 		    updateMarkerAndTable(thisAV.v2,
 					 visualSettings.leader,
 					 40, false);
+		}
+		else if (thisAV.v2 == thisAV.farthest[0] ||
+			 thisAV.v2 == thisAV.farthest[1]) {
+		    updateMarkerAndTable(thisAV.v2,
+					 visualSettings.leader2,
+					 40, false);
+		}
+		else {
+		    updateMarkerAndTable(thisAV.v2,
+					 thisAV.visualSettings.discardedv2,
+					 15, false);
 		}
 		hdxAV.iterationDone = true;
 		hdxAV.nextAction = "v2forLoopTop";
@@ -2123,17 +2134,22 @@ d<sub>farthest</sub> &larr; 0</td></tr>
 
 		// if the current v1 isn't part of the current closest pair
 		// or current farthest pair, we discard it
-		if (thisAV.v1 != thisAV.closest[0] &&
-		    thisAV.v1 != thisAV.closest[1] &&
-		    thisAV.v1 != thisAV.farthest[0] &&
-		    thisAV.v1 != thisAV.farthest[1]) {
-		    updateMarkerAndTable(thisAV.v1,
-					 visualSettings.discarded, 15, true);
-		}
-		else {
+		if (thisAV.v1 == thisAV.closest[0] ||
+		    thisAV.v1 == thisAV.closest[1]) {
 		    updateMarkerAndTable(thisAV.v1,
 					 visualSettings.leader,
 					 40, false);
+		}
+		else if (thisAV.v1 == thisAV.farthest[0] ||
+			 thisAV.v1 == thisAV.farthest[1]) {
+		    updateMarkerAndTable(thisAV.v1,
+					 visualSettings.leader2,
+					 40, false);
+		}
+		else {
+		    updateMarkerAndTable(thisAV.v1,
+					 thisAV.visualSettings.discardedv2,
+					 15, false);
 		}
 		hdxAV.nextAction = "v1forLoopTop";
 	    },
@@ -2217,7 +2233,7 @@ d<sub>farthest</sub> &larr; 0</td></tr>
 
 	if (this.lineFarthest == null) {
 	    this.lineFarthest = L.polyline(farthestLine, {
-		color: visualSettings.leader.color,
+		color: visualSettings.leader2.color,
 		opacity: 0.6,
 		weight: 4
 	    });
@@ -2250,7 +2266,7 @@ d<sub>farthest</sub> &larr; 0</td></tr>
 	addEntryToAVControlPanel("v2visiting", this.visualSettings.v2);
 	addEntryToAVControlPanel("checkingDistance", visualSettings.visiting);
 	addEntryToAVControlPanel("closeLeader", visualSettings.leader);
-	addEntryToAVControlPanel("farLeader", visualSettings.leader);
+	addEntryToAVControlPanel("farLeader", visualSettings.leader2);
     },
 	
 	
