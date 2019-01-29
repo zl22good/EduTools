@@ -111,7 +111,7 @@ var hdxAV = {
 	this.avList.push(hdxNoAV);
 	this.avList.push(hdxVertexExtremesSearchAV);
 	this.avList.push(hdxEdgeExtremesSearchAV);
-	this.avList.push(hdxClosestPairsAV);
+	this.avList.push(hdxExtremePairsAV);
 	this.avList.push(hdxGraphTraversalsAV);
 	this.avList.push(hdxDijkstraAV);
 	this.avList.push(hdxPrimAV);
@@ -1773,30 +1773,39 @@ shortestEdge &larr; 0</td></tr>
     }
 };
 
-/* closest pairs of vertices, just brute force for now */
-var hdxClosestPairsAV = {
+/* closest/farthest pairs of vertices, just brute force for now */
+var hdxExtremePairsAV = {
 
     // entries for list of AVs
     value: "closestpairs",
-    name: "Vertex Closest Pairs",
-    description: "Search for the closest pair of vertices (waypoints).",
+    name: "Vertex Closest/Farthest Pairs",
+    description: "Search for the closest/farthest pair of vertices (waypoints).",
 
     // pseudocode
     code: `
 <table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">
 closest &larr; null<br />
 d<sub>closest</sub> &larr; &infin;</td></tr>
+farthest &larr; null<br />
+d<sub>farthest</sub> &larr; 0</td></tr>
 <tr id="v1forLoopTop"><td>for (v<sub>1</sub> &larr; 0 to |V|-1)</td></tr>
 <tr id="v2forLoopTop"><td>&nbsp;&nbsp;for (v<sub>2</sub> &larr; v1+1 to |V|)</td></tr>
 <tr id="computeDistance"><td>
 &nbsp;&nbsp;&nbsp;&nbsp;d &larr; dist(v<sub>1</sub>,v<sub>2</sub>)
 </td></tr>
-<tr id="checkLeader"><td>
+<tr id="checkCloseLeader"><td>
 &nbsp;&nbsp;&nbsp;&nbsp;if (d < d<sub>closest</sub>)
 </td></tr>
-<tr id="newLeader"><td>
+<tr id="newCloseLeader"><td>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;closest &larr; [v<sub>1</sub>,v<sub>2</sub>]<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d<sub>closest</sub> &larr; d
+</td></tr>
+<tr id="checkFarLeader"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;if (d > d<sub>farthest</sub>)
+</td></tr>
+<tr id="newFarLeader"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;farthest &larr; [v<sub>1</sub>,v<sub>2</sub>]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d<sub>farthest</sub> &larr; d
 </td></tr>
 </table>
 `,
@@ -1812,12 +1821,15 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
     // leader info
     closest: [-1, -1],
     d_closest: Number.MAX_VALUE,
+    farthest: [-1, -1],
+    d_farthest: 0,
 
-    // polylines for leader and visiting
+    // polylines for leaders and visiting
     lineClosest: null,
+    lineFarthest: null,
     lineVisiting: null,
 
-    // visual settings specific to closest pairs
+    // visual settings specific to closest/farthest pairs
     // NOTE: these match BFCH and should probably be given
     // common names and moved to hdxAV.visualSettings
     visualSettings: {
@@ -1852,7 +1864,8 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);
 		
-		updateAVControlEntry("leader", "no leader yet, d<sub>closest</sub> = &infin;");
+		updateAVControlEntry("closeLeader", "no leader yet, d<sub>closest</sub> = &infin;");
+		updateAVControlEntry("farLeader", "no leader yet, d<sub>farthest</sub> = 0");
 
 
 		hdxAV.iterationDone = true;
@@ -1927,7 +1940,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 						waypoints[thisAV.v2].lat,
 						waypoints[thisAV.v2].lon);
 		updateAVControlEntry("checkingDistance", "Distance: " + thisAV.d_this.toFixed(3));
-		hdxAV.nextAction = "checkLeader";
+		hdxAV.nextAction = "checkCloseLeader";
 
 	    },
 	    logMessage: function(thisAV) {
@@ -1935,15 +1948,15 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    }
 	},
 	{
-	    label: "checkLeader",
+	    label: "checkCloseLeader",
 	    comment: "check if current candidate pair is the new closest pair",
 	    code: function(thisAV) {
 		highlightPseudocode(this.label, visualSettings.visiting);	
 		if (thisAV.d_this < thisAV.d_closest) {
-		    hdxAV.nextAction = "newLeader";
+		    hdxAV.nextAction = "newCloseLeader";
 		}
 		else {
-		    hdxAV.nextAction = "v2forLoopBottom";
+		    hdxAV.nextAction = "checkFarLeader";
 		}
 	    },
 	    logMessage: function(thisAV) {
@@ -1951,7 +1964,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    }
 	},
 	{
-	    label: "newLeader",
+	    label: "newCloseLeader",
 	    comment: "update new closest pair",
 	    code: function(thisAV) {
 
@@ -1982,17 +1995,78 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		thisAV.closest = [ thisAV.v1, thisAV.v2 ];
 		thisAV.d_closest = thisAV.d_this;
 
-		updateAVControlEntry("leader", "Closest: [" + 
+		updateAVControlEntry("closeLeader", "Closest: [" + 
 				     thisAV.v1 + "," + thisAV.v2 + "], d<sub>closest</sub>: " + thisAV.d_closest.toFixed(3));
 		updateMarkerAndTable(thisAV.v1, visualSettings.leader,
 				     40, false);
 		updateMarkerAndTable(thisAV.v2, visualSettings.leader,
 				     40, false);
 		thisAV.updateLineClosest();
-		hdxAV.nextAction = "v2forLoopBottom";
+		hdxAV.nextAction = "checkFarLeader";
 	    },
 	    logMessage: function(thisAV) {
 		return "[" + thisAV.v1 + "," + thisAV.v2 + "] new closest pair with d<sub>closest</sub>=" + thisAV.d_closest.toFixed(3);
+	    }
+	},
+	{
+	    label: "checkFarLeader",
+	    comment: "check if current candidate pair is the new farthest pair",
+	    code: function(thisAV) {
+		highlightPseudocode(this.label, visualSettings.visiting);	
+		if (thisAV.d_this > thisAV.d_farthest) {
+		    hdxAV.nextAction = "newFarLeader";
+		}
+		else {
+		    hdxAV.nextAction = "v2forLoopBottom";
+		}
+	    },
+	    logMessage: function(thisAV) {
+		return "Check if [" + thisAV.v1 + "," + thisAV.v2 + "] is the new farthest pair";
+	    }
+	},
+	{
+	    label: "newFarLeader",
+	    comment: "update new farthest pair",
+	    code: function(thisAV) {
+
+		highlightPseudocode(this.label, visualSettings.leader);
+
+		// if we had previous leaders, they're no longer leaders
+		if (thisAV.farthest[0] != -1) {
+		    // old v1 leader is now either going to be leader again
+		    // below or is now discarded, so mark as discarded
+		    updateMarkerAndTable(thisAV.farthest[0],
+					 visualSettings.discarded, 15, true);
+
+		    // old v2 leader is either discarded if it's less than
+		    // or equal to v1, unvisited on this inner iteration
+		    // otherwise
+		    if (thisAV.farthest[1] <= thisAV.v1) {
+			updateMarkerAndTable(thisAV.farthest[1],
+					     visualSettings.discarded, 15,
+					     true);
+		    }
+		    else {
+			updateMarkerAndTable(thisAV.farthest[1],
+					     thisAV.visualSettings.discardedv2,
+					     15, false);
+		    }
+		}
+		// remember the current pair as the farthest
+		thisAV.farthest = [ thisAV.v1, thisAV.v2 ];
+		thisAV.d_farthest = thisAV.d_this;
+
+		updateAVControlEntry("farLeader", "Farthest: [" + 
+				     thisAV.v1 + "," + thisAV.v2 + "], d<sub>farthest</sub>: " + thisAV.d_closest.toFixed(3));
+		updateMarkerAndTable(thisAV.v1, visualSettings.leader,
+				     40, false);
+		updateMarkerAndTable(thisAV.v2, visualSettings.leader,
+				     40, false);
+		thisAV.updateLineFarthest();
+		hdxAV.nextAction = "v2forLoopBottom";
+	    },
+	    logMessage: function(thisAV) {
+		return "[" + thisAV.v1 + "," + thisAV.v2 + "] new farthest pair with d<sub>farthest</sub>=" + thisAV.d_farthest.toFixed(3);
 	    }
 	},
 	{
@@ -2003,9 +2077,12 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		// undisplay the visiting segment
 		thisAV.removeLineVisiting();
 		
-		// if the current v2 isn't part of the current closest pair.
-		// we "v2" discard it
-		if (thisAV.v2 != thisAV.closest[0] && thisAV.v2 != thisAV.closest[1]) {
+		// if the current v2 isn't part of the current closest pair
+		// or current farthest pair, discard it
+		if (thisAV.v2 != thisAV.closest[0] &&
+		    thisAV.v2 != thisAV.closest[1] &&
+		    thisAV.v2 != thisAV.farthest[0] &&
+		    thisAV.v2 != thisAV.farthest[1]) {
 		    updateMarkerAndTable(thisAV.v2,
 					 thisAV.visualSettings.discardedv2,
 					 15, false);
@@ -2025,8 +2102,12 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 		    return "Done processing v<sub>2</sub>=" + thisAV.v2;
 		}
 		let leaderOrNot;
+		// would be nice to differentiate between which leader
+		// or indicate both
 		if (thisAV.closest[0] == thisAV.v1 &&
-		    thisAV.closest[1] == thisAV.v2) {
+		    thisAV.closest[1] == thisAV.v2 ||
+		    thisAV.farthest[0] == thisAV.v1 &&
+		    thisAV.farthest[1] == thisAV.v2) {
 		    leaderOrNot = "New leader";
 		}
 		else {
@@ -2040,9 +2121,12 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    comment: "end of outer for loop iteration",
 	    code: function(thisAV){
 
-		// if the current v1 isn't part of the current closest pair.
-		// we discard it
-		if (thisAV.v1 != thisAV.closest[0] && thisAV.v1 != thisAV.closest[1]) {
+		// if the current v1 isn't part of the current closest pair
+		// or current farthest pair, we discard it
+		if (thisAV.v1 != thisAV.closest[0] &&
+		    thisAV.v1 != thisAV.closest[1] &&
+		    thisAV.v1 != thisAV.farthest[0] &&
+		    thisAV.v1 != thisAV.farthest[1]) {
 		    updateMarkerAndTable(thisAV.v1,
 					 visualSettings.discarded, 15, true);
 		}
@@ -2062,10 +2146,12 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    comment: "cleanup and updates at the end of the visualization",
 	    code: function(thisAV) {
 
-		// if the last vertex is not one of the closest pair,
-		// we need to discard it
+		// if the last vertex is not one of the closest pair or one
+		// of the closest pair, we need to discard it
 		if (waypoints.length - 1 != thisAV.closest[0] &&
-		    waypoints.length - 1 != thisAV.closest[1]) {
+		    waypoints.length - 1 != thisAV.closest[1] &&
+		    waypoints.length - 1 != thisAV.farthest[0] &&
+		    waypoints.length - 1 != thisAV.farthest[1]) {
 		    updateMarkerAndTable(waypoints.length - 1,
 					 visualSettings.discarded, 15, true);
 		}
@@ -2103,8 +2189,8 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	this.lineVisiting.remove();
     },
 
-    // function to draw or update the polyline connecting the
-    // current closest pair
+    // functions to draw or update the polylines connecting the
+    // current closest and furthest pairs
     updateLineClosest() {
 
 	let closestLine = [];
@@ -2123,9 +2209,27 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	    this.lineClosest.setLatLngs(closestLine);
 	}
     },
+    updateLineFarthest() {
+
+	let farthestLine = [];
+	farthestLine[0] = [waypoints[this.farthest[0]].lat, waypoints[this.farthest[0]].lon];
+	farthestLine[1] = [waypoints[this.farthest[1]].lat, waypoints[this.farthest[1]].lon];
+
+	if (this.lineFarthest == null) {
+	    this.lineFarthest = L.polyline(farthestLine, {
+		color: visualSettings.leader.color,
+		opacity: 0.6,
+		weight: 4
+	    });
+	    this.lineFarthest.addTo(map);	
+	}
+	else {
+	    this.lineFarthest.setLatLngs(farthestLine);
+	}
+    },
 
     // required prepToStart function
-    // initialize a vertex closest pairs search
+    // initialize a vertex closest/farthest pairs search
     prepToStart() {
 
 	hdxAV.algStat.innerHTML = "Initializing";
@@ -2135,7 +2239,7 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 				    visualSettings.undiscovered);
     },
 
-    // set up UI entries for closest pairs
+    // set up UI entries for closest/farthest pairs
     setupUI() {
 
 	hdxAV.algStat.style.display = "";
@@ -2145,15 +2249,19 @@ d<sub>closest</sub> &larr; &infin;</td></tr>
 	addEntryToAVControlPanel("v1visiting", this.visualSettings.v1);
 	addEntryToAVControlPanel("v2visiting", this.visualSettings.v2);
 	addEntryToAVControlPanel("checkingDistance", visualSettings.visiting);
-	addEntryToAVControlPanel("leader", visualSettings.leader);
+	addEntryToAVControlPanel("closeLeader", visualSettings.leader);
+	addEntryToAVControlPanel("farLeader", visualSettings.leader);
     },
 	
 	
-    // remove UI modifications made for vertex closest pairs
+    // remove UI modifications made for vertex closest/farthest pairs
     cleanupUI() {
 
 	if (this.lineClosest != null) {
 	    this.lineClosest.remove();
+	}
+	if (this.lineFarthest != null) {
+	    this.lineFarthest.remove();
 	}
     }
 };
