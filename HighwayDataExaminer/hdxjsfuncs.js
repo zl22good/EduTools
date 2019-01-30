@@ -337,7 +337,7 @@ var visualSettings = {
 	value: 0
     },
     leader2: {
-        color: "blue",
+        color: "DodgerBlue",
         textColor: "white",
         scale: 6,
 	name: "leader",
