@@ -26,7 +26,7 @@ $descr = array();
 
 	while($row = mysqli_fetch_array($result))
 	{
-		$descr[] = str_replace("''","","$row[1]");
+		$descr[] = str_replace("''","","$row[1]")." ".$row[0];
 	}
 	$descr_objects = json_encode($descr);
 	echo $descr_objects;

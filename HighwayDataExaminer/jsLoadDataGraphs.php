@@ -26,7 +26,7 @@ $graphs = array();
 
 	while($row = mysqli_fetch_array($result2))
 	{
-		$graphs[str_replace("''","","$row[1]")] = $row[0];
+		$graphs[str_replace("''","","$row[1]")." ".$row[0]] = $row[0];
 	}
 	$graphs_objects = json_encode($graphs);
 	echo $graphs_objects;
