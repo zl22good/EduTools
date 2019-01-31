@@ -787,8 +787,12 @@ function highlightPseudocode(id, vs) {
 function unhighlightPseudocode() {
 
     if (hdxAV.previousHighlight != null) {
-	highlightPseudocode(hdxAV.previousHighlight,
-			    visualSettings.pseudocodeDefault);
+	let codeChunk = document.getElementById(hdxAV.previousHighlight);
+	if (codeChunk != null) {
+	    codeChunk.style.backgroundColor = visualSettings.pseudocodeDefault.color;
+	    codeChunk.style.color = visualSettings.pseudocodeDefault.textColor;
+	    hdxAV.previousHighlight = null;
+	}
     }
 }
 
