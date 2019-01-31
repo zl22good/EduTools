@@ -5465,6 +5465,10 @@ function startPausePressed() {
 	hdxAV.currentAV.prepToStart();
 	// set pseudocode
 	document.getElementById("pseudoText").innerHTML = hdxAV.currentAV.code;
+
+	// reset all execution counts
+	hdxAV.execCounts = [];
+
 	showHidePseudocode();
 
 	// get the simulation going, always start with the "START"
