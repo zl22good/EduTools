@@ -66,6 +66,9 @@ var hdxAV = {
     // for pseudocode highlighting, id of element to unhighlight
     previousHighlight: null,
 
+    // for counting pseudocode executions
+    execCounts: [],
+    
     // some commonly-used document elements
     algStat: null,
     algOptions: null,
@@ -773,6 +776,7 @@ function initWaypointsAndConnections(showW, showC, vs) {
 }
 
 // update a chunk of pseudocode with an id based on given visualsettings
+// now also managing execution counts
 function highlightPseudocode(id, vs) {
 
     let codeChunk = document.getElementById(id);
@@ -780,6 +784,15 @@ function highlightPseudocode(id, vs) {
 	codeChunk.style.backgroundColor = vs.color;
 	codeChunk.style.color = vs.textColor;
 	hdxAV.previousHighlight = id;
+
+	// execution counting
+	if (id in hdxAV.execCounts) {
+	    hdxAV.execCounts[id]++;
+	}
+	else {
+	    hdxAV.execCounts[id] = 1;
+	}
+	codeChunk.title = "Exec count: " + hdxAV.execCounts[id];
     }
 }
 
