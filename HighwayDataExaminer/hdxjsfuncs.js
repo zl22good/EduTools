@@ -240,57 +240,6 @@ var hdxAV = {
 /**********************************************************************
  * General AV functions
  **********************************************************************/
-function highlighter (x, color){
-    document.getElementById(x).style.color = color;
-}
-function resetHighlight(x){
-    document.getElementById(x).style.color = "black";
-}
-function clearForm(f){
-    //enables the the start/pause and algorithm selection buttons/drop down
-    document.getElementById("startPauseButton").disabled = false;
-    var frm_elements = f.elements;
-    
-    //clears the form
-    for (i = 0; i < frm_elements.length; i++) {
-	field_type = frm_elements[i].type.toLowerCase();
-	switch (field_type) {
-	case "text":
-	case "password":
-	case "textarea":
-	case "hidden":
-            frm_elements[i].value = "";
-            break;
-	case "radio":
-	case "checkbox":
-            if (frm_elements[i].checked) {
-		frm_elements[i].checked = false;
-            }
-            break;
-	case "select-one":
-	case "select-multi":
-            frm_elements[i].selectedIndex = -1;
-            break;
-	default:
-            break;
-	}
-    }
-    if(hdxAV.status == hdxStates.AV_COMPLETE || hdxAV.paused()){
-    
-	//clears the ui
-	hdxAV.setStatus(hdxStates.GRAPH_LOADED);
-	cleanupAVControlPanel();
-	hdxAV.currentAV.cleanupUI();
-	
-	document.getElementById("connection").style.display = "table-row";
-        //resets the table of waypoints
-	for (var i = 0; i < waypoints.length; i++) {
-            var row = document.getElementById("waypoint"+i);
-            markers[i].addTo(map);
-            updateMarkerAndTable(i, visualSettings.reset, 0, false);
-	}   
-    }
-}
 
 // speedChanger dropdown callback
 function speedChanged() {
