@@ -3793,6 +3793,9 @@ var hdxBFConvexHullAV = {
 		thisAV.hullv1 = -1;  // will increment to 0
 		thisAV.segmentsConsidered = 0;
 		thisAV.checkValComputations = 0;
+		thisAV.hullSegments = [];
+		thisAV.hullSegmentEndpoints = [];
+		thisAV.hullPoints = [];
 		
 		hdxAV.nextAction = "v1forLoopTop";
 	    },
