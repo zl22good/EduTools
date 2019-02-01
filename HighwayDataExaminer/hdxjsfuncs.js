@@ -1744,8 +1744,8 @@ closest &larr; null<br />
 d<sub>closest</sub> &larr; &infin;<br />
 farthest &larr; null<br />
 d<sub>farthest</sub> &larr; 0</td></tr>
-<tr id="v1forLoopTop"><td>for (v<sub>1</sub> &larr; 0 to |V|-1)</td></tr>
-<tr id="v2forLoopTop"><td>&nbsp;&nbsp;for (v<sub>2</sub> &larr; v1+1 to |V|)</td></tr>
+<tr id="v1forLoopTop"><td>for (v<sub>1</sub> &larr; 0 to |V|-2)</td></tr>
+<tr id="v2forLoopTop"><td>&nbsp;&nbsp;for (v<sub>2</sub> &larr; v1+1 to |V|-1)</td></tr>
 <tr id="computeDistance"><td>
 &nbsp;&nbsp;&nbsp;&nbsp;d &larr; dist(v<sub>1</sub>,v<sub>2</sub>)
 </td></tr>
