@@ -68,6 +68,8 @@ var hdxAV = {
 
     // for counting pseudocode executions
     execCounts: [],
+    maxExecCount: 0,
+    execCountsRecolor: false,
     
     // some commonly-used document elements
     algStat: null,
@@ -236,6 +238,15 @@ var hdxAV = {
 	// this step can be reflected in the update
 	hdxAV.algStat.innerHTML = currentAction.logMessage(thisAV);
 	//console.log("ACTION DONE: " + currentAction.logMessage(thisAV));
+    },
+
+    // compute a color code to highlight based on code execution frequency
+    // light blue is infrequent, pink is frequent
+    execCountColor(count) {
+	let rank = 75 * count/hdxAV.maxExecCount;
+	let r = 180 + rank;
+	let b = 255 - rank;
+	return "rgb(" + r + ",210, " + b + ")";
     }
 };
 
@@ -792,6 +803,12 @@ function highlightPseudocode(id, vs) {
 	else {
 	    hdxAV.execCounts[id] = 1;
 	}
+
+	// if we have a new largest count, we'll recolor
+	if (hdxAV.execCounts[id] > hdxAV.maxExecCount) {
+	    hdxAV.maxExecCount = hdxAV.execCounts[id];
+	    hdxAV.execCountRecolor = true;
+	}
 	codeChunk.title = "Exec count: " + hdxAV.execCounts[id];
     }
 }
@@ -802,11 +819,23 @@ function unhighlightPseudocode() {
     if (hdxAV.previousHighlight != null) {
 	let codeChunk = document.getElementById(hdxAV.previousHighlight);
 	if (codeChunk != null) {
-	    codeChunk.style.backgroundColor = visualSettings.pseudocodeDefault.color;
+	    codeChunk.style.backgroundColor =
+		hdxAV.execCountColor(hdxAV.execCounts[hdxAV.previousHighlight]);
+	    // above was: visualSettings.pseudocodeDefault.color;
 	    codeChunk.style.color = visualSettings.pseudocodeDefault.textColor;
 	    hdxAV.previousHighlight = null;
 	}
     }
+    // did we trigger a recolor?  if so, recolor all
+    if (hdxAV.execCountRecolor) {
+	hdxAV.execCountRecolor = false;
+	for (let key in hdxAV.execCounts) {
+	    let codeChunk = document.getElementById(key);
+	    codeChunk.style.backgroundColor =
+		hdxAV.execCountColor(hdxAV.execCounts[key]);
+	}
+    }
+	
 }
 
 // function to help build the table of pseudocode for highlighting
@@ -5471,6 +5500,7 @@ function startPausePressed() {
 
 	// reset all execution counts
 	hdxAV.execCounts = [];
+	hdxAV.maxExecCount = 0;
 
 	showHidePseudocode();
 
