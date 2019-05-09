@@ -3668,7 +3668,7 @@ var hdxBFConvexHullAV = {
     code:'<table class="pseudocode">' +
 	pcEntry(0, "hull &larr; new list", "START") +
 	pcEntry(0, "for (v<sub>1</sub> &larr; 0 to |V|-2)", "v1forLoopTop") +
-	pcEntry(1, "for (v<sub>2</sub> &larr; v<sub>1</sub> to |V|-1)", "v2forLoopTop") +
+	pcEntry(1, "for (v<sub>2</sub> &larr; v<sub>1</sub>+1 to |V|-1)", "v2forLoopTop") +
 	pcEntry(2, [ "// find line through V[v<sub>1</sub>] and V[v<sub>2</sub>]",
 		     "a &larr; V[v<sub>2</sub>].lat - V[v<sub>1</sub>].lat",
 		     "b &larr; V[v<sub>1</sub>].lon - V[v<sub>2</sub>].lon",
