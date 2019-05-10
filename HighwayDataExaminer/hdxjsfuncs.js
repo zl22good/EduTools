@@ -4938,15 +4938,24 @@ function parseTMGContents(fileContents) {
     if (header[0] != "TMG") {
 	return '<table class="table"><thead class = "thead-dark"><tr><th scope="col">Invalid TMG file (missing TMG marker on first line)</th></tr></table>';
     }
-    if (header[1] != "1.0") {
+    if ((header[1] != "1.0") && (header[1] != "2.0")) {
 	return '<table class="table"><thead class = "thead-dark"><tr><th scope="col">Unsupported TMG file version (' + header[1] + ')</th></tr></table>';
     }
-    if ((header[2] != "simple") && (header[2] != "collapsed")) {
+    if ((header[2] != "simple") && (header[2] != "collapsed")
+	&& (header[2] != "traveled")) {
 	return '<table class="table"><thead class = "thead-dark"><tr><th scope="col">Unsupported TMG graph format (' + header[2] + ')</th></tr></table>';
     }
     var counts = lines[1].split(' ');
     var numV = parseInt(counts[0]);
     var numE = parseInt(counts[1]);
+    var numTravelers = 0;
+    
+    // is this a traveled format graph?
+    if (header[2] == "traveled") {
+	haveTravelers = true;
+	numTravelers = parseInt(counts[2]);
+    }
+    
     var summaryInfo = '<table class="table-sm"><thead class = "thead-dark"><tr><th scope="col">' + numV + " waypoints, " + numE + " connections.</th></tr></table>";
     
     var vTable = '<table id="waypoints" class="table table-light table-bordered"><thead class = "thead-dark"><tr><th scope="col" colspan="3">Waypoints</th></tr><tr><th>#</th><th scope="col">Coordinates</th><th scope="col">Waypoint Name</th></tr></thead><tbody>';
@@ -4984,11 +4993,28 @@ function parseTMGContents(fileContents) {
     for (var i = 0; i < numE; i++) {
 	var edgeInfo = lines[i+numV+2].split(' ');
 	var newEdge;
-	if (edgeInfo.length > 3) {
-            newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], edgeInfo.slice(3));
+	if (haveTravelers) {
+	    if (edgeInfo.length > 4) {
+		newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1],
+					edgeInfo[2], edgeInfo[3],
+					edgeInfo.slice(4));
+	    }
+	    else {
+		newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1],
+					edgeInfo[2], edgeInfo[3], null);
+	    }
+
 	}
 	else {
-            newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1], edgeInfo[2], null);
+	    if (edgeInfo.length > 3) {
+		newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1],
+					edgeInfo[2], null,
+					edgeInfo.slice(3));
+	    }
+	    else {
+		newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1],
+					edgeInfo[2], null, null);
+	    }
 	}
 	var firstNode = Math.min(parseInt(newEdge.v1), parseInt(newEdge.v2));
 	var secondNode = Math.max(parseInt(newEdge.v1), parseInt(newEdge.v2));
@@ -5139,7 +5165,8 @@ function parsePTHContents(fileContents) {
 	    // this will display as a graph, so create and assign the
 	    // graph edges
 	    if (previousWaypoint != null) {
-		var newEdge = new GraphEdge(i-1, i, info.waypoint.elabel, info.via);
+		var newEdge = new GraphEdge(i-1, i, info.waypoint.elabel,
+					    null, info.via);
 		previousWaypoint.edgeList[previousWaypoint.edgeList.length] = newEdge;
 		info.waypoint.edgeList[0] = newEdge;
 	    }
@@ -5198,7 +5225,7 @@ function parseNMPContents(fileContents) {
     graphEdges = new Array(numE);
     for (var i = 0; i < numE; i++) {
 	// add the edge
-	graphEdges[i] = new GraphEdge(2*i, 2*i+1, "", null);
+	graphEdges[i] = new GraphEdge(2*i, 2*i+1, "", null, null);
 
 	// add an entry to the table to be drawn in the pointbox
 	var miles = distanceInMiles(waypoints[2*i].lat, waypoints[2*i].lon,
