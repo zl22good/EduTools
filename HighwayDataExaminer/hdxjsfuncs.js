@@ -4892,8 +4892,11 @@ function fillGraphList(e) {
 		if (values[i].indexOf("simple") != -1) {
 		    str = txt[i] + " (simple), size: (" + vertices[i] + ", " + edges[i] + ")";
 		}
+		else if (values[i].indexOf("traveled") != -1) {
+		    str = txt[i] + " (traveled), size: (" + vertices[i] + ", " + edges[i] + ")";
+		}
 		else {
-		    str = txt[i] + ", size: (" + vertices[i] + ", " + edges[i] + ")" ;
+		    str = txt[i] + " (collapsed), size: (" + vertices[i] + ", " + edges[i] + ")" ;
 		}
 		opt.innerHTML = str;
 		opt.value = values[i];

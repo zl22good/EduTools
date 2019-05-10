@@ -65,6 +65,7 @@ function hdx_load_file_entries() {
 		Graph format:
 		<select id = "restrictOptions">
 			<option value = "collapsed">Collapsed (most likely you want this)</option>
+			<option value = "traveled">Traveled</option>
 			<option value = "simple">Simple</option>
 			<option value = "all">All</option>		
 		</select>
@@ -178,7 +179,7 @@ ENDOFSTUFF;
 	</td></tr>
 	<tr>
 	  <td>
-	    <b>Option 1: </b>Search for a METAL graph by name.<br />Start typing in the box below for suggestions.
+	    <b>Option 1: </b>Search for a METAL collapsed graph by name.<br />Start typing in the box below for suggestions.
 	    <div id="the-basics">
 	      <input class="typeahead" type="text" id="searchBox" placeholder="Pick a Graph" onkeypress="returnInput()">
 	      
