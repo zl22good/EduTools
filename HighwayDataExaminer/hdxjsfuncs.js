@@ -5043,6 +5043,11 @@ function parseTMGContents(fileContents) {
     eTable += '</tbody></table>';
     genEdges = false;
     usingAdjacencyLists = true;
+
+    // if we have travelers, read those in too
+    if (haveTravelers) {
+	travelerNames = lines[lines.length-1].split(' ');
+    }
     hdxAV.setStatus(hdxStates.GRAPH_LOADED);
     return summaryInfo + '<p />' + vTable + '<p />' + eTable;
 }
