@@ -4914,22 +4914,8 @@ function errorHandler(evt) {
 
 // parse the contents of a .tmg file
 //
-// First line specifies TMG and version number (expected to be 1.0),
-// followed by the word "collapsed" (only supported option so far)
-// indicating that the hidden vertices in the graph are collapsed
-// into intermediate points along edges.
-//
-// Second line specifies the number of vertices, numV, and the number
-// of edges, numE
-//
-// Next numV lines are a waypoint name (a String) followed by two
-// floating point numbers specifying the latitude and longitude
-//
-// Next numE lines are vertex numbers (based on order in the file)
-// that are connected by an edge followed by a String listing the
-// highway names that connect those points, followed by pairs of
-// floating point numbers, all space-separated, indicating the
-// coordinates of any shaping points along the edge
+// supports version 1.0 and 2.0 "simple", "collapsed" or "traveled".
+// see http://courses.teresco.org/metal/graph-formats.shtml
 //
 function parseTMGContents(fileContents) {
     
