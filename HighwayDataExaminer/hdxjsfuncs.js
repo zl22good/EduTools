@@ -4944,6 +4944,10 @@ function parseTMGContents(fileContents) {
 	haveTravelers = true;
 	numTravelers = parseInt(counts[2]);
     }
+    else {
+	haveTravelers = false;
+	numTravelers = 0;
+    }
     
     var summaryInfo = '<table class="table-sm"><thead class = "thead-dark"><tr><th scope="col">' + numV + " waypoints, " + numE + " connections"
 
@@ -5695,7 +5699,7 @@ function showTopControlPanel() {
     let av3 = document.getElementById("topControlPanelAV3");
     let av4 = document.getElementById("topControlPanelAV4");
     let av4button = document.getElementById("resetButton");
-    let showHidden = document.getElementById("topControlPanelShowHidden");
+    let showMarkers = document.getElementById("topControlPanelShowMarkers");
     
     // show only the relevant components given the current
     // state of HDX
@@ -5709,7 +5713,7 @@ function showTopControlPanel() {
 	av2.style.display = "none";
 	av3.style.display = "none";
 	av4.style.display = "none";
-	showHidden.style.display = "";
+	showMarkers.style.display = "";
 	break;
 
     case hdxStates.GRAPH_LOADED:
@@ -5721,7 +5725,7 @@ function showTopControlPanel() {
 	av3.style.display = "none";
 	av4.style.display = "";
 	av4button.value = "Select AV";
-	showHidden.style.display = "";
+	showMarkers.style.display = "";
 	break;
 
     default:
@@ -5733,7 +5737,7 @@ function showTopControlPanel() {
 	av3.style.display = "";
 	av4.style.display = "";
 	av4button.value = "Reset AV";
-	showHidden.style.display = "none";
+	showMarkers.style.display = "none";
 	break;
     }
     
