@@ -4945,7 +4945,13 @@ function parseTMGContents(fileContents) {
 	numTravelers = parseInt(counts[2]);
     }
     
-    var summaryInfo = '<table class="table-sm"><thead class = "thead-dark"><tr><th scope="col">' + numV + " waypoints, " + numE + " connections.</th></tr></table>";
+    var summaryInfo = '<table class="table-sm"><thead class = "thead-dark"><tr><th scope="col">' + numV + " waypoints, " + numE + " connections"
+
+    if (haveTravelers) {
+	summaryInfo += ", " + numTravelers + " travelers";
+    }
+    
+    summaryInfo += ".</th></tr></table>";
     
     var vTable = '<table id="waypoints" class="table table-light table-bordered"><thead class = "thead-dark"><tr><th scope="col" colspan="3">Waypoints</th></tr><tr><th>#</th><th scope="col">Coordinates</th><th scope="col">Waypoint Name</th></tr></thead><tbody>';
     
@@ -4992,7 +4998,9 @@ function parseTMGContents(fileContents) {
 		newEdge = new GraphEdge(edgeInfo[0], edgeInfo[1],
 					edgeInfo[2], edgeInfo[3], null);
 	    }
-
+	    if (newEdge.travelerList.length > maxEdgeTravelers) {
+		maxEdgeTravelers = newEdge.travelerList.length;
+	    }
 	}
 	else {
 	    if (edgeInfo.length > 3) {
@@ -5035,7 +5043,7 @@ function parseTMGContents(fileContents) {
 
     // if we have travelers, read those in too
     if (haveTravelers) {
-	travelerNames = lines[lines.length-1].split(' ');
+	travelerNames = lines[lines.length-2].split(' ');
     }
     hdxAV.setStatus(hdxStates.GRAPH_LOADED);
     return summaryInfo + '<p />' + vTable + '<p />' + eTable;
