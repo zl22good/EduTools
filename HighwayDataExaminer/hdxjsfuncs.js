@@ -161,6 +161,7 @@ var hdxAV = {
 	    while (hdxAV.nextAction != "DONE") {
 		hdxAV.oneIteration(thisAV);
 	    }
+	    hdxAV.avDone();
 	    return;
 	}
 
@@ -186,12 +187,7 @@ var hdxAV = {
             setTimeout(function() { hdxAV.nextStep(thisAV) }, hdxAV.delay);
 	}
 	else {
-	    // if pseudocode is displayed, undisplay at the end to ensure
-	    // better visibility for results
-	    document.getElementById("pseudoCheckbox").checked = false;
-	    document.getElementById("pseudoText").style.display = "none";
-	    
-	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+	    hdxAV.avDone();
 	}
     },
 
@@ -240,6 +236,16 @@ var hdxAV = {
 	//console.log("ACTION DONE: " + currentAction.logMessage(thisAV));
     },
 
+    // housekeeping to do when an algorithm is complete
+    avDone() {
+	    // if pseudocode is displayed, undisplay at the end to ensure
+	    // better visibility for results
+	    document.getElementById("pseudoCheckbox").checked = false;
+	    document.getElementById("pseudoText").style.display = "none";
+	    
+	    hdxAV.setStatus(hdxStates.AV_COMPLETE);
+    },
+    
     // compute a color code to highlight based on code execution frequency
     // light blue is infrequent, pink is frequent
     execCountColor(count) {
