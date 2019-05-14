@@ -12,7 +12,7 @@ ob_end_clean();
 $response = array('text'=>array(), 'values'=>array(), 'vertices'=>array(), 'edges'=>array());
 
 if($jsonArr['order'] == "alpha")
-	$result = tmdb_query("SELECT * FROM graphs ORDER BY filename ASC");
+	$result = tmdb_query("SELECT * FROM graphs ORDER BY descr ASC");
 else if($jsonArr['order'] == "small")
 	$result = tmdb_query("SELECT * FROM graphs ORDER BY vertices ASC");	
 else if($jsonArr['order'] == "large")
