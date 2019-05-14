@@ -1,6 +1,6 @@
 <?
 // read information about graphs from our DB
-$jsonArr = json_decode($_POST['params'], true);
+$params = json_decode($_POST['params'], true);
 
 // need to buffer and clean output since tmphpfuncs generates
 // some output that breaks the JSON output
@@ -11,56 +11,36 @@ ob_end_clean();
 // DB connection made, now make our request
 $response = array('text'=>array(), 'values'=>array(), 'vertices'=>array(), 'edges'=>array());
 
-if($jsonArr['order'] == "alpha")
-	$result = tmdb_query("SELECT * FROM graphs ORDER BY descr ASC");
-else if($jsonArr['order'] == "small")
-	$result = tmdb_query("SELECT * FROM graphs ORDER BY vertices ASC");	
-else if($jsonArr['order'] == "large")
-	$result = tmdb_query("SELECT * FROM graphs ORDER BY vertices DESC");
+if ($params['order'] == "alpha") {
+    $result = tmdb_query("SELECT * FROM graphs ORDER BY descr ASC");
+}
+else if ($params['order'] == "small") {
+    $result = tmdb_query("SELECT * FROM graphs ORDER BY vertices ASC");
+}
+else {  // $params['order'] == "large"
+    $result = tmdb_query("SELECT * FROM graphs ORDER BY vertices DESC");
+}
 
-	if ($jsonArr['restrict'] == "collapsed"){
-		while ($row = $result->fetch_array()) {
-			if (strpos($row[0], "collapsed") && $row[2] >= $jsonArr['min'] && $row[2] <= $jsonArr['max'] && ($row[5] == $jsonArr['category'] || $jsonArr['category'] == "all")){
-				array_push($response['text'], $row[1]);
-				array_push($response['values'], $row[0]);
-				array_push($response['vertices'], $row[2]);
-				array_push($response['edges'], $row[3]);
-			}			
-		}
+while ($row = $result->fetch_array()) {
+    // check format
+    if (($params['restrict'] == "all") ||
+        ($params['restrict'] == $row['format'])) {
+        // check size
+	if (($row['vertices'] >= $params['min']) &&
+	    ($row['vertices'] <= $params['max'])) {
+            // check category
+	    if (($params['category'] == "all") ||
+                ($params['category'] == $row['category'])) {
+                array_push($response['text'], $row['descr']);
+                array_push($response['values'], $row['filename']);
+                array_push($response['vertices'], $row['vertices']);
+                array_push($response['edges'], $row['edges']);
+            }
 	}
-	else if ($jsonArr['restrict'] == "simple"){
-		while ($row = $result->fetch_array()) {
-			if (strpos($row[0], "simple") && $row[2] >= $jsonArr['min'] && $row[2] <= $jsonArr['max'] && ($row[5] == $jsonArr['category'] || $jsonArr['category'] == "all")){
-				array_push($response['text'], $row[1]);
-				array_push($response['values'], $row[0]);
-				array_push($response['vertices'], $row[2]);
-				array_push($response['edges'], $row[3]);
-			}
-		}
-	}
-	else if ($jsonArr['restrict'] == "traveled"){
-		while ($row = $result->fetch_array()) {
-			if (strpos($row[0], "traveled") && $row[2] >= $jsonArr['min'] && $row[2] <= $jsonArr['max'] && ($row[5] == $jsonArr['category'] || $jsonArr['category'] == "all")){
-				array_push($response['text'], $row[1]);
-				array_push($response['values'], $row[0]);
-				array_push($response['vertices'], $row[2]);
-				array_push($response['edges'], $row[3]);
-			}
-		}
-	}
-	else {
-		while ($row = $result->fetch_array()) {
-			if ($row[2] >= $jsonArr['min'] && $row[2] <= $jsonArr['max'] && ($row[5] == $jsonArr['category'] || $jsonArr['category'] == "all")){
-				array_push($response['text'], $row[1]);
-				array_push($response['values'], $row[0]);
-				array_push($response['vertices'], $row[2]);
-				array_push($response['edges'], $row[3]);
-			}
-		}
-		
-	} 
+    }
+}
 
-	$result->free();
-	$tmdb->close();
-	echo json_encode($response);
+$result->free();
+$tmdb->close();
+echo json_encode($response);
 ?>
