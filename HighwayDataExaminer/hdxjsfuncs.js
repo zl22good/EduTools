@@ -105,9 +105,9 @@ var hdxAV = {
 	}
     },
     
-    // are we paused?
+    // are we paused or otherwise not running?
     paused() {
-	return this.status == hdxStates.AV_PAUSED;
+	return this.status != hdxStates.AV_RUNNING;
     },
 
     // all setup that needs to happen on page load for HDX
