@@ -1878,6 +1878,8 @@ d<sub>farthest</sub> &larr; 0</td></tr>
 
 		hdxAV.iterationDone = true;
 		thisAV.v1 = -1;  // will increment to 0
+		thisAV.d_closest = Number.MAX_VALUE;
+		thisAV.d_farthest = 0;
 		hdxAV.nextAction = "v1forLoopTop";
 	    },
 	    logMessage: function(thisAV) {
