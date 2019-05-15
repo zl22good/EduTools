@@ -197,7 +197,7 @@ ENDOFSTUFF;
 	
 	
 	<tr><td>
-	    <input type="button" value="Cancel" id="hideLoadDataPanel" onClick="hideLoadDataPanel()" disabled>
+	    <input type="button" value="Cancel" id="hideLoadDataPanel" onClick="hideLoadDataPanel();showTopControlPanel();" disabled>
 	</td></tr>
       </tbody>
     </table>
