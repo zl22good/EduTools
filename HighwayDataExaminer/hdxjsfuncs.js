@@ -31,7 +31,7 @@ var hdxStates = {
     AV_COMPLETE: 10
 };
 
-
+// functions related to changes of units in the display
 function changeUnits(event) {
     prevUnit = curUnit;
     curUnit = event.target.value;
