@@ -5635,11 +5635,10 @@ function algOptionsDonePressed() {
 // event handler for "Reset AV" button press
 function resetPressed() {
 
-    // if there's an AV running, we need to pause it
-    if (hdxAV.status == hdxStates.AV_RUNNING) {
-	hdxAV.setStatus(hdxStates.AV_PAUSED);
-	hdxAV.startPause.innerHTML = "Start";
-    }
+    // go back to the "graph loaded" status
+    hdxAV.setStatus(hdxStates.GRAPH_LOADED);
+
+    hdxAV.startPause.innerHTML = "Start";
 
     // show waypoints, show connections
     initWaypointsAndConnections(true, true,
@@ -5694,7 +5693,7 @@ function showHideDatatables() {
     }
 }
 
-// Functions to show and hide panels that are displayed only
+// Functions to show or hide panels that are displayed only
 // in certain modes of HDX operation
 
 // top control panel (algorithm controls, reset/load buttons)
@@ -5737,13 +5736,17 @@ function showTopControlPanel() {
     default:
 	// An AV is selected and possibly running, paused, or complete
 	// so show all AV-related controls and make sure the "Reset AV"
-	// button is labeled that way
+	// button is labeled that way, and reset default values
 	av1.style.display = "";
 	av2.style.display = "";
 	av3.style.display = "";
 	av4.style.display = "";
 	av4button.value = "Reset AV";
 	showMarkers.style.display = "none";
+	document.getElementById("speedChanger").selectedIndex = 4;
+	speedChanged();
+	document.getElementById("pseudoCheckbox").checked = true;
+	document.getElementById("datatablesCheckbox").checked = true;
 	break;
     }
     
