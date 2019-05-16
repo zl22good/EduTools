@@ -125,7 +125,9 @@ var visualSettings = {
         textColor: "white",
         scale: 4,
         name: "discovered",
-        value: 0
+        value: 0,
+        weight: 5,
+        opacity: 0.6
     },
     hoverV: {
         color: "#a0036b",
