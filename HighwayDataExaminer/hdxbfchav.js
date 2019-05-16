@@ -678,9 +678,15 @@ var hdxBFConvexHullAV = {
     // clean up convex hull UI
     cleanupUI() {
 
+	// the convex hull segments
         for (var i = 0; i < this.hullSegments.length; i++) {
             this.hullSegments[i].remove();
         }
+
+	// if there's a current segment still on display, remove it
+	if (this.currentSegment != null) {
+	    this.currentSegment.remove();
+	}
     }
 };
 
