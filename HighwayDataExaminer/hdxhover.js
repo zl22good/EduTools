@@ -30,7 +30,7 @@ function hoverV(i, bool) {
 
 function hoverEndV(i, bool) {
     if ((bool && hdxAV.paused()) || !bool) {
-        markers[i].setIcon(vicon);
+        markers[i].setIcon(hdxHover.vicon);
         document.getElementById("waypoint"+i).style.backgroundColor = hdxHover.vcolor;
         document.getElementById("waypoint"+i).style.color = hdxHover.vtext;
         if ($("#l"+i).length > 0) {
