@@ -357,9 +357,6 @@ function startRead() {
             pointboxErrorMsg("Unrecognized file type!");
             return;
         }
-        if (file.name.includes("OCE-continent")) {
-            alert("This graph cannot be used with the Convex Hull algorithm as currently implemented, as it spans the international date line.");
-        }
         // pointboxErrorMsg("Loading... (" + file.size + " bytes)");
         var reader;
         try {
