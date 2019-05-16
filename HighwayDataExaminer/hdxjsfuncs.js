@@ -168,6 +168,7 @@ function initWaypointsAndConnections(showW, showC, vs) {
         
         // show all existing markers on map and table
         for (var i = 0; i < waypoints.length; i++) {
+            markers[i].remove();
             markers[i].addTo(map);
             updateMarkerAndTable(i, vs, 0, false);
         }
@@ -200,6 +201,8 @@ function initWaypointsAndConnections(showW, showC, vs) {
 
         // show edges
         for (var i = 0; i < connections.length; i++) {
+	    connections[i].remove();
+	    connections[i].addTo(map);
             updatePolylineAndTable(i, vs, false);
         }
     }
