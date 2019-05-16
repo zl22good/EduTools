@@ -43,7 +43,10 @@ function HDXLinear(type, displayName) {
     this.addCount = 0;
     this.removeCount = 0;
     this.maxSize = 0;
-
+    // used to calculate an average size across all redraws
+    this.cumulativeSize = 0;
+    this.numRedraws = 0;
+    
     // the document element in which to display the contents
     this.docElement = null;
 
@@ -72,6 +75,8 @@ function HDXLinear(type, displayName) {
             this.idNum + 'Span">'+ this.items.length +
             '</span>, max <span id="HDXLinear' + this.idNum +
             'Mspan">' + this.maxSize +
+            '</span>, avg <span id="HDXLinear' + this.idNum +
+            'Aspan">' + 0 +
             '</span>)&nbsp;&nbsp;&nbsp;<input id="HDXLinear' +
             this.idNum + 'Limit" type="checkbox" checked /> ' +
             ' limit display to <input id="HDXLinear' + this.idNum +
@@ -82,6 +87,7 @@ function HDXLinear(type, displayName) {
         this.docElement.innerHTML = t;
         this.lengthSpan = document.getElementById("HDXLinear" + this.idNum + "Span");
         this.maxSizeSpan = document.getElementById("HDXLinear" + this.idNum + "Mspan");
+        this.avgSizeSpan = document.getElementById("HDXLinear" + this.idNum + "Aspan");
         this.tbody = document.getElementById("HDXLinear" + this.idNum + "TBody");
         this.limitCheck = document.getElementById("HDXLinear" + this.idNum + "Limit");
         this.limit = document.getElementById("HDXLinear" + this.idNum + "LimitVal");
@@ -163,6 +169,10 @@ function HDXLinear(type, displayName) {
         if (this.docElement != null) {
             this.lengthSpan.innerHTML = this.items.length;
             this.maxSizeSpan.innerHTML = this.maxSize;
+	    this.cumulativeSize += this.items.length;
+	    this.numRedraws++;
+            this.avgSizeSpan.innerHTML =
+                parseFloat(1.0*this.cumulativeSize/this.numRedraws).toFixed(1);
             let t = "<tr>";
             let maxDisplay = Number.MAX_VALUE;
             if (this.limitCheck.checked) {
