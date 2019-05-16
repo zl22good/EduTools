@@ -42,6 +42,7 @@ function HDXLinear(type, displayName) {
     // some stats about it
     this.addCount = 0;
     this.removeCount = 0;
+    this.maxSize = 0;
 
     // the document element in which to display the contents
     this.docElement = null;
@@ -69,6 +70,8 @@ function HDXLinear(type, displayName) {
         this.elementHTMLCallback = eC;
         let t = this.displayName + ' (size <span id="HDXLinear' +
             this.idNum + 'Span">'+ this.items.length +
+            '</span>, max <span id="HDXLinear' + this.idNum +
+            'Mspan">' + this.maxSize +
             '</span>)&nbsp;&nbsp;&nbsp;<input id="HDXLinear' +
             this.idNum + 'Limit" type="checkbox" checked /> ' +
             ' limit display to <input id="HDXLinear' + this.idNum +
@@ -78,6 +81,7 @@ function HDXLinear(type, displayName) {
             '</tbody></table>';
         this.docElement.innerHTML = t;
         this.lengthSpan = document.getElementById("HDXLinear" + this.idNum + "Span");
+        this.maxSizeSpan = document.getElementById("HDXLinear" + this.idNum + "Mspan");
         this.tbody = document.getElementById("HDXLinear" + this.idNum + "TBody");
         this.limitCheck = document.getElementById("HDXLinear" + this.idNum + "Limit");
         this.limit = document.getElementById("HDXLinear" + this.idNum + "LimitVal");
@@ -102,6 +106,9 @@ function HDXLinear(type, displayName) {
             this.items.push(e);
         }
         this.addCount++;
+        if (this.items.length > this.maxSize) {
+            this.maxSize = this.items.length;
+        }
         
         this.redraw();
     };
@@ -155,6 +162,7 @@ function HDXLinear(type, displayName) {
 
         if (this.docElement != null) {
             this.lengthSpan.innerHTML = this.items.length;
+            this.maxSizeSpan.innerHTML = this.maxSize;
             let t = "<tr>";
             let maxDisplay = Number.MAX_VALUE;
             if (this.limitCheck.checked) {
