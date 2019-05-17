@@ -897,6 +897,9 @@ var hdxTraversalsSpanningAVCommon = {
                         " " + waypoints[thisAV.startingVertex].label;
                 }
                 else if (thisAV.stoppedBecause == "FoundAllComponents") {
+                    if (thisAV.componentNum == 0) {
+                        return "Found 1 component";
+                    }
                     return "Found all " + (thisAV.componentNum+1) +
                         " components";
                 }
@@ -915,7 +918,10 @@ var hdxTraversalsSpanningAVCommon = {
         let componentCount = "";
         if (this.stoppingCondition == "FindAll") {
             label = "Spanning Forest: ";
-            componentCount = ", " + (this.componentNum+1) + " components";
+            componentCount = ", " + (this.componentNum+1) + " component";
+            if (this.componentNum > 0) {
+                componentCount += "s";
+            }
         }
         else {
             label = "Spanning Tree: "
