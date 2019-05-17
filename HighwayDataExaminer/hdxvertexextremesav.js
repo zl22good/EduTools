@@ -37,12 +37,15 @@ var hdxVertexExtremesSearchAV = {
     // pseudocode
     code: `
 <table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">
-north &larr; 0<br />
-south &larr; 0<br />
-east &larr; 0<br />
+north &larr; 0, 
+south &larr; 0, 
+east &larr; 0, 
 west &larr; 0<br />
-longest &larr; 0<br />
-shortest &larr; 0</td></tr>
+longest &larr; 0,
+shortest &larr; 0,
+firstalpha &larr; 0,
+lastalpha &larr; 0
+</td></tr>
 <tr id="forLoopTop"><td>for (check &larr; 1 to |V|-1)</td></tr>
 <tr id="checkNextCategory0"><td>
 &nbsp;&nbsp;if (v[check].lat > v[north].lat)
@@ -79,6 +82,18 @@ shortest &larr; 0</td></tr>
 </td></tr>
 <tr id="updateNextCategory5"><td>
 &nbsp;&nbsp;&nbsp;&nbsp;longest &larr; check
+</td></tr>
+<tr id="checkNextCategory6"><td>
+&nbsp;&nbsp;if (v[check].label < v[shortest].label)
+</td></tr>
+<tr id="updateNextCategory6"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;firstalpha &larr; check
+</td></tr>
+<tr id="checkNextCategory7"><td>
+&nbsp;&nbsp;if (v[check].label > v[longest].label)
+</td></tr>
+<tr id="updateNextCategory7"><td>
+&nbsp;&nbsp;&nbsp;&nbsp;lastalpha &larr; check
 </td></tr>
 </table>
 `,
@@ -199,6 +214,30 @@ shortest &larr; 0</td></tr>
             },
             leaderString: vertexLabelLeaderString,
             visualSettings: visualSettings.longLabelLeader
+        },
+	
+        {
+            name: "firstalpha",
+            label: "First vertex label alphabetically",
+            index: -1,
+            
+            newLeader: function() {
+                return waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.localeCompare(waypoints[this.index].label) < 0;
+            },
+            leaderString: vertexLabelLeaderString,
+            visualSettings: visualSettings.firstLabelLeader
+        },
+	
+        {
+            name: "lastalpha",
+            label: "Last vertex label alphabetically",
+            index: -1,
+            
+            newLeader: function() {
+                return waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.localeCompare(waypoints[this.index].label) > 0;
+            },
+            leaderString: vertexLabelLeaderString,
+            visualSettings: visualSettings.lastLabelLeader
         },
     ],
 
