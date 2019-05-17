@@ -124,7 +124,7 @@ lastalpha &larr; 0
             leaderString: extremePointLeaderString,
 
             visualSettings: {
-                color: "#8b0000",
+                color: "#000080",
                 textColor: "white",
                 scale: 6,
                 name: "northLeader",
@@ -163,7 +163,7 @@ lastalpha &larr; 0
             },
             leaderString: extremePointLeaderString,
             visualSettings: {
-                color: "#000080",
+                color: "#8b0000",
                 textColor: "white",
                 scale: 6,
                 name: "eastLeader",
