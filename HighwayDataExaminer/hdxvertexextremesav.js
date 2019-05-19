@@ -54,7 +54,7 @@ var hdxVertexExtremesSearchAV = {
             label: "North extreme",
             index: -1,
             tiedWith: [],
-	    
+            
             newLeader: function() {
                 return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lat) >
                         parseFloat(waypoints[this.index].lat));
@@ -70,9 +70,9 @@ var hdxVertexExtremesSearchAV = {
                 value: 0
             },
 
-	    include: function(thisAV) {
-		return true;
-	    }
+            include: function(thisAV) {
+                return true;
+            }
         },
 
         {
@@ -95,9 +95,9 @@ var hdxVertexExtremesSearchAV = {
                 value: 0
             },
 
-	    include: function(thisAV) {
-		return true;
-	    }
+            include: function(thisAV) {
+                return true;
+            }
         },
 
         {
@@ -119,9 +119,9 @@ var hdxVertexExtremesSearchAV = {
                 value: 0
             },
 
-	    include: function(thisAV) {
-		return true;
-	    }
+            include: function(thisAV) {
+                return true;
+            }
         },
 
         {
@@ -143,9 +143,9 @@ var hdxVertexExtremesSearchAV = {
                 value: 0
             },
 
-	    include: function(thisAV) {
-		return true;
-	    }
+            include: function(thisAV) {
+                return true;
+            }
         },
 
         {
@@ -161,9 +161,9 @@ var hdxVertexExtremesSearchAV = {
             leaderString: vertexLabelLeaderString,
             visualSettings: visualSettings.shortLabelLeader,
 
-	    include: function(thisAV) {
-		return thisAV.longshort;
-	    }
+            include: function(thisAV) {
+                return thisAV.longshort;
+            }
         },
         
         {
@@ -179,11 +179,11 @@ var hdxVertexExtremesSearchAV = {
             leaderString: vertexLabelLeaderString,
             visualSettings: visualSettings.longLabelLeader,
 
-	    include: function(thisAV) {
-		return thisAV.longshort;
-	    }
+            include: function(thisAV) {
+                return thisAV.longshort;
+            }
         },
-	
+        
         {
             name: "firstalpha",
             label: "First vertex label alphabetically",
@@ -196,11 +196,11 @@ var hdxVertexExtremesSearchAV = {
             leaderString: vertexLabelLeaderString,
             visualSettings: visualSettings.firstLabelLeader,
 
-	    include: function(thisAV) {
-		return thisAV.firstlast;
-	    }
+            include: function(thisAV) {
+                return thisAV.firstlast;
+            }
         },
-	
+        
         {
             name: "lastalpha",
             label: "Last vertex label alphabetically",
@@ -213,9 +213,9 @@ var hdxVertexExtremesSearchAV = {
             leaderString: vertexLabelLeaderString,
             visualSettings: visualSettings.lastLabelLeader,
 
-	    include: function(thisAV) {
-		return thisAV.firstlast;
-	    }
+            include: function(thisAV) {
+                return thisAV.firstlast;
+            }
         },
     ],
 
@@ -228,7 +228,7 @@ var hdxVertexExtremesSearchAV = {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 for (var i = 0; i < thisAV.categories.length; i++) {
                     thisAV.categories[i].index = 0;
-		    thisAV.categories[i].tiedWith = [];
+                    thisAV.categories[i].tiedWith = [];
                 }
                 
                 // highlight vertex 0 as leader in all categories and current
@@ -242,7 +242,7 @@ var hdxVertexExtremesSearchAV = {
                 // show marker 0 as the leader in each category
                 // on the map and in the table
                 for (var i = 0; i < thisAV.categories.length; i++) {
-		    if (!thisAV.categories[i].include(thisAV)) continue;
+                    if (!thisAV.categories[i].include(thisAV)) continue;
                     updateMarkerAndTable(thisAV.categories[i].index,
                                          thisAV.categories[i].visualSettings, 
                                          40, false);
@@ -295,11 +295,11 @@ var hdxVertexExtremesSearchAV = {
                     hdxAV.nextAction = "updateNextCategory";
                 }
                 else {
-		    // advance category, skipping if necessary
-		    do {
-			thisAV.nextCategory++;
-		    } while (thisAV.nextCategory < thisAV.categories.length &&
-			     !thisAV.categories[thisAV.nextCategory].include(thisAV));
+                    // advance category, skipping if necessary
+                    do {
+                        thisAV.nextCategory++;
+                    } while (thisAV.nextCategory < thisAV.categories.length &&
+                             !thisAV.categories[thisAV.nextCategory].include(thisAV));
                     if (thisAV.nextCategory == thisAV.categories.length) {
                         hdxAV.nextAction = "forLoopBottom";
                     }
@@ -334,7 +334,7 @@ var hdxVertexExtremesSearchAV = {
                 let stillALeader = false;
                 for (var i = 0; i < thisAV.categories.length; i++) {
                     if (i == thisAV.nextCategory) continue;
-		    if (!thisAV.categories[i].include(thisAV)) continue;
+                    if (!thisAV.categories[i].include(thisAV)) continue;
                     if (thisAV.categories[i].index == oldLeader) {
                         stillALeader = true;
                         updateMarkerAndTable(oldLeader,
@@ -366,11 +366,11 @@ var hdxVertexExtremesSearchAV = {
                         thisAV.categories[thisAV.nextCategory].label,
                         thisAV.categories[thisAV.nextCategory].index)
                 );
-		// advance category, skipping if necessary
-		do {
-		    thisAV.nextCategory++;
-		} while (thisAV.nextCategory < thisAV.categories.length &&
-			 !thisAV.categories[thisAV.nextCategory].include(thisAV));
+                // advance category, skipping if necessary
+                do {
+                    thisAV.nextCategory++;
+                } while (thisAV.nextCategory < thisAV.categories.length &&
+                         !thisAV.categories[thisAV.nextCategory].include(thisAV));
                 if (thisAV.nextCategory == thisAV.categories.length) {
                     hdxAV.nextAction = "forLoopBottom";
                 }
@@ -391,7 +391,7 @@ var hdxVertexExtremesSearchAV = {
                 // otherwise it gets discarded
                 if (thisAV.foundNewLeader) {
                     for (var i = 0; i < thisAV.categories.length; i++) {
-			if (!thisAV.categories[i].include(thisAV)) continue;
+                        if (!thisAV.categories[i].include(thisAV)) continue;
                         if (thisAV.nextToCheck == thisAV.categories[i].index) {
                             updateMarkerAndTable(thisAV.categories[i].index,
                                                  thisAV.categories[i].visualSettings, 
@@ -501,9 +501,9 @@ var hdxVertexExtremesSearchAV = {
         // honor bounding box checkbox
         this.showBB = document.getElementById("boundingBox").checked;
 
-	// are we handling ties?
-	let tS = document.getElementById("tieHandling");
-	this.trackTies = tS.options[tS.selectedIndex].value == "all";
+        // are we handling ties?
+        let tS = document.getElementById("tieHandling");
+        this.trackTies = tS.options[tS.selectedIndex].value == "all";
         
         // are we finding shortest/longest labels?
         this.longshort = document.getElementById("longshort").checked;
@@ -514,175 +514,175 @@ var hdxVertexExtremesSearchAV = {
         // start the search by initializing with the value at pos 0
         updateMarkerAndTable(0, visualSettings.visiting, 40, false);
 
-	// build pseudocode based on options selected
+        // build pseudocode based on options selected
         this.code = '<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">';
 
-	if (this.trackTies) {
-	    this.code += `
+        if (this.trackTies) {
+            this.code += `
 north &larr; {0}, 
 south &larr; {0}, 
 east &larr; {0}, 
 west &larr; {0}<br />
 `;
-	}
-	else {
-	    this.code += `
+        }
+        else {
+            this.code += `
 north &larr; 0, 
 south &larr; 0, 
 east &larr; 0, 
 west &larr; 0<br />
 `;
-	}
+        }
 
-	if (this.longshort) {
-	    if (this.trackTies) {
-		this.code += `
+        if (this.longshort) {
+            if (this.trackTies) {
+                this.code += `
 longest &larr; {0},
 shortest &larr; {0}<br />
 `;
-	    }
-	    else {
-		this.code += `
+            }
+            else {
+                this.code += `
 longest &larr; 0,
 shortest &larr; 0<br />
 `;
-	    }
-	}
+            }
+        }
 
-	if (this.firstlast) {
-	    if (this.trackTies) {
-		this.code += `
+        if (this.firstlast) {
+            if (this.trackTies) {
+                this.code += `
 firstalpha &larr; {0},
 lastalpha &larr; {0}<br />
 `;
-	    }
-	    else {
-		this.code += `
+            }
+            else {
+                this.code += `
 firstalpha &larr; 0,
 lastalpha &larr; 0<br />
 `;
-	    }
-	}
-	
-	this.code += '</td></tr>' +
-	    pcEntry(0, "for (check &larr; 1 to |V|-1)", "forLoopTop");
+            }
+        }
+        
+        this.code += '</td></tr>' +
+            pcEntry(0, "for (check &larr; 1 to |V|-1)", "forLoopTop");
 
-	// north
-	this.code += pcEntry(1, "if (v[check].lat > v[north].lat)",
-			     "checkNextCategory0");
-	this.code += pcEntry(2, (this.trackTies ?
-				 "north &larr; {check}" :
-				 "north &larr; check"), "updateNextCategory0");
+        // north
+        this.code += pcEntry(1, "if (v[check].lat > v[north].lat)",
+                             "checkNextCategory0");
+        this.code += pcEntry(2, (this.trackTies ?
+                                 "north &larr; {check}" :
+                                 "north &larr; check"), "updateNextCategory0");
 
-	if (this.trackTies) {
-	    this.code += pcEntry(1, "else if (v[check].lat = v[north].lat)",
-				 "checkTieCategory0");
-	    this.code += pcEntry(2, "north.add(check)", "updateTieCategory0");
-	}
+        if (this.trackTies) {
+            this.code += pcEntry(1, "else if (v[check].lat = v[north].lat)",
+                                 "checkTieCategory0");
+            this.code += pcEntry(2, "north.add(check)", "updateTieCategory0");
+        }
 
-	// south
-	this.code += pcEntry(1, "if (v[check].lat < v[south].lat)",
-			     "checkNextCategory1");
-	this.code += pcEntry(2, (this.trackTies ?
-				 "south &larr; {check}" :
-				 "south &larr; check"), "updateNextCategory1");
+        // south
+        this.code += pcEntry(1, "if (v[check].lat < v[south].lat)",
+                             "checkNextCategory1");
+        this.code += pcEntry(2, (this.trackTies ?
+                                 "south &larr; {check}" :
+                                 "south &larr; check"), "updateNextCategory1");
 
-	if (this.trackTies) {
-	    this.code += pcEntry(1, "else if (v[check].lat = v[south].lat)",
-				 "checkTieCategory1");
-	    this.code += pcEntry(2, "south.add(check)", "updateTieCategory1");
-	}
-	
-	// east
-	this.code += pcEntry(1, "if (v[check].lng > v[east].lng)",
-			     "checkNextCategory2");
-	this.code += pcEntry(2, (this.trackTies ?
-				 "east &larr; {check}" :
-				 "east &larr; check"), "updateNextCategory2");
+        if (this.trackTies) {
+            this.code += pcEntry(1, "else if (v[check].lat = v[south].lat)",
+                                 "checkTieCategory1");
+            this.code += pcEntry(2, "south.add(check)", "updateTieCategory1");
+        }
+        
+        // east
+        this.code += pcEntry(1, "if (v[check].lng > v[east].lng)",
+                             "checkNextCategory2");
+        this.code += pcEntry(2, (this.trackTies ?
+                                 "east &larr; {check}" :
+                                 "east &larr; check"), "updateNextCategory2");
 
-	if (this.trackTies) {
-	    this.code += pcEntry(1, "else if (v[check].lng = v[east].lng)",
-				 "checkTieCategory2");
-	    this.code += pcEntry(2, "east.add(check)", "updateTieCategory2");
-	}
+        if (this.trackTies) {
+            this.code += pcEntry(1, "else if (v[check].lng = v[east].lng)",
+                                 "checkTieCategory2");
+            this.code += pcEntry(2, "east.add(check)", "updateTieCategory2");
+        }
 
-	// west
-	this.code += pcEntry(1, "if (v[check].lng < v[west].lng)",
-			     "checkNextCategory3");
-	this.code += pcEntry(2, (this.trackTies ?
-				 "west &larr; {check}" :
-				 "west &larr; check"), "updateNextCategory3");
+        // west
+        this.code += pcEntry(1, "if (v[check].lng < v[west].lng)",
+                             "checkNextCategory3");
+        this.code += pcEntry(2, (this.trackTies ?
+                                 "west &larr; {check}" :
+                                 "west &larr; check"), "updateNextCategory3");
 
-	if (this.trackTies) {
-	    this.code += pcEntry(1, "else if (v[check].lng = v[west].lng)",
-				 "checkTieCategory3");
-	    this.code += pcEntry(2, "west.add(check)", "updateTieCategory3");
-	}
+        if (this.trackTies) {
+            this.code += pcEntry(1, "else if (v[check].lng = v[west].lng)",
+                                 "checkTieCategory3");
+            this.code += pcEntry(2, "west.add(check)", "updateTieCategory3");
+        }
 
-	if (this.longshort) {
-	    // shortest
-	    this.code += pcEntry(1, "if (len(v[check].label) < len(v[shortest].label))",
-				 "checkNextCategory4");
-	    this.code += pcEntry(2, (this.trackTies ?
-				     "shortest &larr; {check}" :
-				     "shortest &larr; check"), "updateNextCategory4");
-	    
-	    if (this.trackTies) {
-		this.code += pcEntry(1, "else (len(v[check].label) = len(v[shortest].label))",
-				     "checkTieCategory4");
-		this.code += pcEntry(2, "shortest.add(check)", "updateTieCategory4");
-	    }
-	    // longest
-	    this.code += pcEntry(1, "if (len(v[check].label) > len(v[longest].label))",
-				 "checkNextCategory5");
-	    this.code += pcEntry(2, (this.trackTies ?
-				     "longest &larr; {check}" :
-				     "longest &larr; check"), "updateNextCategory5");
-	    
-	    if (this.trackTies) {
-		this.code += pcEntry(1, "else (len(v[check].label) = len(v[longest].label))",
-				     "checkTieCategory5");
-		this.code += pcEntry(2, "longest.add(check)", "updateTieCategory5");
-	    }
-	}
+        if (this.longshort) {
+            // shortest
+            this.code += pcEntry(1, "if (len(v[check].label) < len(v[shortest].label))",
+                                 "checkNextCategory4");
+            this.code += pcEntry(2, (this.trackTies ?
+                                     "shortest &larr; {check}" :
+                                     "shortest &larr; check"), "updateNextCategory4");
+            
+            if (this.trackTies) {
+                this.code += pcEntry(1, "else (len(v[check].label) = len(v[shortest].label))",
+                                     "checkTieCategory4");
+                this.code += pcEntry(2, "shortest.add(check)", "updateTieCategory4");
+            }
+            // longest
+            this.code += pcEntry(1, "if (len(v[check].label) > len(v[longest].label))",
+                                 "checkNextCategory5");
+            this.code += pcEntry(2, (this.trackTies ?
+                                     "longest &larr; {check}" :
+                                     "longest &larr; check"), "updateNextCategory5");
+            
+            if (this.trackTies) {
+                this.code += pcEntry(1, "else (len(v[check].label) = len(v[longest].label))",
+                                     "checkTieCategory5");
+                this.code += pcEntry(2, "longest.add(check)", "updateTieCategory5");
+            }
+        }
 
-	if (this.firstlast) {
-	    // first alphabetically
-	    this.code += pcEntry(1, "if (v[check].label < v[firstalpha].label)",
-				 "checkNextCategory6");
-	    this.code += pcEntry(2, (this.trackTies ?
-				     "firstalpha &larr; {check}" :
-				     "firstalpha &larr; check"), "updateNextCategory6");
+        if (this.firstlast) {
+            // first alphabetically
+            this.code += pcEntry(1, "if (v[check].label < v[firstalpha].label)",
+                                 "checkNextCategory6");
+            this.code += pcEntry(2, (this.trackTies ?
+                                     "firstalpha &larr; {check}" :
+                                     "firstalpha &larr; check"), "updateNextCategory6");
 
-	    if (this.trackTies) {
-		this.code += pcEntry(1, "else if (v[check].label = v[firstalpha].label)",
-				     "checkTieCategory6");
-		this.code += pcEntry(2, "firstalpha.add(check)", "updateTieCategory6");
-	    }			 
-	    // last alphabetically
-	    this.code += pcEntry(1, "if (v[check].label > v[lastalpha].label)",
-				 "checkNextCategory7");
-	    this.code += pcEntry(2, (this.trackTies ?
-				     "lastalpha &larr; {check}" :
-				     "lastalpha &larr; check"), "updateNextCategory7");
+            if (this.trackTies) {
+                this.code += pcEntry(1, "else if (v[check].label = v[firstalpha].label)",
+                                     "checkTieCategory6");
+                this.code += pcEntry(2, "firstalpha.add(check)", "updateTieCategory6");
+            }                    
+            // last alphabetically
+            this.code += pcEntry(1, "if (v[check].label > v[lastalpha].label)",
+                                 "checkNextCategory7");
+            this.code += pcEntry(2, (this.trackTies ?
+                                     "lastalpha &larr; {check}" :
+                                     "lastalpha &larr; check"), "updateNextCategory7");
 
-	    if (this.trackTies) {
-		this.code += pcEntry(1, "else if (v[check].label = v[lastalpha].label)",
-				     "checkTieCategory7");
-		this.code += pcEntry(2, "lastalpha.add(check)", "updateTieCategory7");
-	    }			 
-	}
-	
-	this.code += "</table>";
-	
+            if (this.trackTies) {
+                this.code += pcEntry(1, "else if (v[check].label = v[lastalpha].label)",
+                                     "checkTieCategory7");
+                this.code += pcEntry(2, "lastalpha.add(check)", "updateTieCategory7");
+            }                    
+        }
+        
+        this.code += "</table>";
+        
         addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
         addEntryToAVControlPanel("visiting", visualSettings.visiting);
         addEntryToAVControlPanel("discarded", visualSettings.discarded);
         for (var i = 0; i < this.categories.length; i++) {
-	    if (this.categories[i].include(this)) {
-		addEntryToAVControlPanel(this.categories[i].name,
-					 this.categories[i].visualSettings);
-	    }
+            if (this.categories[i].include(this)) {
+                addEntryToAVControlPanel(this.categories[i].name,
+                                         this.categories[i].visualSettings);
+            }
         }
     },
 
