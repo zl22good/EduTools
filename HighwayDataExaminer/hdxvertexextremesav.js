@@ -46,7 +46,8 @@ var hdxVertexExtremesSearchAV = {
     // the categories for which we are finding our extremes,
     // with names for ids, labels to display, indicies of leader,
     // comparison function to determine if we have a new leader,
-    // and visual settings for the display
+    // visual settings for the display, and a function to determine
+    // if the category is among those currently chosen to include
     categories: [
         {
             name: "north",
@@ -67,7 +68,11 @@ var hdxVertexExtremesSearchAV = {
                 scale: 6,
                 name: "northLeader",
                 value: 0
-            }
+            },
+
+	    include: function(thisAV) {
+		return true;
+	    }
         },
 
         {
@@ -88,7 +93,11 @@ var hdxVertexExtremesSearchAV = {
                 scale: 6,
                 name: "southLeader",
                 value: 0
-            }
+            },
+
+	    include: function(thisAV) {
+		return true;
+	    }
         },
 
         {
@@ -108,7 +117,11 @@ var hdxVertexExtremesSearchAV = {
                 scale: 6,
                 name: "eastLeader",
                 value: 0
-            }
+            },
+
+	    include: function(thisAV) {
+		return true;
+	    }
         },
 
         {
@@ -128,7 +141,11 @@ var hdxVertexExtremesSearchAV = {
                 scale: 6,
                 name: "westLeader",
                 value: 0
-            }
+            },
+
+	    include: function(thisAV) {
+		return true;
+	    }
         },
 
         {
@@ -142,7 +159,11 @@ var hdxVertexExtremesSearchAV = {
                         waypoints[this.index].label.length);
             },
             leaderString: vertexLabelLeaderString,
-            visualSettings: visualSettings.shortLabelLeader
+            visualSettings: visualSettings.shortLabelLeader,
+
+	    include: function(thisAV) {
+		return thisAV.longshort;
+	    }
         },
         
         {
@@ -156,7 +177,11 @@ var hdxVertexExtremesSearchAV = {
                         waypoints[this.index].label.length);
             },
             leaderString: vertexLabelLeaderString,
-            visualSettings: visualSettings.longLabelLeader
+            visualSettings: visualSettings.longLabelLeader,
+
+	    include: function(thisAV) {
+		return thisAV.longshort;
+	    }
         },
 	
         {
@@ -169,7 +194,11 @@ var hdxVertexExtremesSearchAV = {
                 return waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.localeCompare(waypoints[this.index].label) < 0;
             },
             leaderString: vertexLabelLeaderString,
-            visualSettings: visualSettings.firstLabelLeader
+            visualSettings: visualSettings.firstLabelLeader,
+
+	    include: function(thisAV) {
+		return thisAV.firstlast;
+	    }
         },
 	
         {
@@ -182,7 +211,11 @@ var hdxVertexExtremesSearchAV = {
                 return waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.localeCompare(waypoints[this.index].label) > 0;
             },
             leaderString: vertexLabelLeaderString,
-            visualSettings: visualSettings.lastLabelLeader
+            visualSettings: visualSettings.lastLabelLeader,
+
+	    include: function(thisAV) {
+		return thisAV.firstlast;
+	    }
         },
     ],
 
@@ -209,6 +242,7 @@ var hdxVertexExtremesSearchAV = {
                 // show marker 0 as the leader in each category
                 // on the map and in the table
                 for (var i = 0; i < thisAV.categories.length; i++) {
+		    if (!thisAV.categories[i].include(thisAV)) continue;
                     updateMarkerAndTable(thisAV.categories[i].index,
                                          thisAV.categories[i].visualSettings, 
                                          40, false);
@@ -261,7 +295,11 @@ var hdxVertexExtremesSearchAV = {
                     hdxAV.nextAction = "updateNextCategory";
                 }
                 else {
-                    thisAV.nextCategory++;
+		    // advance category, skipping if necessary
+		    do {
+			thisAV.nextCategory++;
+		    } while (thisAV.nextCategory < thisAV.categories.length &&
+			     !thisAV.categories[thisAV.nextCategory].include(thisAV));
                     if (thisAV.nextCategory == thisAV.categories.length) {
                         hdxAV.nextAction = "forLoopBottom";
                     }
@@ -296,6 +334,7 @@ var hdxVertexExtremesSearchAV = {
                 let stillALeader = false;
                 for (var i = 0; i < thisAV.categories.length; i++) {
                     if (i == thisAV.nextCategory) continue;
+		    if (!thisAV.categories[i].include(thisAV)) continue;
                     if (thisAV.categories[i].index == oldLeader) {
                         stillALeader = true;
                         updateMarkerAndTable(oldLeader,
@@ -327,7 +366,11 @@ var hdxVertexExtremesSearchAV = {
                         thisAV.categories[thisAV.nextCategory].label,
                         thisAV.categories[thisAV.nextCategory].index)
                 );
-                thisAV.nextCategory++;
+		// advance category, skipping if necessary
+		do {
+		    thisAV.nextCategory++;
+		} while (thisAV.nextCategory < thisAV.categories.length &&
+			 !thisAV.categories[thisAV.nextCategory].include(thisAV));
                 if (thisAV.nextCategory == thisAV.categories.length) {
                     hdxAV.nextAction = "forLoopBottom";
                 }
@@ -348,6 +391,7 @@ var hdxVertexExtremesSearchAV = {
                 // otherwise it gets discarded
                 if (thisAV.foundNewLeader) {
                     for (var i = 0; i < thisAV.categories.length; i++) {
+			if (!thisAV.categories[i].include(thisAV)) continue;
                         if (thisAV.nextToCheck == thisAV.categories[i].index) {
                             updateMarkerAndTable(thisAV.categories[i].index,
                                                  thisAV.categories[i].visualSettings, 
@@ -630,6 +674,16 @@ lastalpha &larr; 0<br />
 	}
 	
 	this.code += "</table>";
+	
+        addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
+        addEntryToAVControlPanel("visiting", visualSettings.visiting);
+        addEntryToAVControlPanel("discarded", visualSettings.discarded);
+        for (var i = 0; i < this.categories.length; i++) {
+	    if (this.categories[i].include(this)) {
+		addEntryToAVControlPanel(this.categories[i].name,
+					 this.categories[i].visualSettings);
+	    }
+        }
     },
 
     // set up UI for the start of this algorithm
@@ -651,13 +705,6 @@ For Ties, Remember:<br />
 &nbsp;Find First/Last Labels Alphabetically<br />
 `;
 
-        addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
-        addEntryToAVControlPanel("visiting", visualSettings.visiting);
-        addEntryToAVControlPanel("discarded", visualSettings.discarded);
-        for (var i = 0; i < this.categories.length; i++) {
-            addEntryToAVControlPanel(this.categories[i].name,
-                                     this.categories[i].visualSettings);
-        }
     },
         
         
