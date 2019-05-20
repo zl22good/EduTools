@@ -111,6 +111,24 @@ var visualSettings = {
         weight: 8,
         opacity: 0.6
     },
+    firstLabelLeader: {
+        color: "#876543",
+        textColor: "white",
+        scale: 6,
+        name: "firstLabelLeader",
+        value: 0,
+        weight: 8,
+        opacity: 0.6
+    },
+    lastLabelLeader: {
+        color: "#00B400",
+        textColor: "white",
+        scale: 6,
+        name: "lastLabelLeader",
+        value: 0,
+        weight: 8,
+        opacity: 0.6
+    },
     spanningTree: {
         color: "#0000a0",
         textColor: "white",
@@ -125,7 +143,9 @@ var visualSettings = {
         textColor: "white",
         scale: 4,
         name: "discovered",
-        value: 0
+        value: 0,
+        weight: 5,
+        opacity: 0.6
     },
     hoverV: {
         color: "#a0036b",

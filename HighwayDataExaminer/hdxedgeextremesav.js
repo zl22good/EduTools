@@ -3,7 +3,7 @@
 //
 // METAL Project
 //
-// Primary Author: Jim Teresco, initial implementation by Razie Fathix
+// Primary Author: Jim Teresco, initial implementation by Razie Fathi
 //
 
 // function to create the table entry for the leader for
@@ -201,6 +201,9 @@ shortestEdge &larr; 0</td></tr>
                     thisAV.foundNewLeader = false;
                     updateAVControlEntry("undiscovered", (graphEdges.length - thisAV.nextToCheck) + " edges not yet visited");
                         updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + graphEdges[thisAV.nextToCheck].label);
+                    updatePolylineAndTable(thisAV.nextToCheck,
+                                           visualSettings.visiting,
+                                           false);
                 }
                 hdxAV.iterationDone = true;
             },

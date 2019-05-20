@@ -837,6 +837,7 @@ var hdxTraversalsSpanningAVCommon = {
                     let place = thisAV.endingVertex;
                     let plIndex = thisAV.treeEdges.length - 1;
                     let hops = 0;
+                    let distance = 0.0;
                     // work our way back up the table from vertex to vertex
                     // along the path from the end back to the start
                     while (place != thisAV.startingVertex) {
@@ -845,13 +846,16 @@ var hdxTraversalsSpanningAVCommon = {
                             // hide line, it's not part of the path
                             if (place != thisAV.endingVertex) {
                                 let tr = document.getElementById("foundPaths" + plIndex);
-                                tr.style.display = "none";
+                                if (tr != null) {
+                                    tr.style.display = "none";
+                                }
                             }
                             plIndex--;
                             treeEdge = thisAV.treeEdges[plIndex];
                         }
 
                         hops++;
+                        distance += edgeLengthInMiles(graphEdges[treeEdge.connection]);
                         // we are at the next place on the path, update vertex
                         updateMarkerAndTable(place,
                                              thisAV.visualSettings.foundPath,
@@ -868,7 +872,9 @@ var hdxTraversalsSpanningAVCommon = {
                     updateAVControlVisualSettings("found",
                                                   thisAV.visualSettings.foundPath);
                     document.getElementById("foundEntriesCount").innerHTML = "";
-                    thisAV.foundLabel.innerHTML = "Path found with " + hops + " hops:";
+                    thisAV.foundLabel.innerHTML = "Path found, distance " +
+                        parseFloat(distance).toFixed(3) + " with " +
+                        hops + " hops:";
                 }
                 hdxAV.nextAction = "DONE";
                 hdxAV.iterationDone = true;
@@ -891,6 +897,9 @@ var hdxTraversalsSpanningAVCommon = {
                         " " + waypoints[thisAV.startingVertex].label;
                 }
                 else if (thisAV.stoppedBecause == "FoundAllComponents") {
+                    if (thisAV.componentNum == 0) {
+                        return "Found 1 component";
+                    }
                     return "Found all " + (thisAV.componentNum+1) +
                         " components";
                 }
@@ -909,7 +918,10 @@ var hdxTraversalsSpanningAVCommon = {
         let componentCount = "";
         if (this.stoppingCondition == "FindAll") {
             label = "Spanning Forest: ";
-            componentCount = ", " + (this.componentNum+1) + " components";
+            componentCount = ", " + (this.componentNum+1) + " component";
+            if (this.componentNum > 0) {
+                componentCount += "s";
+            }
         }
         else {
             label = "Spanning Tree: "
