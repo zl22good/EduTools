@@ -17,8 +17,16 @@ function extremePointLeaderString(category) {
         ') ' + waypoints[category.index].label;
 
     if (category.tiedWith.length > 0) {
-        ans += ' <span title="' + category.tiedWith + '">tied with ' +
-            category.tiedWith.length + ' others</span>';
+        ans += ' <span title="';
+        for (let i = 0; i < category.tiedWith.length; i++) {
+            ans += '[#' + category.tiedWith[i] +
+        ' (' + waypoints[category.tiedWith[i]].lat + ',' +
+        waypoints[category.tiedWith[i]].lon +
+        ') ' + waypoints[category.tiedWith[i]].label + ']';
+        }
+        ans += '">[tie with ' +
+            category.tiedWith.length + ' other' +
+            (category.tiedWith.length > 1 ? 's' : '') + ']</span>';
     }
     return ans;
 }
@@ -32,8 +40,14 @@ function vertexLabelLeaderString(category) {
         waypoints[category.index].label;
     
     if (category.tiedWith.length > 0) {
-        ans += ' <span title="' + category.tiedWith + '">tied with ' +
-            category.tiedWith.length + ' others</span>';
+        ans += ' <span title="';
+        for (let i = 0; i < category.tiedWith.length; i++) {
+            ans += '[#' + category.tiedWith[i] + ' (length ' +
+                waypoints[category.tiedWith[i]].label.length + ') ' +
+                waypoints[category.tiedWith[i]].label + ']';
+        }
+        ans += '">[tie with ' + category.tiedWith.length + ' other' +
+            (category.tiedWith.length > 1 ? 's' : '') + ']</span>';
     }
 
     return ans;
