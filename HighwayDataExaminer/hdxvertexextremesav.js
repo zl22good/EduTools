@@ -9,21 +9,34 @@
 // helper functions
 
 // function to create the table entry for the leader for extreme points
-function extremePointLeaderString(label, waypointNum) {
+function extremePointLeaderString(category) {
     
-    return label + ':<br />#' + waypointNum +
-        ' (' + waypoints[waypointNum].lat + ',' +
-        waypoints[waypointNum].lon +
-        ') ' + waypoints[waypointNum].label;
+    let ans = category.label + ':<br />#' + category.index +
+        ' (' + waypoints[category.index].lat + ',' +
+        waypoints[category.index].lon +
+        ') ' + waypoints[category.index].label;
+
+    if (category.tiedWith.length > 0) {
+        ans += ' <span title="' + category.tiedWith + '">tied with ' +
+            category.tiedWith.length + ' others</span>';
+    }
+    return ans;
 }
 
 // function to create the table entry for the leader for
 // label-based comparisons
-function vertexLabelLeaderString(label, waypointNum) {
+function vertexLabelLeaderString(category) {
     
-    return label + ':<br />#' + waypointNum +
-        ' (length ' + waypoints[waypointNum].label.length + ') ' +
-        waypoints[waypointNum].label;
+    let ans =  category.label + ':<br />#' + category.index +
+        ' (length ' + waypoints[category.index].label.length + ') ' +
+        waypoints[category.index].label;
+    
+    if (category.tiedWith.length > 0) {
+        ans += ' <span title="' + category.tiedWith + '">tied with ' +
+            category.tiedWith.length + ' others</span>';
+    }
+
+    return ans;
 }
 
 
@@ -60,6 +73,11 @@ var hdxVertexExtremesSearchAV = {
                         parseFloat(waypoints[this.index].lat));
             },
 
+            tiedForLead: function() {
+                return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lat) ==
+                        parseFloat(waypoints[this.index].lat));
+            },
+
             leaderString: extremePointLeaderString,
 
             visualSettings: {
@@ -83,6 +101,10 @@ var hdxVertexExtremesSearchAV = {
 
             newLeader: function() {
                 return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lat) <
+                        parseFloat(waypoints[this.index].lat));
+            },
+            tiedForLead: function() {
+                return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lat) ==
                         parseFloat(waypoints[this.index].lat));
             },
             leaderString: extremePointLeaderString,
@@ -110,6 +132,10 @@ var hdxVertexExtremesSearchAV = {
                 return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lon) >
                         parseFloat(waypoints[this.index].lon));
             },
+            tiedForLead: function() {
+                return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lon) ==
+                        parseFloat(waypoints[this.index].lon));
+            },
             leaderString: extremePointLeaderString,
             visualSettings: {
                 color: "#8b0000",
@@ -132,6 +158,10 @@ var hdxVertexExtremesSearchAV = {
 
             newLeader: function() {
                 return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lon) <
+                        parseFloat(waypoints[this.index].lon));
+            },
+            tiedForLead: function() {
+                return (parseFloat(waypoints[hdxVertexExtremesSearchAV.nextToCheck].lon) ==
                         parseFloat(waypoints[this.index].lon));
             },
             leaderString: extremePointLeaderString,
@@ -158,6 +188,10 @@ var hdxVertexExtremesSearchAV = {
                 return (waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.length <
                         waypoints[this.index].label.length);
             },
+            tiedForLead: function() {
+                return (waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.length ==
+                        waypoints[this.index].label.length);
+            },
             leaderString: vertexLabelLeaderString,
             visualSettings: visualSettings.shortLabelLeader,
 
@@ -174,6 +208,10 @@ var hdxVertexExtremesSearchAV = {
             
             newLeader: function() {
                 return (waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.length >
+                        waypoints[this.index].label.length);
+            },
+            tiedForLead: function() {
+                return (waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.length ==
                         waypoints[this.index].label.length);
             },
             leaderString: vertexLabelLeaderString,
@@ -193,6 +231,9 @@ var hdxVertexExtremesSearchAV = {
             newLeader: function() {
                 return waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.localeCompare(waypoints[this.index].label) < 0;
             },
+            tiedForLead: function() {
+                return waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.localeCompare(waypoints[this.index].label) == 0;
+            },
             leaderString: vertexLabelLeaderString,
             visualSettings: visualSettings.firstLabelLeader,
 
@@ -209,6 +250,9 @@ var hdxVertexExtremesSearchAV = {
             
             newLeader: function() {
                 return waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.localeCompare(waypoints[this.index].label) > 0;
+            },
+            tiedForLead: function() {
+                return waypoints[hdxVertexExtremesSearchAV.nextToCheck].label.localeCompare(waypoints[this.index].label) == 0;
             },
             leaderString: vertexLabelLeaderString,
             visualSettings: visualSettings.lastLabelLeader,
@@ -248,8 +292,7 @@ var hdxVertexExtremesSearchAV = {
                                          40, false);
                     updateAVControlEntry(
                         thisAV.categories[i].name, 
-                        thisAV.categories[i].leaderString(thisAV.categories[i].label,
-                                                          thisAV.categories[i].index)
+                        thisAV.categories[i].leaderString(thisAV.categories[i])
                     );
                 }
                 hdxAV.iterationDone = true;
@@ -290,31 +333,32 @@ var hdxVertexExtremesSearchAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label+thisAV.nextCategory,
                                     thisAV.categories[thisAV.nextCategory].visualSettings);
-                //console.log("checkNextCategory for vertex " + thisAV.nextToCheck + " in category " + thisAV.nextCategory);
+                thisAV.checkedCategory = thisAV.nextCategory;
                 if (thisAV.categories[thisAV.nextCategory].newLeader()) {
                     hdxAV.nextAction = "updateNextCategory";
                 }
                 else {
-                    // advance category, skipping if necessary
-                    do {
-                        thisAV.nextCategory++;
-                    } while (thisAV.nextCategory < thisAV.categories.length &&
-                             !thisAV.categories[thisAV.nextCategory].include(thisAV));
-                    if (thisAV.nextCategory == thisAV.categories.length) {
-                        hdxAV.nextAction = "forLoopBottom";
+                    // if handling ties, go to the "else if"
+                    if (thisAV.trackTies) {
+                        hdxAV.nextAction = "checkTieCategory";
                     }
                     else {
-                        hdxAV.nextAction = "checkNextCategory";
+                        // advance category, skipping if necessary
+                        do {
+                            thisAV.nextCategory++;
+                        } while (thisAV.nextCategory < thisAV.categories.length &&
+                                 !thisAV.categories[thisAV.nextCategory].include(thisAV));
+                        if (thisAV.nextCategory == thisAV.categories.length) {
+                            hdxAV.nextAction = "forLoopBottom";
+                        }
+                        else {
+                            hdxAV.nextAction = "checkNextCategory";
+                        }
                     }
                 }
             },
             logMessage: function(thisAV) {
-                if (hdxAV.nextAction == "updateNextCategory") {
-                    return "Check for new " + thisAV.categories[thisAV.nextCategory].label + " leader";
-                }
-                else {
-                    return "Check for new " + thisAV.categories[thisAV.nextCategory-1].label + " leader";
-                }
+                return "Check for new " + thisAV.categories[thisAV.checkedCategory].label + " leader";
             }
         },
         {
@@ -330,26 +374,38 @@ var hdxVertexExtremesSearchAV = {
 
                 // if the old leader is still leading in some other category,
                 // color it as such, and if not, discard
-                let oldLeader = thisAV.categories[thisAV.nextCategory].index;
-                let stillALeader = false;
-                for (var i = 0; i < thisAV.categories.length; i++) {
-                    if (i == thisAV.nextCategory) continue;
-                    if (!thisAV.categories[i].include(thisAV)) continue;
-                    if (thisAV.categories[i].index == oldLeader) {
-                        stillALeader = true;
-                        updateMarkerAndTable(oldLeader,
-                                             thisAV.categories[i].visualSettings, 
-                                             40, false);
-                        break;  // could lead in others, but pick the first
+                let oldLeaders = thisAV.categories[thisAV.nextCategory].tiedWith.concat([ thisAV.categories[thisAV.nextCategory].index ]);
+                
+                // this is a loop to check all old leaders
+                // not just the first when checking ties
+                for (var oldLIndex = 0; oldLIndex < oldLeaders.length; oldLIndex++) {
+                    let oldLeader = oldLeaders[oldLIndex];
+                    let stillALeader = false;
+                    for (var i = 0; i < thisAV.categories.length; i++) {
+                        if (i == thisAV.nextCategory) continue;
+                        if (!thisAV.categories[i].include(thisAV)) continue;
+                        if ((thisAV.categories[i].index == oldLeader) ||
+                            thisAV.categories[i].tiedWith.includes(oldLeader)) {
+                            stillALeader = true;
+                            updateMarkerAndTable(oldLeader,
+                                                 thisAV.categories[i].visualSettings, 
+                                                 40, false);
+                            break;  // could lead in others, but pick the first
+                        }
+                    }
+                    if (!stillALeader) {
+                        updateMarkerAndTable(oldLeader, visualSettings.discarded,
+                                             20, true);
+                        thisAV.discarded++;
+                        updateAVControlEntry("discarded", thisAV.discarded + " vertices discarded");
                     }
                 }
-                if (!stillALeader) {
-                    updateMarkerAndTable(oldLeader, visualSettings.discarded,
-                                         20, true);
-                    thisAV.discarded++;
-                    updateAVControlEntry("discarded", thisAV.discarded + " vertices discarded");
+
+                // remove all old "tied" values
+                if (thisAV.trackTies) {
+                    thisAV.categories[thisAV.nextCategory].tiedWith = [];
                 }
-                    
+                
                 // update this category to indicate its new leader
                 // but keep it shown as the vertex being visited on the
                 // map and in the table until the end of the iteration
@@ -363,8 +419,7 @@ var hdxVertexExtremesSearchAV = {
                 updateAVControlEntry(
                     thisAV.categories[thisAV.nextCategory].name, 
                     thisAV.categories[thisAV.nextCategory].leaderString(
-                        thisAV.categories[thisAV.nextCategory].label,
-                        thisAV.categories[thisAV.nextCategory].index)
+                        thisAV.categories[thisAV.nextCategory])
                 );
                 // advance category, skipping if necessary
                 do {
@@ -379,9 +434,74 @@ var hdxVertexExtremesSearchAV = {
                 }
             },
             logMessage: function(thisAV) {
-                return thisAV.nextToCheck + " is new " + thisAV.categories[thisAV.nextCategory-1].label + " leader";
+                return "Check for new " + thisAV.categories[thisAV.checkedCategory].label + " leader";
             }
         },
+
+        {
+            label: "checkTieCategory",
+            comment: "check for tie in a category lead",
+            code: function(thisAV) {
+                highlightPseudocode(this.label+thisAV.nextCategory,
+                                    thisAV.categories[thisAV.nextCategory].visualSettings);
+                if (thisAV.categories[thisAV.nextCategory].tiedForLead()) {
+                    hdxAV.nextAction = "updateTieCategory";
+                }
+                else {
+                    // advance category, skipping if necessary
+                    do {
+                        thisAV.nextCategory++;
+                    } while (thisAV.nextCategory < thisAV.categories.length &&
+                             !thisAV.categories[thisAV.nextCategory].include(thisAV));
+                    if (thisAV.nextCategory == thisAV.categories.length) {
+                        hdxAV.nextAction = "forLoopBottom";
+                    }
+                    else {
+                        hdxAV.nextAction = "checkNextCategory";
+                    }
+                }
+
+            },
+            
+            logMessage: function(thisAV) {
+                return "Check for tie in " + thisAV.categories[thisAV.checkedCategory].label;
+            }
+        },
+        {
+            label: "updateTieCategory",
+            comment: "update tied category leader",
+            code: function(thisAV) {
+
+                highlightPseudocode(this.label+thisAV.nextCategory,
+                                    thisAV.categories[thisAV.nextCategory].visualSettings);
+                // remember that we have a new leader so this doesn't
+                // get discarded at the end of the loop
+                thisAV.foundNewLeader = true;
+
+                // add to list of values tied for the lead
+                thisAV.categories[thisAV.nextCategory].tiedWith.push(thisAV.nextToCheck);
+                updateAVControlEntry(
+                    thisAV.categories[thisAV.nextCategory].name, 
+                    thisAV.categories[thisAV.nextCategory].leaderString(
+                        thisAV.categories[thisAV.nextCategory])
+                );
+                // advance category, skipping if necessary
+                do {
+                    thisAV.nextCategory++;
+                } while (thisAV.nextCategory < thisAV.categories.length &&
+                         !thisAV.categories[thisAV.nextCategory].include(thisAV));
+                if (thisAV.nextCategory == thisAV.categories.length) {
+                    hdxAV.nextAction = "forLoopBottom";
+                }
+                else {
+                    hdxAV.nextAction = "checkNextCategory";
+                }
+            },
+            logMessage: function(thisAV) {
+                return "New tie for " + thisAV.categories[thisAV.checkedCategory].label + " leader";
+            }
+        },
+
         {
             label: "forLoopBottom",
             comment: "end of for loop iteration",
@@ -392,8 +512,9 @@ var hdxVertexExtremesSearchAV = {
                 if (thisAV.foundNewLeader) {
                     for (var i = 0; i < thisAV.categories.length; i++) {
                         if (!thisAV.categories[i].include(thisAV)) continue;
-                        if (thisAV.nextToCheck == thisAV.categories[i].index) {
-                            updateMarkerAndTable(thisAV.categories[i].index,
+                        if ((thisAV.nextToCheck == thisAV.categories[i].index) ||
+                            thisAV.categories[i].tiedWith.includes(thisAV.nextToCheck)) {
+                            updateMarkerAndTable(thisAV.nextToCheck,
                                                  thisAV.categories[i].visualSettings, 
                                                  40, false);
                             break;  // just use the first we find
