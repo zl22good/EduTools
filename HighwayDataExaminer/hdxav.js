@@ -47,6 +47,10 @@ var hdxAV = {
     algStat: null,
     algOptions: null,
     startPause: null,
+
+    logMessageArr: [],
+
+
     
     // set the status and do any needed cleanup for that change
     setStatus(newStatus) {
@@ -109,6 +113,12 @@ var hdxAV = {
         // the algorithm status message bar on the algorithm
         // visualization information panel
         this.algStat = document.getElementById("algorithmStatus");
+
+
+
+
+
+        
 
         
         this.algOptions = document.getElementById("algorithmOptions");
@@ -204,7 +214,37 @@ var hdxAV = {
         // update status to this line of code's logMessage, after
         // code executes so any simulation variables updated through
         // this step can be reflected in the update
-        hdxAV.algStat.innerHTML = currentAction.logMessage(thisAV);
+        //hdxAV.algStat.innerHTML = currentAction.logMessage(thisAV);
+
+        hdxAV.logMessageArr.push(currentAction.logMessage(thisAV));
+        if(hdxAV.logMessageArr.length = 8)
+        {
+             hdxAV.logMessageArr.splice(0, 1);
+        }
+        ans = ' <span title="Past Logs -  ';
+        for(let j = 2; j <7; j++){
+         if(hdxAV.logMessageArr.length > (j))
+         {
+            ans += "\n" + (j-1) + " - " + hdxAV.logMessageArr[hdxAV.logMessageArr.length-j] ;
+
+         }
+    
+     }
+        
+
+        //for(let j = hdcAV.logMessageArr.length -2; j > (0 || hdcAV.logMessageArr.length -6); j --)
+        //{
+        // ans += hdxAV.logMessageArr[hdxAV.logMessageArr.length-j] + ',';            
+        // }
+        //}
+    
+        ans += '">' + hdxAV.logMessageArr[hdxAV.logMessageArr.length-1] + '</span>';
+
+
+
+        hdxAV.algStat.innerHTML =  ans;
+
+        
         //console.log("ACTION DONE: " + currentAction.logMessage(thisAV));
     },
 
