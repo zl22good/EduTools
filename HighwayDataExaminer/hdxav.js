@@ -47,6 +47,10 @@ var hdxAV = {
     algStat: null,
     algOptions: null,
     startPause: null,
+
+    logMessageArr: [],
+
+
     
     // set the status and do any needed cleanup for that change
     setStatus(newStatus) {
@@ -204,7 +208,11 @@ var hdxAV = {
         // update status to this line of code's logMessage, after
         // code executes so any simulation variables updated through
         // this step can be reflected in the update
-        hdxAV.algStat.innerHTML = currentAction.logMessage(thisAV);
+        //hdxAV.algStat.innerHTML = currentAction.logMessage(thisAV);
+
+        hdxAV.logMessageArr.push(currentAction.logMessage(thisAV));
+        hdxAV.algStat.innerHTML = hdxAV.logMessageArr[hdxAV.logMessageArr.length-1];
+
         //console.log("ACTION DONE: " + currentAction.logMessage(thisAV));
     },
 
