@@ -448,7 +448,7 @@ var hdxVertexExtremesSearchAV = {
                 }
             },
             logMessage: function(thisAV) {
-                return "Check for new " + thisAV.categories[thisAV.checkedCategory].label + " leader";
+                return "New " + thisAV.categories[thisAV.checkedCategory].label + " leader";
             }
         },
 
@@ -826,6 +826,8 @@ lastalpha &larr; 0<br />
 
         hdxAV.algStat.style.display = "";
         hdxAV.algStat.innerHTML = "Setting up";
+        hdxAV.logMessageArr = [];
+        hdxAV.logMessageArr.push("Setting up");
         hdxAV.algOptions.innerHTML = `
 <input id="boundingBox" type="checkbox" name="Show Bounding Box" checked />&nbsp;
 Show Extremes Bounding Box<br />

@@ -1038,6 +1038,8 @@ var hdxTraversalsSpanningAVCommon = {
     setupUI() {
         hdxAV.algStat.style.display = "";
         hdxAV.algStat.innerHTML = "Setting up";
+        hdxAV.logMessageArr = [];
+        hdxAV.logMessageArr.push("Setting up");
         let newAO =
             buildWaypointSelector("startPoint", "Start Vertex", 0) +
             "<br />" +
