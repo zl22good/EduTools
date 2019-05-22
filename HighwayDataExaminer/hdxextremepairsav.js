@@ -488,6 +488,8 @@ d<sub>farthest</sub> &larr; 0</td></tr>
 
         hdxAV.algStat.style.display = "";
         hdxAV.algStat.innerHTML = "Setting up";
+        hdxAV.logMessageArr = [];
+        hdxAV.logMessageArr.push("Setting up");
         hdxAV.algOptions.innerHTML = '';
 
         addEntryToAVControlPanel("v1visiting", this.visualSettings.v1);

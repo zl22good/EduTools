@@ -214,10 +214,12 @@ var hdxAV = {
         // update status to this line of code's logMessage, after
         // code executes so any simulation variables updated through
         // this step can be reflected in the update
+        // this also creates a past log message that appears when you
+        // hover over the current action, this shows the last 5 messages
         //hdxAV.algStat.innerHTML = currentAction.logMessage(thisAV);
 
         hdxAV.logMessageArr.push(currentAction.logMessage(thisAV));
-        if(hdxAV.logMessageArr.length = 8)
+        if(hdxAV.logMessageArr.length == 8)
         {
              hdxAV.logMessageArr.splice(0, 1);
         }
@@ -229,19 +231,8 @@ var hdxAV = {
 
          }
     
-     }
-        
-
-        //for(let j = hdcAV.logMessageArr.length -2; j > (0 || hdcAV.logMessageArr.length -6); j --)
-        //{
-        // ans += hdxAV.logMessageArr[hdxAV.logMessageArr.length-j] + ',';            
-        // }
-        //}
-    
+     }    
         ans += '">' + hdxAV.logMessageArr[hdxAV.logMessageArr.length-1] + '</span>';
-
-
-
         hdxAV.algStat.innerHTML =  ans;
 
         
