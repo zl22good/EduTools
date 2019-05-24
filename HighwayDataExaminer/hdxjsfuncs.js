@@ -1242,16 +1242,25 @@ function customTitle()
     console.log(body);
     //selects all things with attribute custom-title
     var titles = document.querySelectorAll("[custom-title]");
+    var numberOfDataTitles = document.getElementsByClassName("data-title").length;
     for(let x = 0; x <titles.length; x++)
         {
-            
-            var theClass = "title" + x;
+            var offset = numberOfDataTitles + x;
+            var theClass = "title" + offset;
             //adds class to the original html
             titles[x].classList.add(theClass);
+            //Adds a mouse event when it enters an object with a custom title
+            //will grab the class(psuedo-ID) and change the spantags display to block
             titles[x].addEventListener("mouseenter", function(event){
-                var target = event.target;
-                var currClass = target.getAttribute("class");
+                var target = event.target; //mouse enter event
+                var currClass = target.getAttribute("class"); // grabs the current class, acting as an ID
+                currClass = currClass.substr(currClass.indexOf("title"));
+                console.log(currClass);
                 var classNodes = document.body.getElementsByClassName(currClass);
+                for(var temp of classNodes)
+                {
+                    console.log(temp + "method 1");
+                }
                 var spanTag = classNodes[1];
                 var style = window.getComputedStyle(spanTag);
                 var display = style.getPropertyValue("display");
@@ -1260,12 +1269,26 @@ function customTitle()
                     {
                         spanTag.style.display = "block";
                     }
+                var rect = classNodes[0].getBoundingClientRect();
+                var left = rect.left;
+                spanTag.style.left = left + "px";
+
+                spanTag.style.top = (50 + rect.top) + "px";
+                var rect2 = spanTag.getBoundingClientRect();
+                if(rect2.right > window.innerWidth)
+                {
+                    spanTag.style.left = left - (rect2.right - window.innerWidth) + "px";
+                }
                        
             }, false);
-            
+
+            //Adds a mouse event when it leaves an object with a custom title
+            //will grab the class(psuedo-ID) and change the spantags display to none
             titles[x].addEventListener("mouseleave", function(event){
                 var target = event.target;
-                var currClass = target.getAttribute("class");
+                var currClass = target.getAttribute("class"); // grabs the current class, acting as an ID
+                currClass = currClass.substr(currClass.indexOf("title"));
+                console.log(currClass);
                 var classNodes = document.body.getElementsByClassName(currClass);
                 for(var temp of classNodes)
                     {
@@ -1279,9 +1302,12 @@ function customTitle()
                     {
                         spanTag.style.display = "none";
                     }
+                //var rect = classNodes[0].getBoundingClientRect();
+                //spanTag.style.left = rect.left + "px";
+                //spanTag.style.top = rect.top + "px";
                        
             }, false);
-            
+
             //obtains the text of the custom title and creates a text node
             var titleValue= titles[x].getAttribute("custom-title");
             var titleNode = document.createTextNode(titleValue);
@@ -1292,14 +1318,22 @@ function customTitle()
             title.style.display = "none";
             title.classList.add(theClass);
             title.classList.add("data-title");
-            title.style.position = "absolute";
-            title.style.left = "350px";
-            title.style.top = "100px";
+            title.style.position = "fixed";
+
+            var rect = titles[x].getBoundingClientRect();
+            title.style.left = "" + rect.left + "px";
+            title.style.top = "" + rect.top + "px";
             title.style.zIndex = "99999";
             //adds the titleNode to title
             title.appendChild(titleNode);
             //span tag - title - is added to the body
             body.appendChild(title);
+
+            //remove attribute custom-title from the object processed
+            //This is to avoid running this multiple times on the same object
+            //MUST BE HERE DUE TO CODE EXECUTION TOP TO BOTTOM
+            titles[x].removeAttribute("custom-title");
         }
     
 }
+
