@@ -59,7 +59,7 @@ function displayLDVItem(item, ldv) {
         showFromFull = "#" + item.fromVIndex + ":" +
             waypoints[item.fromVIndex].label;
     }
-    return '<span title="Edge #' + item.connection + " " + showFromFull +
+    return '<span custom-title="Edge #' + item.connection + " " + showFromFull +
         "&rarr; #" + item.vIndex + ":" + waypoints[item.vIndex].label +
         ", label: " + edgeLabelFull + ", value: " +
         item.val.toFixed(ldv.valPrecision) +
@@ -960,7 +960,7 @@ var hdxTraversalsSpanningAVCommon = {
         }
 
         // mouseover title
-        newtr.setAttribute("title",
+        newtr.setAttribute("custom-title",
                            "Path to #" + item.vIndex + ":" +
                            waypoints[item.vIndex].label + ", " +
                            this.distEntry + ": " +

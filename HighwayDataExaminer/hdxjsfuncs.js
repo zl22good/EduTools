@@ -648,7 +648,7 @@ function parseTMGContents(fileContents) {
             parseFloat(vertexInfo[2]).toFixed(3) 
             + waypoints[i].label;
         
-        vTable += '<tr id="waypoint' + i + '" title = "' + vsubstrL + '"'  +'" onmouseover = "hoverV('+i+', false)" onmouseout = "hoverEndV('+i+', false)" onclick = "labelClickHDX('+i+')" ><td style ="word-break:break-all;">' + i +'</td>';
+        vTable += '<tr id="waypoint' + i + '" custom-title = "' + vsubstrL +'" onmouseover = "hoverV('+i+', false)" onmouseout = "hoverEndV('+i+', false)" onclick = "labelClickHDX('+i+')" ><td style ="word-break:break-all;">' + i +'</td>';
         
         var vstr = '<td style ="word-break:break-all;"' ; 
         var vstr2 = vstr +'>' + vsubstr + '</td></tr>';
@@ -699,7 +699,7 @@ function parseTMGContents(fileContents) {
             ' &harr; ' + edgeInfo[1] + ':&nbsp;'
             + (waypoints[newEdge.v2].label).substring(0,5) + '</td>';
         
-        eTable += '<tr title = "' + test + '"' + 'onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="edgeClick('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td id = "connectname" style ="word-break:break-all;" >' + i + '</td>';
+        eTable += '<tr custom-title = "' + test + '"' + 'onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="edgeClick('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td id = "connectname" style ="word-break:break-all;" >' + i + '</td>';
         
         var subst2 = '<td style ="word-break:break-all;"'; 
         var subst3 = subst2 + '>' + edgeInfo[2] + subst;
@@ -1231,4 +1231,75 @@ function squaredDistance(o1, o2) {
     dx = o1.lon - o2.lon;
     dy = o1.lat - o2.lat;
     return dx * dx + dy * dy;
+}
+
+//Takes anything with a custom-title attribute and appends
+//them into span tag under document.body. This then adds various
+//styles and class, that function as ids (allowing for more "ids")
+function customTitle()
+{
+    var body = document.body;
+    console.log(body);
+    //selects all things with attribute custom-title
+    var titles = document.querySelectorAll("[custom-title]");
+    for(let x = 0; x <titles.length; x++)
+        {
+            
+            var theClass = "title" + x;
+            //adds class to the original html
+            titles[x].classList.add(theClass);
+            titles[x].addEventListener("mouseenter", function(event){
+                var target = event.target;
+                var currClass = target.getAttribute("class");
+                var classNodes = document.body.getElementsByClassName(currClass);
+                var spanTag = classNodes[1];
+                var style = window.getComputedStyle(spanTag);
+                var display = style.getPropertyValue("display");
+                console.log(display);
+                if(display == "none")
+                    {
+                        spanTag.style.display = "block";
+                    }
+                       
+            }, false);
+            
+            titles[x].addEventListener("mouseleave", function(event){
+                var target = event.target;
+                var currClass = target.getAttribute("class");
+                var classNodes = document.body.getElementsByClassName(currClass);
+                for(var temp of classNodes)
+                    {
+                        console.log(temp + "method 2");
+                    }
+                var spanTag = classNodes[1];
+                var style = window.getComputedStyle(spanTag);
+                var display = style.getPropertyValue("display");
+                console.log(display);
+                if(display == "block")
+                    {
+                        spanTag.style.display = "none";
+                    }
+                       
+            }, false);
+            
+            //obtains the text of the custom title and creates a text node
+            var titleValue= titles[x].getAttribute("custom-title");
+            var titleNode = document.createTextNode(titleValue);
+            console.log(titleValue);
+            var title = document.createElement("span");
+            //setAttribute
+            //Adds attributes of Style to the span tag
+            title.style.display = "none";
+            title.classList.add(theClass);
+            title.classList.add("data-title");
+            title.style.position = "absolute";
+            title.style.left = "350px";
+            title.style.top = "100px";
+            title.style.zIndex = "99999";
+            //adds the titleNode to title
+            title.appendChild(titleNode);
+            //span tag - title - is added to the body
+            body.appendChild(title);
+        }
+    
 }
