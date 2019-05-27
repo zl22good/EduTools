@@ -32,13 +32,13 @@ var hdxDegreeAV = {
             tiedWith: [],
             
             newLeader: function() {
-                return (parseFloat(waypoints[hdxDegreeAV.nextToCheck].length) <
-                        parseFloat(waypoints[this.index].length));
+                return (parseFloat(waypoints[hdxDegreeAV.nextToCheck].edgeList.length) <
+                        parseFloat(waypoints[this.index].edgeList.length));
             },
 
             tiedForLead: function() {
-                return (parseFloat(waypoints[hdxDegreeAV.nextToCheck].length) ==
-                        parseFloat(waypoints[this.index].length));
+                return (parseFloat(waypoints[hdxDegreeAV.nextToCheck].edgeList.length) ==
+                        parseFloat(waypoints[this.index].edgeList.length));
             },
 
 
@@ -62,13 +62,13 @@ var hdxDegreeAV = {
             tiedWith: [],
             
             newLeader: function() {
-                return (parseFloat(waypoints[hdxDegreeAV.nextToCheck].length) >
-                        parseFloat(waypoints[this.index].length));
+                return (parseFloat(waypoints[hdxDegreeAV.nextToCheck].edgeList.length) >
+                        parseFloat(waypoints[this.index].edgeList.length));
             },
 
             tiedForLead: function() {
-                return (parseFloat(waypoints[hdxDegreeAV.nextToCheck].length) ==
-                        parseFloat(waypoints[this.index].length));
+                return (parseFloat(waypoints[hdxDegreeAV.nextToCheck].edgeList.length) ==
+                        parseFloat(waypoints[this.index].edgeList.length));
             },
 
 
@@ -111,7 +111,7 @@ var hdxDegreeAV = {
                                          40, false);
                     updateAVControlEntry(
                         thisAV.categories[i].name,
-                        "test"
+                        thisAV.categories[i].label + " - " + waypoints[thisAV.categories[i].index].label + " - Degree of " + waypoints[thisAV.categories[i].index].edgeList.length 
                         //thisAV.categories[i].leaderString(thisAV.categories[i])
                     );
                 }
@@ -158,17 +158,17 @@ var hdxDegreeAV = {
                     hdxAV.nextAction = "updateNextCategory";
                 }
                 else {
-                    
+                    hdxAV.nextAction = "checkTieCategory";
                         // advance category, skipping if necessary
                          
-                            thisAV.nextCategory++;
+                            //thisAV.nextCategory++;
                         
-                            if (thisAV.nextCategory == thisAV.categories.length) {
-                            hdxAV.nextAction = "forLoopBottom";
-                            }
-                            else {
-                            hdxAV.nextAction = "checkNextCategory";
-                            }
+                            //if (thisAV.nextCategory == thisAV.categories.length) {
+                            //hdxAV.nextAction = "forLoopBottom";
+                            //}
+                           // else {
+                           // hdxAV.nextAction = "checkNextCategory";
+                            //}
                     
                 }
             },
@@ -198,7 +198,6 @@ var hdxDegreeAV = {
                     let stillALeader = false;
                     for (var i = 0; i < thisAV.categories.length; i++) {
                         if (i == thisAV.nextCategory) continue;
-                        if (!thisAV.categories[i].include(thisAV)) continue;
                         if ((thisAV.categories[i].index == oldLeader) ||
                             thisAV.categories[i].tiedWith.includes(oldLeader)) {
                             stillALeader = true;
@@ -227,14 +226,22 @@ var hdxDegreeAV = {
                 thisAV.categories[thisAV.nextCategory].index = thisAV.nextToCheck;
 
                 // update bounding box
-                if (thisAV.showBB) {
-                    thisAV.directionalBoundingBox();
-                }
+                //if (thisAV.showBB) {
+                  //  thisAV.directionalBoundingBox();
+                //}
                 
+                ans = ' <span title=';
+                for(let j = 0; j <thisAV.categories[thisAV.nextCategory].tiedWith.length; j++){
+                
+                    ans += "\n" + thisAV.categories[thisAV.nextCategory].tiedWith[j] ;
+                           
+                }  
+                          
+                ans += '>' + thisAV.categories[thisAV.checkedCategory].label + " - " + waypoints[thisAV.nextToCheck].label 
+                + " - Degree of " + waypoints[thisAV.nextToCheck].edgeList.length + '</span>';
                 updateAVControlEntry(
-                    thisAV.categories[thisAV.nextCategory].name, 
-                    thisAV.categories[thisAV.nextCategory].leaderString(
-                        thisAV.categories[thisAV.nextCategory])
+                    thisAV.categories[thisAV.nextCategory].name,
+                    ans
                 );
                 // advance category, skipping if necessary
                 
@@ -292,10 +299,35 @@ var hdxDegreeAV = {
 
                 // add to list of values tied for the lead
                 thisAV.categories[thisAV.nextCategory].tiedWith.push(thisAV.nextToCheck);
+
+
+
+                ans = ' <span title="Tied wtih-'; //+  thisAV.categories[thisAV.nextCategory].tiedWith[0];
+                for(let j = 0; j <thisAV.categories[thisAV.nextCategory].tiedWith.length; j++){
+                
+                    ans += '\n' + waypoints[thisAV.categories[thisAV.nextCategory].tiedWith[j]].label;
+                                    
+                }  
+                          
+                ans += '">' + thisAV.categories[thisAV.checkedCategory].label + " - " + waypoints[thisAV.nextToCheck].label 
+                + " - Degree of " + waypoints[thisAV.nextToCheck].edgeList.length + " - Tied with " 
+                +  thisAV.categories[thisAV.nextCategory].tiedWith.length;
+                if(thisAV.categories[thisAV.nextCategory].tiedWith.length != 1)
+                {
+                ans +=  " others."+ '</span>';
+                }
+                else
+                {
+
+                    ans +=  " other."+ '</span>';
+                }
+
                 updateAVControlEntry(
+
+                    
                     thisAV.categories[thisAV.nextCategory].name, 
-                    thisAV.categories[thisAV.nextCategory].leaderString(
-                        thisAV.categories[thisAV.nextCategory])
+                    ans
+                    //thisAV.categories[thisAV.checkedCategory].label + " - " + waypoints[thisAV.nextToCheck].label + " - Degree of " + waypoints[thisAV.nextToCheck].edgeList.length + " - Tied with " +  thisAV.categories[thisAV.nextCategory].tiedWith.length + " others."
                 );
                 // advance category, skipping if necessary
                 
@@ -321,7 +353,6 @@ var hdxDegreeAV = {
                 // otherwise it gets discarded
                 if (thisAV.foundNewLeader) {
                     for (var i = 0; i < thisAV.categories.length; i++) {
-                        if (!thisAV.categories[i].include(thisAV)) continue;
                         if ((thisAV.nextToCheck == thisAV.categories[i].index) ||
                             thisAV.categories[i].tiedWith.includes(thisAV.nextToCheck)) {
                             updateMarkerAndTable(thisAV.nextToCheck,
@@ -383,32 +414,27 @@ var hdxDegreeAV = {
         min &larr; 0, 
         max &larr; 0,<br />
         ` ;
-        
-
-       
-
-        
-        
+                
         this.code += '</td></tr>' +
             pcEntry(0, "for (check &larr; 1 to |V|-1)", "forLoopTop");
 
         // min
-        this.code += pcEntry(1, "if (v[check].len < v[min].len)",
+        this.code += pcEntry(1, "if (v[check].degree < v[min].degree)",
                              "checkNextCategory0");
         this.code += pcEntry(2, ("min &larr; check"), "updateNextCategory0");
 
-            this.code += pcEntry(1, "else if (v[check].len = v[min].len)",
+            this.code += pcEntry(1, "else if (v[check].degree = v[min].degree)",
                                  "checkTieCategory0");
-            this.code += pcEntry(2, "len.add(check)", "updateTieCategory0");
+            this.code += pcEntry(2, "min.add(check)", "updateTieCategory0");
         
 
         // max
-        this.code += pcEntry(1, "if (v[check].len > v[max].len)",
+        this.code += pcEntry(1, "if (v[check].degree > v[max].degree)",
                              "checkNextCategory1");
         this.code += pcEntry(2, ("max &larr; check"), "updateNextCategory1");
 
        
-            this.code += pcEntry(1, "else if (v[check].len = v[max].len)",
+            this.code += pcEntry(1, "else if (v[check].degree = v[max].degree)",
                                  "checkTieCategory1");
             this.code += pcEntry(2, "max.add(check)", "updateTieCategory1");
         
@@ -438,5 +464,9 @@ var hdxDegreeAV = {
         hdxAV.algOptions.innerHTML = ``;
 
     },
+
+    cleanupUI() {
+
+    }
        
 };
