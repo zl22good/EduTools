@@ -97,6 +97,7 @@ var hdxAV = {
         this.avList.push(hdxDijkstraAV);
         this.avList.push(hdxPrimAV);
         this.avList.push(hdxBFConvexHullAV);
+        this.avList.push(hdxDegreeAV);
         
         // populate the algorithm selection select with options
         // from the avList
