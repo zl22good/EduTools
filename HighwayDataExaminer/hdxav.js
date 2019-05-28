@@ -224,7 +224,7 @@ var hdxAV = {
         {
              hdxAV.logMessageArr.splice(0, 1);
         }
-        ans = ' <span title="Past Logs -  ';
+        ans = ' <span custom-title="Past Logs -  ';
         for(let j = 2; j <7; j++){
          if(hdxAV.logMessageArr.length > (j))
          {
