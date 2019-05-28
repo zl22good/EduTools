@@ -1244,13 +1244,15 @@ function customTitle()
     var body = document.body;
     //selects all things with attribute custom-title
     var titles = document.querySelectorAll("[custom-title]");
-    var numberOfDataTitles = document.getElementsByClassName("data-title").length;
+    var numberOfDataTitles = getLastTitle();
+        //document.getElementsByClassName("data-title").length;
     for(let x = 0; x <titles.length; x++)
         {
             var offset = numberOfDataTitles + x;
             var theClass = "title" + offset;
             //adds class to the original html
             titles[x].classList.add(theClass);
+            updateTitle(titles[x]);
             //Adds a mouse event when it enters an object with a custom title
             //will grab the class(psuedo-ID) and change the spantags display to block
             titles[x].addEventListener("mouseenter", function(event){
@@ -1343,6 +1345,53 @@ function customTitle()
             //MUST BE HERE DUE TO CODE EXECUTION TOP TO BOTTOM
             titles[x].removeAttribute("custom-title");
         }
-    
 }
 
+//Updates title classes of elements to assure there is no overlap of mult. classes
+//This will allow for the tags to auto update without any confusion
+function updateTitle(customSpanTag)
+{
+    //Last previously known class with the prefix title
+    var lastClass = "";
+    //grabs all classes from the current tag
+    let classes = customSpanTag.classList;
+    for(let temp of classes)
+        {
+            if(temp.includes("title"))
+                {
+                    if(lastClass.includes("title"))
+                        {
+                            customSpanTag.classList.remove(lastClass);
+                            let pickMe = lastClass + " data-title";
+                            let spanTagRemove = document.getElementsByClassName(pickMe)[0];
+                            spanTagRemove.parentNode.removeChild(spanTagRemove);
+                        }
+                    lastClass = temp;
+                }   
+        }
+}
+
+function getLastTitle()
+{
+    let last = document.getElementsByClassName("data-title").length-1;
+    if(last >= 0)
+        {
+            let lastOne = document.getElementsByClassName("data-title")[last];
+            console.log("Label:" + lastOne);
+            let classes = lastOne.classList;
+            let theOne = "";
+            for(let title of classes)
+                {
+                    if(/title(\d+)/.test(title))
+                       {
+                            theOne = title;
+                       }
+                }
+            theOne = theOne.substring(5);
+            return (parseInt(theOne) + 1);
+        }
+    else
+        {
+            return 0;
+        }
+}
