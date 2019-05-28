@@ -232,7 +232,7 @@ shortestEdge &larr; 0</td></tr>
             },
             logMessage: function(thisAV) {
                 if (hdxAV.nextAction == "updateNextCategory") {
-                    return "Check for new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+                    return "New " + thisAV.categories[thisAV.nextCategory].label + " leader";
                 }
                 else {
                     return "Check for new " + thisAV.categories[thisAV.nextCategory-1].label + " leader";
@@ -357,6 +357,8 @@ shortestEdge &larr; 0</td></tr>
 
         hdxAV.algStat.style.display = "";
         hdxAV.algStat.innerHTML = "Setting up";
+        hdxAV.logMessageArr = [];
+        hdxAV.logMessageArr.push("Setting up");
         hdxAV.algOptions.innerHTML = '';
         addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
         addEntryToAVControlPanel("visiting", visualSettings.visiting);
