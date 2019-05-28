@@ -666,6 +666,8 @@ var hdxBFConvexHullAV = {
         //}
         hdxAV.algStat.style.display = "";
         hdxAV.algStat.innerHTML = "Setting up";
+        hdxAV.logMessageArr = [];
+        hdxAV.logMessageArr.push("Setting up");
         hdxAV.algOptions.innerHTML = '';
         addEntryToAVControlPanel("hullsegments", this.visualSettings.hullComponent);
         addEntryToAVControlPanel("stats", visualSettings.pseudocodeDefault);
