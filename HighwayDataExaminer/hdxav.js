@@ -224,17 +224,18 @@ var hdxAV = {
         {
              hdxAV.logMessageArr.splice(0, 1);
         }
-        ans = ' <span title="Past Logs -  ';
+        ans = '<span custom-title="Past Logs -  ';
         for(let j = 2; j <7; j++){
          if(hdxAV.logMessageArr.length > (j))
          {
-            ans += "\n" + (j-1) + " - " + hdxAV.logMessageArr[hdxAV.logMessageArr.length-j] ;
+            ans += '<br>' + (j-1) + " - " + hdxAV.logMessageArr[hdxAV.logMessageArr.length-j];
 
          }
     
      }    
         ans += '">' + hdxAV.logMessageArr[hdxAV.logMessageArr.length-1] + '</span>';
         hdxAV.algStat.innerHTML =  ans;
+        customTitle();
 
         
         //console.log("ACTION DONE: " + currentAction.logMessage(thisAV));

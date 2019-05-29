@@ -208,3 +208,32 @@ https://stackoverflow.com/questions/19343331/how-do-i-center-an-absolutely-posit
     display: none;
 }
 
+.data-title:hover:after{
+    opacity: 1;
+    transition: all 0.1s ease 0.5s;
+    visibility: visible;
+    z-index: inherit;
+}
+.data-title:after{
+        
+    background-color: #00FF00;
+    color: #111;
+    font-size: 20px;
+    padding: 1px 5px 2px 5px;
+    bottom: -1.6em;
+    left: 100%;
+    white-space: wrap;
+    box-shadow: 1px 1px 3px #222222;
+    opacity: 0;
+    border: 1px solid #111111;
+    z-index: 99999;
+    overflow: hidden;
+}
+.data-title{
+    font-size: 20px;
+    background-color: #00FF00;
+    white-space: wrap;
+    box-shadow: 1px 1px 3px #222222;
+    opacity: 50;
+    border: 1px solid #111111;
+}

@@ -29,7 +29,9 @@ function highlightPseudocode(id, vs) {
             hdxAV.maxExecCount = hdxAV.execCounts[id];
             hdxAV.execCountRecolor = true;
         }
-        codeChunk.title = "Exec count: " + hdxAV.execCounts[id];
+        //codeChunk.title = "Exec count: " + hdxAV.execCounts[id];
+        //codeChunk.setAttribute("custom-title",codeChunk.title);
+        codeChunk.setAttribute("custom-title", ("Exec count: " + hdxAV.execCounts[id]));
     }
 }
 
