@@ -305,7 +305,7 @@ var hdxDegreeAV = {
                 ans = ' <span custom-title="Tied wtih-'; //+  thisAV.categories[thisAV.nextCategory].tiedWith[0];
                 for(let j = 0; j <thisAV.categories[thisAV.nextCategory].tiedWith.length; j++){
                 
-                    ans += '\n' + waypoints[thisAV.categories[thisAV.nextCategory].tiedWith[j]].label;
+                    ans += '<br>' + waypoints[thisAV.categories[thisAV.nextCategory].tiedWith[j]].label;
                                     
                 }  
                           

@@ -1237,22 +1237,23 @@ function squaredDistance(o1, o2) {
 //Takes anything with a custom-title attribute and appends
 //them into span tag under document.body. This then adds various
 //styles and class, that function as ids (allowing for more "ids")
-var previousTitle = "";
-var totalShown = 0;
 function customTitle()
 {
     var body = document.body;
     //selects all things with attribute custom-title
     var titles = document.querySelectorAll("[custom-title]");
     var numberOfDataTitles = getLastTitle();
-        //document.getElementsByClassName("data-title").length;
     for(let x = 0; x <titles.length; x++)
         {
+            //offset the numbering to avoid conflicts
             var offset = numberOfDataTitles + x;
             var theClass = "title" + offset;
             //adds class to the original html
             titles[x].classList.add(theClass);
+            //Remove any duplicates before after adding the class, but before doing anything else
             updateTitle(titles[x]);
+            
+            
             //Adds a mouse event when it enters an object with a custom title
             //will grab the class(psuedo-ID) and change the spantags display to block
             titles[x].addEventListener("mouseenter", function(event){
@@ -1261,20 +1262,21 @@ function customTitle()
                     var currClass = target.getAttribute("class"); // grabs the current class, acting as an ID
                     currClass = currClass.substr(currClass.indexOf("title"));
                     var classNodes = document.body.getElementsByClassName(currClass);
-                    var spanTag = classNodes[1];
+                    var spanTag = classNodes[1];//Grabs the spanTag as it is always the 2nd element when pulled this way
                     var style = window.getComputedStyle(spanTag);
                     var display = style.getPropertyValue("display");
                     if (display == "none") {
                         spanTag.style.display = "block";
-                        totalShown++;
-                        previousTitle = spanTag;
-
                     }
+                    
+                    //Get the left and top x-y coordinates. Set them for the span tag
                     var rect = classNodes[0].getBoundingClientRect();
                     var left = rect.left;
                     spanTag.style.left = left + "px";
-
                     spanTag.style.top = (50 + rect.top) + "px";
+                    
+                    //Grab the span tag's right most side, if its past the screen, shift
+                    //it to the left the difference to display it all
                     var rect2 = spanTag.getBoundingClientRect();
                     if (rect2.right > window.innerWidth) {
                         spanTag.style.left = left - (rect2.right - window.innerWidth) + "px";
@@ -1283,10 +1285,11 @@ function customTitle()
                 }
                 catch(err)
                 {
-                    previousTitle.style.display = "none";
+                    console.log("MouseEnter has encountered an error");
                 }
             }, false);
 
+            
             //Adds a mouse event when it leaves an object with a custom title
             //will grab the class(psuedo-ID) and change the spantags display to none
             titles[x].addEventListener("mouseleave", function(event){
@@ -1296,21 +1299,16 @@ function customTitle()
                     var currClass = target.getAttribute("class"); // grabs the current class, acting as an ID
                     currClass = currClass.substr(currClass.indexOf("title"));
                     var classNodes = document.body.getElementsByClassName(currClass);
-                    var spanTag = classNodes[1];
+                    var spanTag = classNodes[1]; //Grabs the spanTag as it is always the 2nd element
                     var style = window.getComputedStyle(spanTag);
+                    
                     var display = style.getPropertyValue("display");
                     if (display == "block") {
                         spanTag.style.display = "none";
-                        totalShown--;
                     }
                 }
                 catch(err){
-                    var spanTag = previousTitle;
-                    var style = window.getComputedStyle(spanTag);
-                    var display = style.getPropertyValue("display");
-                    spanTag.style.display = "none";
-                    totalShown--;
-
+                    console.log("MouseLeave has encountered an error");
                 }
                        
             }, false);
@@ -1330,8 +1328,15 @@ function customTitle()
             title.style.left = "" + rect.left + "px";
             title.style.top = "" + rect.top + "px";
             title.style.zIndex = "99999";
+            title.style.maxWidth = "550px";
             //adds the titleNode to title
             title.appendChild(titleNode);
+            var textt = title.innerHTML;
+            while(textt.includes("&gt;"))
+                {
+                    title.innerHTML = title.innerHTML.replace(/&lt;/, '<').replace(/&gt;/, '>');
+                    textt = textt.replace(/&lt;/, '<').replace(/&gt;/, '>');
+                }
             //in case the label glitches
             title.addEventListener("mouseenter",function(event) {
                 let target = event.target;
@@ -1357,29 +1362,43 @@ function updateTitle(customSpanTag)
     let classes = customSpanTag.classList;
     for(let temp of classes)
         {
+            //if the current class has title in it
             if(temp.includes("title"))
                 {
+                    //if last class was already a title
                     if(lastClass.includes("title"))
                         {
+                            //remove the class title###... from the main tag
+                            //get Elements both with the title###... and data-title classes
+                            //find the span tag and remove that node
                             customSpanTag.classList.remove(lastClass);
                             let pickMe = lastClass + " data-title";
                             let spanTagRemove = document.getElementsByClassName(pickMe)[0];
                             spanTagRemove.parentNode.removeChild(spanTagRemove);
                         }
+                    //Last class is set to a title
                     lastClass = temp;
                 }   
         }
 }
 
+//Gets the titile class with the last number. This will keep indexing constant so no numbers double over
+//and mess up the link between the tags. OFFSET method
 function getLastTitle()
 {
+    //last = length of data-title list -> Check to make sure theres
+    //at least one
     let last = document.getElementsByClassName("data-title").length-1;
     if(last >= 0)
         {
+            //Get the last indexed data-title class -> This directly relates with the
+            //highest number one due to TOP to BOTTOM
             let lastOne = document.getElementsByClassName("data-title")[last];
-            console.log("Label:" + lastOne);
+            //Grabs the individual classes from the tag
             let classes = lastOne.classList;
             let theOne = "";
+            //Go through and check the tag's classes. If any have the pattern title#+
+            //make theOne equal to it
             for(let title of classes)
                 {
                     if(/title(\d+)/.test(title))
@@ -1387,11 +1406,13 @@ function getLastTitle()
                             theOne = title;
                        }
                 }
+            //remove the "title" part and parse it for the number portion
             theOne = theOne.substring(5);
             return (parseInt(theOne) + 1);
         }
     else
         {
+            //return there are NONE
             return 0;
         }
 }
