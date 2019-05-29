@@ -60,6 +60,7 @@
 <script src="hdxbfchav.js" type="text/javascript"></script>
 <script src="hdxlinear.js" type="text/javascript"></script>
 <script src="hdxgraphsearchbox.js" type="text/javascript"></script>
+<script src="hdxkruskalav.js" type="text/javascript"></script>
 <script src="hdxdegreeav.js" type="text/javascript"></script>
 <link rel="stylesheet" type="text/css" href="supplmentalTypeAhead.css"/>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">

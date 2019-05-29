@@ -1,69 +1,43 @@
 //
-// HDX Edge extremes search AV
+// HDX Kruskal's Algorithm AV
 //
 // METAL Project
 //
-// Primary Author: Jim Teresco, initial implementation by Razie Fathi
+// Primary Author: Jim Teresco, Alissa Ronca
 //
 
 var hdxKruskalAV = {
 
     // entries for list of AVs
-    value: "edge",
-    name: "Edge Extremes Search",
+    value: "kruskal",
+    name: "Kruskal's Algorithm",
     description: "Search for extreme values based on edge (connection) lengths and labels.",
 
     // pseudocode
     code:`
 <table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">
-longestLabel &larr; 0<br />
-shortestLabel &larr; 0<br />
-longestEdge &larr; 0<br />
-shortestEdge &larr; 0</td></tr>
-<tr id="forLoopTop"><td>for (checkIndex &larr; 1 to |E|-1)</td></tr>
-<tr id="checkNextCategory0"><td> 
-&nbsp;&nbsp;if (len(e[checkIndex].label) > len(e[longestLabel].label)))
-</td></tr>
-<tr id="updateNextCategory0"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;longestLabel &larr; checkIndex
-</td></tr>
-<tr id="checkNextCategory1"><td>
-&nbsp;&nbsp;if (len(e[checkIndex].label) < len(e[shortestLabel].label)))
-</td></tr>
-<tr id="updateNextCategory1"><td>       
-&nbsp;&nbsp;&nbsp;&nbsp;shortestLabel &larr; checkIndex
-</td></tr>
-<tr id="checkNextCategory2"><td>
-&nbsp;&nbsp;if (e[checkIndex].len > e[longestEdge].len)
-</td></tr>
-<tr id="updateNextCategory2"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;longestEdge &larr; checkIndex
-</td></tr>
-<tr id="checkNextCategory3"><td>
-&nbsp;&nbsp;if (e[checkIndex].len < e[shortestEdge].len)
-</td></tr>
-<tr id="updateNextCategory3"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;shortestEdge &larr; checkIndex
-</td></tr>
+pq &larr; all edges</td></tr>
+<tr id="whileLoopTop"><td>while not pq.isEmpty</td></tr>
+<tr id="getPlaceFromLDV"><td>&nbsp;&nbsp;edge &larr; pq.remove()</td></tr>
+<tr id="checkCycle"><td>&nbsp;&nbsp;if edge.createsCycle</td></tr>
+<tr id="wasCycle"><td>&nbsp;&nbsp;&nbsp;&nbsp;discard edge</td></tr>
+<tr"><td>&nbsp;&nbsp;else</td></tr>
+<tr id="wasNotCycle"><td>&nbsp;&nbsp;&nbsp;&nbsp;tree.add(edge)</td></tr>
 </table>
 `,
-    
+    //&nbsp;&nbsp;
     // state variables for edge search
     // next to examine
     nextToCheck: 0,
+    nextEdge: 0,
     discarded: 0,
     ldv: null,
-    // required function to create an appropriate list of discovered vertices
-    hdxKruskalAV.createLDV = function() {
     
-        return new HDXLinear(hdxLinearTypes.PRIORITY_QUEUE,
-                         "Priority Queue");
-    };
 
     // comparator for priority queue
-    hdxKruskalAV.comparator = function(a, b) {
-        return a.val < b.val;
-    };
+    comparator: function(a, b) {
+        return a.val > b.val;
+    },
 
     // function to determine the next "val" field for a new LDV entry
     // in this case, the edge length
@@ -71,9 +45,9 @@ shortestEdge &larr; 0</td></tr>
     // first parameter is the LDV entry being visited at this point,
     // second parameter is the destination vertex and edge traversed
     // to get from the vertex being visited
-    hdxKruskalAV.valForLDVEntry = function() {
-        return edgeLengthInMiles(graphEdges[nextToCheck]);
-    }
+    valForLDVEntry: function() {
+        return edgeLengthInMiles(graphEdges[nextEdge]);
+    },
     
     // the actions that make up this algorithm
     avActions: [
@@ -92,11 +66,13 @@ shortestEdge &larr; 0</td></tr>
                 updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + graphEdges[thisAV.nextToCheck].label);
                 updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
 
+                
+                    
                 //add all edges to PQ sorted by length
-                for (var i = 0; i < thisAV.graphEdges.length; i++) {
-                    edgeLengthInMiles(graphEdges[i])
+                for (var i = 0; i < graphEdges.length; i++) {
+                    //edgeLengthInMiles(graphEdges[i])
                     //////working here
-                    thisAV.ldv.add(new LDVEntry(thisAV.startingVertex, 0, -1));
+                    thisAV.ldv.add(new LDVEntry(graphEdges[i].v1, edgeLengthInMiles(graphEdges[i]), i));
                 }
                 
                 hdxAV.iterationDone = true;
@@ -132,91 +108,10 @@ shortestEdge &larr; 0</td></tr>
                 return "Top of main for loop over edges, check=" + thisAV.nextToCheck;
             }
         },
+        
         {
-            label: "checkNextCategory",
-            comment: "check if current edge is a new category leader",
-            code: function(thisAV) {
-                highlightPseudocode(this.label+thisAV.nextCategory,
-                                    thisAV.categories[thisAV.nextCategory].visualSettings);
-                if (thisAV.categories[thisAV.nextCategory].newLeader()) {
-                    hdxAV.nextAction = "updateNextCategory";
-                }
-                else {
-                    thisAV.nextCategory++;
-                    if (thisAV.nextCategory == thisAV.categories.length) {
-                        hdxAV.nextAction = "forLoopBottom";
-                    }
-                    else {
-                        hdxAV.nextAction = "checkNextCategory";
-                    }
-                }
-            },
-            logMessage: function(thisAV) {
-                if (hdxAV.nextAction == "updateNextCategory") {
-                    return "New " + thisAV.categories[thisAV.nextCategory].label + " leader";
-                }
-                else {
-                    return "Check for new " + thisAV.categories[thisAV.nextCategory-1].label + " leader";
-                }
-            }
-        },
-        {
-            label: "updateNextCategory",
-            comment: "update new category leader",
-            code: function(thisAV) {
-
-                highlightPseudocode(this.label+thisAV.nextCategory,
-                                    thisAV.categories[thisAV.nextCategory].visualSettings);
-                // remember that we have a new leader so this doesn't
-                // get discarded at the end of the loop
-                thisAV.foundNewLeader = true;
-
-                // if the old leader is still leading in some other category,
-                // color it as such, and if not, discard
-                let oldLeader = thisAV.categories[thisAV.nextCategory].index;
-                let stillALeader = false;
-                for (var i = 0; i < thisAV.categories.length; i++) {
-                    if (i == thisAV.nextCategory) continue;
-                    if (thisAV.categories[i].index == oldLeader) {
-                        stillALeader = true;
-                        updatePolylineAndTable(oldLeader,
-                                             thisAV.categories[i].visualSettings, 
-                                              false);
-                        break;  // could lead in others, but pick the first
-                    }
-                }
-                if (!stillALeader) {
-                    updatePolylineAndTable(oldLeader, visualSettings.discarded,
-                                 true);
-                    thisAV.discarded++;
-                    updateAVControlEntry("discarded", thisAV.discarded + " vertices discarded");
-                }
-                    
-                // update this category to indicate its new leader
-                // but keep it shown as the edge being visited on the
-                // map and in the table until the end of the iteration
-                thisAV.categories[thisAV.nextCategory].index = thisAV.nextToCheck;
-                updateAVControlEntry(
-                    thisAV.categories[thisAV.nextCategory].name, 
-                    thisAV.categories[thisAV.nextCategory].leaderString(
-                        thisAV.categories[thisAV.nextCategory].label,
-                        thisAV.categories[thisAV.nextCategory].index)
-                );
-                thisAV.nextCategory++;
-                if (thisAV.nextCategory == thisAV.categories.length) {
-                    hdxAV.nextAction = "forLoopBottom";
-                }
-                else {
-                    hdxAV.nextAction = "checkNextCategory";
-                }
-            },
-            logMessage: function(thisAV) {
-                return thisAV.nextToCheck + " is new " + thisAV.categories[thisAV.nextCategory-1].label + " leader";
-            }
-        },
-        {
-            label: "forLoopBottom",
-            comment: "end of for loop iteration",
+            label: "whileLoopBottom",
+            comment: "end of while loop iteration",
             code: function(thisAV){
 
                 // if this edge is the leader in any category, show it,
@@ -271,6 +166,16 @@ shortestEdge &larr; 0</td></tr>
         // hide waypoints, show connections
         initWaypointsAndConnections(false, true,
                                     visualSettings.undiscovered);
+        
+        
+        this.ldv = new HDXLinear(hdxLinearTypes.PRIORITY_QUEUE,
+                         "Priority Queue");
+        if (this.hasOwnProperty("comparator")) {
+            this.ldv.setComparator(this.comparator);
+        }
+
+        this.ldv.setDisplay(getAVControlEntryDocumentElement("discovered"),
+                            displayLDVItem);
     },
         
     // set up UI for the start of edge search
@@ -283,15 +188,23 @@ shortestEdge &larr; 0</td></tr>
         hdxAV.algOptions.innerHTML = '';
         addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
         addEntryToAVControlPanel("visiting", visualSettings.visiting);
+        addEntryToAVControlPanel("discovered", visualSettings.discovered);
         addEntryToAVControlPanel("discarded", visualSettings.discarded);
-        for (var i = 0; i < this.categories.length; i++) {
-            addEntryToAVControlPanel(this.categories[i].name,
-                                     this.categories[i].visualSettings);
-        }
+        addEntryToAVControlPanel("found", visualSettings.spanningTree);
+        let foundEntry = '<span id="foundEntriesCount">0</span>' +
+            ' <span id="foundTableLabel">Edges in Minimum Spanning Tree/Forest</span><br />' +
+            '<table class="gratable"><thead>' +
+            '<tr style="text-align:center"><th>Place</th>' + 
+            '<th>Length</th>' + 
+            '<th>Arrive From</th><th>Via</th></tr>' +
+            '</thead><tbody id="foundEntries"></tbody></table>';
+        updateAVControlEntry("found", foundEntry);
+        this.foundTBody = document.getElementById("foundEntries");
+        this.foundLabel = document.getElementById("foundTableLabel");
 
     },
 
-    // clean up edge search UI
+    // clean up kruskal UI
     cleanupUI() {
 
     }
