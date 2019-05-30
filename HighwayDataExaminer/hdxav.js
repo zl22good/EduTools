@@ -79,6 +79,9 @@ var hdxAV = {
             this.startPause.disabled = false;
             break;
         }
+        //this is after the list of pseudo-code populates on screen with
+        //the start button
+        addStop();
     },
     
     // are we paused or otherwise not running?

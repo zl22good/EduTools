@@ -245,7 +245,7 @@ ENDOFSTUFF;
       </tr>
       <tr>
 	<td>
-	  <input type="button" value="Done" id="algOptionsDone" onClick="algOptionsDonePressed()">
+	  <input type="button" value="Done" id="algOptionsDone" onClick="algOptionsDonePressed();">
 	</td>
       </tr>
     </tbody>

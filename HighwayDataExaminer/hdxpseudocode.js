@@ -68,10 +68,10 @@ function pcEntry(indent, code, id) {
 
     let entry;
     if (entry != "") {
-        entry = '<tr><td id="' + id + '">';
+        entry = '<tr class="codeRow"><td id="' + id + '">';
     }
     else {
-        entry = '<tr><td>';
+        entry = '<tr class="codeRow"><td>';
     }
     if (Array.isArray(code)) {
         for (var i = 0; i < code.length; i++) {
@@ -90,3 +90,49 @@ function pcEntry(indent, code, id) {
     entry += '</td></tr>';
     return entry;
 }
+
+//Adds a click event to all rows with the codeRow class. This is used obtain the ID of the
+//correct row to assign it to the global variable
+var breakpoint = "";
+var previousBreakpoint = "";
+function addStop()
+{
+    let elements = document.getElementsByClassName("codeRow");
+    for(let element of elements) {
+        element.addEventListener("click", function (event) {
+            var target = event.target;
+            previousBreakpoint = breakpoint;
+            breakpoint = target.getAttribute("id");
+            if(previousBreakpoint == breakpoint)
+            {
+                codeRowHighlight();
+                previousBreakpoint = "";
+                breakpoint = "";
+            }
+            else {
+                codeRowHighlight();
+                breakpointHighlight();
+            }
+        }, false);
+    }
+}
+
+function breakpointHighlight(){
+    let element = document.getElementById(breakpoint);
+    if(element != null) {
+        element.style.borderStyle = "dashed";
+        element.style.borderColor = "Red";
+        element.style.borderWidth = "2px";
+    }
+}
+
+function codeRowHighlight()
+{
+    let element = document.getElementById(previousBreakpoint);
+    if(element != null) {
+        element.style.borderStyle = "solid";
+        element.style.borderColor = "Black";
+        element.style.borderWidth = "1px";
+    }
+}
+
