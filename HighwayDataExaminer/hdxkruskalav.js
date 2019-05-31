@@ -20,19 +20,35 @@ pq &larr; all edges</td></tr>
 <tr id="whileLoopTop"><td>while not pq.isEmpty</td></tr>
 <tr id="getPlaceFromLDV"><td>&nbsp;&nbsp;edge &larr; pq.remove()</td></tr>
 <tr id="checkCycle"><td>&nbsp;&nbsp;if edge.createsCycle</td></tr>
-<tr id="wasCycle"><td>&nbsp;&nbsp;&nbsp;&nbsp;discard edge</td></tr>
-<tr"><td>&nbsp;&nbsp;else</td></tr>
-<tr id="wasNotCycle"><td>&nbsp;&nbsp;&nbsp;&nbsp;tree.add(edge)</td></tr>
+<tr id="isCycle"><td>&nbsp;&nbsp;&nbsp;&nbsp;discard edge</td></tr>
+<tr><td>&nbsp;&nbsp;else</td></tr>
+<tr id="isNotCycle"><td>&nbsp;&nbsp;&nbsp;&nbsp;tree.add(edge)</td></tr>
 </table>
 `,
     //&nbsp;&nbsp;
     // state variables for edge search
-    // next to examine
-    nextToCheck: 0,
-    nextEdge: 0,
     discarded: 0,
     ldv: null,
-    
+    // last place to come out of the LDV, currently "visiting"
+    visiting: null,
+
+    // when finding all, track the lists of vertices and edges that are
+    // forming the current spanning tree
+    componentVList: [],
+    componentEList: [],
+
+    // some additional stats to maintain and display
+    numVSpanningTree: 0,
+    numESpanningTree: 0,
+    numVUndiscovered: 0,
+    numEUndiscovered: 0,
+    numEDiscardedOnDiscovery: 0,
+    numEDiscardedOnRemoval: 0,
+    componentNum: 0,
+
+    // when finding a path from start to end, we need a list of tree
+    // edges to traverse to find the path
+    treeEdges: [],
 
     // comparator for priority queue
     comparator: function(a, b) {
@@ -59,12 +75,11 @@ pq &larr; all edges</td></tr>
                 
                 
                 // highlight edge 0 as leader in all categories and current
-                thisAV.nextToCheck = 0;
                 thisAV.discarded = 0;
         
-                updateAVControlEntry("undiscovered", (graphEdges.length - thisAV.nextToCheck) + " edges not yet visited");
-                updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + graphEdges[thisAV.nextToCheck].label);
-                updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
+                //updateAVControlEntry("undiscovered", (thisAV.ldv.length) + " edges not yet visited");
+                //updateAVControlEntry("visiting", "Visiting: " + thisAV.visiting.label);
+                //updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
 
                 
                     
@@ -87,59 +102,153 @@ pq &larr; all edges</td></tr>
             comment: "while loop to iterate over remaining edges",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-                thisAV.nextToCheck++;
-                if (thisAV.nextToCheck == graphEdges.length) {
+                // if empty, go to LDVEmpty to report failure,
+                // otherwise carry on
+                if (thisAV.ldv.isEmpty()) {
                     hdxAV.nextAction = "cleanup";
                 }
                 else {
-                    // highlight nextToCheck as current edge
-                    hdxAV.nextAction = "checkNextCategory";
-                    thisAV.nextCategory = 0;
-                    thisAV.foundNewLeader = false;
-                    updateAVControlEntry("undiscovered", (graphEdges.length - thisAV.nextToCheck) + " edges not yet visited");
-                        updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + graphEdges[thisAV.nextToCheck].label);
-                    updatePolylineAndTable(thisAV.nextToCheck,
-                                           visualSettings.visiting,
-                                           false);
+                    hdxAV.nextAction = "getPlaceFromLDV";
                 }
                 hdxAV.iterationDone = true;
             },
             logMessage: function(thisAV) {
-                return "Top of main for loop over edges, check=" + thisAV.nextToCheck;
+                return "Check if any edges remain in Priority Queue";
             }
         },
-        
         {
-            label: "whileLoopBottom",
-            comment: "end of while loop iteration",
-            code: function(thisAV){
+            label: "getPlaceFromLDV",
+            comment: "Get a place from the LDV",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
 
-                // if this edge is the leader in any category, show it,
-                // otherwise it gets discarded
-                if (thisAV.foundNewLeader) {
-                    for (var i = 0; i < thisAV.categories.length; i++) {
-                        if (thisAV.nextToCheck == thisAV.categories[i].index) {
-                            updatePolylineAndTable(thisAV.categories[i].index,
-                                                 thisAV.categories[i].visualSettings, 
-                                                 false);
-                            break;  // just use the first we find
-                        }
-                    }
+                // get next place from the LDV
+                thisAV.visiting = thisAV.ldv.remove();
+                updateAVControlEntry("visiting", "Visiting " +
+                    thisAV.visiting.label);
+                // show on map as visiting color
+                updateMarkerAndTable(thisAV.visiting.vIndex,
+                    visualSettings.visiting,
+                    10, false);
+                if (thisAV.visiting.connection != -1) {
+                    updatePolylineAndTable(thisAV.visiting.connection,
+                        visualSettings.visiting,
+                        false);
+                }
+
+                hdxAV.nextAction = "checkCycle";
+            },
+            logMessage: function(thisAV) {
+                return "Removed " +
+                    thisAV.visiting.label + " from Priority Queue";
+            }
+        },
+        {
+            label: "checkCycle",
+            comment: "Check if the edge being visited creates a cycle",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                if (false) {
+                    // need to make method to determine if adding an edge would create a cycle
+                    hdxAV.nextAction = "isCycle";
                 }
                 else {
-                    updatePolylineAndTable(thisAV.nextToCheck, visualSettings.discarded,
-                         true);
-                    thisAV.discarded++;
-                        updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
-
+                    hdxAV.nextAction = "isNotCycle";
                 }
-                hdxAV.iterationDone = true;
-                hdxAV.nextAction = "forLoopTop";
             },
             logMessage: function(thisAV) {
-                return "Update/discard on map and table";
+                return "Checking if #" + thisAV.visiting.vIndex +
+                    " creates a cycle";
             }
         },
+        {
+            label: "isCycle",
+            comment: "Edge being visited creates a cycle, so discard",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.discarded);
+
+                //thisAV.numEDiscardedOnRemoval++;
+
+               // the edge that got us here is not
+                // part of the ultimate spanning tree, so it should be the
+                // "discardedOnRemoval" color
+                if (thisAV.visiting.connection != -1) {
+                    updatePolylineAndTable(thisAV.visiting.connection,
+                        visualSettings.discarded,
+                        false);
+
+                    updateMarkerAndTable(thisAV.visiting.vIndex,
+                        visualSettings.discarded,
+                        5, false);
+                }
+
+                thisAV.updateControlEntries();
+
+                hdxAV.nextAction = "whileLoopTop";
+
+            },
+            logMessage: function(thisAV) {
+                return "Discarding " +
+                    thisAV.visiting.label + " on removal";
+            }
+        },
+
+        {
+            label: "isNotCycle",
+            comment: "Found new edge that doesn't create cycle, so add it to tree",
+            code: function(thisAV) {
+                highlightPseudocode(this.label,
+                    visualSettings.spanningTree);
+
+                if (thisAV.visiting.vIndex == thisAV.startingVertex) {
+                    updateMarkerAndTable(thisAV.visiting.vIndex,
+                        visualSettings.startVertex,
+                        4, false);
+                }
+                else if (thisAV.visiting.vIndex == thisAV.endingVertex) {
+                    updateMarkerAndTable(thisAV.visiting.vIndex,
+                        visualSettings.endVertex,
+                        4, false);
+                }
+                else {
+                    updateMarkerAndTable(thisAV.visiting.vIndex,
+                        visualSettings.spanningTree,
+                        10, false);
+                }
+                // was just discovered, now part of spanning tree
+                thisAV.componentVList.push(thisAV.visiting.vIndex);
+                thisAV.numVSpanningTree++;
+
+                // we used the edge to get here, so let's mark it as such
+                if (thisAV.visiting.connection != -1) {
+                    thisAV.numESpanningTree++;
+                    thisAV.componentEList.push(thisAV.visiting.connection);
+                    updatePolylineAndTable(thisAV.visiting.connection,
+                        visualSettings.spanningTree,
+                        false);
+                }
+
+                thisAV.addLDVEntryToFoundTable(thisAV.visiting,
+                    thisAV.ldv.maxLabelLength,
+                    thisAV.ldv.valPrecision,
+                    thisAV.numESpanningTree);
+
+                // if we're finding a path from a start to an end, update
+                // our array of tree edges to trace back through to find
+                // paths
+                if (thisAV.stoppingCondition == "StopAtEnd") {
+                    thisAV.treeEdges.push(thisAV.visiting);
+                }
+
+                thisAV.updateControlEntries();
+                hdxAV.nextAction = "whileLoopTop";
+            },
+            logMessage: function(thisAV) {
+                return "Adding " + thisAV.visiting.label + " to tree";
+            }
+        },
+
         {
             label: "cleanup",
             comment: "cleanup and updates at the end of the visualization",
@@ -157,7 +266,52 @@ pq &larr; all edges</td></tr>
                 
         }
     ],
-        
+
+
+    // format an LDV entry for addition to the found table
+    addLDVEntryToFoundTable(item, maxLabelLength, precision, count) {
+
+
+        let newtr = document.createElement("tr");
+        let edgeLabel;
+        let fullEdgeLabel;
+        let fromLabel;
+        let fullFromLabel;
+        let vLabel = shortLabel(waypoints[item.vIndex].label, 10);
+        fullEdgeLabel = item.label;
+        edgeLabel = shortLabel(fullEdgeLabel, 10);
+        fromLabel = shortLabel(waypoints[item.fromVIndex].label, 10);
+        fullFromLabel = "From #" + item.v1 + ":" +
+            waypoints[item.fromVIndex].label;
+        let endpoints = '<td style ="word-break:break-all;">'
+            + edgeInfo[0] + ':&nbsp;' + item.v1.label.substring(0,5) +
+            ' &harr; ' + edgeInfo[1] + ':&nbsp;'
+            + (waypoints[newEdge.v2].label).substring(0,5) + '</td>';
+
+
+        // mouseover title
+        //newtr.setAttribute("custom-title",
+        //    "Path to #" + item.vIndex + ":" +
+         //   waypoints[item.vIndex].label + ", " +
+         //   this.distEntry + ": " +
+         //   item.val.toFixed(precision) + ", " + fullFromLabel +
+        //  ", via " + fullEdgeLabel);
+
+        // id to show shortest paths later
+        newtr.setAttribute("id", "foundPaths" + count);
+
+        // actual table row to display
+        newtr.innerHTML =
+            '<td>' + item.val.toFixed(precision) + '</td>' +
+            '<td>' + edgeLabel + '</td>' +
+            '<td>' + endpoints + '</td>' ;
+
+        this.foundTBody.appendChild(newtr);
+        document.getElementById("foundEntriesCount").innerHTML =
+            this.numESpanningTree;
+    },
+
+
     // required prepToStart function
     prepToStart() {
 
@@ -194,9 +348,9 @@ pq &larr; all edges</td></tr>
         let foundEntry = '<span id="foundEntriesCount">0</span>' +
             ' <span id="foundTableLabel">Edges in Minimum Spanning Tree/Forest</span><br />' +
             '<table class="gratable"><thead>' +
-            '<tr style="text-align:center"><th>Place</th>' + 
-            '<th>Length</th>' + 
-            '<th>Arrive From</th><th>Via</th></tr>' +
+            '<th>Length</th>' +
+            '<tr style="text-align:center"><th>Edge</th>' +
+            '<th>Endpoints</th></tr>' +
             '</thead><tbody id="foundEntries"></tbody></table>';
         updateAVControlEntry("found", foundEntry);
         this.foundTBody = document.getElementById("foundEntries");
