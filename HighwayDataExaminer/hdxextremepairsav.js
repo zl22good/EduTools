@@ -509,5 +509,9 @@ d<sub>farthest</sub> &larr; 0</td></tr>
         if (this.lineFarthest != null) {
             this.lineFarthest.remove();
         }
+    },
+    
+    idOfAction(action){
+            return action.label;
     }
 };

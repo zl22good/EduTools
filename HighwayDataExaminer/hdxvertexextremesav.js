@@ -852,5 +852,19 @@ For Ties, Remember:<br />
             this.boundingPoly[i].remove();
         }
         this.boundingPoly = [];
+    },
+    
+    idOfAction(action){
+        if(action.label == "forLoopTop")
+        {
+            return action.label;
+        }
+        else
+        {
+            var category = this.nextCategory;
+            console.log(category);
+            var currAction = action.label;
+            return (currAction + "" + category);
+        }
     }
 };

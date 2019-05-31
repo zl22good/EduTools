@@ -7,6 +7,7 @@
 //
 
 // group of variables used by many or all algorithm visualizations
+var currentCodeRow = 0;
 var hdxAV = {
     // current state of HDX
     status: hdxStates.NO_DATA,
@@ -191,10 +192,10 @@ var hdxAV = {
 
     // do one action of thisAV's array of actions
     oneAction(thisAV) {
-
         // look up the action to execute next
         let currentAction = null;
         for (var i = 0; i < thisAV.avActions.length; i++) {
+            currentCodeRow = (currentCodeRow + 1)%9;
             if (hdxAV.nextAction == thisAV.avActions[i].label) {
                 currentAction = thisAV.avActions[i];
                 break;
@@ -206,10 +207,18 @@ var hdxAV = {
         }
 
         // we have an action to execute
-
+        
+        //if breakpoint is the action, pause
+        if(thisAV.idOfAction(currentAction) == breakpoint)
+            {
+                console.log("breakpoint worked");
+                hdxAV.setStatus(hdxStates.AV_PAUSED);
+                hdxAV.startPause.innerHTML = "Resume";
+            }
+        
+        
         // undo any previous highlighting
         unhighlightPseudocode();
-
         //console.log("ACTION: " + hdxAV.nextAction);
         
         // execute the JS to continue the AV

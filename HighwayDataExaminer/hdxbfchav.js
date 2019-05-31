@@ -689,6 +689,10 @@ var hdxBFConvexHullAV = {
 	if (this.currentSegment != null) {
 	    this.currentSegment.remove();
 	}
+    },
+    
+    idOfAction(action){
+        return action.label;
     }
 };
 

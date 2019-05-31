@@ -95,24 +95,44 @@ function pcEntry(indent, code, id) {
 //correct row to assign it to the global variable
 var breakpoint = "";
 var previousBreakpoint = "";
+var getNumberBreakpoint = -1;
+var previousNumberBreakpoint = -1;
 function addStop()
 {
     let elements = document.getElementsByClassName("codeRow");
-    for(let element of elements) {
-        element.addEventListener("click", function (event) {
-            var target = event.target;
-            previousBreakpoint = breakpoint;
-            breakpoint = target.getAttribute("id");
-            if(previousBreakpoint == breakpoint)
-            {
-                codeRowHighlight();
-                previousBreakpoint = "";
-                breakpoint = "";
-            }
-            else {
-                codeRowHighlight();
-                breakpointHighlight();
-            }
+    for(let element=1; element<=elements.length; element++) {
+        var newClass = "codeRow" + element;
+        elements[element-1].classList.add(newClass);
+        elements[element-1].addEventListener("click", function (event) {
+
+                var target = event.target;
+                previousBreakpoint = breakpoint;
+                breakpoint = target.getAttribute("id");
+                var numList = target.parentElement.classList;
+                previousNumberBreakpoint = getNumberBreakpoint;
+                for(let temp of numList){
+                    if(/codeRow(\d+)/.test(temp))
+                        {
+                            getNumberBreakpoint = parseInt(temp.substring(7));
+                        }
+                }
+
+                if(previousNumberBreakpoint == getNumberBreakpoint)
+                    {
+                        getNumberBreakpoint = -1;
+                        previousNumberBreakpoint = -1;
+                    }
+                
+                if(previousBreakpoint == breakpoint)
+                {
+                    codeRowHighlight();
+                    previousBreakpoint = "";
+                    breakpoint = "";
+                }
+                else {
+                    codeRowHighlight();
+                    breakpointHighlight();
+                }
         }, false);
     }
 }
@@ -134,5 +154,10 @@ function codeRowHighlight()
         element.style.borderColor = "Black";
         element.style.borderWidth = "1px";
     }
+}
+
+function getCurrentNumber(element)
+{
+    
 }
 
