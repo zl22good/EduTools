@@ -13,18 +13,7 @@ var hdxKruskalAV = {
     name: "Kruskal's Algorithm",
     description: "Search for extreme values based on edge (connection) lengths and labels.",
 
-    // pseudocode
-    code:`
-<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">
-pq &larr; all edges</td></tr>
-<tr id="whileLoopTop"><td>while not pq.isEmpty</td></tr>
-<tr id="getPlaceFromLDV"><td>&nbsp;&nbsp;edge &larr; pq.remove()</td></tr>
-<tr id="checkCycle"><td>&nbsp;&nbsp;if edge.createsCycle</td></tr>
-<tr id="isCycle"><td>&nbsp;&nbsp;&nbsp;&nbsp;discard edge</td></tr>
-<tr><td>&nbsp;&nbsp;else</td></tr>
-<tr id="isNotCycle"><td>&nbsp;&nbsp;&nbsp;&nbsp;tree.add(edge)</td></tr>
-</table>
-`,
+    
     //&nbsp;&nbsp;
     // state variables for edge search
     discarded: 0,
@@ -52,7 +41,7 @@ pq &larr; all edges</td></tr>
 
     // comparator for priority queue
     comparator: function(a, b) {
-        return a.val > b.val;
+        return a.val < b.val;
     },
 
     // function to determine the next "val" field for a new LDV entry
@@ -78,13 +67,13 @@ pq &larr; all edges</td></tr>
                 thisAV.discarded = 0;
         
                 //updateAVControlEntry("undiscovered", (thisAV.ldv.length) + " edges not yet visited");
-                //updateAVControlEntry("visiting", "Visiting: " + thisAV.visiting.label);
+                //updateAVControlEntry("visiting", "Visiting: " + graphEdges[thisAV.visiting.connection].label);
                 //updateAVControlEntry("discarded", thisAV.discarded + " edges discarded");
 
                 
                     
                 //add all edges to PQ sorted by length
-                for (var i = 0; i < graphEdges.length; i++) {
+                for (let i = 0; i < graphEdges.length; i++) {
                     //edgeLengthInMiles(graphEdges[i])
                     //////working here
                     thisAV.ldv.add(new LDVEntry(graphEdges[i].v1, edgeLengthInMiles(graphEdges[i]), i));
@@ -125,7 +114,7 @@ pq &larr; all edges</td></tr>
                 // get next place from the LDV
                 thisAV.visiting = thisAV.ldv.remove();
                 updateAVControlEntry("visiting", "Visiting " +
-                    thisAV.visiting.label);
+                    graphEdges[thisAV.visiting.connection].label);
                 // show on map as visiting color
                 updateMarkerAndTable(thisAV.visiting.vIndex,
                     visualSettings.visiting,
@@ -139,8 +128,8 @@ pq &larr; all edges</td></tr>
                 hdxAV.nextAction = "checkCycle";
             },
             logMessage: function(thisAV) {
-                return "Removed " +
-                    thisAV.visiting.label + " from Priority Queue";
+                return "Removed edge #" +
+                    thisAV.visiting.connection + " from Priority Queue";
             }
         },
         {
@@ -149,8 +138,10 @@ pq &larr; all edges</td></tr>
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                if (false) {
-                    // need to make method to determine if adding an edge would create a cycle
+                // need to make method to determine if adding an edge would create a cycle
+                //if MST contains both vertices do a dfs to check for cycle between them
+                let cycle = false;
+                if (cycle) {
                     hdxAV.nextAction = "isCycle";
                 }
                 else {
@@ -158,7 +149,7 @@ pq &larr; all edges</td></tr>
                 }
             },
             logMessage: function(thisAV) {
-                return "Checking if #" + thisAV.visiting.vIndex +
+                return "Checking if edge #" + thisAV.visiting.connection +
                     " creates a cycle";
             }
         },
@@ -190,7 +181,7 @@ pq &larr; all edges</td></tr>
             },
             logMessage: function(thisAV) {
                 return "Discarding " +
-                    thisAV.visiting.label + " on removal";
+                    graphEdges[thisAV.visiting.connection].label + " on removal";
             }
         },
 
@@ -228,7 +219,6 @@ pq &larr; all edges</td></tr>
                         visualSettings.spanningTree,
                         false);
                 }
-
                 thisAV.addLDVEntryToFoundTable(thisAV.visiting,
                     thisAV.ldv.maxLabelLength,
                     thisAV.ldv.valPrecision,
@@ -238,14 +228,14 @@ pq &larr; all edges</td></tr>
                 // our array of tree edges to trace back through to find
                 // paths
                 if (thisAV.stoppingCondition == "StopAtEnd") {
-                    thisAV.treeEdges.push(thisAV.visiting);
+                    thisAV.treeEdges.push(graphEdges[thisAV.visiting.connection]);
                 }
 
                 thisAV.updateControlEntries();
                 hdxAV.nextAction = "whileLoopTop";
             },
             logMessage: function(thisAV) {
-                return "Adding " + thisAV.visiting.label + " to tree";
+                return "Adding edge #" + thisAV.visiting.connection + " to tree";
             }
         },
 
@@ -270,24 +260,18 @@ pq &larr; all edges</td></tr>
 
     // format an LDV entry for addition to the found table
     addLDVEntryToFoundTable(item, maxLabelLength, precision, count) {
-
-
         let newtr = document.createElement("tr");
         let edgeLabel;
         let fullEdgeLabel;
-        let fromLabel;
-        let fullFromLabel;
-        let vLabel = shortLabel(waypoints[item.vIndex].label, 10);
-        fullEdgeLabel = item.label;
+        let endpoints;
+        
+        fullEdgeLabel = item.connection + ': ' + graphEdges[item.connection].label;
         edgeLabel = shortLabel(fullEdgeLabel, 10);
-        fromLabel = shortLabel(waypoints[item.fromVIndex].label, 10);
-        fullFromLabel = "From #" + item.v1 + ":" +
-            waypoints[item.fromVIndex].label;
-        let endpoints = '<td style ="word-break:break-all;">'
-            + edgeInfo[0] + ':&nbsp;' + item.v1.label.substring(0,5) +
-            ' &harr; ' + edgeInfo[1] + ':&nbsp;'
-            + (waypoints[newEdge.v2].label).substring(0,5) + '</td>';
-
+        endpoints = graphEdges[item.connection].v1 + ':&nbsp;' + 
+            (waypoints[graphEdges[item.connection].v1].label).substring(0,5) +
+            ' &harr; ' + graphEdges[item.connection].v2 + ':&nbsp;'
+            + (waypoints[graphEdges[item.connection].v2].label).substring(0,5);
+        //graphEdges[item.connection].v2.label
 
         // mouseover title
         //newtr.setAttribute("custom-title",
@@ -304,13 +288,33 @@ pq &larr; all edges</td></tr>
         newtr.innerHTML =
             '<td>' + item.val.toFixed(precision) + '</td>' +
             '<td>' + edgeLabel + '</td>' +
-            '<td>' + endpoints + '</td>' ;
+            '<td style ="word-break:break-all;">' + endpoints + '</td>' ;
 
         this.foundTBody.appendChild(newtr);
         document.getElementById("foundEntriesCount").innerHTML =
             this.numESpanningTree;
     },
 
+    updateControlEntries() {
+        updateAVControlEntry("undiscovered", "Undiscovered: " +
+                             this.numVUndiscovered + " V, " +
+                             this.numEUndiscovered + " E");
+        let label;
+        let componentCount = "";
+        
+            label = "Spanning Forest: ";
+            componentCount = ", " + (this.componentNum+1) + " component";
+            if (this.componentNum > 0) {
+                componentCount += "s";
+            }
+        
+        updateAVControlEntry("currentSpanningTree", label +
+                             this.numVSpanningTree + " V, " +
+                             this.numESpanningTree + " E" + componentCount);
+        updateAVControlEntry("discardedOnRemoval", "Discarded on removal: " +
+                             this.numEDiscardedOnRemoval + " E");
+
+    },
 
     // required prepToStart function
     prepToStart() {
@@ -329,7 +333,18 @@ pq &larr; all edges</td></tr>
         }
 
         this.ldv.setDisplay(getAVControlEntryDocumentElement("discovered"),
-                            displayLDVItem);
+                            displayLDVItem, 6);
+        
+        // pseudocode
+        this.code ='<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">';
+        this.code += 'pq &larr; all edges</td></tr>';
+        this.code += pcEntry(0, "while not pq.isEmpty", "whileLoopTop");
+        this.code += pcEntry(1, "edge &larr; pq.remove()", "getPlaceFromLDV");
+        this.code += pcEntry(1, "if edge.createsCycle", "checkCycle");
+        this.code += pcEntry(2, "discard edge", "isCycle");
+        this.code += pcEntry(1, "else", "");
+        this.code += pcEntry(2, "tree.add(edge)", "isNotCycle");
+        this.code += "</table>";
     },
         
     // set up UI for the start of edge search
@@ -340,16 +355,17 @@ pq &larr; all edges</td></tr>
         hdxAV.logMessageArr = [];
         hdxAV.logMessageArr.push("Setting up");
         hdxAV.algOptions.innerHTML = '';
-        addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
         addEntryToAVControlPanel("visiting", visualSettings.visiting);
+        addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
         addEntryToAVControlPanel("discovered", visualSettings.discovered);
-        addEntryToAVControlPanel("discarded", visualSettings.discarded);
+        addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
+        addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
         addEntryToAVControlPanel("found", visualSettings.spanningTree);
         let foundEntry = '<span id="foundEntriesCount">0</span>' +
             ' <span id="foundTableLabel">Edges in Minimum Spanning Tree/Forest</span><br />' +
             '<table class="gratable"><thead>' +
-            '<th>Length</th>' +
-            '<tr style="text-align:center"><th>Edge</th>' +
+            '<tr style="text-align:center"><th>Length</th>' +
+            '<th>Edge</th>' +
             '<th>Endpoints</th></tr>' +
             '</thead><tbody id="foundEntries"></tbody></table>';
         updateAVControlEntry("found", foundEntry);
