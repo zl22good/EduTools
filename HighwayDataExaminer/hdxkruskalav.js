@@ -14,7 +14,6 @@ var hdxKruskalAV = {
     description: "Search for extreme values based on edge (connection) lengths and labels.",
 
     
-    //&nbsp;&nbsp;
     // state variables for edge search
     discarded: 0,
     ldv: null,
@@ -25,19 +24,17 @@ var hdxKruskalAV = {
     // forming the current spanning tree
     componentVList: [],
     componentEList: [],
+    componentVAdj: [],
 
     // some additional stats to maintain and display
     numVSpanningTree: 0,
     numESpanningTree: 0,
     numVUndiscovered: 0,
     numEUndiscovered: 0,
-    numEDiscardedOnDiscovery: 0,
     numEDiscardedOnRemoval: 0,
     componentNum: 0,
 
-    // when finding a path from start to end, we need a list of tree
-    // edges to traverse to find the path
-    treeEdges: [],
+   
 
     // comparator for priority queue
     comparator: function(a, b) {
@@ -54,12 +51,51 @@ var hdxKruskalAV = {
         return edgeLengthInMiles(graphEdges[nextEdge]);
     },
     
+    isCycle: function(edgeNum) {
+        let vertex1 = graphEdges[edgeNum].v1;
+        let vertex2 = graphEdges[edgeNum].v2;
+        if (!this.componentVList.includes(vertex1) || !this.componentVList.includes(vertex2)) {
+            return false;   
+        }
+        
+        //depth first search for path from vertex1 to vertex2 
+        let treeV1Index = this.componentVList.indexOf(vertex1);
+        let treeV2Index = this.componentVList.indexOf(vertex2);
+        let stack = [];
+        let discoveredV = [];
+        stack.push(treeV1Index);
+        
+        while (stack.length != 0) {
+            let currentV = stack.pop();
+            //let componentIndex = 
+            //we have found a path to v2 which means it is a cycle
+            if (currentV == treeV2Index) {
+                console.log("vertex: " + waypoints[currentV].label)
+                return true;
+            }
+            
+            //if v hasn't been discovered:
+            if (!discoveredV.includes(currentV)) {
+                discoveredV.push(currentV);
+                let componentVIndex = this.componentVList.indexOf(currentV);
+                console.log(componentVIndex + " / "+ this.componentVList.length + " " + this.componentVAdj);
+                for (let i = 0; i < this.componentVAdj[componentVIndex].length; i++) {
+                    stack.push(this.componentVAdj[componentVIndex][i]);
+                }
+            }
+        }
+        
+        
+        return false;
+    },
+    
     // the actions that make up this algorithm
     avActions: [
         {
             label: "START",
             comment: "Sorting all edges by length",
             code: function(thisAV) {
+                
                 highlightPseudocode(this.label, visualSettings.visiting);
                 
                 
@@ -74,8 +110,6 @@ var hdxKruskalAV = {
                     
                 //add all edges to PQ sorted by length
                 for (let i = 0; i < graphEdges.length; i++) {
-                    //edgeLengthInMiles(graphEdges[i])
-                    //////working here
                     thisAV.ldv.add(new LDVEntry(graphEdges[i].v1, edgeLengthInMiles(graphEdges[i]), i));
                 }
                 
@@ -140,7 +174,7 @@ var hdxKruskalAV = {
 
                 // need to make method to determine if adding an edge would create a cycle
                 //if MST contains both vertices do a dfs to check for cycle between them
-                let cycle = false;
+                let cycle = thisAV.isCycle(thisAV.visiting.connection);
                 if (cycle) {
                     hdxAV.nextAction = "isCycle";
                 }
@@ -159,7 +193,7 @@ var hdxKruskalAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.discarded);
 
-                //thisAV.numEDiscardedOnRemoval++;
+                thisAV.numEDiscardedOnRemoval++;
 
                // the edge that got us here is not
                 // part of the ultimate spanning tree, so it should be the
@@ -169,9 +203,9 @@ var hdxKruskalAV = {
                         visualSettings.discarded,
                         false);
 
-                    updateMarkerAndTable(thisAV.visiting.vIndex,
-                        visualSettings.discarded,
-                        5, false);
+                    //updateMarkerAndTable(thisAV.visiting.vIndex,
+                      //  visualSettings.discarded,
+                        //5, false);
                 }
 
                 thisAV.updateControlEntries();
@@ -192,44 +226,49 @@ var hdxKruskalAV = {
                 highlightPseudocode(this.label,
                     visualSettings.spanningTree);
 
-                if (thisAV.visiting.vIndex == thisAV.startingVertex) {
-                    updateMarkerAndTable(thisAV.visiting.vIndex,
-                        visualSettings.startVertex,
-                        4, false);
-                }
-                else if (thisAV.visiting.vIndex == thisAV.endingVertex) {
-                    updateMarkerAndTable(thisAV.visiting.vIndex,
-                        visualSettings.endVertex,
-                        4, false);
-                }
-                else {
-                    updateMarkerAndTable(thisAV.visiting.vIndex,
-                        visualSettings.spanningTree,
-                        10, false);
-                }
                 // was just discovered, now part of spanning tree
-                thisAV.componentVList.push(thisAV.visiting.vIndex);
-                thisAV.numVSpanningTree++;
+                let vertex1 = graphEdges[thisAV.visiting.connection].v1;
+                let vertex2 = graphEdges[thisAV.visiting.connection].v2;
+
+                if (!thisAV.componentVList.includes(vertex1)) {
+                    thisAV.componentVList.push(vertex1);
+                    thisAV.componentVAdj.push(new Array());
+                    thisAV.numVSpanningTree++;
+                    updateMarkerAndTable(vertex1, visualSettings.spanningTree, 10, false);
+                }
+                if (!thisAV.componentVList.includes(vertex2)) {
+                    thisAV.componentVList.push(vertex2);
+                    thisAV.componentVAdj.push(new Array());
+                    thisAV.numVSpanningTree++;
+                    updateMarkerAndTable(vertex2, visualSettings.spanningTree, 10, false);
+                }
 
                 // we used the edge to get here, so let's mark it as such
                 if (thisAV.visiting.connection != -1) {
                     thisAV.numESpanningTree++;
                     thisAV.componentEList.push(thisAV.visiting.connection);
                     updatePolylineAndTable(thisAV.visiting.connection,
-                        visualSettings.spanningTree,
-                        false);
+                        visualSettings.spanningTree, false);
+                    
+                    //add edge to spanning tree vertex's adjacency list
+                    for (let i = 0; i < thisAV.componentVList.length; i++) {
+                        let vertex = thisAV.componentVList[i];
+                        if (vertex == vertex1){
+                            thisAV.componentVAdj[i].push(vertex2);
+                            //console.log(vertex + " has edge: " + thisAV.visiting.connection);
+                        }
+                        if (vertex == vertex2){
+                            thisAV.componentVAdj[i].push(vertex1);
+                        }
+                    }
                 }
+
+                //add entry to spanning tree table
                 thisAV.addLDVEntryToFoundTable(thisAV.visiting,
                     thisAV.ldv.maxLabelLength,
                     thisAV.ldv.valPrecision,
                     thisAV.numESpanningTree);
 
-                // if we're finding a path from a start to an end, update
-                // our array of tree edges to trace back through to find
-                // paths
-                if (thisAV.stoppingCondition == "StopAtEnd") {
-                    thisAV.treeEdges.push(graphEdges[thisAV.visiting.connection]);
-                }
 
                 thisAV.updateControlEntries();
                 hdxAV.nextAction = "whileLoopTop";
@@ -256,7 +295,6 @@ var hdxKruskalAV = {
                 
         }
     ],
-
 
     // format an LDV entry for addition to the found table
     addLDVEntryToFoundTable(item, maxLabelLength, precision, count) {
@@ -299,18 +337,12 @@ var hdxKruskalAV = {
         updateAVControlEntry("undiscovered", "Undiscovered: " +
                              this.numVUndiscovered + " V, " +
                              this.numEUndiscovered + " E");
-        let label;
-        let componentCount = "";
+        let label = "Spanning Forest: ";
         
-            label = "Spanning Forest: ";
-            componentCount = ", " + (this.componentNum+1) + " component";
-            if (this.componentNum > 0) {
-                componentCount += "s";
-            }
         
         updateAVControlEntry("currentSpanningTree", label +
                              this.numVSpanningTree + " V, " +
-                             this.numESpanningTree + " E" + componentCount);
+                             this.numESpanningTree + " E");
         updateAVControlEntry("discardedOnRemoval", "Discarded on removal: " +
                              this.numEDiscardedOnRemoval + " E");
 
@@ -320,12 +352,30 @@ var hdxKruskalAV = {
     prepToStart() {
 
         hdxAV.algStat.innerHTML = "Initializing";
-
+        
         // hide waypoints, show connections
         initWaypointsAndConnections(false, true,
                                     visualSettings.undiscovered);
         
-        
+        this.discarded= 0;
+        this.ldv= null;
+        // last place to come out of the LDV, currently "visiting"
+        this.visiting= null;
+
+        // when finding all, track the lists of vertices and edges that are
+        // forming the current spanning tree
+        this.componentVList= [];
+        this.componentEList= [];
+        this.componentVAdj= [];
+
+        // some additional stats to maintain and display
+        this.numVSpanningTree= 0;
+        this.numESpanningTree= 0;
+        this.numVUndiscovered= 0;
+        this.numEUndiscovered= 0;
+        this.numEDiscardedOnRemoval= 0;
+        this.componentNum= 0;
+                
         this.ldv = new HDXLinear(hdxLinearTypes.PRIORITY_QUEUE,
                          "Priority Queue");
         if (this.hasOwnProperty("comparator")) {
