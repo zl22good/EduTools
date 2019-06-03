@@ -7,7 +7,6 @@
 //
 
 // group of variables used by many or all algorithm visualizations
-var currentCodeRow = 0;
 var hdxAV = {
     // current state of HDX
     status: hdxStates.NO_DATA,
@@ -188,7 +187,6 @@ var hdxAV = {
         // look up the action to execute next
         let currentAction = null;
         for (var i = 0; i < thisAV.avActions.length; i++) {
-            currentCodeRow = (currentCodeRow + 1)%9;
             if (hdxAV.nextAction == thisAV.avActions[i].label) {
                 currentAction = thisAV.avActions[i];
                 break;
