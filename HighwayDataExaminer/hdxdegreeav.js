@@ -230,7 +230,7 @@ var hdxDegreeAV = {
                   //  thisAV.directionalBoundingBox();
                 //}
                 
-                ans = ' <span title=';
+                ans = ' <span custom-title=';
                 for(let j = 0; j <thisAV.categories[thisAV.nextCategory].tiedWith.length; j++){
                 
                     ans += "\n" + thisAV.categories[thisAV.nextCategory].tiedWith[j] ;
@@ -302,10 +302,10 @@ var hdxDegreeAV = {
 
 
 
-                ans = ' <span title="Tied wtih-'; //+  thisAV.categories[thisAV.nextCategory].tiedWith[0];
+                ans = ' <span custom-title="Tied with-'; //+  thisAV.categories[thisAV.nextCategory].tiedWith[0];
                 for(let j = 0; j <thisAV.categories[thisAV.nextCategory].tiedWith.length; j++){
                 
-                    ans += '\n' + waypoints[thisAV.categories[thisAV.nextCategory].tiedWith[j]].label;
+                    ans += '<br>' + waypoints[thisAV.categories[thisAV.nextCategory].tiedWith[j]].label;
                                     
                 }  
                           
