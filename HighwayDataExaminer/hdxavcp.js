@@ -49,6 +49,7 @@ function removeEntryFromAVControlPanel(namePrefix) {
 function updateAVControlEntry(namePrefix, text) {
 
     document.getElementById(namePrefix + AVCPsuffix).innerHTML = text;
+    customTitle();
 }
 
 /* set the visualSettings of an AV control panel entry */
