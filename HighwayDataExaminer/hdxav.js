@@ -119,13 +119,6 @@ var hdxAV = {
         // visualization information panel
         this.algStat = document.getElementById("algorithmStatus");
 
-
-
-
-
-        
-
-        
         this.algOptions = document.getElementById("algorithmOptions");
         this.startPause = document.getElementById("startPauseButton");
 
@@ -247,8 +240,10 @@ var hdxAV = {
      }    
         ans += '">' + hdxAV.logMessageArr[hdxAV.logMessageArr.length-1] + '</span>';
         hdxAV.algStat.innerHTML =  ans;
-        customTitle();
-
+        if(hdxAV.delay != 0)
+        {
+            customTitle();
+        }
         
         //console.log("ACTION DONE: " + currentAction.logMessage(thisAV));
     },
@@ -261,6 +256,7 @@ var hdxAV = {
             document.getElementById("pseudoText").style.display = "none";
             
             hdxAV.setStatus(hdxStates.AV_COMPLETE);
+        customTitle();
     },
     
     // compute a color code to highlight based on code execution frequency
