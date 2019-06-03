@@ -95,8 +95,6 @@ function pcEntry(indent, code, id) {
 //correct row to assign it to the global variable
 var breakpoint = "";
 var previousBreakpoint = "";
-var getNumberBreakpoint = -1;
-var previousNumberBreakpoint = -1;
 function addStop()
 {
     let elements = document.getElementsByClassName("codeRow");
@@ -140,5 +138,11 @@ function codeRowHighlight()
         element.style.borderColor = "Black";
         element.style.borderWidth = "1px";
     }
+}
+
+function cleanupBreakpoints()
+{
+    breakpoint = "";
+    previousBreakpoint = "";
 }
 

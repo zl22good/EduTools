@@ -204,7 +204,6 @@ var hdxAV = {
         //if breakpoint is the action, pause
         if(thisAV.idOfAction(currentAction) == breakpoint)
             {
-                console.log("breakpoint worked");
                 hdxAV.setStatus(hdxStates.AV_PAUSED);
                 hdxAV.startPause.innerHTML = "Resume";
             }
@@ -250,13 +249,15 @@ var hdxAV = {
 
     // housekeeping to do when an algorithm is complete
     avDone() {
-            // if pseudocode is displayed, undisplay at the end to ensure
-            // better visibility for results
-            document.getElementById("pseudoCheckbox").checked = false;
-            document.getElementById("pseudoText").style.display = "none";
+        // if pseudocode is displayed, undisplay at the end to ensure
+        // better visibility for results
+        document.getElementById("pseudoCheckbox").checked = false;
+        document.getElementById("pseudoText").style.display = "none";
             
-            hdxAV.setStatus(hdxStates.AV_COMPLETE);
+        hdxAV.setStatus(hdxStates.AV_COMPLETE);
         customTitle();
+        cleanupBreakpoints();
+            
     },
     
     // compute a color code to highlight based on code execution frequency

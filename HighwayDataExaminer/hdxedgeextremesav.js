@@ -359,7 +359,6 @@ var hdxEdgeExtremesSearchAV = {
         else
         {
             var category = this.nextCategory;
-            console.log(category);
             var currAction = action.label;
             return (currAction + "" + category);
         }

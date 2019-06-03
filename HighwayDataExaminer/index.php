@@ -152,9 +152,9 @@ ENDOFSTUFF;
 	    <option value="-1">Step</option>
 	  </select>
 	  </td><td id="topControlPanelAV3">
-	  <input id="pseudoCheckbox" type="checkbox" name="Pseudocode-level AV" checked onclick="showHidePseudocode()" />&nbsp;Trace Pseudocode<br>
+	  <input id="pseudoCheckbox" type="checkbox" name="Pseudocode-level AV" checked onclick="showHidePseudocode();cleanupBreakpoints()" />&nbsp;Trace Pseudocode<br>
 	  </td><td id="topControlPanelAV4">
-	  <input id="resetButton" type="button" value="Reset AV" onclick="resetPressed()" />
+	  <input id="resetButton" type="button" value="Reset AV" onclick="resetPressed();cleanupBreakpoints()" />
 	<!-- if any more AV-specific entries are added, they need to
 	     be dealt with in showTopControlPanel() -->
 	<td>
@@ -268,6 +268,9 @@ ENDOFSTUFF;
 </div>
 <div id="datatable" draggable="false"  ondragstart="drag(event)">
 </div>
+    <span id="Instructions">
+        This is the instructions box. You can click on a pseudocode row to set a breakpoint which will allow the code to run to this point. 
+    </span>
 </body>
 </html>
 <?php tmdb_close(); ?>
