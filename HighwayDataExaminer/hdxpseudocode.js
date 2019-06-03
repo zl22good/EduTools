@@ -108,21 +108,7 @@ function addStop()
                 var target = event.target;
                 previousBreakpoint = breakpoint;
                 breakpoint = target.getAttribute("id");
-                var numList = target.parentElement.classList;
-                previousNumberBreakpoint = getNumberBreakpoint;
-                for(let temp of numList){
-                    if(/codeRow(\d+)/.test(temp))
-                        {
-                            getNumberBreakpoint = parseInt(temp.substring(7));
-                        }
-                }
-
-                if(previousNumberBreakpoint == getNumberBreakpoint)
-                    {
-                        getNumberBreakpoint = -1;
-                        previousNumberBreakpoint = -1;
-                    }
-                
+            
                 if(previousBreakpoint == breakpoint)
                 {
                     codeRowHighlight();
@@ -154,10 +140,5 @@ function codeRowHighlight()
         element.style.borderColor = "Black";
         element.style.borderWidth = "1px";
     }
-}
-
-function getCurrentNumber(element)
-{
-    
 }
 

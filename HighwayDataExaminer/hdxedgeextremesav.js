@@ -32,41 +32,6 @@ var hdxEdgeExtremesSearchAV = {
     value: "edge",
     name: "Edge Extremes Search",
     description: "Search for extreme values based on edge (connection) lengths and labels.",
-
-    // pseudocode
-    code:`
-<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">
-longestLabel &larr; 0<br />
-shortestLabel &larr; 0<br />
-longestEdge &larr; 0<br />
-shortestEdge &larr; 0</td></tr>
-<tr id="forLoopTop"><td>for (checkIndex &larr; 1 to |E|-1)</td></tr>
-<tr id="checkNextCategory0"><td> 
-&nbsp;&nbsp;if (len(e[checkIndex].label) > len(e[longestLabel].label)))
-</td></tr>
-<tr id="updateNextCategory0"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;longestLabel &larr; checkIndex
-</td></tr>
-<tr id="checkNextCategory1"><td>
-&nbsp;&nbsp;if (len(e[checkIndex].label) < len(e[shortestLabel].label)))
-</td></tr>
-<tr id="updateNextCategory1"><td>       
-&nbsp;&nbsp;&nbsp;&nbsp;shortestLabel &larr; checkIndex
-</td></tr>
-<tr id="checkNextCategory2"><td>
-&nbsp;&nbsp;if (e[checkIndex].len > e[longestEdge].len)
-</td></tr>
-<tr id="updateNextCategory2"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;longestEdge &larr; checkIndex
-</td></tr>
-<tr id="checkNextCategory3"><td>
-&nbsp;&nbsp;if (e[checkIndex].len < e[shortestEdge].len)
-</td></tr>
-<tr id="updateNextCategory3"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;shortestEdge &larr; checkIndex
-</td></tr>
-</table>
-`,
     
     // state variables for edge search
     // next to examine
@@ -350,6 +315,17 @@ shortestEdge &larr; 0</td></tr>
         // hide waypoints, show connections
         initWaypointsAndConnections(false, true,
                                     visualSettings.undiscovered);
+        this.code = '<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">';
+        this.code += 'longestLabel &larr; 0<br />shortestLabel &larr; 0<br />longestEdge &larr; 0<br />shortestEdge &larr; 0</td></tr>';
+        this.code += pcEntry(0,'for (checkIndex &larr; 1 to |E|-1)',"forLoopTop");
+        this.code += pcEntry(1, 'if (len(e[checkIndex].label) > len(e[longestLabel].label)))', "checkNextCategory0");
+        this.code += pcEntry(2, 'longestLabel &larr; checkIndex', "updateNextCategory0");
+        this.code += pcEntry(1,'if (len(e[checkIndex].label) < len(e[shortestLabel].label)))', "checkNextCategory1");
+        this.code += pcEntry(2, 'shortestLabel &larr; checkIndex', "updateNextCategory1");
+        this.code += pcEntry(1,'if (e[checkIndex].len > e[longestEdge].len)', "checkNextCategory2");
+        this.code += pcEntry(2, 'longestEdge &larr; checkIndex', "updateNextCategory2");
+        this.code += pcEntry(1,'if (e[checkIndex].len < e[shortestEdge].len)', "checkNextCategory3");
+        this.code += pcEntry(2, 'shortestEdge &larr; checkIndex', "updateNextCategory3");
     },
         
     // set up UI for the start of edge search
