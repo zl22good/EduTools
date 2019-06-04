@@ -408,5 +408,9 @@ var hdxKruskalAV = {
     // clean up kruskal UI
     cleanupUI() {
 
+    }, 
+    
+    idOfAction(action){
+        return action.label;
     }
 };
