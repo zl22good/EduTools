@@ -454,6 +454,7 @@ function fileLoaded(event) {
     // file done loading, read the contents
     processContents(event.target.result);
     customTitle();
+    hideInstructions();
 }
 
 // process the contents of a String which came from a file or elsewhere
@@ -1415,4 +1416,10 @@ function getLastTitle()
             //return there are NONE
             return 0;
         }
+}
+
+function hideInstructions()
+{
+    let element = document.getElementById("Instructions");
+    element.style.display = "none";
 }

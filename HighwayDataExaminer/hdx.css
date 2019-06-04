@@ -237,3 +237,12 @@ https://stackoverflow.com/questions/19343331/how-do-i-center-an-absolutely-posit
     opacity: 50;
     border: 1px solid #111111;
 }
+
+#Instructions{
+    width: 500px; 
+    position: absolute; 
+    left: 560px; 
+    top: 100px; 
+    z-index: 9999; 
+    background-color: white;
+}
