@@ -67,7 +67,7 @@ function HDXLinear(type, displayName) {
     };
     
     // set the element and callback
-    this.setDisplay = function(dE, eC) {
+    this.setDisplay = function(dE, eC, value=10) {
 
         this.docElement = dE;
         this.elementHTMLCallback = eC;
@@ -80,7 +80,7 @@ function HDXLinear(type, displayName) {
             '</span>)&nbsp;&nbsp;&nbsp;<input id="HDXLinear' +
             this.idNum + 'Limit" type="checkbox" checked /> ' +
             ' limit display to <input id="HDXLinear' + this.idNum +
-            'LimitVal" type="number" value="10" min="1" max="1000000" ' +
+            'LimitVal" type="number" value="'+ value +'" min="1" max="1000000" ' +
             'size="3" style="width: 3em" /> entries' +
             '<br /><table><tbody id="HDXLinear' + this.idNum + 'TBody">' +
             '</tbody></table>';
