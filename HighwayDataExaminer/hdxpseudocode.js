@@ -93,34 +93,37 @@ function pcEntry(indent, code, id) {
 
 //Adds a click event to all rows with the codeRow class. This is used obtain the ID of the
 //correct row to assign it to the global variable
-var breakpoint = "";
-var previousBreakpoint = "";
+var breakpoint = ""; //currently selected breakpoint
+var previousBreakpoint = ""; //previous breakpoint, used to change border back/unselect
 function addStop()
 {
     let elements = document.getElementsByClassName("codeRow");
     for(let element=1; element<=elements.length; element++) {
-        var newClass = "codeRow" + element;
-        elements[element-1].classList.add(newClass);
         elements[element-1].addEventListener("click", function (event) {
 
                 var target = event.target;
                 previousBreakpoint = breakpoint;
                 breakpoint = target.getAttribute("id");
-            
+
+                //if the previous and current breakpoints are the same, unselect it, and change the colors back
+                //Else, deselect the previous, and highlight current
                 if(previousBreakpoint == breakpoint)
                 {
                     codeRowHighlight();
                     previousBreakpoint = "";
                     breakpoint = "";
+                    breakpointCheckerDisplay();
                 }
                 else {
                     codeRowHighlight();
                     breakpointHighlight();
+                    breakpointCheckerDisplay();
                 }
         }, false);
     }
 }
 
+//Highlight the current breakpoint
 function breakpointHighlight(){
     let element = document.getElementById(breakpoint);
     if(element != null) {
@@ -130,6 +133,7 @@ function breakpointHighlight(){
     }
 }
 
+//Change the border back to a normal codeRow
 function codeRowHighlight()
 {
     let element = document.getElementById(previousBreakpoint);
@@ -140,9 +144,84 @@ function codeRowHighlight()
     }
 }
 
+//Reset the breakpoint variables to avoid issues on reset
 function cleanupBreakpoints()
 {
     breakpoint = "";
     previousBreakpoint = "";
 }
 
+var breakpointVariableHidden  = true;
+function showHideBreakpointVariableSelector()
+{
+    let element = document.getElementById("showBreakpointVariable");
+    element.addEventListener("click", function(event) {
+        let target = event.target;
+        let avPanel = document.getElementById("avStatusPanel");
+        let parentContainer = target.parentElement;
+        let rect = parentContainer.getBoundingClientRect();
+        let rect2 = avPanel.getBoundingClientRect();
+        if(breakpointVariableHidden == true)
+        {
+            parentContainer.style.left = rect2.right + "px";
+            breakpointVariableHidden = false;
+        }
+        else
+        {
+            setDefaultVariableSelectorLocation();
+            breakpointVariableHidden = true;
+        }
+    }, false);
+    window.addEventListener("resize", setDefaultVariableSelectorLocation, false);
+}
+
+function createVariableSelector(){
+    var divBreakpoint = document.createElement("div");
+    var divBreakpoint1 = document.createElement("div");
+    var divBreakpoint2 = document.createElement("div");
+    var breakpointID = document.createAttribute("id");
+    var breakpoint1ID = document.createAttribute("id");
+    var breakpoint2ID = document.createAttribute("id");
+    breakpointID.value = "breakpointVariableSelector";
+    breakpoint1ID.value = "breakpointText";
+    breakpoint2ID.value = "showBreakpointVariable";
+    divBreakpoint.setAttributeNode(breakpointID);
+    divBreakpoint1.setAttributeNode(breakpoint1ID);
+    divBreakpoint2.setAttributeNode(breakpoint2ID);
+    var breakpointClass = document.createAttribute("class");
+    breakpointClass.value = "border border-primary rounded";
+    divBreakpoint.setAttributeNode(breakpointClass);
+    divBreakpoint1.innerHTML = "This is where the variable selector goes";
+    divBreakpoint2.innerHTML = "-->";
+    divBreakpoint2.style.backgroundColor = "Red";
+    divBreakpoint.appendChild(divBreakpoint1);
+    divBreakpoint.appendChild(divBreakpoint2);
+    document.body.appendChild(divBreakpoint);
+    setDefaultVariableSelectorLocation();
+    showHideBreakpointVariableSelector();
+    divBreakpoint.style.display = "none";
+}
+
+function setDefaultVariableSelectorLocation(){
+    let avPanel = document.getElementById("avStatusPanel");
+    let rect2 = avPanel.getBoundingClientRect();
+    let difference2 = rect2.right-rect2.left;
+    let element = document.getElementById("breakpointVariableSelector");
+    let rect = element.getBoundingClientRect();
+    let difference = rect.right - rect.left;
+    let trueDifference = difference2 - difference + 25;
+    element.style.left = trueDifference + "px";
+    breakpointVariableHidden = true;
+}
+
+function breakpointCheckerDisplay(){
+    let element = document.getElementById("breakpointVariableSelector");
+    if(breakpoint == ""){
+        element.style.display = "none";
+    }
+    else
+    {
+        element.style.display = "block";
+    }
+    setDefaultVariableSelectorLocation();
+}

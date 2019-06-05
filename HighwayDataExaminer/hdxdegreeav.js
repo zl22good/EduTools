@@ -14,7 +14,7 @@ var hdxDegreeAV = {
     description: "Search for min and max degree values based on an adjancecy list of the waypoints.",
 
     // state variables for vertex degree search
-    nextToCheck: 0,
+    nextToCheck: 0, //for loop counter
     discarded: 0,
     foundNewLeader: false,
     

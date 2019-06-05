@@ -245,13 +245,12 @@ ENDOFSTUFF;
       </tr>
       <tr>
 	<td>
-	  <input type="button" value="Done" id="algOptionsDone" onClick="algOptionsDonePressed();">
+	  <input type="button" value="Done" id="algOptionsDone" onClick="algOptionsDonePressed(); createVariableSelector();">
 	</td>
       </tr>
     </tbody>
   </table>
 </div>
-
 <div id="avStatusPanel">
   <table id="avStatusTable" class="gratable">
     <thead><tr><th>Algorithm Visualization Status</th></tr><thead>
