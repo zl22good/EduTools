@@ -1079,7 +1079,12 @@ var hdxTraversalsSpanningAVCommon = {
     // clean up common UI components
     cleanupUI() {
 
+    },
+    
+    idOfAction(action){
+            return action.label;
     }
+    
 };
 
 // event handler when stopping condition option selector changes

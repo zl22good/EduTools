@@ -79,6 +79,9 @@ var hdxAV = {
             this.startPause.disabled = false;
             break;
         }
+        //this is after the list of pseudo-code populates on screen with
+        //the start button
+        addStop();
     },
     
     // are we paused or otherwise not running?
@@ -98,6 +101,7 @@ var hdxAV = {
         this.avList.push(hdxPrimAV);
         this.avList.push(hdxBFConvexHullAV);
         this.avList.push(hdxDegreeAV);
+        this.avList.push(hdxKruskalAV);
         
         // populate the algorithm selection select with options
         // from the avList
@@ -115,13 +119,6 @@ var hdxAV = {
         // visualization information panel
         this.algStat = document.getElementById("algorithmStatus");
 
-
-
-
-
-        
-
-        
         this.algOptions = document.getElementById("algorithmOptions");
         this.startPause = document.getElementById("startPauseButton");
 
@@ -188,7 +185,6 @@ var hdxAV = {
 
     // do one action of thisAV's array of actions
     oneAction(thisAV) {
-
         // look up the action to execute next
         let currentAction = null;
         for (var i = 0; i < thisAV.avActions.length; i++) {
@@ -203,10 +199,17 @@ var hdxAV = {
         }
 
         // we have an action to execute
-
+        
+        //if breakpoint is the action, pause
+        if(thisAV.idOfAction(currentAction) == breakpoint)
+            {
+                hdxAV.setStatus(hdxStates.AV_PAUSED);
+                hdxAV.startPause.innerHTML = "Resume";
+            }
+        
+        
         // undo any previous highlighting
         unhighlightPseudocode();
-
         //console.log("ACTION: " + hdxAV.nextAction);
         
         // execute the JS to continue the AV
@@ -235,20 +238,25 @@ var hdxAV = {
      }    
         ans += '">' + hdxAV.logMessageArr[hdxAV.logMessageArr.length-1] + '</span>';
         hdxAV.algStat.innerHTML =  ans;
-        customTitle();
-
+        if(hdxAV.delay != 0)
+        {
+            customTitle();
+        }
         
         //console.log("ACTION DONE: " + currentAction.logMessage(thisAV));
     },
 
     // housekeeping to do when an algorithm is complete
     avDone() {
-            // if pseudocode is displayed, undisplay at the end to ensure
-            // better visibility for results
-            document.getElementById("pseudoCheckbox").checked = false;
-            document.getElementById("pseudoText").style.display = "none";
+        // if pseudocode is displayed, undisplay at the end to ensure
+        // better visibility for results
+        document.getElementById("pseudoCheckbox").checked = false;
+        document.getElementById("pseudoText").style.display = "none";
             
-            hdxAV.setStatus(hdxStates.AV_COMPLETE);
+        hdxAV.setStatus(hdxStates.AV_COMPLETE);
+        customTitle();
+        cleanupBreakpoints();
+            
     },
     
     // compute a color code to highlight based on code execution frequency
