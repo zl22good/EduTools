@@ -32,6 +32,7 @@ var hdxKruskalAV = {
     numVUndiscovered: 0,
     numEUndiscovered: 0,
     numEDiscardedOnRemoval: 0,
+    totalTreeCost: 0,
     
    
 
@@ -69,8 +70,8 @@ var hdxKruskalAV = {
         
         while (stack.length != 0) {
             let currentV = stack.pop();
-            //let componentIndex = 
-            //we have found a path to v2 which means it is a cycle
+
+            //if we have found a path to v2 it is a cycle
             if (currentV == treeV2Index) {
                 return true;
             }
@@ -83,8 +84,6 @@ var hdxKruskalAV = {
                 }
             }
         }
-        
-        
         return false;
     },
     
@@ -241,6 +240,7 @@ var hdxKruskalAV = {
                 // we used the edge to get here, so let's mark it as such
                 thisAV.numESpanningTree++;
                 thisAV.numEUndiscovered--;
+                thisAV.totalTreeCost += thisAV.visiting.val;
                 thisAV.componentEList.push(thisAV.visiting.connection);
                 updatePolylineAndTable(thisAV.visiting.connection,
                     visualSettings.spanningTree, false);
@@ -282,6 +282,8 @@ var hdxKruskalAV = {
                 updateAVControlEntry("undiscovered", "");
                 hdxAV.nextAction = "DONE";
                 hdxAV.iterationDone = true;
+                document.getElementById("totalTreeCost").innerHTML =
+                    "<br> Total cost: " + thisAV.totalTreeCost.toFixed(thisAV.ldv.valPrecision);
             },
             logMessage: function(thisAV) {
                 return "Cleanup and finalize visualization";
@@ -319,12 +321,15 @@ var hdxKruskalAV = {
     },
 
     updateControlEntries() {
+        let numComponents = this.numVSpanningTree - this.numESpanningTree;
+        let componentLabel = " Components";
+        if (numComponents == 1) componentLabel = " Component";
         updateAVControlEntry("undiscovered", "Undiscovered: " +
                              this.numEUndiscovered + " E, " +
                              this.numVUndiscovered + " V");
         updateAVControlEntry("currentSpanningTree", "Spanning Forest: " +
-                             this.numESpanningTree + " E, " +
-                             this.numVSpanningTree + " V");
+                             this.numESpanningTree + " E, " + this.numVSpanningTree +
+                             " V, " + numComponents + componentLabel);
         updateAVControlEntry("discardedOnRemoval", "Discarded on removal: " +
                              this.numEDiscardedOnRemoval + " E");
 
@@ -356,6 +361,7 @@ var hdxKruskalAV = {
         this.numVUndiscovered= waypoints.length;
         this.numEUndiscovered= graphEdges.length;
         this.numEDiscardedOnRemoval= 0;
+        this.totalTreeCost = 0;
                 
         this.ldv = new HDXLinear(hdxLinearTypes.PRIORITY_QUEUE,
                          "Priority Queue");
@@ -393,7 +399,8 @@ var hdxKruskalAV = {
         addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
         addEntryToAVControlPanel("found", visualSettings.spanningTree);
         let foundEntry = '<span id="foundEntriesCount">0</span>' +
-            ' <span id="foundTableLabel">Edges in Minimum Spanning Tree/Forest</span><br />' +
+            ' <span id="foundTableLabel">Edges in Minimum Spanning Tree/Forest</span>' +
+            '<span id="totalTreeCost"></span>' + '<br />' +
             '<table class="gratable"><thead>' +
             '<tr style="text-align:center"><th>Length</th>' +
             '<th>Edge</th>' +
