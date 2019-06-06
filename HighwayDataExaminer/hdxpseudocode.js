@@ -151,7 +151,9 @@ function cleanupBreakpoints()
     previousBreakpoint = "";
 }
 
-var breakpointVariableHidden  = true;
+var useVariable = false;
+var breakpointVariableHidden  = true;//What position is the selector in?
+//Enables the clickable function and window resize change for the selector
 function showHideBreakpointVariableSelector()
 {
     let element = document.getElementById("showBreakpointVariable");
@@ -161,6 +163,7 @@ function showHideBreakpointVariableSelector()
         let parentContainer = target.parentElement;
         let rect = parentContainer.getBoundingClientRect();
         let rect2 = avPanel.getBoundingClientRect();
+        
         if(breakpointVariableHidden == true)
         {
             parentContainer.style.left = rect2.right + "px";
@@ -175,45 +178,77 @@ function showHideBreakpointVariableSelector()
     window.addEventListener("resize", setDefaultVariableSelectorLocation, false);
 }
 
+//JS implementation to create the html for the selector. This allows for
+//the html to be dynamically created after the avPanel is shown.
 function createVariableSelector(){
-    var divBreakpoint = document.createElement("div");
-    var divBreakpoint1 = document.createElement("div");
-    var divBreakpoint2 = document.createElement("div");
-    var breakpointID = document.createAttribute("id");
-    var breakpoint1ID = document.createAttribute("id");
-    var breakpoint2ID = document.createAttribute("id");
+    let divBreakpoint = document.createElement("div");
+    let divBreakpoint1 = document.createElement("div");
+    let divBreakpoint2 = document.createElement("div");
+    let checkbox = document.createElement("input");
+    
+    checkbox.type = "checkbox";
+    checkbox.id = "useBreakpointVariable";
+    checkbox.onclick = function(){
+        if(useVariable == false){
+            useVariable = true;  
+        }
+        else{
+            useVariable = false;
+        }     
+    }
+    
+    let breakpointID = document.createAttribute("id");
+    let breakpoint1ID = document.createAttribute("id");
+    let breakpoint2ID = document.createAttribute("id");
+    
     breakpointID.value = "breakpointVariableSelector";
     breakpoint1ID.value = "breakpointText";
     breakpoint2ID.value = "showBreakpointVariable";
+    
     divBreakpoint.setAttributeNode(breakpointID);
     divBreakpoint1.setAttributeNode(breakpoint1ID);
     divBreakpoint2.setAttributeNode(breakpoint2ID);
+    
     var breakpointClass = document.createAttribute("class");
     breakpointClass.value = "border border-primary rounded";
     divBreakpoint.setAttributeNode(breakpointClass);
+    
     divBreakpoint1.innerHTML = "This is where the variable selector goes";
     divBreakpoint2.innerHTML = "-->";
     divBreakpoint2.style.backgroundColor = "Red";
+    
+    //append the smaller divs to the bigger one
     divBreakpoint.appendChild(divBreakpoint1);
     divBreakpoint.appendChild(divBreakpoint2);
+    divBreakpoint.appendChild(checkbox);
+    
+    //Set the main div under the document body
     document.body.appendChild(divBreakpoint);
+    //Set the default position, add click on/window resize events and hide it
     setDefaultVariableSelectorLocation();
     showHideBreakpointVariableSelector();
     divBreakpoint.style.display = "none";
+    
 }
 
+//Sets the popout back to where it should be. Used to avoid 
+//issues when resizing and turning it off via breakpoint selector
 function setDefaultVariableSelectorLocation(){
     let avPanel = document.getElementById("avStatusPanel");
     let rect2 = avPanel.getBoundingClientRect();
+    //CP right side - left side
     let difference2 = rect2.right-rect2.left;
     let element = document.getElementById("breakpointVariableSelector");
     let rect = element.getBoundingClientRect();
     let difference = rect.right - rect.left;
+    //Width of the CP - the width of the selector + 25 offset to get it to stick out
     let trueDifference = difference2 - difference + 25;
     element.style.left = trueDifference + "px";
     breakpointVariableHidden = true;
 }
 
+//Based on if a breakpoint is selected or not, display o hide the element.
+//Also reset the posiiton.
 function breakpointCheckerDisplay(){
     let element = document.getElementById("breakpointVariableSelector");
     if(breakpoint == ""){

@@ -261,8 +261,15 @@ https://stackoverflow.com/questions/19343331/how-do-i-center-an-absolutely-posit
     width: 10%;
     float: right;
 }
+
 #breakpointText{
     width: 90%;
     position: relative;
     float: left;
+}
+
+#useBreakpointVariable{
+    width: 10%;
+    position: relative;
+    float: right;
 }
