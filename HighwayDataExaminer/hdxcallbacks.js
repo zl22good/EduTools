@@ -77,6 +77,7 @@ function startPausePressed() {
         // action, then do it
         hdxAV.nextAction = "START";
         hdxAV.nextStep(hdxAV.currentAV);
+        addStop();
         break;
         
     case hdxStates.AV_RUNNING:

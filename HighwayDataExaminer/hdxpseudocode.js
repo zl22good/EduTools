@@ -99,6 +99,8 @@ function addStop()
 {
     let elements = document.getElementsByClassName("codeRow");
     for(let element=1; element<=elements.length; element++) {
+        let child = elements[element-1].childNodes[0];
+        child.setAttribute("variableValue", setInnerHTML(child.getAttribute("id")));
         elements[element-1].addEventListener("click", function (event) {
 
                 var target = event.target;
@@ -115,6 +117,7 @@ function addStop()
                     breakpointCheckerDisplay();
                 }
                 else {
+                    labelInnerHTML(target.getAttribute("variableValue"));
                     codeRowHighlight();
                     breakpointHighlight();
                     breakpointCheckerDisplay();
@@ -213,7 +216,8 @@ function createVariableSelector(){
     breakpointClass.value = "border border-primary rounded";
     divBreakpoint.setAttributeNode(breakpointClass);
     
-    divBreakpoint1.innerHTML = "This is where the variable selector goes";
+    //This is where the variable selector goes
+    divBreakpoint1.innerHTML = "7";
     divBreakpoint2.innerHTML = "-->";
     divBreakpoint2.style.backgroundColor = "Red";
     
@@ -259,4 +263,24 @@ function breakpointCheckerDisplay(){
         element.style.display = "block";
     }
     setDefaultVariableSelectorLocation();
+}
+
+function labelInnerHTML(text)
+{
+    let element = document.getElementById("breakpointText");
+    element.innerHTML = text;
+}
+
+function setInnerHTML(label)
+{
+    switch(label)
+    {
+        case "forLoopTop":
+            let max = waypoints.length-1;
+            let html = 'Please select the vertex <br \> to stop at: <input type="number" name="quantity" min="1" max="';
+            html += max + '">';
+            return html;
+            break;
+    }
+    return "No innerHTML";
 }

@@ -145,6 +145,9 @@ var hdxDegreeAV = {
             },
             logMessage: function(thisAV) {
                 return "Top of main for loop over vertices, check=" + thisAV.nextToCheck;
+            },
+            currentVariable: function(thisAV){
+                return thisAV.nextToCheck;
             }
         },
         {

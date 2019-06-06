@@ -49,8 +49,6 @@ var hdxAV = {
     startPause: null,
 
     logMessageArr: [],
-
-
     
     // set the status and do any needed cleanup for that change
     setStatus(newStatus) {
@@ -81,7 +79,6 @@ var hdxAV = {
         }
         //this is after the list of pseudo-code populates on screen with
         //the start button
-        addStop();
     },
     
     // are we paused or otherwise not running?
@@ -202,8 +199,26 @@ var hdxAV = {
         //if breakpoint is the action, pause
         if(thisAV.idOfAction(currentAction) == breakpoint)
             {
-                hdxAV.setStatus(hdxStates.AV_PAUSED);
-                hdxAV.startPause.innerHTML = "Resume";
+                if(useVariable == true)
+                    {
+                        let variable = document.getElementsByName("quantity")[0].value;
+                        try
+                        {
+                            if(currentAction.currentVariable(thisAV) == variable)
+                                {
+                                    hdxAV.setStatus(hdxStates.AV_PAUSED);
+                                    hdxAV.startPause.innerHTML = "Resume";
+                                }
+                        }
+                        catch(error)
+                        {
+                            console.log("useVariable has encountered errors parsing breakpointText innerHTML" + variable);    
+                        }
+                    }
+                else{
+                    hdxAV.setStatus(hdxStates.AV_PAUSED);
+                    hdxAV.startPause.innerHTML = "Resume";
+                }    
             }
         
         
