@@ -278,8 +278,8 @@ var hdxKruskalAV = {
                 hdxAV.algStat.innerHTML =
                     "Done! Visited " + graphEdges.length + " edges.";
                 updateAVControlEntry("visiting", "");
-                updateAVControlEntry("discovered", "");
-                updateAVControlEntry("undiscovered", "");
+                //updateAVControlEntry("discovered", "");
+                //updateAVControlEntry("undiscovered", "");
                 hdxAV.nextAction = "DONE";
                 hdxAV.iterationDone = true;
                 document.getElementById("totalTreeCost").innerHTML =
@@ -370,7 +370,7 @@ var hdxKruskalAV = {
         }
 
         this.ldv.setDisplay(getAVControlEntryDocumentElement("discovered"),
-                            displayLDVItem, 6);
+                            displayLDVItem);
         
         // pseudocode
         this.code ='<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">';
