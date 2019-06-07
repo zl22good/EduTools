@@ -11,7 +11,7 @@ var hdxKruskalAV = {
     // entries for list of AVs
     value: "kruskal",
     name: "Kruskal's Algorithm",
-    description: "Search for extreme values based on edge (connection) lengths and labels.",
+    description: "Finds Minimum Spanning tree/forest by adding edges in increasing order.",
 
     
     // state variables for edge search
@@ -32,6 +32,7 @@ var hdxKruskalAV = {
     numVUndiscovered: 0,
     numEUndiscovered: 0,
     numEDiscardedOnRemoval: 0,
+    totalTreeCost: 0,
     
    
 
@@ -69,8 +70,8 @@ var hdxKruskalAV = {
         
         while (stack.length != 0) {
             let currentV = stack.pop();
-            //let componentIndex = 
-            //we have found a path to v2 which means it is a cycle
+
+            //if we have found a path to v2 it is a cycle
             if (currentV == treeV2Index) {
                 return true;
             }
@@ -83,8 +84,6 @@ var hdxKruskalAV = {
                 }
             }
         }
-        
-        
         return false;
     },
     
@@ -106,7 +105,8 @@ var hdxKruskalAV = {
                     
                 //add all edges to PQ sorted by length
                 for (let i = 0; i < graphEdges.length; i++) {
-                    thisAV.ldv.add(new LDVEntry(graphEdges[i].v1, edgeLengthInMiles(graphEdges[i]), i));
+                    thisAV.ldv.add(new LDVEntry(graphEdges[i].v1,
+                        edgeLengthInMiles(graphEdges[i]), i));
                 }
                 
                 hdxAV.iterationDone = true;
@@ -123,7 +123,8 @@ var hdxKruskalAV = {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 // if empty, go to LDVEmpty to report failure,
                 // otherwise carry on
-                if (thisAV.ldv.isEmpty()) {
+                if (thisAV.ldv.isEmpty() ||
+                    thisAV.numESpanningTree == (waypoints.length - 1)) {
                     hdxAV.nextAction = "cleanup";
                 }
                 else {
@@ -241,6 +242,7 @@ var hdxKruskalAV = {
                 // we used the edge to get here, so let's mark it as such
                 thisAV.numESpanningTree++;
                 thisAV.numEUndiscovered--;
+                thisAV.totalTreeCost += thisAV.visiting.val;
                 thisAV.componentEList.push(thisAV.visiting.connection);
                 updatePolylineAndTable(thisAV.visiting.connection,
                     visualSettings.spanningTree, false);
@@ -278,10 +280,12 @@ var hdxKruskalAV = {
                 hdxAV.algStat.innerHTML =
                     "Done! Visited " + graphEdges.length + " edges.";
                 updateAVControlEntry("visiting", "");
-                updateAVControlEntry("discovered", "");
-                updateAVControlEntry("undiscovered", "");
+                //updateAVControlEntry("discovered", "");
+                //updateAVControlEntry("undiscovered", "");
                 hdxAV.nextAction = "DONE";
                 hdxAV.iterationDone = true;
+                document.getElementById("totalTreeCost").innerHTML =
+                    "<br> Total cost: " + thisAV.totalTreeCost.toFixed(thisAV.ldv.valPrecision);
             },
             logMessage: function(thisAV) {
                 return "Cleanup and finalize visualization";
@@ -319,12 +323,15 @@ var hdxKruskalAV = {
     },
 
     updateControlEntries() {
+        let numComponents = this.numVSpanningTree - this.numESpanningTree;
+        let componentLabel = " Components";
+        if (numComponents == 1) componentLabel = " Component";
         updateAVControlEntry("undiscovered", "Undiscovered: " +
                              this.numEUndiscovered + " E, " +
                              this.numVUndiscovered + " V");
         updateAVControlEntry("currentSpanningTree", "Spanning Forest: " +
-                             this.numESpanningTree + " E, " +
-                             this.numVSpanningTree + " V");
+                             this.numESpanningTree + " E, " + this.numVSpanningTree +
+                             " V, " + numComponents + componentLabel);
         updateAVControlEntry("discardedOnRemoval", "Discarded on removal: " +
                              this.numEDiscardedOnRemoval + " E");
 
@@ -356,6 +363,7 @@ var hdxKruskalAV = {
         this.numVUndiscovered= waypoints.length;
         this.numEUndiscovered= graphEdges.length;
         this.numEDiscardedOnRemoval= 0;
+        this.totalTreeCost = 0;
                 
         this.ldv = new HDXLinear(hdxLinearTypes.PRIORITY_QUEUE,
                          "Priority Queue");
@@ -364,12 +372,12 @@ var hdxKruskalAV = {
         }
 
         this.ldv.setDisplay(getAVControlEntryDocumentElement("discovered"),
-                            displayLDVItem, 6);
+                            displayLDVItem);
         
         // pseudocode
         this.code ='<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">';
         this.code += 'pq &larr; all edges</td></tr>';
-        this.code += pcEntry(0, "while not pq.isEmpty", "whileLoopTop");
+        this.code += pcEntry(0, "while (not pq.isEmpty) and (not tree.isFullyConnected)", "whileLoopTop");
         this.code += pcEntry(1, "edge &larr; pq.remove()", "getPlaceFromLDV");
         this.code += pcEntry(1, "if edge.createsCycle", "checkCycle");
         this.code += pcEntry(2, "discard edge", "isCycle");
@@ -393,7 +401,8 @@ var hdxKruskalAV = {
         addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
         addEntryToAVControlPanel("found", visualSettings.spanningTree);
         let foundEntry = '<span id="foundEntriesCount">0</span>' +
-            ' <span id="foundTableLabel">Edges in Minimum Spanning Tree/Forest</span><br />' +
+            ' <span id="foundTableLabel">Edges in Minimum Spanning Tree/Forest</span>' +
+            '<span id="totalTreeCost"></span>' + '<br />' +
             '<table class="gratable"><thead>' +
             '<tr style="text-align:center"><th>Length</th>' +
             '<th>Edge</th>' +
