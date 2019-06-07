@@ -197,14 +197,34 @@ var hdxAV = {
         // we have an action to execute
         
         //if breakpoint is the action, pause
+        //then, if useVariable = true compare the special break instance to
+        //determine if you have to pause else just pause
         if(thisAV.idOfAction(currentAction) == breakpoint)
             {
                 if(useVariable == true)
                     {
-                        let variable = document.getElementsByName("quantity")[0].value;
+                        let variable = "";
+                        let counter = 0;
+                        let length = document.getElementsByName("quantity").length;
+                        do{
+                            try {
+                                variable = document.getElementsByName("quantity")[counter].value;
+                                counter++;
+                            }
+                            catch(error){
+                                counter++;
+                            }
+                        }
+                        while(variable == "" && counter <= length)
+
+                        if(variable == "")
+                        {
+                            variable = -1;
+                        }
+
                         try
                         {
-                            if(currentAction.currentVariable(thisAV) == variable)
+                            if((currentAction.currentVariable(thisAV) + 1) == variable)
                                 {
                                     hdxAV.setStatus(hdxStates.AV_PAUSED);
                                     hdxAV.startPause.innerHTML = "Resume";

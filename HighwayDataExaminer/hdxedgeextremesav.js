@@ -39,7 +39,7 @@ var hdxEdgeExtremesSearchAV = {
     discarded: 0,
     foundNewLeader: false,
     // the categories for which we are finding our extremes,
-    // with names for ids, labels to display, indicies of leader,
+    // with names for ids, labe ls to display, indicies of leader,
     // comparison function to determine if we have a new leader,
     // and visual settings for the display
     categories: [
@@ -174,6 +174,9 @@ var hdxEdgeExtremesSearchAV = {
             },
             logMessage: function(thisAV) {
                 return "Top of main for loop over edges, check=" + thisAV.nextToCheck;
+            },
+            currentVariable: function(thisAV){
+                return thisAV.nextToCheck;
             }
         },
         {

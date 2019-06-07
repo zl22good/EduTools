@@ -71,6 +71,8 @@ function displayLDVItem(item, ldv) {
 
 var hdxTraversalsSpanningAVCommon = {
 
+    counter: 0,
+
     // entries for value, name, description, code will be in
     // AV-specific objects
 
@@ -333,7 +335,6 @@ var hdxTraversalsSpanningAVCommon = {
             comment: "Check if we have added the end vertex",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-
                 // check if end is visited, if so, cleanup, otherwise,
                 // check that there are more values in the LDV to see
                 // if we can continue
@@ -348,6 +349,9 @@ var hdxTraversalsSpanningAVCommon = {
             },
             logMessage: function(thisAV) {
                 return "Check if the end vertex has been added.";
+            },
+            currentVariable: function(thisAV){
+                return thisAV.nextToCheck;
             }
         },
         {

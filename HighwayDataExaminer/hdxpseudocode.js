@@ -115,6 +115,8 @@ function addStop()
                     previousBreakpoint = "";
                     breakpoint = "";
                     breakpointCheckerDisplay();
+                    useVariable = false;
+                    document.getElementById("useBreakpointVariable").checked = false;
                 }
                 else {
                     labelInnerHTML(target.getAttribute("variableValue"));
@@ -154,7 +156,7 @@ function cleanupBreakpoints()
     previousBreakpoint = "";
 }
 
-var useVariable = false;
+var useVariable = false; //Is the checkbox checked or not? If so, break on conditional if
 var breakpointVariableHidden  = true;//What position is the selector in?
 //Enables the clickable function and window resize change for the selector
 function showHideBreakpointVariableSelector()
@@ -199,6 +201,7 @@ function createVariableSelector(){
             useVariable = false;
         }     
     }
+    checkbox.style.backgroundColor = "Red";
     
     let breakpointID = document.createAttribute("id");
     let breakpoint1ID = document.createAttribute("id");
@@ -217,7 +220,7 @@ function createVariableSelector(){
     divBreakpoint.setAttributeNode(breakpointClass);
     
     //This is where the variable selector goes
-    divBreakpoint1.innerHTML = "7";
+    divBreakpoint1.innerHTML = "This is where the innerHTML goes";
     divBreakpoint2.innerHTML = "-->";
     divBreakpoint2.style.backgroundColor = "Red";
     
@@ -240,10 +243,11 @@ function createVariableSelector(){
 function setDefaultVariableSelectorLocation(){
     let avPanel = document.getElementById("avStatusPanel");
     let rect2 = avPanel.getBoundingClientRect();
-    //CP right side - left side
+    //avCP right side - left side
     let difference2 = rect2.right-rect2.left;
     let element = document.getElementById("breakpointVariableSelector");
     let rect = element.getBoundingClientRect();
+    //variableSelector right side - left side
     let difference = rect.right - rect.left;
     //Width of the CP - the width of the selector + 25 offset to get it to stick out
     let trueDifference = difference2 - difference + 25;
@@ -251,7 +255,7 @@ function setDefaultVariableSelectorLocation(){
     breakpointVariableHidden = true;
 }
 
-//Based on if a breakpoint is selected or not, display o hide the element.
+//Based on if a breakpoint is selected or not, display or hide the element.
 //Also reset the posiiton.
 function breakpointCheckerDisplay(){
     let element = document.getElementById("breakpointVariableSelector");
@@ -265,22 +269,61 @@ function breakpointCheckerDisplay(){
     setDefaultVariableSelectorLocation();
 }
 
+//Sets the innerHTML of the div tag w/ ID: breakpointText to the passed
+//variable
 function labelInnerHTML(text)
 {
     let element = document.getElementById("breakpointText");
     element.innerHTML = text;
+    let checkbox = document.getElementById("useBreakpointVariable");
+    if(hasInnerHTML(breakpoint))
+    {
+        checkbox.style.display = "block";
+    }
+    else
+    {
+        checkbox.style.display = "none";
+        checkbox.checked = false;
+        useVariable = false;
+    }
 }
 
+//sets the custom attribute variableValue of each codeRow class
+//This is so they can be used for setting the inner html
 function setInnerHTML(label)
 {
+    let element = document.getElementById("useBreakpointVariable");
+    let max = waypoints.length-1;
+    let html = "No innerHTML"
     switch(label)
     {
+        case "vtestforLoopTop":
+        case "v2forLoopTop":
+        case "v1forLoopTop":
         case "forLoopTop":
-            let max = waypoints.length-1;
-            let html = 'Please select the vertex <br \> to stop at: <input type="number" name="quantity" min="1" max="';
+            html = 'Please select the vertex <br \> to stop at: <input type="number" name="quantity" min="1" max="';
             html += max + '">';
             return html;
-            break;
+        case "checkLDVEmpty":
+            html = 'Please select the size of the LDV <br \> to stop at: <input type="number" name="quantity" min="1" max="';
+            html += max + '">';
+            return html;
+
+
     }
-    return "No innerHTML";
+    return html;
+}
+
+//Does a label have a setInnerHTML with a return other than "No innerHTML"
+function hasInnerHTML(label){
+    switch(label){
+        case "checkLDVEmpty":
+        case "vtestforLoopTop":
+        case "v2forLoopTop":
+        case "v1forLoopTop":
+        case "forLoopTop":
+            return true;
+
+    }
+    return false;
 }
