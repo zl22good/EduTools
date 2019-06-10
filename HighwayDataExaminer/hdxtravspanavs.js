@@ -85,7 +85,7 @@ var hdxTraversalsSpanningAVCommon = {
     
     // The header for the table of found places
     foundTableHeader: "MISSING",
-
+    
     // if an entry in the table should have a column for an edge
     // length (as in Prim's) or cumulative distance (as in Dijkstra's)
     // this should be set to the column header
@@ -147,6 +147,7 @@ var hdxTraversalsSpanningAVCommon = {
     numEDiscardedOnDiscovery: 0,
     numEDiscardedOnRemoval: 0,
     componentNum: 0,
+    totalTreeCost: 0,
 
     // when finding a path from start to end, we need a list of tree
     // edges to traverse to find the path
@@ -226,6 +227,7 @@ var hdxTraversalsSpanningAVCommon = {
                 thisAV.numEDiscardedOnDiscovery = 0;
                 thisAV.numEDiscardedOnRemoval = 0;
                 thisAV.componentNum = 0;
+                thisAV.totalTreeCost = 0,
 
                 // for the search for starting vertices for multiple
                 // component traversals
@@ -525,6 +527,8 @@ var hdxTraversalsSpanningAVCommon = {
                 // we used the edge to get here, so let's mark it as such
                 if (thisAV.visiting.connection != -1) {
                     thisAV.numESpanningTree++;
+                    thisAV.totalTreeCost +=
+                        edgeLengthInMiles(graphEdges[thisAV.visiting.connection]);
                     thisAV.componentEList.push(thisAV.visiting.connection);
                     updatePolylineAndTable(thisAV.visiting.connection,
                                            visualSettings.spanningTree,
@@ -828,7 +832,7 @@ var hdxTraversalsSpanningAVCommon = {
             label: "cleanup",
             comment: "Clean up and finalize visualization",
             code: function(thisAV) {
-
+                
                 // if we found a path start to end, we replace the
                 // full table of found places with just the path found
                 if (thisAV.stoppedBecause == "FoundPath") {
@@ -876,6 +880,14 @@ var hdxTraversalsSpanningAVCommon = {
                         parseFloat(distance).toFixed(3) + " with " +
                         hops + " hops:";
                 }
+                
+                else {
+                    document.getElementById("totalTreeCost").innerHTML =
+                        "Total cost: " + 
+                        thisAV.totalTreeCost.toFixed(3);
+                }
+                
+                updateAVControlEntry("visiting", "");
                 hdxAV.nextAction = "DONE";
                 hdxAV.iterationDone = true;
             },
@@ -1064,6 +1076,7 @@ var hdxTraversalsSpanningAVCommon = {
         let foundEntry = '<span id="foundEntriesCount">0</span>' +
             ' <span id="foundTableLabel">' +
             this.foundTableHeader + '</span><br />' +
+            '<span id="totalTreeCost"></span>' +
             '<table class="gratable"><thead>' +
             '<tr style="text-align:center"><th>Place</th>';
         if (this.distEntry != "") {

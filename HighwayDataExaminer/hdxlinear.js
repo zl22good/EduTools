@@ -67,7 +67,7 @@ function HDXLinear(type, displayName) {
     };
     
     // set the element and callback
-    this.setDisplay = function(dE, eC, value=10) {
+    this.setDisplay = function(dE, eC, value=6) {
 
         this.docElement = dE;
         this.elementHTMLCallback = eC;
