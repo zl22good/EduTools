@@ -206,6 +206,8 @@ var hdxAV = {
                         let variable = "";
                         let counter = 0;
                         let length = document.getElementsByName("quantity").length;
+                        //Run through the elements with name quantity
+                        //If anything does have that, take its value
                         do{
                             try {
                                 variable = document.getElementsByName("quantity")[counter].value;
@@ -216,14 +218,22 @@ var hdxAV = {
                             }
                         }
                         while(variable == "" && counter <= length)
-
+                            
+                        //If the value of your variable is null, set it 
+                        //to -1, essentially ignoring it. If it doesnt 
+                        //include a space, parse it as an Int
                         if(variable == "")
                         {
                             variable = -1;
                         }
-                        
+                        else{
+                            if(!variable.includes(" "))
+                                {
+                                    variable = parseInt(variable);
+                                }
+                        }
+                        //Checks if the set variable has been met
                         hdxAV.determineBreakOrContinue(variable,currentAction.currentVariable(thisAV));
-
                     }
                 else{
                     hdxAV.setStatus(hdxStates.AV_PAUSED);
@@ -292,27 +302,56 @@ var hdxAV = {
         return "rgb(" + r + ",210, " + b + ")";
     },
     
+    //This is what determines whether a conditional breakpoint
+    //has been met or not. If so, break. This will manipulate strings
+    //aka multiple things to be checked against our own variable(s)
     determineBreakOrContinue(selectedStop, currentPoints){
-        let checker;
-        let selection;
+        let checker;//current values
+        let selection;//your selected value
         let howToDeal = "Number";
-        if(currentPoints.constructor === String){
-            selection = selectedStop;
-            checker = currentPoints;
+        //Obtain either a direct relation, or an array of the string deliminated by 
+        //a space
+        if((currentPoints.constructor === String) && (selectedStop.constructor === String)){
+            selection = selectedStop.split(' ');
+            checker = currentPoints.split(' ');
+            console.log("String");
             howToDeal = "String";
         }
-        else if(currentPoints.constructor === Number){
+        else if((currentPoints.constructor === Number) && (selectedStop.constructor === Number)){
             selection = selectedStop;
             checker = currentPoints;
+            console.log("Number");
             howToDeal = "Number";
+        }
+        else if((currentPoints.constructor === String) && (selectedStop.constructor === Number)){
+            selection = selectedStop;
+            checker = currentPoints.split(' ');
+            console.log("StringNumber");
+            howToDeal = "StringNumber";
+        }
+        else if((currentPoints.constructor === Number) && (selectedStop.constructor === String)){
+            selection = selectedStop.split(' ');
+            checker = currentPoints;
+            console.log("NumberString");
+            howToDeal = "NumberString";    
         }
         else{
             console.log("Something went wrong with currentPoints native type!");      
         }
         
+        //Below will compare the selected value vs. the current ones
+        //Both are strings
         if(howToDeal == "String"){
-            
+            try
+            {
+
+            }
+            catch(error)
+            {
+                console.log("useVariable has encountered errors parsing breakpointText howToDeal=NumberString " + variable);   
+            }
         }
+        //Both are numbers
         else if(howToDeal == "Number"){
             try
             {
@@ -324,8 +363,40 @@ var hdxAV = {
             }
             catch(error)
             {
-                console.log("useVariable has encountered errors parsing breakpointText innerHTML " + variable);    
+                console.log("useVariable has encountered errors parsing breakpointText - innerHTML - howToDeal=Number " + variable);    
             }
+        }
+        //This is when your values are a string, and the checked is a number
+        else if(howToDeal == "NumberString"){
+            try
+            {
+                
+            }
+            catch(error)
+            {
+                console.log("useVariable has encountered errors parsing breakpointText howToDeal=StringNumber " + variable);   
+            }
+                
+        }
+        //This is when your values is a number, and the checked is a String
+        else if(howToDeal == "StringNumber"){
+            try
+            {
+                for(let element of checker){
+                    if(selection == parseInt(element))
+                    {
+                        hdxAV.setStatus(hdxStates.AV_PAUSED);
+                        hdxAV.startPause.innerHTML = "Resume";
+                    }
+                }
+            }
+            catch(error)
+            {
+                console.log("useVariable has encountered errors parsing breakpointText howToDeal=NumberString " + variable);   
+            }
+        }
+        else{
+            console.log("Something went wrong with currentPoints checking!");
         }
     }
 };
