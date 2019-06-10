@@ -109,7 +109,7 @@ var hdxExtremePairsAV = {
                 return "Next v<sub>1</sub>=" + thisAV.v1;
             },
             currentVariable: function(thisAV){
-                return thisAV.v1;
+                return (thisAV.v1+1);
             }
         },
         {
@@ -139,7 +139,7 @@ var hdxExtremePairsAV = {
                     "and v<sub>2</sub>=" + thisAV.v2;
             },
             currentVariable: function(thisAV){
-                return thisAV.v2;
+                return (thisAV.v2+1);
             }
         },
         {

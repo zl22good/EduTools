@@ -71,6 +71,7 @@ function displayLDVItem(item, ldv) {
 
 var hdxTraversalsSpanningAVCommon = {
 
+    //keeps track of LDV length
     counter: 0,
 
     // entries for value, name, description, code will be in
@@ -713,6 +714,9 @@ var hdxTraversalsSpanningAVCommon = {
                 return "#" + thisAV.nextNeighbor.to + " via " +
                     graphEdges[thisAV.nextNeighbor.via].label +
                     " added to " + thisAV.ldv.displayName;
+            },
+            currentVariable: function(thisAV){
+                return thisAV.nextNeighbor.to;
             }
         },
         {

@@ -221,19 +221,9 @@ var hdxAV = {
                         {
                             variable = -1;
                         }
+                        
+                        hdxAV.determineBreakOrContinue(variable,currentAction.currentVariable(thisAV));
 
-                        try
-                        {
-                            if((currentAction.currentVariable(thisAV) + 1) == variable)
-                                {
-                                    hdxAV.setStatus(hdxStates.AV_PAUSED);
-                                    hdxAV.startPause.innerHTML = "Resume";
-                                }
-                        }
-                        catch(error)
-                        {
-                            console.log("useVariable has encountered errors parsing breakpointText innerHTML" + variable);    
-                        }
                     }
                 else{
                     hdxAV.setStatus(hdxStates.AV_PAUSED);
@@ -300,6 +290,43 @@ var hdxAV = {
         let r = 180 + rank;
         let b = 255 - rank;
         return "rgb(" + r + ",210, " + b + ")";
+    },
+    
+    determineBreakOrContinue(selectedStop, currentPoints){
+        let checker;
+        let selection;
+        let howToDeal = "Number";
+        if(currentPoints.constructor === String){
+            selection = selectedStop;
+            checker = currentPoints;
+            howToDeal = "String";
+        }
+        else if(currentPoints.constructor === Number){
+            selection = selectedStop;
+            checker = currentPoints;
+            howToDeal = "Number";
+        }
+        else{
+            console.log("Something went wrong with currentPoints native type!");      
+        }
+        
+        if(howToDeal == "String"){
+            
+        }
+        else if(howToDeal == "Number"){
+            try
+            {
+                if(selection == checker)
+                    {
+                        hdxAV.setStatus(hdxStates.AV_PAUSED);
+                        hdxAV.startPause.innerHTML = "Resume";
+                    }
+            }
+            catch(error)
+            {
+                console.log("useVariable has encountered errors parsing breakpointText innerHTML " + variable);    
+            }
+        }
     }
 };
 

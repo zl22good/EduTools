@@ -123,6 +123,7 @@ function addStop()
                     codeRowHighlight();
                     breakpointHighlight();
                     breakpointCheckerDisplay();
+                    checkInnerHTML();
                 }
         }, false);
     }
@@ -288,6 +289,14 @@ function labelInnerHTML(text)
     }
 }
 
+function checkInnerHTML(){
+    let element = document.getElementById("breakpointText").innerHTML;
+    if(element == "No innerHTML")
+    {
+        document.getElementById("breakpointVariableSelector").style.display = "none";
+    }
+}
+
 //sets the custom attribute variableValue of each codeRow class
 //This is so they can be used for setting the inner html
 function setInnerHTML(label)
@@ -304,8 +313,8 @@ function setInnerHTML(label)
             html = 'Please select the vertex <br \> to stop at: <input type="number" name="quantity" min="1" max="';
             html += max + '">';
             return html;
-        case "checkLDVEmpty":
-            html = 'Please select the size of the LDV <br \> to stop at: <input type="number" name="quantity" min="1" max="';
+        case "checkNeighborsLoopIfFalse":
+            html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" name="quantity" min="0" max="';
             html += max + '">';
             return html;
 
@@ -317,6 +326,7 @@ function setInnerHTML(label)
 //Does a label have a setInnerHTML with a return other than "No innerHTML"
 function hasInnerHTML(label){
     switch(label){
+        case "checkNeighborsLoopIfFalse":
         case "checkLDVEmpty":
         case "vtestforLoopTop":
         case "v2forLoopTop":
