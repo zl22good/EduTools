@@ -11,7 +11,7 @@ var hdxKruskalAV = {
     // entries for list of AVs
     value: "kruskal",
     name: "Kruskal's Algorithm",
-    description: "Search for extreme values based on edge (connection) lengths and labels.",
+    description: "Finds Minimum Spanning tree/forest by adding edges in increasing order.",
 
     
     // state variables for edge search
@@ -105,7 +105,8 @@ var hdxKruskalAV = {
                     
                 //add all edges to PQ sorted by length
                 for (let i = 0; i < graphEdges.length; i++) {
-                    thisAV.ldv.add(new LDVEntry(graphEdges[i].v1, edgeLengthInMiles(graphEdges[i]), i));
+                    thisAV.ldv.add(new LDVEntry(graphEdges[i].v1,
+                        edgeLengthInMiles(graphEdges[i]), i));
                 }
                 
                 hdxAV.iterationDone = true;
@@ -122,7 +123,8 @@ var hdxKruskalAV = {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 // if empty, go to LDVEmpty to report failure,
                 // otherwise carry on
-                if (thisAV.ldv.isEmpty()) {
+                if (thisAV.ldv.isEmpty() ||
+                    thisAV.numESpanningTree == (waypoints.length - 1)) {
                     hdxAV.nextAction = "cleanup";
                 }
                 else {
@@ -375,7 +377,7 @@ var hdxKruskalAV = {
         // pseudocode
         this.code ='<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">';
         this.code += 'pq &larr; all edges</td></tr>';
-        this.code += pcEntry(0, "while not pq.isEmpty", "whileLoopTop");
+        this.code += pcEntry(0, "while (not pq.isEmpty) and (not tree.isFullyConnected)", "whileLoopTop");
         this.code += pcEntry(1, "edge &larr; pq.remove()", "getPlaceFromLDV");
         this.code += pcEntry(1, "if edge.createsCycle", "checkCycle");
         this.code += pcEntry(2, "discard edge", "isCycle");
