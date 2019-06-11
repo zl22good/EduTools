@@ -312,8 +312,8 @@ var hdxAV = {
         //Obtain either a direct relation, or an array of the string deliminated by 
         //a space
         if((currentPoints.constructor === String) && (selectedStop.constructor === String)){
-            selection = selectedStop.split(' ');
-            checker = currentPoints.split(' ');
+            selection = selectedStop;
+            checker = currentPoints;
             console.log("String");
             howToDeal = "String";
         }
@@ -344,7 +344,11 @@ var hdxAV = {
         if(howToDeal == "String"){
             try
             {
-
+                if(selection == checker)
+                {
+                    hdxAV.setStatus(hdxStates.AV_PAUSED);
+                    hdxAV.startPause.innerHTML = "Resume";
+                }
             }
             catch(error)
             {
@@ -370,7 +374,13 @@ var hdxAV = {
         else if(howToDeal == "NumberString"){
             try
             {
-                
+                for(let element of selection){
+                    if(checker == parseInt(element))
+                    {
+                        hdxAV.setStatus(hdxStates.AV_PAUSED);
+                        hdxAV.startPause.innerHTML = "Resume";
+                    }
+                }
             }
             catch(error)
             {
