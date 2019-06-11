@@ -13,35 +13,6 @@ var hdxExtremePairsAV = {
     value: "closestpairs",
     name: "Vertex Closest/Farthest Pairs",
     description: "Search for the closest/farthest pair of vertices (waypoints).",
-
-    // pseudocode
-    code: `
-<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">
-closest &larr; null<br />
-d<sub>closest</sub> &larr; &infin;<br />
-farthest &larr; null<br />
-d<sub>farthest</sub> &larr; 0</td></tr>
-<tr id="v1forLoopTop"><td>for (v<sub>1</sub> &larr; 0 to |V|-2)</td></tr>
-<tr id="v2forLoopTop"><td>&nbsp;&nbsp;for (v<sub>2</sub> &larr; v1+1 to |V|-1)</td></tr>
-<tr id="computeDistance"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;d &larr; dist(v<sub>1</sub>,v<sub>2</sub>)
-</td></tr>
-<tr id="checkCloseLeader"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;if (d < d<sub>closest</sub>)
-</td></tr>
-<tr id="newCloseLeader"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;closest &larr; [v<sub>1</sub>,v<sub>2</sub>]<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d<sub>closest</sub> &larr; d
-</td></tr>
-<tr id="checkFarLeader"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;if (d > d<sub>farthest</sub>)
-</td></tr>
-<tr id="newFarLeader"><td>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;farthest &larr; [v<sub>1</sub>,v<sub>2</sub>]<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d<sub>farthest</sub> &larr; d
-</td></tr>
-</table>
-`,
     
     // state variables for closest pairs search
     // loop indices
@@ -481,6 +452,14 @@ d<sub>farthest</sub> &larr; 0</td></tr>
         // show waypoints, hide connections
         initWaypointsAndConnections(true, false,
                                     visualSettings.undiscovered);
+        this.code = '<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">closest &larr; null<br />d<sub>closest</sub> &larr; &infin;<br />farthest &larr; null<br />d<sub>farthest</sub> &larr; 0</td></tr>';
+        this.code += pcEntry(0,'for (v<sub>1</sub> &larr; 0 to |V|-2)',"v1forLoopTop");
+        this.code += pcEntry(1, 'for (v<sub>2</sub> &larr; v1+1 to |V|-1)', "v2forLoopTop");
+        this.code += pcEntry(2, 'd &larr; dist(v<sub>1</sub>,v<sub>2</sub>)', "computeDistance");
+        this.code += pcEntry(2, 'if (d < d<sub>closest</sub>)', "checkCloseLeader");
+        this.code += pcEntry(3, 'closest &larr; [v<sub>1</sub>,v<sub>2</sub>]<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d<sub>closest</sub> &larr; d', "newCloseLeader");
+        this.code += pcEntry(2, 'if (d > d<sub>farthest</sub>)', "checkFarLeader");
+        this.code += pcEntry(3, 'farthest &larr; [v<sub>1</sub>,v<sub>2</sub>]<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d<sub>farthest</sub> &larr; d', "newFarLeader");
     },
 
     // set up UI entries for closest/farthest pairs
@@ -509,5 +488,9 @@ d<sub>farthest</sub> &larr; 0</td></tr>
         if (this.lineFarthest != null) {
             this.lineFarthest.remove();
         }
+    },
+    
+    idOfAction(action){
+            return action.label;
     }
 };
