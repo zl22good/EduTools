@@ -20,6 +20,7 @@ var hdxDFSRecAV = {
     // last place to come out of the LDV, currently "visiting"
     visiting: 0,
     nextToCheck: 0,
+    nextVertex: 0,
 
     // when finding all, track the lists of vertices and edges that are
     // forming the current spanning tree
@@ -35,24 +36,7 @@ var hdxDFSRecAV = {
     numEDiscardedOnRemoval: 0,
     totalTreeCost: 0,
     
-   
 
-    // comparator for priority queue
-    comparator: function(a, b) {
-        return a.val < b.val;
-    },
-
-    // function to determine the next "val" field for a new LDV entry
-    // in this case, the edge length
-    //
-    // first parameter is the LDV entry being visited at this point,
-    // second parameter is the destination vertex and edge traversed
-    // to get from the vertex being visited
-    valForLDVEntry: function() {
-        return edgeLengthInMiles(graphEdges[nextEdge]);
-    },
-    
-    
     // the actions that make up this algorithm
     avActions: [
         {
@@ -62,10 +46,11 @@ var hdxDFSRecAV = {
                 
                 highlightPseudocode(this.label, visualSettings.visiting);
                 
-                
+                thisAV.stack = [];
                 // highlight edge 0 as leader in all categories and current
                 thisAV.discarded = 0;
-                thisAV.nextToCheck = -1;
+                thisAV.nextToCheck = 0;
+                thisAV.nextVertex = -1;
         
                 thisAV.updateControlEntries();
               
@@ -94,7 +79,7 @@ var hdxDFSRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 
-                updateAVControlEntry("visiting", "Visiting edge " + thisAV.visiting
+                updateAVControlEntry("visiting", "Visiting vertex " + thisAV.visiting
                     + ": " + waypoints[thisAV.visiting].label);
                 // show on map as visiting color
                 updateMarkerAndTable(thisAV.visiting,
@@ -113,9 +98,18 @@ var hdxDFSRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                waypoints[thisAV.visiting].hops = 
-                    waypoints[thisAV.visiting].prevVertex.hops + 1;
+                //set number of hops to its parent vertex's number of hops + 1
+                console.log("prev vertex: " + waypoints[thisAV.visiting].prevVertex);
+                //if its the first point set hops to 0
+                if (waypoints[thisAV.visiting].prevVertex == -1) {
+                    waypoints[thisAV.visiting].hops = 0;
+                }
+                else {
+                    waypoints[thisAV.visiting].hops =
+                        waypoints[waypoints[thisAV.visiting].prevVertex].hops + 1;
+                }
                 hdxAV.nextAction = "forLoopTop";
+                thisAV.nextToCheck = 0;
                 
             },
             logMessage: function(thisAV) {
@@ -128,16 +122,36 @@ var hdxDFSRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                thisAV.nextToCheck++;
+                //thisAV.nextToCheck++;
+                //if for loop is done for this level of recursion
+                console.log("For loop top visiting: " + thisAV.visiting);
+                console.log("For loop top nexttocheck: " + thisAV.nextToCheck);
+
+
                 if (thisAV.nextToCheck == waypoints[thisAV.visiting].edgeList.length) {
-                    //hdxAV.nextAction = "cleanup";
-                    //reset visiting from prevVertex, nexttocheck from stack, 
+                    //reset visiting from prevVertex, nexttocheck from stack,
                     //pop from stack, return
-                    thisAV.nextToCheck = thisAV.stack.pop;
+                    thisAV.nextToCheck = thisAV.stack.pop();
                     thisAV.visiting = waypoints[thisAV.visiting].prevVertex;
                     hdxAV.nextAction = "return";
                 }
                 else {
+
+                    //get the other vertex from the adjacency list
+                    console.log(waypoints[thisAV.visiting].edgeList);
+                    console.log("trying to access: " + thisAV.nextToCheck);
+                    let edge = waypoints[thisAV.visiting].edgeList[thisAV.nextToCheck];
+                    thisAV.nextVertex = -1;
+                    if (edge.v1 == thisAV.visiting) {
+                        thisAV.nextVertex = edge.v2;
+                    }
+                    else if (edge.v2 == thisAV.visiting) {
+                        thisAV.nextVertex = edge.v1;
+                    }
+                    waypoints[thisAV.nextVertex].prevVertex = thisAV.visiting;
+                    console.log("prevVertex of waypoints[" + thisAV.nextVertex + "] is waypoints[" + thisAV.visiting + "]")
+                    console.log("nextVertex is: " + thisAV.nextVertex);
+                    thisAV.nextToCheck++;
                     hdxAV.nextAction = "checkUndiscovered";
                 }
             },
@@ -169,8 +183,9 @@ var hdxDFSRecAV = {
             comment: "call recursion with new vertex",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.discarded);
-                thisAV.stack.push()
-                
+                thisAV.stack.push(thisAV.nextToCheck);
+                thisAV.visiting = thisAV.nextVertex;
+                hdxAV.nextAction = "recursiveCallTop"
                 
             },
             logMessage: function(thisAV) {
@@ -207,7 +222,6 @@ var hdxDFSRecAV = {
                 //updateAVControlEntry("undiscovered", "");
                 hdxAV.nextAction = "DONE";
                 hdxAV.iterationDone = true;
-                
             },
             logMessage: function(thisAV) {
                 return "Cleanup and finalize visualization";
@@ -238,7 +252,7 @@ var hdxDFSRecAV = {
         hdxAV.algStat.innerHTML = "Initializing";
         
         // hide waypoints, show connections
-        initWaypointsAndConnections(false, true,
+        initWaypointsAndConnections(true, true,
                                     visualSettings.undiscovered);
         
         this.discarded= 0;
