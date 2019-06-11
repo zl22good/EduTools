@@ -289,6 +289,8 @@ function labelInnerHTML(text)
     }
 }
 
+//Used to hide the breakpointVariableSelector if
+//it doesnt have innerHTML that is useful
 function checkInnerHTML(){
     let element = document.getElementById("breakpointText").innerHTML;
     if(element == "No innerHTML")
@@ -313,8 +315,16 @@ function setInnerHTML(label)
             html = 'Please select the vertex <br \> to stop at: <input type="number" name="quantity" min="1" max="';
             html += max + '">';
             return html;
+        case "getPlaceFromLDV":
         case "checkNeighborsLoopIfFalse":
             html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" name="quantity" min="0" max="';
+            html += max + '">';
+            return html;
+        case "wasNotAdded":
+            html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" name="quantity" min="0" max="';
+            html += max + '">';
+            html += '<br \>';
+            html += 'Please select the vertex of the LDV <br \> to stop at: <input type="number" name="quantity" min="0" max="';
             html += max + '">';
             return html;
 
@@ -326,6 +336,8 @@ function setInnerHTML(label)
 //Does a label have a setInnerHTML with a return other than "No innerHTML"
 function hasInnerHTML(label){
     switch(label){
+        case "wasNotAdded":
+        case "getPlaceFromLDV":
         case "checkNeighborsLoopIfFalse":
         case "checkLDVEmpty":
         case "vtestforLoopTop":

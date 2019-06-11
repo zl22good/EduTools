@@ -350,9 +350,6 @@ var hdxTraversalsSpanningAVCommon = {
             },
             logMessage: function(thisAV) {
                 return "Check if the end vertex has been added.";
-            },
-            currentVariable: function(thisAV){
-                return thisAV.nextToCheck;
             }
         },
         {
@@ -414,6 +411,11 @@ var hdxTraversalsSpanningAVCommon = {
                 return "Removed " +
                     thisAV.formatLDVEntry(thisAV.visiting) + " from " +
                     thisAV.ldv.displayName;
+            },
+            currentVariable: function(thisAV){
+                let temp = thisAV.visiting.fromVIndex + " " + thisAV.visiting.vIndex;
+                console.log(temp);
+                return temp;
             }
         },
         {
@@ -553,6 +555,11 @@ var hdxTraversalsSpanningAVCommon = {
             },
             logMessage: function(thisAV) {
                 return "Adding " + thisAV.formatLDVEntry(thisAV.visiting) + " to tree";
+            },
+            currentVariable: function(thisAV){
+                let temp = "3 1 2 2 45";
+                console.log(temp);
+                return temp;
             }
         },
         {
@@ -716,7 +723,7 @@ var hdxTraversalsSpanningAVCommon = {
                     " added to " + thisAV.ldv.displayName;
             },
             currentVariable: function(thisAV){
-                return thisAV.nextNeighbor.to;
+                return thisAV.nextNeighbor.to + " " + thisAV.nextNeighbor.via;
             }
         },
         {

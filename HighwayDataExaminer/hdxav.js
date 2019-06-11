@@ -201,6 +201,7 @@ var hdxAV = {
         //determine if you have to pause else just pause
         if(thisAV.idOfAction(currentAction) == breakpoint)
             {
+                var chosenPoints;
                 if(useVariable == true)
                     {
                         let variable = "";
@@ -210,15 +211,22 @@ var hdxAV = {
                         //If anything does have that, take its value
                         do{
                             try {
-                                variable = document.getElementsByName("quantity")[counter].value;
-                                counter++;
+                                if(variable == "") {
+                                    variable = document.getElementsByName("quantity")[counter].value;
+                                    counter++;
+                                }
+                                else
+                                {
+                                        variable += " " + document.getElementsByName("quantity")[counter].value;
+                                        counter++;
+                                }
                             }
                             catch(error){
                                 counter++;
                             }
                         }
-                        while(variable == "" && counter <= length)
-                            
+                        while(counter <= length)
+                        console.log(variable);
                         //If the value of your variable is null, set it 
                         //to -1, essentially ignoring it. If it doesnt 
                         //include a space, parse it as an Int
@@ -228,12 +236,38 @@ var hdxAV = {
                         }
                         else{
                             if(!variable.includes(" "))
-                                {
+                            {
                                     variable = parseInt(variable);
+                            }
+                            else
+                            {
+                                if(variable.substr(variable.length-1) == " "){
+                                    variable = variable.substr(0,variable.length-1);
                                 }
+                                chosenPoints = variable.split(" ");
+                            }
+
                         }
                         //Checks if the set variable has been met
-                        hdxAV.determineBreakOrContinue(variable,currentAction.currentVariable(thisAV));
+                        if(chosenPoints == null) {
+                            hdxAV.determineBreakOrContinue(variable, currentAction.currentVariable(thisAV));
+                        }
+                        else{
+                            for(let temp of chosenPoints)
+                            {
+                                var temp2 = temp;
+                                try
+                                {
+                                    temp2 = parseInt(temp2);
+                                    console.log("parsed correctly");
+                                }
+                                catch(error){
+                                    console.log("WARNING: chosenPoints has a non-number variable");
+                                }
+                                console.log("temp2: " + temp2);
+                                hdxAV.determineBreakOrContinue(temp2, currentAction.currentVariable(thisAV));
+                            }
+                        }
                     }
                 else{
                     hdxAV.setStatus(hdxStates.AV_PAUSED);
@@ -352,7 +386,8 @@ var hdxAV = {
             }
             catch(error)
             {
-                console.log("useVariable has encountered errors parsing breakpointText howToDeal=NumberString " + variable);   
+                console.log("useVariable has encountered errors parsing breakpointText howToDeal=NumberString "
+                    + variable);
             }
         }
         //Both are numbers
@@ -367,7 +402,8 @@ var hdxAV = {
             }
             catch(error)
             {
-                console.log("useVariable has encountered errors parsing breakpointText - innerHTML - howToDeal=Number " + variable);    
+                console.log("useVariable has encountered errors parsing breakpointText - innerHTML - " +
+                    "howToDeal=Number " + variable);
             }
         }
         //This is when your values are a string, and the checked is a number
@@ -384,7 +420,8 @@ var hdxAV = {
             }
             catch(error)
             {
-                console.log("useVariable has encountered errors parsing breakpointText howToDeal=StringNumber " + variable);   
+                console.log("useVariable has encountered errors parsing breakpointText howToDeal=StringNumber "
+                    + variable);
             }
                 
         }
@@ -402,7 +439,8 @@ var hdxAV = {
             }
             catch(error)
             {
-                console.log("useVariable has encountered errors parsing breakpointText howToDeal=NumberString " + variable);   
+                console.log("useVariable has encountered errors parsing breakpointText howToDeal=NumberString "
+                    + variable);
             }
         }
         else{
