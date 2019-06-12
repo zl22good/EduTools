@@ -312,19 +312,19 @@ function setInnerHTML(label)
         case "v2forLoopTop":
         case "v1forLoopTop":
         case "forLoopTop":
-            html = 'Please select the vertex <br \> to stop at: <input type="number" name="quantity" min="1" max="';
+            html = 'Please select the vertex <br \> to stop at: <input type="number" id="generic2" name="quantity" min="1" max="';
             html += max + '">';
             return html;
         case "getPlaceFromLDV":
         case "checkNeighborsLoopIfFalse":
-            html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" name="quantity" min="0" max="';
+            html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" id="generic1" name="quantity" min="0" max="';
             html += max + '">';
             return html;
         case "wasNotAdded":
-            html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" name="quantity" min="0" max="';
+            html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" id="wasNotAdded1" name="quantity" min="0" max="';
             html += max + '">';
             html += '<br \>';
-            html += 'Please select the vertex of the LDV <br \> to stop at: <input type="number" name="quantity" min="0" max="';
+            html += 'Please select the vertex of the LDV <br \> to stop at: <input type="number" id="wasNotAdded2" name="quantity" min="0" max="';
             html += max + '">';
             return html;
 

@@ -175,7 +175,7 @@ var hdxEdgeExtremesSearchAV = {
             logMessage: function(thisAV) {
                 return "Top of main for loop over edges, check=" + thisAV.nextToCheck;
             },
-            currentVariable: function(thisAV){
+            currentVariable: function(thisAV, whatToDo){
                 return (thisAV.nextToCheck+1);
             }
         },

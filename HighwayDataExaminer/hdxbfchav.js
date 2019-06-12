@@ -222,7 +222,7 @@ var hdxBFConvexHullAV = {
             logMessage: function(thisAV) {
                 return "Top of outer for loop over vertices, v<sub>1</sub>=" + thisAV.hullv1;
             },
-            currentVariable: function(thisAV){
+            currentVariable: function(thisAV, whatToDo){
                 return (thisAV.hullv1+1);
             }
         },
@@ -253,7 +253,7 @@ var hdxBFConvexHullAV = {
             logMessage: function(thisAV) {
                 return "Top of inner for loop over vertices, v<sub>2</sub>=" + thisAV.hullv2;
             },
-            currentVariable: function(thisAV){
+            currentVariable: function(thisAV, whatToDo){
                 return (thisAV.hullv2+1);
             }
         },
@@ -332,7 +332,7 @@ var hdxBFConvexHullAV = {
                 return "Top of loop over vertices testing " +
                     thisAV.currentSegmentString();
             },
-            currentVariable: function(thisAV){
+            currentVariable: function(thisAV, whatToDo){
                 return (thisAV.hullvtest+1);
             }
         },

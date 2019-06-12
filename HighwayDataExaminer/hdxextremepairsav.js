@@ -108,7 +108,7 @@ var hdxExtremePairsAV = {
             logMessage: function(thisAV) {
                 return "Next v<sub>1</sub>=" + thisAV.v1;
             },
-            currentVariable: function(thisAV){
+            currentVariable: function(thisAV, whatToDo){
                 return (thisAV.v1+1);
             }
         },
@@ -138,7 +138,7 @@ var hdxExtremePairsAV = {
                 return "Checking v<sub>1</sub>=" + thisAV.v1 +
                     "and v<sub>2</sub>=" + thisAV.v2;
             },
-            currentVariable: function(thisAV){
+            currentVariable: function(thisAV, whatToDo){
                 return (thisAV.v2+1);
             }
         },

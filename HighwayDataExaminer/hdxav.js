@@ -201,7 +201,10 @@ var hdxAV = {
         //determine if you have to pause else just pause
         if(thisAV.idOfAction(currentAction) == breakpoint)
             {
-                var chosenPoints;
+                //If more than one element is chosen, put them 
+                //into an array - chosenPoints
+                var chosenPoints; 
+                var methodPicker = [];
                 if(useVariable == true)
                     {
                         let variable = "";
@@ -209,27 +212,41 @@ var hdxAV = {
                         let length = document.getElementsByName("quantity").length;
                         //Run through the elements with name quantity
                         //If anything does have that, take its value
+                        //and seperate them with a space
                         do{
                             try {
                                 if(variable == "") {
                                     variable = document.getElementsByName("quantity")[counter].value;
+                                    if(document.getElementsByName("quantity")[counter].hasAttribute("id")){
+                                        methodPicker.push(document.getElementsByName("quantity")[counter].id);
+                                        console.log("pushed an ID: " + methodPicker[0]);
+                                    }
                                     counter++;
                                 }
                                 else
                                 {
                                         variable += " " + document.getElementsByName("quantity")[counter].value;
+                                    if(document.getElementsByName("quantity")[counter].hasAttribute("id")){
+                                       methodPicker.push(document.getElementsByName("quantity")[counter].id);
+                                        console.log("pushed an ID: " + methodPicker[1]);
+                                    }
                                         counter++;
                                 }
                             }
+                            //null value means to still continue, just add on to the counter, 
+                            //dont take that value
                             catch(error){
                                 counter++;
                             }
                         }
                         while(counter <= length)
+                            
                         console.log(variable);
                         //If the value of your variable is null, set it 
                         //to -1, essentially ignoring it. If it doesnt 
-                        //include a space, parse it as an Int
+                        //include a space, parse it as an Int.
+                        //If it does include a space, any on the end should 
+                        //be thrown away and now split the string by spaces
                         if(variable == "")
                         {
                             variable = -1;
@@ -249,8 +266,11 @@ var hdxAV = {
 
                         }
                         //Checks if the set variable has been met
+                        //if the array is null, just the variable, that is parsed,
+                        //else run throughthe entire array and parse any numbers.
+                        //Use all of the indexs as values
                         if(chosenPoints == null) {
-                            hdxAV.determineBreakOrContinue(variable, currentAction.currentVariable(thisAV));
+                            hdxAV.determineBreakOrContinue(variable, currentAction.currentVariable(thisAV, methodPicker.shift()));
                         }
                         else{
                             for(let temp of chosenPoints)
@@ -265,7 +285,7 @@ var hdxAV = {
                                     console.log("WARNING: chosenPoints has a non-number variable");
                                 }
                                 console.log("temp2: " + temp2);
-                                hdxAV.determineBreakOrContinue(temp2, currentAction.currentVariable(thisAV));
+                                hdxAV.determineBreakOrContinue(temp2, currentAction.currentVariable(thisAV, methodPicker.shift()));
                             }
                         }
                     }
@@ -347,7 +367,7 @@ var hdxAV = {
         //a space
         if((currentPoints.constructor === String) && (selectedStop.constructor === String)){
             selection = selectedStop;
-            checker = currentPoints;
+            checker = currentPoints.split(" ");
             console.log("String");
             howToDeal = "String";
         }
@@ -378,10 +398,14 @@ var hdxAV = {
         if(howToDeal == "String"){
             try
             {
-                if(selection == checker)
-                {
-                    hdxAV.setStatus(hdxStates.AV_PAUSED);
-                    hdxAV.startPause.innerHTML = "Resume";
+                for(let element of checker){
+                    console.log(element);
+                    if(selection == element)
+                    {
+                        console.log("Paused");
+                        hdxAV.setStatus(hdxStates.AV_PAUSED);
+                        hdxAV.startPause.innerHTML = "Resume";
+                    }
                 }
             }
             catch(error)

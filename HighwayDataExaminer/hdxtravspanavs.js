@@ -412,7 +412,7 @@ var hdxTraversalsSpanningAVCommon = {
                     thisAV.formatLDVEntry(thisAV.visiting) + " from " +
                     thisAV.ldv.displayName;
             },
-            currentVariable: function(thisAV){
+            currentVariable: function(thisAV, whatToDo){
                 let temp = thisAV.visiting.fromVIndex + " " + thisAV.visiting.vIndex;
                 console.log(temp);
                 return temp;
@@ -556,10 +556,21 @@ var hdxTraversalsSpanningAVCommon = {
             logMessage: function(thisAV) {
                 return "Adding " + thisAV.formatLDVEntry(thisAV.visiting) + " to tree";
             },
-            currentVariable: function(thisAV){
-                let temp = "3 1 2 2 45";
-                console.log(temp);
-                return temp;
+            currentVariable: function(thisAV, whatToDo){
+                //graphEdges[thisAV.visiting.connection] <- gives edge #
+                //thisAV.visiting.vIndex <- vertex start
+                if(whatToDo == "wasNotAdded1")
+                {
+                    console.log(thisAV.visiting.connection);
+                    return thisAV.visiting.connection;
+                }
+                else if(whatToDo == "wasNotAdded2"){
+                    console.log(thisAV.visiting.vIndex);
+                    return thisAV.visiting.vIndex;
+                }
+                else{
+                        return "Error happened";
+                }
             }
         },
         {
@@ -722,7 +733,7 @@ var hdxTraversalsSpanningAVCommon = {
                     graphEdges[thisAV.nextNeighbor.via].label +
                     " added to " + thisAV.ldv.displayName;
             },
-            currentVariable: function(thisAV){
+            currentVariable: function(thisAV, whatToDo){
                 return thisAV.nextNeighbor.to + " " + thisAV.nextNeighbor.via;
             }
         },
