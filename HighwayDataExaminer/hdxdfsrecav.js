@@ -254,6 +254,7 @@ var hdxDFSRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
+                //color finished edges and vertices added to tree
                 updateMarkerAndTable(graphEdges[thisAV.connection].v1,
                     visualSettings.spanningTree, 10, false);
                 updateMarkerAndTable(graphEdges[thisAV.connection].v2,
@@ -262,8 +263,9 @@ var hdxDFSRecAV = {
                     visualSettings.spanningTree, false);
                 console.log("stack is: " + thisAV.stack.length);
                 
-                
-                
+                //update color for new current vertex
+                updateAVControlEntry("visiting", "Visiting vertex " + thisAV.visiting
+                    + ": " + waypoints[thisAV.visiting].label);
                 updateMarkerAndTable(thisAV.visiting,
                     visualSettings.visiting, 10, false);
                                 
@@ -378,17 +380,16 @@ var hdxDFSRecAV = {
             //+ this.extraAlgOptions;
         addEntryToAVControlPanel("visiting", visualSettings.visiting);
         addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
-        addEntryToAVControlPanel("discovered", visualSettings.discovered);
         addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
         addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
         addEntryToAVControlPanel("found", visualSettings.spanningTree);
         let foundEntry = '<span id="foundEntriesCount">0</span>' +
-            ' <span id="foundTableLabel">Edges in Minimum Spanning Tree/Forest</span>' +
-            '<span id="totalTreeCost"></span>' + '<br />' +
-            '<table class="gratable"><thead>' +
-            '<tr style="text-align:center"><th>Length</th>' +
-            '<th>Edge</th>' +
-            '<th>Endpoints</th></tr>' +
+            ' <span id="foundTableLabel">Edges in Minimum Spanning Tree</span>' +
+            '<br /><table class="gratable"><thead>' +
+            '<tr style="text-align:center"><th>Place</th>' +
+            '<th>Hops</th>' +
+            '<th>Arrive From</th>' +
+            '<th>Via</th></tr>' +
             '</thead><tbody id="foundEntries"></tbody></table>';
         updateAVControlEntry("found", foundEntry);
         this.foundTBody = document.getElementById("foundEntries");
