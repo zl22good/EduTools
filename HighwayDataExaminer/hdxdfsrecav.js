@@ -86,8 +86,16 @@ var hdxDFSRecAV = {
                 
                 updateAVControlEntry("visiting", "Visiting vertex " + thisAV.visiting
                     + ": " + waypoints[thisAV.visiting].label);
+               // if (thisAV.visiting.prevVertex != thisAV.startingVertex) {
+                 //   updateMarkerAndTable(thisAV.startingVertex,
+                //        visualSettings.startVertex, 4, false);
+                //}
                 
                 // show on map as visiting color
+                console.log("visiting: " + thisAV.visiting + " - Starting: " + thisAV.startingVertex);
+
+                
+
                 updateMarkerAndTable(thisAV.visiting,
                     visualSettings.visiting, 10, false);
                 if (thisAV.connection != -1) {
@@ -102,6 +110,8 @@ var hdxDFSRecAV = {
                     if (prevRoute[1] != -1) {
                         updatePolylineAndTable(prevRoute[1], 
                             visualSettings.discovered, false);
+                        updateMarkerAndTable(thisAV.startingVertex,
+                    visualSettings.startVertex, 4, false);
                     }
                 }
                     
@@ -142,6 +152,9 @@ var hdxDFSRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
+                
+
+
                 //thisAV.nextToCheck++;
                 //if for loop is done for this level of recursion
                 console.log("For loop top visiting: " + thisAV.visiting);
@@ -152,10 +165,12 @@ var hdxDFSRecAV = {
                     // || thisAV.nextToCheck == null) {
                     //reset visiting from prevVertex, nexttocheck from stack,
                     //pop from stack, return
-                    let route = thisAV.stack.pop();
-                    thisAV.nextToCheck = route[0];
-                    thisAV.connection = route[1];
-                    thisAV.visiting = waypoints[thisAV.visiting].prevVertex;
+                    if (thisAV.stack.length != 0) {
+                        let route = thisAV.stack.pop();
+                        thisAV.nextToCheck = route[0];
+                        thisAV.connection = route[1];
+                        thisAV.visiting = waypoints[thisAV.visiting].prevVertex;
+                    }
                     hdxAV.nextAction = "return";
                 }
                 else {
@@ -204,8 +219,12 @@ var hdxDFSRecAV = {
                     hdxAV.nextAction = "callRecursion";
                 }
                 else{
-                    thisAV.nextToCheck++;
+                    thisAV.nextToCheck++;                    
                     hdxAV.nextAction = "forLoopTop";
+                    if (thisAV.stack.length != 0 && thisAV.stack[thisAV.stack.length - 1][1] != thisAV.connection) {
+                        updatePolylineAndTable(thisAV.connection,
+                        visualSettings.discarded, false);
+                    }
 
                 }
                 
@@ -234,13 +253,20 @@ var hdxDFSRecAV = {
             comment: "return to previous level of recursion",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-                updateMarkerAndTable(graphEdges[thisAV.connection].v1, 
+
+                updateMarkerAndTable(graphEdges[thisAV.connection].v1,
                     visualSettings.spanningTree, 10, false);
-                updateMarkerAndTable(graphEdges[thisAV.connection].v2, 
+                updateMarkerAndTable(graphEdges[thisAV.connection].v2,
                     visualSettings.spanningTree, 10, false);
-                updatePolylineAndTable(thisAV.connection, 
+                updatePolylineAndTable(thisAV.connection,
                     visualSettings.spanningTree, false);
                 console.log("stack is: " + thisAV.stack.length);
+                
+                
+                
+                updateMarkerAndTable(thisAV.visiting,
+                    visualSettings.visiting, 10, false);
+                                
 
                 if (thisAV.stack.length == 0 && thisAV.nextToCheck >= waypoints[thisAV.visiting].edgeList.length) {
                     hdxAV.nextAction = "cleanup";
@@ -259,7 +285,9 @@ var hdxDFSRecAV = {
         {
             label: "cleanup",
             comment: "cleanup and updates at the end of the visualization",
-            code: function(thisAV) {
+            code: function (thisAV) {
+                updateMarkerAndTable(thisAV.startingVertex,
+                    visualSettings.startVertex, 4, false);
                 hdxAV.algStat.innerHTML =
                     "Done! Visited " + graphEdges.length + " edges.";
                 updateAVControlEntry("visiting", "");
