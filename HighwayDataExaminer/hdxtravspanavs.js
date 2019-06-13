@@ -1109,6 +1109,47 @@ var hdxTraversalsSpanningAVCommon = {
     
     idOfAction(action){
             return action.label;
+    },
+    
+    setConditionalBreakpoints(name){
+        let max = waypoints.length-1;
+        let temp = commonConditionalBreakpoints(name);
+        if(temp != "No innerHTML"){
+            return temp;
+        }
+        else{
+            switch(name){
+                case "getPlaceFromLDV":
+                case "checkNeighborsLoopIfFalse":
+                    html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" id="generic1" name="quantity"   min="0" max="';
+                    html += max + '">';
+                return html;
+                case "wasNotAdded":
+                    html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" id="wasNotAdded1" name="quantity" min="0" max="';
+                    html += max + '">';
+                    html += '<br \>';
+                    html += 'Please select the vertex of the LDV <br \> to stop at: <input type="number" id="wasNotAdded2"  name="quantity" min="0" max="';
+                    html += max + '">';
+                return html;        
+            }
+        }
+        return "No innerHTML";
+    },
+
+    hasConditonalBreakpoints(name){
+        let answer = hasCommonConditonalBreakpoints(name);
+        if(answer == true){
+            return true;
+        }
+        else{
+            switch(name){
+                case "wasNotAdded":    
+                case "getPlaceFromLDV":
+                case "checkNeighborsLoopIfFalse":
+                    return true;
+            }
+        }
+        return false;
     }
     
 };

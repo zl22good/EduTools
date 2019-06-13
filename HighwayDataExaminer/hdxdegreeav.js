@@ -419,7 +419,7 @@ var hdxDegreeAV = {
         ` ;
                 
         this.code += '</td></tr>' +
-            pcEntry(0, "for (check &larr; 1 to |V|-1)", "forLoopTop");
+            pcEntry(0, "for (check &larr; 1 to |V|-1)", "forLoopTop", "forLoopTop");
 
         // min
         this.code += pcEntry(1, "if (v[check].degree < v[min].degree)",
@@ -483,6 +483,32 @@ var hdxDegreeAV = {
             var currAction = action.label;
             return (currAction + "" + category);
         }
+    },
+    
+    setConditionalBreakpoints(name){
+        let max = waypoints.length-1;
+        let temp = commonConditionalBreakpoints(name);
+        if(temp != "No innerHTML"){
+            return temp;
+        }
+        else{
+            switch(name){
+                    
+            }
+        }
+        return "No innerHTML";
+    },
+
+    hasConditonalBreakpoints(name){
+        let answer = hasCommonConditonalBreakpoints(name);
+        if(answer == true){
+            return true;
+        }
+        else{
+            switch(name){
+                    
+            }
+        }
+        return false;
     }
-       
 };

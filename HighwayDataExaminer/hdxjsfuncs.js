@@ -1423,3 +1423,30 @@ function hideInstructions()
     let element = document.getElementById("Instructions");
     element.style.display = "none";
 }
+
+function commonConditionalBreakpoints(name){
+    let element = document.getElementById("useBreakpointVariable");
+    let max = waypoints.length-1;
+    let html = "No innerHTML"
+    switch(name){
+        case "vtestforLoopTop":
+        case "v2forLoopTop":
+        case "v1forLoopTop":
+        case "forLoopTop": 
+            html = 'Please select the vertex <br \> to stop at: <input type="number" id="generic2" name="quantity" min="1" max="';
+            html += max + '">';
+            return html;
+    }
+    return html;
+}
+
+function hasCommonConditonalBreakpoints(name){
+    switch(name){
+        case "vtestforLoopTop":
+        case "v2forLoopTop":
+        case "v1forLoopTop":
+        case "forLoopTop":   
+            return true;
+    }
+    return false;
+}

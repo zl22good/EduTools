@@ -65,7 +65,9 @@ function unhighlightPseudocode() {
 // code: line or array of code lines to place in block
 // id: DOM id to give the enclosing td element
 function pcEntry(indent, code, id) {
-
+    
+    
+    
     let entry;
     if (entry != "") {
         entry = '<tr class="codeRow"><td id="' + id + '">';
@@ -87,7 +89,7 @@ function pcEntry(indent, code, id) {
         }
         entry += code;
     }
-    entry += '</td></tr>';
+    entry += '</td></tr>';    
     return entry;
 }
 
@@ -109,8 +111,7 @@ function addStop()
 
                 //if the previous and current breakpoints are the same, unselect it, and change the colors back
                 //Else, deselect the previous, and highlight current
-                if(previousBreakpoint == breakpoint)
-                {
+                if(previousBreakpoint == breakpoint){
                     codeRowHighlight();
                     previousBreakpoint = "";
                     breakpoint = "";
@@ -140,8 +141,7 @@ function breakpointHighlight(){
 }
 
 //Change the border back to a normal codeRow
-function codeRowHighlight()
-{
+function codeRowHighlight(){
     let element = document.getElementById(previousBreakpoint);
     if(element != null) {
         element.style.borderStyle = "solid";
@@ -160,8 +160,7 @@ function cleanupBreakpoints()
 var useVariable = false; //Is the checkbox checked or not? If so, break on conditional if
 var breakpointVariableHidden  = true;//What position is the selector in?
 //Enables the clickable function and window resize change for the selector
-function showHideBreakpointVariableSelector()
-{
+function showHideBreakpointVariableSelector(){
     let element = document.getElementById("showBreakpointVariable");
     element.addEventListener("click", function(event) {
         let target = event.target;
@@ -170,13 +169,11 @@ function showHideBreakpointVariableSelector()
         let rect = parentContainer.getBoundingClientRect();
         let rect2 = avPanel.getBoundingClientRect();
         
-        if(breakpointVariableHidden == true)
-        {
+        if(breakpointVariableHidden == true){
             parentContainer.style.left = rect2.right + "px";
             breakpointVariableHidden = false;
         }
-        else
-        {
+        else{
             setDefaultVariableSelectorLocation();
             breakpointVariableHidden = true;
         }
@@ -263,8 +260,7 @@ function breakpointCheckerDisplay(){
     if(breakpoint == ""){
         element.style.display = "none";
     }
-    else
-    {
+    else{
         element.style.display = "block";
     }
     setDefaultVariableSelectorLocation();
@@ -277,12 +273,10 @@ function labelInnerHTML(text)
     let element = document.getElementById("breakpointText");
     element.innerHTML = text;
     let checkbox = document.getElementById("useBreakpointVariable");
-    if(hasInnerHTML(breakpoint))
-    {
+    if(hasInnerHTML(breakpoint)){
         checkbox.style.display = "block";
     }
-    else
-    {
+    else{
         checkbox.style.display = "none";
         checkbox.checked = false;
         useVariable = false;
@@ -293,59 +287,19 @@ function labelInnerHTML(text)
 //it doesnt have innerHTML that is useful
 function checkInnerHTML(){
     let element = document.getElementById("breakpointText").innerHTML;
-    if(element == "No innerHTML")
-    {
+    if(element == "No innerHTML"){
         document.getElementById("breakpointVariableSelector").style.display = "none";
     }
 }
 
 //sets the custom attribute variableValue of each codeRow class
 //This is so they can be used for setting the inner html
-function setInnerHTML(label)
-{
-    let element = document.getElementById("useBreakpointVariable");
-    let max = waypoints.length-1;
-    let html = "No innerHTML"
-    switch(label)
-    {
-        case "vtestforLoopTop":
-        case "v2forLoopTop":
-        case "v1forLoopTop":
-        case "forLoopTop":
-            html = 'Please select the vertex <br \> to stop at: <input type="number" id="generic2" name="quantity" min="1" max="';
-            html += max + '">';
-            return html;
-        case "getPlaceFromLDV":
-        case "checkNeighborsLoopIfFalse":
-            html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" id="generic1" name="quantity" min="0" max="';
-            html += max + '">';
-            return html;
-        case "wasNotAdded":
-            html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" id="wasNotAdded1" name="quantity" min="0" max="';
-            html += max + '">';
-            html += '<br \>';
-            html += 'Please select the vertex of the LDV <br \> to stop at: <input type="number" id="wasNotAdded2" name="quantity" min="0" max="';
-            html += max + '">';
-            return html;
-
-
-    }
+function setInnerHTML(label){
+    let html = hdxAV.currentAV.setConditionalBreakpoints(label);
     return html;
 }
 
 //Does a label have a setInnerHTML with a return other than "No innerHTML"
 function hasInnerHTML(label){
-    switch(label){
-        case "wasNotAdded":
-        case "getPlaceFromLDV":
-        case "checkNeighborsLoopIfFalse":
-        case "checkLDVEmpty":
-        case "vtestforLoopTop":
-        case "v2forLoopTop":
-        case "v1forLoopTop":
-        case "forLoopTop":
-            return true;
-
-    }
-    return false;
+    return (hdxAV.currentAV.hasConditonalBreakpoints(label) ? true : false);
 }

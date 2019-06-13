@@ -10,6 +10,9 @@
 var hdxAV = {
     // current state of HDX
     status: hdxStates.NO_DATA,
+    
+    //Global variable for what methods have conditonals
+    hasAConditional: [],
 
     // delay (in ms) between visualization steps
     // default delay 50 should match the selected option in the speedChanger
