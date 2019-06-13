@@ -223,9 +223,10 @@ function createVariableSelector(){
     divBreakpoint2.style.backgroundColor = "Red";
     
     //append the smaller divs to the bigger one
+    divBreakpoint.appendChild(checkbox);
     divBreakpoint.appendChild(divBreakpoint1);
     divBreakpoint.appendChild(divBreakpoint2);
-    divBreakpoint.appendChild(checkbox);
+    
     
     //Set the main div under the document body
     document.body.appendChild(divBreakpoint);

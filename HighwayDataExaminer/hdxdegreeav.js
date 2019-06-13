@@ -287,6 +287,9 @@ var hdxDegreeAV = {
             
             logMessage: function(thisAV) {
                 return "Check for tie in " + thisAV.categories[thisAV.checkedCategory].label;
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.categories[thisAV.nextCategory].tiedForLead();
             }
         },
         {
@@ -488,25 +491,37 @@ var hdxDegreeAV = {
     setConditionalBreakpoints(name){
         let max = waypoints.length-1;
         let temp = commonConditionalBreakpoints(name);
+        
+        let isThere = name.search(/\d/);
+        name = (isThere != -1) ? name.substring(0,isThere) : name;
+        
         if(temp != "No innerHTML"){
             return temp;
         }
         else{
             switch(name){
-                    
+                case "checkTieCategory":
+                    html = 'Stop when this is equal to: <br \><select name="quantity"><option value="true">True</option>';
+                    html += '<option value="false">False</option></select>';
+                    return html;
             }
         }
         return "No innerHTML";
     },
 
     hasConditonalBreakpoints(name){
+        
+        let isThere = name.search(/\d/);
+        name = (isThere != -1) ? name.substring(0,isThere) : name;
+    
         let answer = hasCommonConditonalBreakpoints(name);
         if(answer == true){
             return true;
         }
         else{
             switch(name){
-                    
+                case "checkTieCategory":
+                    return true;
             }
         }
         return false;
