@@ -56,6 +56,7 @@ var hdxDFSRecAV = {
                 thisAV.nextToCheck = 0;
                 thisAV.nextVertex = -1;
                 thisAV.connection = -1;
+                thisAV.backEdgesArr = [];
         
                 thisAV.updateControlEntries();
               
@@ -221,9 +222,15 @@ var hdxDFSRecAV = {
                 else{
                     thisAV.nextToCheck++;                    
                     hdxAV.nextAction = "forLoopTop";
-                    if (thisAV.stack.length != 0 && thisAV.stack[thisAV.stack.length - 1][1] != thisAV.connection) {
+                    if (thisAV.stack.length != 0 && thisAV.stack[thisAV.stack.length - 1][1] != thisAV.connection
+                         && !thisAV.backEdgesArr.includes(thisAV.connection)) {
                         updatePolylineAndTable(thisAV.connection,
                         visualSettings.discarded, false);
+                        thisAV.numEDiscardedOnRemoval++;
+                        thisAV.numEUndiscovered--;
+                        thisAV.updateControlEntries();     
+                        thisAV.backEdgesArr.push(thisAV.connection)             
+
                     }
 
                 }
@@ -316,8 +323,8 @@ var hdxDFSRecAV = {
         updateAVControlEntry("currentSpanningTree", "Spanning Forest: " +
                              this.numESpanningTree + " E, " + this.numVSpanningTree +
                              " V, " + numComponents + componentLabel);
-        updateAVControlEntry("discardedOnRemoval", "Discarded on removal: " +
-                             this.numEDiscardedOnRemoval + " E");
+        updateAVControlEntry("discardedOnRemoval", "Back edges: " +
+                             this.numEDiscardedOnRemoval + "");
 
     },
 
