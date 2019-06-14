@@ -19,8 +19,12 @@ var hdxDFSRecAV = {
     stack: null,
     // last place to come out of the LDV, currently "visiting"
     visiting: 0,
+    connection: 0,
+    prevVisiting: 0,
+    prevConnection: 0,
     nextToCheck: 0,
     nextVertex: 0,
+    
 
     // when finding all, track the lists of vertices and edges that are
     // forming the current spanning tree
@@ -51,11 +55,12 @@ var hdxDFSRecAV = {
                 thisAV.discarded = 0;
                 thisAV.nextToCheck = 0;
                 thisAV.nextVertex = -1;
+                thisAV.connection = -1;
         
                 thisAV.updateControlEntries();
               
                 for(let j = 0; j < waypoints.length; j++) {
-                    waypoints[j].hops = 0;
+                    waypoints[j].hops = -1;
                     waypoints[j].prevVertex = -1;
                 }
                 
@@ -81,9 +86,34 @@ var hdxDFSRecAV = {
                 
                 updateAVControlEntry("visiting", "Visiting vertex " + thisAV.visiting
                     + ": " + waypoints[thisAV.visiting].label);
+               // if (thisAV.visiting.prevVertex != thisAV.startingVertex) {
+                 //   updateMarkerAndTable(thisAV.startingVertex,
+                //        visualSettings.startVertex, 4, false);
+                //}
+                
                 // show on map as visiting color
+                console.log("visiting: " + thisAV.visiting + " - Starting: " + thisAV.startingVertex);
+
+                
+
                 updateMarkerAndTable(thisAV.visiting,
                     visualSettings.visiting, 10, false);
+                if (thisAV.connection != -1) {
+                    updatePolylineAndTable(thisAV.connection, 
+                        visualSettings.visiting, false);
+                }
+                //recolor what was previously being visited as discovered
+                if (thisAV.stack.length > 0) {
+                    let prevRoute = thisAV.stack[thisAV.stack.length - 1];
+                    updateMarkerAndTable(waypoints[thisAV.visiting].prevVertex,
+                        visualSettings.discovered, 10, false);
+                    if (prevRoute[1] != -1) {
+                        updatePolylineAndTable(prevRoute[1], 
+                            visualSettings.discovered, false);
+                        updateMarkerAndTable(thisAV.startingVertex,
+                    visualSettings.startVertex, 4, false);
+                    }
+                }
                     
                 hdxAV.nextAction = "setHops";
                 hdxAV.iterationDone = true;
@@ -122,17 +152,25 @@ var hdxDFSRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
+                
+
+
                 //thisAV.nextToCheck++;
                 //if for loop is done for this level of recursion
                 console.log("For loop top visiting: " + thisAV.visiting);
                 console.log("For loop top nexttocheck: " + thisAV.nextToCheck);
+                console.log("For loop top length: " + waypoints[thisAV.visiting].edgeList.length);
 
-
-                if (thisAV.nextToCheck == waypoints[thisAV.visiting].edgeList.length) {
+                if (thisAV.nextToCheck >= waypoints[thisAV.visiting].edgeList.length) {
+                    // || thisAV.nextToCheck == null) {
                     //reset visiting from prevVertex, nexttocheck from stack,
                     //pop from stack, return
-                    thisAV.nextToCheck = thisAV.stack.pop();
-                    thisAV.visiting = waypoints[thisAV.visiting].prevVertex;
+                    if (thisAV.stack.length != 0) {
+                        let route = thisAV.stack.pop();
+                        thisAV.nextToCheck = route[0];
+                        thisAV.connection = route[1];
+                        thisAV.visiting = waypoints[thisAV.visiting].prevVertex;
+                    }
                     hdxAV.nextAction = "return";
                 }
                 else {
@@ -140,19 +178,26 @@ var hdxDFSRecAV = {
                     //get the other vertex from the adjacency list
                     console.log(waypoints[thisAV.visiting].edgeList);
                     console.log("trying to access: " + thisAV.nextToCheck);
-                    let edge = waypoints[thisAV.visiting].edgeList[thisAV.nextToCheck];
+                    thisAV.connection = waypoints[thisAV.visiting].edgeList[thisAV.nextToCheck].edgeListIndex;
+                    //updatePolylineAndTable(thisAV.connection, visualSettings.spanningTree, false);
                     thisAV.nextVertex = -1;
-                    if (edge.v1 == thisAV.visiting) {
-                        thisAV.nextVertex = edge.v2;
+                    if (graphEdges[thisAV.connection].v1 == thisAV.visiting) {
+                        thisAV.nextVertex = graphEdges[thisAV.connection].v2;
                     }
-                    else if (edge.v2 == thisAV.visiting) {
-                        thisAV.nextVertex = edge.v1;
+                    else if (graphEdges[thisAV.connection].v2 == thisAV.visiting) {
+                        thisAV.nextVertex = graphEdges[thisAV.connection].v1;
                     }
-                    waypoints[thisAV.nextVertex].prevVertex = thisAV.visiting;
-                    console.log("prevVertex of waypoints[" + thisAV.nextVertex + "] is waypoints[" + thisAV.visiting + "]")
-                    console.log("nextVertex is: " + thisAV.nextVertex);
-                    thisAV.nextToCheck++;
-                    hdxAV.nextAction = "checkUndiscovered";
+
+                    //check nextVertex against all vertexalready discovered
+                    //if discovered skip and incriment by one then go through the for loop again 
+                    //if (waypoints[thisAV.nextVertex].prevVertex.hops == -1) {
+                        
+                        hdxAV.nextAction = "checkUndiscovered";
+                    //}
+                    //else {
+                        //thisAV.nextToCheck++;
+                        //hdxAV.nextAction = "forLoopTop"
+                    //}
                 }
             },
             logMessage: function(thisAV) {
@@ -163,14 +208,24 @@ var hdxDFSRecAV = {
             label: "checkUndiscovered",
             comment: "check if vertex has previously been discovered",
             code: function(thisAV) {
-                highlightPseudocode(this.label, visualSettings.discarded);
+                highlightPseudocode(this.label, visualSettings.visiting);
+                console.log("hops here is: " + waypoints[thisAV.nextVertex].hops);
+                if (waypoints[thisAV.nextVertex].hops == -1) {
 
-                if (waypoints[thisAV.visiting].hops == 0){
+                    waypoints[thisAV.nextVertex].prevVertex = thisAV.visiting;
+                    console.log("prevVertex of waypoints[" + thisAV.nextVertex + "] is waypoints[" + thisAV.visiting + "]")
+                    console.log("nextVertex is: " + thisAV.nextVertex);
+                    //thisAV.nextToCheck++;
                     hdxAV.nextAction = "callRecursion";
                 }
                 else{
-                    //thisAV.nextToCheck++;
+                    thisAV.nextToCheck++;                    
                     hdxAV.nextAction = "forLoopTop";
+                    if (thisAV.stack.length != 0 && thisAV.stack[thisAV.stack.length - 1][1] != thisAV.connection) {
+                        updatePolylineAndTable(thisAV.connection,
+                        visualSettings.discarded, false);
+                    }
+
                 }
                 
             },
@@ -182,8 +237,9 @@ var hdxDFSRecAV = {
             label: "callRecursion",
             comment: "call recursion with new vertex",
             code: function(thisAV) {
-                highlightPseudocode(this.label, visualSettings.discarded);
-                thisAV.stack.push(thisAV.nextToCheck);
+                highlightPseudocode(this.label, visualSettings.visiting);
+                //thisAV.stack.push(thisAV.nextToCheck);
+                thisAV.stack.push([thisAV.nextToCheck, thisAV.connection]);
                 thisAV.visiting = thisAV.nextVertex;
                 hdxAV.nextAction = "recursiveCallTop"
                 
@@ -196,12 +252,29 @@ var hdxDFSRecAV = {
             label: "return",
             comment: "return to previous level of recursion",
             code: function(thisAV) {
-                highlightPseudocode(this.label, visualSettings.discarded);
+                highlightPseudocode(this.label, visualSettings.visiting);
 
-                if (thisAV.stack.isEmpty){
+                //color finished edges and vertices added to tree
+                updateMarkerAndTable(graphEdges[thisAV.connection].v1,
+                    visualSettings.spanningTree, 10, false);
+                updateMarkerAndTable(graphEdges[thisAV.connection].v2,
+                    visualSettings.spanningTree, 10, false);
+                updatePolylineAndTable(thisAV.connection,
+                    visualSettings.spanningTree, false);
+                console.log("stack is: " + thisAV.stack.length);
+                
+                //update color for new current vertex
+                updateAVControlEntry("visiting", "Visiting vertex " + thisAV.visiting
+                    + ": " + waypoints[thisAV.visiting].label);
+                updateMarkerAndTable(thisAV.visiting,
+                    visualSettings.visiting, 10, false);
+                                
+
+                if (thisAV.stack.length == 0 && thisAV.nextToCheck >= waypoints[thisAV.visiting].edgeList.length) {
                     hdxAV.nextAction = "cleanup";
                 }
                 else {
+                    thisAV.nextToCheck++;
                     hdxAV.nextAction = "forLoopTop";
                 }
                 
@@ -214,7 +287,9 @@ var hdxDFSRecAV = {
         {
             label: "cleanup",
             comment: "cleanup and updates at the end of the visualization",
-            code: function(thisAV) {
+            code: function (thisAV) {
+                updateMarkerAndTable(thisAV.startingVertex,
+                    visualSettings.startVertex, 4, false);
                 hdxAV.algStat.innerHTML =
                     "Done! Visited " + graphEdges.length + " edges.";
                 updateAVControlEntry("visiting", "");
@@ -280,7 +355,7 @@ var hdxDFSRecAV = {
         
         // pseudocode
         this.code ='<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">';
-        this.code += '</td></tr>';
+        this.code += 'initialize variables</td></tr>';
         this.code += pcEntry(0, "dfs(v)", "recursiveCallTop");
         this.code += pcEntry(1, "v.hops &larr; v.previousVertex.hops + 1", "setHops");
         this.code += pcEntry(1, "for each vertex w in V adjacent to v do", "forLoopTop");
@@ -300,21 +375,21 @@ var hdxDFSRecAV = {
         let newAO =
             buildWaypointSelector("startPoint", "Start Vertex", 0) +
             "<br />";
-        newAO += '</select>';
-        hdxAV.algOptions.innerHTML = newAO + this.extraAlgOptions;
+        //newAO += '</select>';
+        hdxAV.algOptions.innerHTML = newAO;
+            //+ this.extraAlgOptions;
         addEntryToAVControlPanel("visiting", visualSettings.visiting);
         addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
-        addEntryToAVControlPanel("discovered", visualSettings.discovered);
         addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
         addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
         addEntryToAVControlPanel("found", visualSettings.spanningTree);
         let foundEntry = '<span id="foundEntriesCount">0</span>' +
-            ' <span id="foundTableLabel">Edges in Minimum Spanning Tree/Forest</span>' +
-            '<span id="totalTreeCost"></span>' + '<br />' +
-            '<table class="gratable"><thead>' +
-            '<tr style="text-align:center"><th>Length</th>' +
-            '<th>Edge</th>' +
-            '<th>Endpoints</th></tr>' +
+            ' <span id="foundTableLabel">Edges in Minimum Spanning Tree</span>' +
+            '<br /><table class="gratable"><thead>' +
+            '<tr style="text-align:center"><th>Place</th>' +
+            '<th>Hops</th>' +
+            '<th>Arrive From</th>' +
+            '<th>Via</th></tr>' +
             '</thead><tbody id="foundEntries"></tbody></table>';
         updateAVControlEntry("found", foundEntry);
         this.foundTBody = document.getElementById("foundEntries");
