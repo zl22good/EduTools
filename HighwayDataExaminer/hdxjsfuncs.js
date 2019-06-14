@@ -1432,9 +1432,8 @@ function commonConditionalBreakpoints(name){
         case "vtestforLoopTop":
         case "v2forLoopTop":
         case "v1forLoopTop":
-        case "forLoopTop": 
-            html = 'Please select the vertex <br \> to stop at: <input type="number" id="generic2" name="quantity" min="1" max="';
-            html += max + '">';
+        case "forLoopTop":
+            html = buildWaypointSelector2("generic2", "Please select the vertex to stop at: ", 0);
             return html;
     }
     return html;

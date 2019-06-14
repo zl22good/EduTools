@@ -177,6 +177,10 @@ var hdxDegreeAV = {
             },
             logMessage: function(thisAV) {
                 return "Check for new " + thisAV.categories[thisAV.checkedCategory].label + " leader";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                console.log("leader: " + thisAV.categories[thisAV.checkedCategory].newLeader());
+                return thisAV.categories[thisAV.checkedCategory].newLeader();
             }
         },
         {
@@ -500,6 +504,7 @@ var hdxDegreeAV = {
         }
         else{
             switch(name){
+                case "checkNextCategory":
                 case "checkTieCategory":
                     html = 'Stop when this is equal to: <br \><select name="quantity"><option value="true">True</option>';
                     html += '<option value="false">False</option></select>';
@@ -520,6 +525,7 @@ var hdxDegreeAV = {
         }
         else{
             switch(name){
+                case "checkNextCategory":
                 case "checkTieCategory":
                     return true;
             }
