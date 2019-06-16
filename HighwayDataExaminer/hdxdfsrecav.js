@@ -102,13 +102,17 @@ var hdxDFSRecAV = {
                     
                     thisAV.numVUndiscovered--;
                     thisAV.numVSpanningTree++;
+                    thisAV.componentVList.push(thisAV.visiting);
                 if (thisAV.connection != -1) {
                     updatePolylineAndTable(thisAV.connection, 
                         visualSettings.visiting, false);
                         thisAV.numEUndiscovered--;
                         thisAV.numESpanningTree++;
+                        thisAV.componentEList.push(thisAV.connection);
                 }
-                thisAV.updateControlEntries();     
+                thisAV.updateControlEntries(); 
+                thisAV.updateSpanningTreeTable();
+                //updateAVControlEntry("found", thisAV.foundEntry);    
 
 
                 //recolor what was previously being visited as discovered
@@ -320,6 +324,52 @@ var hdxDFSRecAV = {
         }
     ],
 
+
+    updateSpanningTreeTable() {
+
+        let newtr = document.createElement("tr");
+        let edgeLabel;
+        let fullEdgeLabel;
+        let fromLabel;
+        let fullFromLabel;
+        let vLabel = shortLabel(waypoints[this.visiting].label, 10);
+        if (waypoints[this.visiting].prevVertex == -1) {
+            edgeLabel = "(START)";
+            fullEdgeLabel = "(START)";
+            currentHops = 0;
+            fromLabel = "";
+            fullFrom = "";
+        }
+        else {
+            console.log("graphs ed - " + graphEdges[this.connection]);
+            fullEdgeLabel = graphEdges[this.connection].label;
+            edgeLabel = shortLabel(fullEdgeLabel, 10);
+            fromLabel = shortLabel(waypoints[waypoints[this.visiting].prevVertex].label, 10);
+            currentHops = waypoints[waypoints[this.visiting].prevVertex].hops + 1;
+            fullFrom = "From #" + this.visiting + ":" +
+                waypoints[this.visiting].label;
+        }
+
+        // mouseover title
+        newtr.setAttribute("custom-title",
+                           "Path to #" + this.connection + ":" +
+                           waypoints[this.visiting].label + ", " + 
+                           fullFrom + ", via " + fullEdgeLabel);
+
+        // id to show shortest paths later
+        //newtr.setAttribute("id", "foundPaths" + count);
+        
+        // actual table row to display
+        newtr.innerHTML = 
+            '<td>' + vLabel + '</td>' +
+            '<td>' + currentHops + '</td>' +
+            '<td>' + fromLabel + '</td>' +
+            '<td>' + edgeLabel + '</td>';
+        
+        this.foundTBody.appendChild(newtr);
+        document.getElementById("foundEntriesCount").innerHTML =
+            this.numESpanningTree;      
+    },
     
     updateControlEntries() {
         let numComponents = this.numVSpanningTree - this.numESpanningTree;
