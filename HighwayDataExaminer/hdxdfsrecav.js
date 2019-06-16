@@ -99,10 +99,18 @@ var hdxDFSRecAV = {
 
                 updateMarkerAndTable(thisAV.visiting,
                     visualSettings.visiting, 10, false);
+                    
+                    thisAV.numVUndiscovered--;
+                    thisAV.numVSpanningTree++;
                 if (thisAV.connection != -1) {
                     updatePolylineAndTable(thisAV.connection, 
                         visualSettings.visiting, false);
+                        thisAV.numEUndiscovered--;
+                        thisAV.numESpanningTree++;
                 }
+                thisAV.updateControlEntries();     
+
+
                 //recolor what was previously being visited as discovered
                 if (thisAV.stack.length > 0) {
                     let prevRoute = thisAV.stack[thisAV.stack.length - 1];
