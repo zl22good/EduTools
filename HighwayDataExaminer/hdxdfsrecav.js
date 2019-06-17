@@ -23,7 +23,7 @@ var hdxDFSRecAV = {
     connection: 0,
     prevVisiting: 0,
     prevConnection: 0,
-    nextToCheck: 0,
+    nextEdge: 0,
     nextVertex: 0,
     
 
@@ -31,7 +31,6 @@ var hdxDFSRecAV = {
     // forming the current spanning tree
     componentVList: [],
     componentEList: [],
-    componentVAdj: [],
 
     // some additional stats to maintain and display
     numVSpanningTree: 0,
@@ -54,7 +53,7 @@ var hdxDFSRecAV = {
                 thisAV.stack = [];
                 // highlight edge 0 as leader in all categories and current
                 thisAV.discarded = 0;
-                thisAV.nextToCheck = 0;
+                thisAV.nextEdge = 0;
                 thisAV.nextVertex = -1;
                 thisAV.connection = -1;
                 thisAV.backEdgesArr = [];
@@ -82,7 +81,7 @@ var hdxDFSRecAV = {
         },
         {
             label: "recursiveCallTop",
-            comment: "recursive call to dfs",
+            comment: "Recursive call to dfs",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
@@ -126,12 +125,12 @@ var hdxDFSRecAV = {
                 hdxAV.iterationDone = true;
             },
             logMessage: function(thisAV) {
-                return "recursive call to dfs";
+                return "Recursive call to dfs on vertex #" + thisAV.visiting;
             }
         },
         {
             label: "setHops",
-            comment: "set vertex's number of hops to mark as discovered",
+            comment: "Set vertex's number of hops to mark as discovered",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
@@ -147,11 +146,12 @@ var hdxDFSRecAV = {
                         waypoints[waypoints[thisAV.visiting].prevVertex].hops + 1;
                 }
                 hdxAV.nextAction = "forLoopTop";
-                thisAV.nextToCheck = 0;
+                thisAV.nextEdge = 0;
                 
             },
             logMessage: function(thisAV) {
-                return "set vertex's number of hops to mark as discovered";
+                return "Set vertex #" + thisAV.visiting + "'s hops to " +
+                    waypoints[thisAV.visiting].hops + " to mark as discovered";
             }
         },
         {
@@ -161,11 +161,11 @@ var hdxDFSRecAV = {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
                 //if for loop is done for this level of recursion               
-                if (thisAV.nextToCheck >= waypoints[thisAV.visiting].edgeList.length) {
+                if (thisAV.nextEdge >= waypoints[thisAV.visiting].edgeList.length) {
                    
                     if (thisAV.stack.length != 0) {
                         let route = thisAV.stack.pop();
-                        thisAV.nextToCheck = route[0];
+                        thisAV.nextEdge = route[0];
                         thisAV.connection = route[1];
                         thisAV.visiting = waypoints[thisAV.visiting].prevVertex;
                     }
@@ -174,7 +174,8 @@ var hdxDFSRecAV = {
                 else {
 
                     //get the other vertex from the adjacency list 
-                    thisAV.connection = waypoints[thisAV.visiting].edgeList[thisAV.nextToCheck].edgeListIndex;
+                    thisAV.connection =
+                        waypoints[thisAV.visiting].edgeList[thisAV.nextEdge].edgeListIndex;
                     thisAV.nextVertex = -1;
                     if (graphEdges[thisAV.connection].v1 == thisAV.visiting) {
                         thisAV.nextVertex = graphEdges[thisAV.connection].v2;
@@ -193,7 +194,7 @@ var hdxDFSRecAV = {
         },
         {
             label: "checkUndiscovered",
-            comment: "check if vertex has previously been discovered",
+            comment: "Check if vertex has previously been discovered",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 if (waypoints[thisAV.nextVertex].hops == -1) {
@@ -202,9 +203,10 @@ var hdxDFSRecAV = {
                     hdxAV.nextAction = "callRecursion";
                 }
                 else{
-                    thisAV.nextToCheck++;                    
+                    thisAV.nextEdge++;                    
                     hdxAV.nextAction = "forLoopTop";
-                    if (thisAV.stack.length != 0 && thisAV.stack[thisAV.stack.length - 1][1] != thisAV.connection
+                    if (thisAV.stack.length != 0 &&
+                        thisAV.stack[thisAV.stack.length - 1][1] != thisAV.connection
                          && !thisAV.backEdgesArr.includes(thisAV.connection)) {
                         updatePolylineAndTable(thisAV.connection,
                         visualSettings.discarded, false);
@@ -216,25 +218,26 @@ var hdxDFSRecAV = {
                 }                
             },
             logMessage: function(thisAV) {
-                return "check if vertex has previously been discovered";
+                return "Check if vertex #" + thisAV.nextVertex +
+                    " has previously been discovered";
             }
         },
         {
             label: "callRecursion",
-            comment: "call recursion with new vertex",
+            comment: "Call recursion with new vertex",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-                thisAV.stack.push([thisAV.nextToCheck, thisAV.connection]);
+                thisAV.stack.push([thisAV.nextEdge, thisAV.connection]);
                 thisAV.visiting = thisAV.nextVertex;
                 hdxAV.nextAction = "recursiveCallTop"                
             },
             logMessage: function(thisAV) {
-                return "call recursion with new vertex";
+                return "call recursion on vertex #" + thisAV.visiting;
             }
         },
         {
             label: "return",
-            comment: "return to previous level of recursion",
+            comment: "Return to previous level of recursion",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 thisAV.callStack.remove();
@@ -254,23 +257,24 @@ var hdxDFSRecAV = {
                     visualSettings.visiting, 10, false);
                                 
 
-                if (thisAV.stack.length == 0 && thisAV.nextToCheck >= waypoints[thisAV.visiting].edgeList.length) {
+                if (thisAV.stack.length == 0 && thisAV.nextEdge >= waypoints[thisAV.visiting].edgeList.length) {
                     hdxAV.nextAction = "cleanup";
                 }
                 else {
-                    thisAV.nextToCheck++;
+                    thisAV.nextEdge++;
                     hdxAV.nextAction = "forLoopTop";
                 }
                 
             },
             logMessage: function(thisAV) {
-                return "return to previous level of recursion";
+                return "Return from vertex #" + thisAV.visiting +
+                    " to previous level of recursion";
             }
         },
 
         {
             label: "cleanup",
-            comment: "cleanup and updates at the end of the visualization",
+            comment: "Cleanup and updates at the end of the visualization",
             code: function (thisAV) {
                 updateMarkerAndTable(thisAV.startingVertex,
                     visualSettings.startVertex, 4, false);
@@ -299,6 +303,7 @@ var hdxDFSRecAV = {
         let vLabel = shortLabel(waypoints[this.visiting].label, 10);
         if (waypoints[this.visiting].prevVertex == -1) {
             edgeLabel = "(START)";
+            fullEdgeLabel = "(START)";
             fullEdgeLabel = "(START)";
             currentHops = 0;
             fromLabel = "";
@@ -333,15 +338,11 @@ var hdxDFSRecAV = {
     },
     
     updateControlEntries() {
-        let numComponents = this.numVSpanningTree - this.numESpanningTree;
-        let componentLabel = " Components";
-        if (numComponents == 1) componentLabel = " Component";
         updateAVControlEntry("undiscovered", "Undiscovered: " +
                              this.numEUndiscovered + " E, " +
                              this.numVUndiscovered + " V");
         updateAVControlEntry("currentSpanningTree", "Spanning Forest: " +
-                             this.numESpanningTree + " E, " + this.numVSpanningTree +
-                             " V, " + numComponents + componentLabel);
+                             this.numESpanningTree + " E, " + this.numVSpanningTree + " V");
         updateAVControlEntry("discardedOnRemoval", "Back edges: " +
                              this.numEDiscardedOnRemoval + "");
 
@@ -365,7 +366,6 @@ var hdxDFSRecAV = {
         // forming the current spanning tree
         this.componentVList= [];
         this.componentEList= [];
-        this.componentVAdj= [];
 
         // some additional stats to maintain and display
         this.numVSpanningTree= 0;
