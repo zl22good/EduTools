@@ -14,7 +14,7 @@ var hdxDegreeAV = {
     description: "Search for min and max degree values based on an adjancecy list of the waypoints.",
 
     // state variables for vertex degree search
-    nextToCheck: 0,
+    nextToCheck: 0, //for loop counter
     discarded: 0,
     foundNewLeader: false,
     
@@ -145,6 +145,9 @@ var hdxDegreeAV = {
             },
             logMessage: function(thisAV) {
                 return "Top of main for loop over vertices, check=" + thisAV.nextToCheck;
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return (thisAV.nextToCheck+1);
             }
         },
         {
@@ -173,7 +176,10 @@ var hdxDegreeAV = {
                 }
             },
             logMessage: function(thisAV) {
-                return "Check for new " + thisAV.categories[thisAV.checkedCategory].label + " leader";
+                return "Check for new " + thisAV.categories[thisAV.nextCategory].label + " leader";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.categories[thisAV.nextCategory].newLeader();
             }
         },
         {
@@ -284,6 +290,9 @@ var hdxDegreeAV = {
             
             logMessage: function(thisAV) {
                 return "Check for tie in " + thisAV.categories[thisAV.checkedCategory].label;
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.categories[thisAV.nextCategory].tiedForLead();
             }
         },
         {
@@ -416,7 +425,7 @@ var hdxDegreeAV = {
         ` ;
                 
         this.code += '</td></tr>' +
-            pcEntry(0, "for (check &larr; 1 to |V|-1)", "forLoopTop");
+            pcEntry(0, "for (check &larr; 1 to |V|-1)", "forLoopTop", "forLoopTop");
 
         // min
         this.code += pcEntry(1, "if (v[check].degree < v[min].degree)",
@@ -480,6 +489,46 @@ var hdxDegreeAV = {
             var currAction = action.label;
             return (currAction + "" + category);
         }
+    },
+    
+    setConditionalBreakpoints(name){
+        let max = waypoints.length-1;
+        let temp = commonConditionalBreakpoints(name);
+        
+        let isThere = name.search(/\d/);
+        name = (isThere != -1) ? name.substring(0,isThere) : name;
+        
+        if(temp != "No innerHTML"){
+            return temp;
+        }
+        else{
+            switch(name){
+                case "checkNextCategory":
+                case "checkTieCategory":
+                    html = 'Stop when this is equal to: <br \><select name="quantity"><option value="true">True</option>';
+                    html += '<option value="false">False</option></select>';
+                    return html;
+            }
+        }
+        return "No innerHTML";
+    },
+
+    hasConditonalBreakpoints(name){
+        
+        let isThere = name.search(/\d/);
+        name = (isThere != -1) ? name.substring(0,isThere) : name;
+    
+        let answer = hasCommonConditonalBreakpoints(name);
+        if(answer == true){
+            return true;
+        }
+        else{
+            switch(name){
+                case "checkNextCategory":
+                case "checkTieCategory":
+                    return true;
+            }
+        }
+        return false;
     }
-       
 };
