@@ -17,7 +17,8 @@ var hdxDFSRecAV = {
     // state variables for edge search
     discarded: 0,
     stack: null,
-    // last place to come out of the LDV, currently "visiting"
+    callStack: null,
+    // last place to come out of the call stack, currently "visiting"
     visiting: 0,
     connection: 0,
     prevVisiting: 0,
@@ -84,10 +85,12 @@ var hdxDFSRecAV = {
             comment: "recursive call to dfs",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-                
+
+                thisAV.callStack.add(thisAV.visiting);
+               
                 updateAVControlEntry("visiting", "Visiting vertex " + thisAV.visiting
                     + ": " + waypoints[thisAV.visiting].label);
-               
+
                 // show on map as visiting color            
                 updateMarkerAndTable(thisAV.visiting,
                     visualSettings.visiting, 10, false);
@@ -132,11 +135,13 @@ var hdxDFSRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
+
                 //set number of hops to its parent vertex's number of hops + 1
                 //if its the first point set hops to 0
                 if (waypoints[thisAV.visiting].prevVertex == -1) {
                     waypoints[thisAV.visiting].hops = 0;
                 }
+                //set number of hops to its parent vertex's number of hops + 1
                 else {
                     waypoints[thisAV.visiting].hops =
                         waypoints[waypoints[thisAV.visiting].prevVertex].hops + 1;
@@ -154,8 +159,8 @@ var hdxDFSRecAV = {
             comment: "Loop through each vertex in V's adjacency list",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-                //if for loop is done for this level of recursion
-                
+
+                //if for loop is done for this level of recursion               
                 if (thisAV.nextToCheck >= waypoints[thisAV.visiting].edgeList.length) {
                    
                     if (thisAV.stack.length != 0) {
@@ -167,7 +172,8 @@ var hdxDFSRecAV = {
                     hdxAV.nextAction = "return";
                 }
                 else {
-                    //get the other vertex from the adjacency list                   
+
+                    //get the other vertex from the adjacency list 
                     thisAV.connection = waypoints[thisAV.visiting].edgeList[thisAV.nextToCheck].edgeListIndex;
                     thisAV.nextVertex = -1;
                     if (graphEdges[thisAV.connection].v1 == thisAV.visiting) {
@@ -192,6 +198,7 @@ var hdxDFSRecAV = {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 if (waypoints[thisAV.nextVertex].hops == -1) {
                     waypoints[thisAV.nextVertex].prevVertex = thisAV.visiting;
+
                     hdxAV.nextAction = "callRecursion";
                 }
                 else{
@@ -230,6 +237,7 @@ var hdxDFSRecAV = {
             comment: "return to previous level of recursion",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
+                thisAV.callStack.remove();
 
                 //color finished edges and vertices added to tree
                 updateMarkerAndTable(graphEdges[thisAV.connection].v1,
@@ -238,7 +246,7 @@ var hdxDFSRecAV = {
                     visualSettings.spanningTree, 10, false);
                 updatePolylineAndTable(thisAV.connection,
                     visualSettings.spanningTree, false);
-                
+
                 //update color for new current vertex
                 updateAVControlEntry("visiting", "Visiting vertex " + thisAV.visiting
                     + ": " + waypoints[thisAV.visiting].label);
@@ -280,7 +288,6 @@ var hdxDFSRecAV = {
                 
         }
     ],
-
 
     updateSpanningTreeTable() {
 
@@ -349,7 +356,9 @@ var hdxDFSRecAV = {
         initWaypointsAndConnections(true, true,
                                     visualSettings.undiscovered);
         
-        this.discarded= 0; 
+        this.discarded= 0;
+        this.callStack= null;
+        // last place to come out of the call stack, currently "visiting"
         this.visiting= null;
 
         // when finding all, track the lists of vertices and edges that are
@@ -368,8 +377,15 @@ var hdxDFSRecAV = {
                 
         this.stack = new HDXLinear(hdxLinearTypes.STACK,
                          "Stack");
-        
-        
+
+        this.callStack = new HDXLinear(hdxLinearTypes.CALL_STACK,
+            "Call Stack");
+        if (this.hasOwnProperty("comparator")) {
+            this.callStack.setComparator(this.comparator);
+        }
+        this.callStack.setDisplay(getAVControlEntryDocumentElement("discovered"),
+            displayCallStackItem);
+
         // pseudocode
         this.code ='<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">';
         this.code += 'initialize variables</td></tr>';
@@ -394,6 +410,7 @@ var hdxDFSRecAV = {
         hdxAV.algOptions.innerHTML = newAO;
         addEntryToAVControlPanel("visiting", visualSettings.visiting);
         addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
+        addEntryToAVControlPanel("discovered", visualSettings.discovered);
         addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
         addEntryToAVControlPanel("discardedOnRemoval", visualSettings.discarded);
         addEntryToAVControlPanel("found", visualSettings.spanningTree);
@@ -418,4 +435,16 @@ var hdxDFSRecAV = {
     idOfAction(action){
         return action.label;
     }
+};
+
+
+function displayCallStackItem(item, callStack) {
+    let vertexLabel = "";
+    let vertexLabelFull = "";
+
+    vertexLabelFull = waypoints[item].label;
+    vertexLabel = shortLabel(vertexLabelFull, callStack.maxLabelLength);
+
+    return '<span custom-title="Vertex #' + item + ":" +
+        vertexLabelFull + '">' + "dfs (v = " + item + ": " + vertexLabel + ")" + "</span>";
 };
