@@ -1,9 +1,9 @@
 //
-// HDX Kruskal's Algorithm AV
+// HDX Recursive Depth First Search Algorithm AV
 //
 // METAL Project
 //
-// Primary Author: Jim Teresco, Alissa Ronca
+// Primary Author: Jim Teresco, Alissa Ronca, Zac Goodsell
 //
 
 var hdxDFSRecAV = {
@@ -59,6 +59,7 @@ var hdxDFSRecAV = {
                 thisAV.backEdgesArr = [];
         
                 thisAV.updateControlEntries();
+                
               
                 for(let j = 0; j < waypoints.length; j++) {
                     waypoints[j].hops = -1;
@@ -70,7 +71,6 @@ var hdxDFSRecAV = {
                     document.getElementById("startPoint").value;
                 
                 thisAV.visiting = thisAV.startingVertex;
-                //thisAV.stack.push(visiting);
                 
                 hdxAV.iterationDone = true;
                 hdxAV.nextAction = "recursiveCallTop";
@@ -87,15 +87,8 @@ var hdxDFSRecAV = {
                 
                 updateAVControlEntry("visiting", "Visiting vertex " + thisAV.visiting
                     + ": " + waypoints[thisAV.visiting].label);
-               // if (thisAV.visiting.prevVertex != thisAV.startingVertex) {
-                 //   updateMarkerAndTable(thisAV.startingVertex,
-                //        visualSettings.startVertex, 4, false);
-                //}
-                
-                // show on map as visiting color
-
-                
-
+               
+                // show on map as visiting color            
                 updateMarkerAndTable(thisAV.visiting,
                     visualSettings.visiting, 10, false);
                     
@@ -111,7 +104,6 @@ var hdxDFSRecAV = {
                 }
                 thisAV.updateControlEntries(); 
                 thisAV.updateSpanningTreeTable();
-                //updateAVControlEntry("found", thisAV.foundEntry);    
 
 
                 //recolor what was previously being visited as discovered
@@ -162,18 +154,10 @@ var hdxDFSRecAV = {
             comment: "Loop through each vertex in V's adjacency list",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-
-                
-
-
-                //thisAV.nextToCheck++;
                 //if for loop is done for this level of recursion
                 
-
                 if (thisAV.nextToCheck >= waypoints[thisAV.visiting].edgeList.length) {
-                    // || thisAV.nextToCheck == null) {
-                    //reset visiting from prevVertex, nexttocheck from stack,
-                    //pop from stack, return
+                   
                     if (thisAV.stack.length != 0) {
                         let route = thisAV.stack.pop();
                         thisAV.nextToCheck = route[0];
@@ -183,11 +167,8 @@ var hdxDFSRecAV = {
                     hdxAV.nextAction = "return";
                 }
                 else {
-
-                    //get the other vertex from the adjacency list
-                   
+                    //get the other vertex from the adjacency list                   
                     thisAV.connection = waypoints[thisAV.visiting].edgeList[thisAV.nextToCheck].edgeListIndex;
-                    //updatePolylineAndTable(thisAV.connection, visualSettings.spanningTree, false);
                     thisAV.nextVertex = -1;
                     if (graphEdges[thisAV.connection].v1 == thisAV.visiting) {
                         thisAV.nextVertex = graphEdges[thisAV.connection].v2;
@@ -195,17 +176,9 @@ var hdxDFSRecAV = {
                     else if (graphEdges[thisAV.connection].v2 == thisAV.visiting) {
                         thisAV.nextVertex = graphEdges[thisAV.connection].v1;
                     }
-
                     //check nextVertex against all vertexalready discovered
-                    //if discovered skip and incriment by one then go through the for loop again 
-                    //if (waypoints[thisAV.nextVertex].prevVertex.hops == -1) {
-                        
+                    //if discovered skip and incriment by one then go through the for loop again                         
                         hdxAV.nextAction = "checkUndiscovered";
-                    //}
-                    //else {
-                        //thisAV.nextToCheck++;
-                        //hdxAV.nextAction = "forLoopTop"
-                    //}
                 }
             },
             logMessage: function(thisAV) {
@@ -218,10 +191,7 @@ var hdxDFSRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 if (waypoints[thisAV.nextVertex].hops == -1) {
-
                     waypoints[thisAV.nextVertex].prevVertex = thisAV.visiting;
-                   
-                    //thisAV.nextToCheck++;
                     hdxAV.nextAction = "callRecursion";
                 }
                 else{
@@ -234,12 +204,9 @@ var hdxDFSRecAV = {
                         thisAV.numEDiscardedOnRemoval++;
                         thisAV.numEUndiscovered--;
                         thisAV.updateControlEntries();     
-                        thisAV.backEdgesArr.push(thisAV.connection)             
-
+                        thisAV.backEdgesArr.push(thisAV.connection)   
                     }
-
-                }
-                
+                }                
             },
             logMessage: function(thisAV) {
                 return "check if vertex has previously been discovered";
@@ -250,11 +217,9 @@ var hdxDFSRecAV = {
             comment: "call recursion with new vertex",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-                //thisAV.stack.push(thisAV.nextToCheck);
                 thisAV.stack.push([thisAV.nextToCheck, thisAV.connection]);
                 thisAV.visiting = thisAV.nextVertex;
-                hdxAV.nextAction = "recursiveCallTop"
-                
+                hdxAV.nextAction = "recursiveCallTop"                
             },
             logMessage: function(thisAV) {
                 return "call recursion with new vertex";
@@ -347,8 +312,6 @@ var hdxDFSRecAV = {
                            waypoints[this.visiting].label + ", " + 
                            fullFrom + ", via " + fullEdgeLabel);
 
-        // id to show shortest paths later
-        //newtr.setAttribute("id", "foundPaths" + count);
         
         // actual table row to display
         newtr.innerHTML = 
@@ -386,9 +349,7 @@ var hdxDFSRecAV = {
         initWaypointsAndConnections(true, true,
                                     visualSettings.undiscovered);
         
-        this.discarded= 0;
-        this.ldv= null;
-        // last place to come out of the LDV, currently "visiting"
+        this.discarded= 0; 
         this.visiting= null;
 
         // when finding all, track the lists of vertices and edges that are
@@ -421,7 +382,6 @@ var hdxDFSRecAV = {
         this.code += "</table>";
     },
         
-    // set up UI for the start of edge search
     setupUI() {
 
         hdxAV.algStat.style.display = "";
@@ -431,9 +391,7 @@ var hdxDFSRecAV = {
         let newAO =
             buildWaypointSelector("startPoint", "Start Vertex", 0) +
             "<br />";
-        //newAO += '</select>';
         hdxAV.algOptions.innerHTML = newAO;
-            //+ this.extraAlgOptions;
         addEntryToAVControlPanel("visiting", visualSettings.visiting);
         addEntryToAVControlPanel("undiscovered", visualSettings.undiscovered);
         addEntryToAVControlPanel("currentSpanningTree", visualSettings.spanningTree);
@@ -453,7 +411,6 @@ var hdxDFSRecAV = {
 
     },
 
-    // clean up kruskal UI
     cleanupUI() {
 
     }, 
