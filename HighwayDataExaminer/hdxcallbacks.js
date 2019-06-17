@@ -180,6 +180,7 @@ function resetPressed() {
     algorithmSelectionChanged();
     hideAVStatusPanel();
     showAlgorithmSelectionPanel();
+    deleteVariableSelector();
 }
 
 // event handler for "Load Data Options" button

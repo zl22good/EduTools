@@ -179,7 +179,6 @@ var hdxDegreeAV = {
                 return "Check for new " + thisAV.categories[thisAV.nextCategory].label + " leader";
             },
             currentVariable: function(thisAV, whatToDo){
-                console.log("leader: " + thisAV.categories[thisAV.nextCategory].newLeader());
                 return thisAV.categories[thisAV.nextCategory].newLeader();
             }
         },

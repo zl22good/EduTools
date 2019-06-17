@@ -304,3 +304,9 @@ function setInnerHTML(label){
 function hasInnerHTML(label){
     return (hdxAV.currentAV.hasConditonalBreakpoints(label) ? true : false);
 }
+
+function deleteVariableSelector(){
+    let element = document.getElementById("breakpointVariableSelector");
+    element.parentNode.removeChild(element);
+    useVariable = false;
+}

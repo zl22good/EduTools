@@ -565,14 +565,13 @@ var hdxTraversalsSpanningAVCommon = {
                 //thisAV.visiting.vIndex <- vertex start
                 if(whatToDo == "wasNotAdded1")
                 {
-                    console.log(thisAV.visiting.connection);
                     return thisAV.visiting.connection;
                 }
                 else if(whatToDo == "wasNotAdded2"){
-                    console.log(thisAV.visiting.vIndex);
                     return thisAV.visiting.vIndex;
                 }
                 else{
+                    console.log("Error Happened: wasNotAdded.currentVariable()");
                         return "Error happened";
                 }
             }
@@ -1134,18 +1133,12 @@ var hdxTraversalsSpanningAVCommon = {
             switch(name){
                 case "getPlaceFromLDV":
                 case "checkNeighborsLoopIfFalse":
-                    html = 'Please select the vertex of the LDV <br \>(either starting or to) to stop at: <input type="number"' +
-                        ' id="generic1" name="quantity"   min="0" max="';
-                    html += max + '">';
+                    html = buildWaypointSelector2("generic3","Please select the vertex of the LDV <br \>(either starting or to) to stop at: ");
                 return html;
                 case "wasNotAdded":
-                    html = 'Please select the vertex of the connection <br \> to stop at: <input type="number" ' +
-                        'id="wasNotAdded1" name="quantity" min="0" max="';
-                    html += max + '">';
+                    html = buildWaypointSelector2("wasNotAdded1", "Please select the vertex of the connection <br \> to stop at: ");
                     html += '<br \>';
-                    html += 'Please select the starting vertex <br \> to stop at: <input type="number"' +
-                        ' id="wasNotAdded2"  name="quantity" min="0" max="';
-                    html += max + '">';
+                    html += buildWaypointSelector2("wasNotAdded2", "Please select the starting vertex <br \> to stop at: ");
                 return html;        
             }
         }
