@@ -211,6 +211,7 @@ var hdxAV = {
                 let variable = "";
                 let counter = 0;
                 let length = document.getElementsByName("quantity").length;
+                
                 //Run through the elements with name quantity
                 //If anything does have that, take its value
                 //and seperate them with a space
@@ -218,6 +219,8 @@ var hdxAV = {
                     try {
                             if(variable == "") {
                                 variable = document.getElementsByName("quantity")[counter].value;
+                                //If it has an ID, push it onto the stack. Used for the method
+                                //currentVariable to determine what to send back
                                 if(document.getElementsByName("quantity")[counter].hasAttribute("id")){
                                     methodPicker.push(document.getElementsByName("quantity")[counter].id);
                                 }  
@@ -240,7 +243,7 @@ var hdxAV = {
 
                 //If the value of your variable is null, set it 
                 //to -1, essentially ignoring it. If it doesnt 
-                //include a space, parse it as an Int.
+                //include a space, parse it as an Int(only if it has a number).
                 //If it does include a space, any on the end should 
                 //be thrown away and now split the string by spaces
                 if(variable == ""){
@@ -261,8 +264,9 @@ var hdxAV = {
 
                 //Checks if the set variable has been met
                 //if the array is null, just the variable, that is parsed,
-                //else run throughthe entire array and parse any numbers.
-                //Use all of the indexs as values
+                //else run through the entire array and parse any numbers.
+                //Use all of the indexs as values     
+                //ALL NUMBERS ARE PARSED CORRECTLY BEFORE GOING INTO determineBreakOrContinue
                 if(chosenPoints == null) {
                     hdxAV.determineBreakOrContinue(variable, currentAction.currentVariable(thisAV, methodPicker.shift()));
                 }
@@ -444,9 +448,9 @@ var hdxAV = {
                 console.log("useVariable has encountered errors parsing breakpointText howToDeal=NumberString");
             }
         }
+        //Manipulates boolean and string data
         else if(howToDeal == "Boolean" || howToDeal == "BooleanString" || howToDeal == "StringBoolean"){
             try{
-                console.log("selection: " + selection + " checker: " + checker);
                 if(selection === checker){
                     hdxAV.setStatus(hdxStates.AV_PAUSED);
                     hdxAV.startPause.innerHTML = "Resume";

@@ -1121,16 +1121,16 @@ var hdxTraversalsSpanningAVCommon = {
             switch(name){
                 case "getPlaceFromLDV":
                 case "checkNeighborsLoopIfFalse":
-                    html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number"' +
+                    html = 'Please select the vertex of the LDV <br \>(either starting or to) to stop at: <input type="number"' +
                         ' id="generic1" name="quantity"   min="0" max="';
                     html += max + '">';
                 return html;
                 case "wasNotAdded":
-                    html = 'Please select the vertex of the LDV <br \> to stop at: <input type="number" ' +
+                    html = 'Please select the vertex of the connection <br \> to stop at: <input type="number" ' +
                         'id="wasNotAdded1" name="quantity" min="0" max="';
                     html += max + '">';
                     html += '<br \>';
-                    html += 'Please select the vertex of the LDV <br \> to stop at: <input type="number"' +
+                    html += 'Please select the starting vertex <br \> to stop at: <input type="number"' +
                         ' id="wasNotAdded2"  name="quantity" min="0" max="';
                     html += max + '">';
                 return html;        
