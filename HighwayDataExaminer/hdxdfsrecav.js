@@ -93,7 +93,6 @@ var hdxDFSRecAV = {
                 //}
                 
                 // show on map as visiting color
-                console.log("visiting: " + thisAV.visiting + " - Starting: " + thisAV.startingVertex);
 
                 
 
@@ -142,7 +141,6 @@ var hdxDFSRecAV = {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
                 //set number of hops to its parent vertex's number of hops + 1
-                console.log("prev vertex: " + waypoints[thisAV.visiting].prevVertex);
                 //if its the first point set hops to 0
                 if (waypoints[thisAV.visiting].prevVertex == -1) {
                     waypoints[thisAV.visiting].hops = 0;
@@ -170,9 +168,7 @@ var hdxDFSRecAV = {
 
                 //thisAV.nextToCheck++;
                 //if for loop is done for this level of recursion
-                console.log("For loop top visiting: " + thisAV.visiting);
-                console.log("For loop top nexttocheck: " + thisAV.nextToCheck);
-                console.log("For loop top length: " + waypoints[thisAV.visiting].edgeList.length);
+                
 
                 if (thisAV.nextToCheck >= waypoints[thisAV.visiting].edgeList.length) {
                     // || thisAV.nextToCheck == null) {
@@ -189,8 +185,7 @@ var hdxDFSRecAV = {
                 else {
 
                     //get the other vertex from the adjacency list
-                    console.log(waypoints[thisAV.visiting].edgeList);
-                    console.log("trying to access: " + thisAV.nextToCheck);
+                   
                     thisAV.connection = waypoints[thisAV.visiting].edgeList[thisAV.nextToCheck].edgeListIndex;
                     //updatePolylineAndTable(thisAV.connection, visualSettings.spanningTree, false);
                     thisAV.nextVertex = -1;
@@ -222,12 +217,10 @@ var hdxDFSRecAV = {
             comment: "check if vertex has previously been discovered",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-                console.log("hops here is: " + waypoints[thisAV.nextVertex].hops);
                 if (waypoints[thisAV.nextVertex].hops == -1) {
 
                     waypoints[thisAV.nextVertex].prevVertex = thisAV.visiting;
-                    console.log("prevVertex of waypoints[" + thisAV.nextVertex + "] is waypoints[" + thisAV.visiting + "]")
-                    console.log("nextVertex is: " + thisAV.nextVertex);
+                   
                     //thisAV.nextToCheck++;
                     hdxAV.nextAction = "callRecursion";
                 }
@@ -280,7 +273,6 @@ var hdxDFSRecAV = {
                     visualSettings.spanningTree, 10, false);
                 updatePolylineAndTable(thisAV.connection,
                     visualSettings.spanningTree, false);
-                console.log("stack is: " + thisAV.stack.length);
                 
                 //update color for new current vertex
                 updateAVControlEntry("visiting", "Visiting vertex " + thisAV.visiting
@@ -341,7 +333,6 @@ var hdxDFSRecAV = {
             fullFrom = "";
         }
         else {
-            console.log("graphs ed - " + graphEdges[this.connection]);
             fullEdgeLabel = graphEdges[this.connection].label;
             edgeLabel = shortLabel(fullEdgeLabel, 10);
             fromLabel = shortLabel(waypoints[waypoints[this.visiting].prevVertex].label, 10);
