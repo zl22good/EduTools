@@ -77,6 +77,7 @@ function startPausePressed() {
         // action, then do it
         hdxAV.nextAction = "START";
         hdxAV.nextStep(hdxAV.currentAV);
+        addStop();
         break;
         
     case hdxStates.AV_RUNNING:
@@ -179,6 +180,7 @@ function resetPressed() {
     algorithmSelectionChanged();
     hideAVStatusPanel();
     showAlgorithmSelectionPanel();
+    deleteVariableSelector();
 }
 
 // event handler for "Load Data Options" button

@@ -39,7 +39,7 @@ var hdxEdgeExtremesSearchAV = {
     discarded: 0,
     foundNewLeader: false,
     // the categories for which we are finding our extremes,
-    // with names for ids, labels to display, indicies of leader,
+    // with names for ids, labe ls to display, indicies of leader,
     // comparison function to determine if we have a new leader,
     // and visual settings for the display
     categories: [
@@ -174,6 +174,9 @@ var hdxEdgeExtremesSearchAV = {
             },
             logMessage: function(thisAV) {
                 return "Top of main for loop over edges, check=" + thisAV.nextToCheck;
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return (thisAV.nextToCheck+1);
             }
         },
         {
@@ -362,5 +365,32 @@ var hdxEdgeExtremesSearchAV = {
             var currAction = action.label;
             return (currAction + "" + category);
         }
+    },
+    
+    setConditionalBreakpoints(name){
+        let max = waypoints.length-1;
+        let temp = commonConditionalBreakpoints(name);
+        if(temp != "No innerHTML"){
+            return temp;
+        }
+        else{
+            switch(name){
+                    
+            }
+        }
+        return "No innerHTML";
+    },
+
+    hasConditonalBreakpoints(name){
+        let answer = hasCommonConditonalBreakpoints(name);
+        if(answer == true){
+            return true;
+        }
+        else{
+            switch(name){
+                    
+            }
+        }
+        return false;
     }
 };
