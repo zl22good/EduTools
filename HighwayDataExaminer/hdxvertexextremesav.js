@@ -339,6 +339,9 @@ var hdxVertexExtremesSearchAV = {
             },
             logMessage: function(thisAV) {
                 return "Top of main for loop over vertices, check=" + thisAV.nextToCheck;
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return (thisAV.nextToCheck+1);
             }
         },
         {
@@ -865,5 +868,32 @@ For Ties, Remember:<br />
             var currAction = action.label;
             return (currAction + "" + category);
         }
+    },
+    
+    setConditionalBreakpoints(name){
+        let max = waypoints.length-1;
+        let temp = commonConditionalBreakpoints(name);
+        if(temp != "No innerHTML"){
+            return temp;
+        }
+        else{
+            switch(name){
+                    
+            }
+        }
+        return "No innerHTML";
+    },
+
+    hasConditonalBreakpoints(name){
+        let answer = hasCommonConditonalBreakpoints(name);
+        if(answer == true){
+            return true;
+        }
+        else{
+            switch(name){
+                    
+            }
+        }
+        return false;
     }
 };
