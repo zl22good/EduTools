@@ -310,3 +310,13 @@ function deleteVariableSelector(){
     element.parentNode.removeChild(element);
     useVariable = false;
 }
+
+function createInnerHTMLChoice(choice, id, firstText, secondText ){
+    switch(choice){
+        case "boolean":
+           html = 'Stop when this is equal to: <br \><select name="quantity" id="';
+           html+= id + '"><option value="true">' + firstText + '</option>';
+           html+= '<option value="false">' + secondText + '</option></select>';
+           return html;   
+    }
+}

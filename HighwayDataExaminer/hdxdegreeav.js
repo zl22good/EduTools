@@ -505,8 +505,8 @@ var hdxDegreeAV = {
             switch(name){
                 case "checkNextCategory":
                 case "checkTieCategory":
-                    html = 'Stop when this is equal to: <br \><select name="quantity"><option value="true">True</option>';
-                    html += '<option value="false">False</option></select>';
+                    html = createInnerHTMLChoice("boolean", "checkCategories2","True",
+                        "False");
                     return html;
             }
         }
