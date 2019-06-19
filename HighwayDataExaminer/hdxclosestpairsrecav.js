@@ -15,9 +15,18 @@ var hdxClosestPairsRecAV = {
     description: "Search for the closest pair of vertices (waypoints) using recursive divide and conquer.",
     
     // state variables for closest pairs search
-    // loop indices
-    v1: 0,
-    v2: 0,
+    minPoints: 3,
+    stack: null,
+    callStack: null,
+    
+    //vertices sorted by longitude
+    WtoE: null,
+    //vertices sorted by latitude
+    StoN: null,
+    
+    //used for shading
+    northBound: 0,
+    southBound: 0,
 
     // computed distance between v1 and v2
     d_this: 0,
@@ -41,13 +50,34 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-
+                //fill WtoE with sorted vertices by longitude
+                
+                
+                
+                
                 hdxAV.nextAction = "recursiveCallTop"
             },
             logMessage: function(thisAV) {
                 return "Initializing closest pair variables";
             }
         },
+        {
+            label: "recursiveCallTop",
+            comment: "Call recursion",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                thisAV.callStack.add(thisAV.WtoE);
+                hdxAV.nextAction = "checkBaseCase"
+            },
+            logMessage: function(thisAV) {
+                return "Call recursion";
+            }
+        },
+        
+        
+        
+        
 
         {
             label: "computeDistance",
@@ -164,8 +194,22 @@ var hdxClosestPairsRecAV = {
         // show waypoints, hide connections
         initWaypointsAndConnections(true, false,
                                     visualSettings.undiscovered);
-        this.code = '<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">P[] &larr; vertices sorted by x coordinates<br />Q[] &larr; vertices sorted by y coordinates</td></tr>';
-        this.code += pcEntry(0,'EfficientClosestPair(P, Q)',"recursiveCallTop");
+        this.code = '<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">WtoE[] &larr; vertices sorted by longitude<br />StoN[] &larr; vertices sorted by latitude</td></tr>';
+        this.code += pcEntry(0,'EfficientClosestPair(WtoE, StoN)',"recursiveCallTop");
+        this.code += pcEntry(1,'if (WtoE.length <= 3 || recursiveDepth == userLimit)',"checkBaseCase");
+        this.code += pcEntry(2,'return min distance found by the brute-force algorithm',"returnBruteForceSolution");
+        this.code += pcEntry(1,'else',"");
+        this.code += pcEntry(2,'WtoE<sub>left</sub>[] &larr; copy first ⌈n/2⌉ points of WtoE',"");
+        this.code += pcEntry(2,'StoN<sub>left</sub>[] &larr; copy same ⌈n/2⌉ points from StoN',"");
+        this.code += pcEntry(2,'WtoE<sub>right</sub>[] &larr; copy remaining ⌊n/2⌋ points of WtoE',"");
+        this.code += pcEntry(2,'StoN<sub>right</sub>[] &larr; copy remaining ⌈n/2⌉ points from StoN',"");
+        this.code += pcEntry(2,'d<sub>left</sub> &larr; EfficientClosestPair(WtoE<sub>left</sub>, StoN<sub>left</sub>)',"");
+        this.code += pcEntry(2,'d<sub>right</sub> &larr; EfficientClosestPair(WtoE<sub>right</sub>, StoN<sub>right</sub>)',"");
+        this.code += pcEntry(2,'d &larr; min(d<sub>left</sub>, d<sub>right</sub>)',"");
+        
+        this.WtoE = new Array(waypoints.length);
+        this.StoN = new Array(waypoints.length);
+        
         },
 
     // set up UI entries for closest/farthest pairs
@@ -175,13 +219,10 @@ var hdxClosestPairsRecAV = {
         hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.logMessageArr = [];
         hdxAV.logMessageArr.push("Setting up");
-        hdxAV.algOptions.innerHTML = '';
-
-        addEntryToAVControlPanel("v1visiting", this.visualSettings.v1);
-        addEntryToAVControlPanel("v2visiting", this.visualSettings.v2);
+        let newAO = '';
+        hdxAV.algOptions.innerHTML = newAO;
         addEntryToAVControlPanel("checkingDistance", visualSettings.visiting);
-        addEntryToAVControlPanel("closeLeader", visualSettings.leader);
-        addEntryToAVControlPanel("farLeader", visualSettings.leader2);
+        
     },
         
         
@@ -227,3 +268,4 @@ var hdxClosestPairsRecAV = {
         return false;
     }
 };
+    
