@@ -107,6 +107,9 @@ var hdxExtremePairsAV = {
             },
             logMessage: function(thisAV) {
                 return "Next v<sub>1</sub>=" + thisAV.v1;
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return (thisAV.v1+1);
             }
         },
         {
@@ -134,6 +137,9 @@ var hdxExtremePairsAV = {
                 }
                 return "Checking v<sub>1</sub>=" + thisAV.v1 +
                     "and v<sub>2</sub>=" + thisAV.v2;
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return (thisAV.v2+1);
             }
         },
         {
@@ -492,5 +498,32 @@ var hdxExtremePairsAV = {
     
     idOfAction(action){
             return action.label;
+    },
+    
+    setConditionalBreakpoints(name){
+        let max = waypoints.length-1;
+        let temp = commonConditionalBreakpoints(name);
+        if(temp != "No innerHTML"){
+            return temp;
+        }
+        else{
+            switch(name){
+                    
+            }
+        }
+        return "No innerHTML";
+    },
+
+    hasConditonalBreakpoints(name){
+        let answer = hasCommonConditonalBreakpoints(name);
+        if(answer == true){
+            return true;
+        }
+        else{
+            switch(name){
+                    
+            }
+        }
+        return false;
     }
 };

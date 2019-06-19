@@ -71,6 +71,9 @@ function displayLDVItem(item, ldv) {
 
 var hdxTraversalsSpanningAVCommon = {
 
+    //keeps track of LDV length
+    counter: 0,
+
     // entries for value, name, description, code will be in
     // AV-specific objects
 
@@ -335,7 +338,6 @@ var hdxTraversalsSpanningAVCommon = {
             comment: "Check if we have added the end vertex",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-
                 // check if end is visited, if so, cleanup, otherwise,
                 // check that there are more values in the LDV to see
                 // if we can continue
@@ -411,6 +413,11 @@ var hdxTraversalsSpanningAVCommon = {
                 return "Removed " +
                     thisAV.formatLDVEntry(thisAV.visiting) + " from " +
                     thisAV.ldv.displayName;
+            },
+            currentVariable: function(thisAV, whatToDo){
+                let temp = thisAV.visiting.fromVIndex + " " + thisAV.visiting.vIndex;
+                console.log(temp);
+                return temp;
             }
         },
         {
@@ -552,6 +559,21 @@ var hdxTraversalsSpanningAVCommon = {
             },
             logMessage: function(thisAV) {
                 return "Adding " + thisAV.formatLDVEntry(thisAV.visiting) + " to tree";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                //graphEdges[thisAV.visiting.connection] <- gives edge #
+                //thisAV.visiting.vIndex <- vertex start
+                if(whatToDo == "wasNotAdded1")
+                {
+                    return thisAV.visiting.connection;
+                }
+                else if(whatToDo == "wasNotAdded2"){
+                    return thisAV.visiting.vIndex;
+                }
+                else{
+                    console.log("Error Happened: wasNotAdded.currentVariable()");
+                        return "Error happened";
+                }
             }
         },
         {
@@ -713,6 +735,9 @@ var hdxTraversalsSpanningAVCommon = {
                 return "#" + thisAV.nextNeighbor.to + " via " +
                     graphEdges[thisAV.nextNeighbor.via].label +
                     " added to " + thisAV.ldv.displayName;
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.nextNeighbor.to + " " + thisAV.nextNeighbor.via;
             }
         },
         {
@@ -1096,6 +1121,44 @@ var hdxTraversalsSpanningAVCommon = {
     
     idOfAction(action){
             return action.label;
+    },
+    
+    setConditionalBreakpoints(name){
+        let max = waypoints.length-1;
+        let temp = commonConditionalBreakpoints(name);
+        if(temp != "No innerHTML"){
+            return temp;
+        }
+        else{
+            switch(name){
+                case "getPlaceFromLDV":
+                case "checkNeighborsLoopIfFalse":
+                    html = buildWaypointSelector2("generic3","Please select the vertex of the LDV <br \>(either starting or to) to stop at: ");
+                return html;
+                case "wasNotAdded":
+                    html = buildWaypointSelector2("wasNotAdded1", "Please select the vertex of the connection <br \> to stop at: ");
+                    html += '<br \>';
+                    html += buildWaypointSelector2("wasNotAdded2", "Please select the starting vertex <br \> to stop at: ");
+                return html;        
+            }
+        }
+        return "No innerHTML";
+    },
+
+    hasConditonalBreakpoints(name){
+        let answer = hasCommonConditonalBreakpoints(name);
+        if(answer == true){
+            return true;
+        }
+        else{
+            switch(name){
+                case "wasNotAdded":    
+                case "getPlaceFromLDV":
+                case "checkNeighborsLoopIfFalse":
+                    return true;
+            }
+        }
+        return false;
     }
     
 };
