@@ -205,6 +205,9 @@ var hdxEdgeExtremesSearchAV = {
                 else {
                     return "Check for new " + thisAV.categories[thisAV.nextCategory-1].label + " leader";
                 }
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.categories[thisAV.nextCategory].newLeader();
             }
         },
         {
@@ -375,7 +378,22 @@ var hdxEdgeExtremesSearchAV = {
         }
         else{
             switch(name){
-                    
+                case "checkNextCategory0":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV0",
+                                                 "current label is the longest","label is not the longest");
+                    return html;
+                case "checkNextCategory1":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV1",
+                                                 "current label is the shortest","label is not the shortest");
+                    return html;
+                case "checkNextCategory2":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV2",
+                                                 "current edge is the longest","current edge is not the longest");
+                    return html;
+                case "checkNextCategory3":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV3",
+                                                 "current edge is the shortest","current edge is not the shortest");
+                    return html;  
             }
         }
         return "No innerHTML";
@@ -388,7 +406,11 @@ var hdxEdgeExtremesSearchAV = {
         }
         else{
             switch(name){
-                    
+                case "checkNextCategory0":
+                case "checkNextCategory1":
+                case "checkNextCategory2":
+                case "checkNextCategory3":  
+                    return true;    
             }
         }
         return false;
