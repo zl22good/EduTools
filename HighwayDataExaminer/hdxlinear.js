@@ -16,8 +16,9 @@ var hdxLinearTypes = {
     STACK: 1,
     QUEUE: 2,
     RANDOM: 3,
-    PRIORITY_QUEUE:4,
-    UNKNOWN: 5
+    PRIORITY_QUEUE: 4,
+    CALL_STACK: 5,
+    UNKNOWN: 6
 };
 
 // to generate unique document element ids
@@ -127,6 +128,7 @@ function HDXLinear(type, displayName) {
         switch(this.type) {
 
         case hdxLinearTypes.STACK:
+        case hdxLinearTypes.CALL_STACK:
         case hdxLinearTypes.PRIORITY_QUEUE:
             retval = this.items.pop();
             break;
@@ -149,7 +151,7 @@ function HDXLinear(type, displayName) {
     // search for an entry with the given field having the given value
     this.containsFieldMatching = function(field, value) {
 
-        for (var i = 0; i < this.items.length; i++) {
+        for (let i = 0; i < this.items.length; i++) {
             if (this.items[i][field] == value) {
                 return true;
             }
@@ -174,13 +176,23 @@ function HDXLinear(type, displayName) {
             this.avgSizeSpan.innerHTML =
                 parseFloat(1.0*this.cumulativeSize/this.numRedraws).toFixed(1);
             let t = "<tr>";
+            if (this.type == hdxLinearTypes.CALL_STACK) {
+                t = "";
+            }
             let maxDisplay = Number.MAX_VALUE;
             if (this.limitCheck.checked) {
                 maxDisplay = this.limit.value;
             }
             if (maxDisplay >= this.items.length) {
-                for (var i = 0; i < this.items.length; i++) {
-                    t += "<td>" + this.elementHTMLCallback(this.items[i], this) + "</td>";
+                if (this.type == hdxLinearTypes.CALL_STACK) {
+                    for (let i = this.items.length - 1; i >= 0; i--) {
+                        t += "<tr><td>" + this.elementHTMLCallback(this.items[i], this) + "</td></tr>";
+                    }
+                }
+                else {
+                    for (let i = 0; i < this.items.length; i++) {
+                        t += "<td>" + this.elementHTMLCallback(this.items[i], this) + "</td>";
+                    }
                 }
             }
             else {
@@ -190,7 +202,7 @@ function HDXLinear(type, displayName) {
                     this.type == hdxLinearTypes.RANDOM) {
                     // first a placeholder entry
                     t += "<td>...</td>";
-                    for (var i = this.items.length - maxDisplay;
+                    for (let i = this.items.length - maxDisplay;
                          i < this.items.length; i++) {
                         t += "<td>" + this.elementHTMLCallback(this.items[i], this) + "</td>";
                     }
@@ -200,20 +212,37 @@ function HDXLinear(type, displayName) {
                          (this.type == hdxLinearTypes.PRIORITY_QUEUE)) {
                     // half of the displayable elements from the front
                     let firstChunk = Math.floor(maxDisplay / 2);
-                    for (var i = 0; i < firstChunk; i++) {
+                    for (let i = 0; i < firstChunk; i++) {
                         t += "<td>" + this.elementHTMLCallback(this.items[i], this) + "</td>";
                     }
                     // next a placeholder entry
                     t += "<td>...</td>";
                     // half of the displayable elements from the end
-                    for (var i = this.items.length -
+                    for (let i = this.items.length -
                              (maxDisplay - firstChunk);
                          i < this.items.length; i++) {
                         t += "<td>" + this.elementHTMLCallback(this.items[i], this) + "</td>";
                     }
                 }
+
+                else if (this.type == hdxLinearTypes.CALL_STACK) {
+                    // half of the displayable elements from the front
+                    let firstChunk = Math.floor(maxDisplay / 2);
+                    for (let i = this.items.length - 1;
+                         i >= this.items.length - (maxDisplay - firstChunk); i--) {
+                        t += "<tr><td>" + this.elementHTMLCallback(this.items[i], this) + "</td></tr>";
+                    }
+                    // next a placeholder entry
+                    t += "<tr><td>...</td></tr>";
+                    // half of the displayable elements from the end
+                    for (let i = firstChunk - 1; i >= 0; i--) {
+                        t += "<tr><td>" + this.elementHTMLCallback(this.items[i], this) + "</td></tr>";
+                    }
+                }
             }
-            t += "</tr>";
+            if (this.type != hdxLinearTypes.CALL_STACK) {
+                t += "</tr>";
+            }
             this.tbody.innerHTML = t;
         }
     };
