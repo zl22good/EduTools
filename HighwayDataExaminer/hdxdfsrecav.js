@@ -113,7 +113,7 @@ var hdxDFSRecAV = {
                     let prevRoute = thisAV.stack[thisAV.stack.length - 1];
                     updateMarkerAndTable(waypoints[thisAV.visiting].prevVertex,
                         visualSettings.discovered, 10, false);
-                    if (prevRoute[1] != -1) {
+                    if (prevRoute[1] != -1 ) {
                         updatePolylineAndTable(prevRoute[1], 
                             visualSettings.discovered, false);
                         updateMarkerAndTable(thisAV.startingVertex,
@@ -207,7 +207,7 @@ var hdxDFSRecAV = {
                     hdxAV.nextAction = "forLoopTop";
                     if (thisAV.stack.length != 0 &&
                         thisAV.stack[thisAV.stack.length - 1][1] != thisAV.connection
-                         && !thisAV.backEdgesArr.includes(thisAV.connection)) {
+                         && !thisAV.backEdgesArr.includes(thisAV.connection) ) {
                         updatePolylineAndTable(thisAV.connection,
                         visualSettings.discarded, false);
                         thisAV.numEDiscardedOnRemoval++;
@@ -247,8 +247,11 @@ var hdxDFSRecAV = {
                     visualSettings.spanningTree, 10, false);
                 updateMarkerAndTable(graphEdges[thisAV.connection].v2,
                     visualSettings.spanningTree, 10, false);
-                updatePolylineAndTable(thisAV.connection,
-                    visualSettings.spanningTree, false);
+                if(!thisAV.backEdgesArr.includes(thisAV.connection))
+                    {
+                    updatePolylineAndTable(thisAV.connection,
+                        visualSettings.spanningTree, false);
+                    }
 
                 //update color for new current vertex
                 updateAVControlEntry("visiting", "Visiting vertex " + thisAV.visiting
@@ -314,13 +317,13 @@ var hdxDFSRecAV = {
             edgeLabel = shortLabel(fullEdgeLabel, 10);
             fromLabel = shortLabel(waypoints[waypoints[this.visiting].prevVertex].label, 10);
             currentHops = waypoints[waypoints[this.visiting].prevVertex].hops + 1;
-            fullFrom = "From #" + this.visiting + ":" +
-                waypoints[this.visiting].label;
+            fullFrom = "From #" + waypoints[this.visiting].prevVertex + ":" +
+                 waypoints[waypoints[this.visiting].prevVertex].label;
         }
 
         // mouseover title
         newtr.setAttribute("custom-title",
-                           "Path to #" + this.connection + ":" +
+                           "Path to #" + this.visiting + ":" +
                            waypoints[this.visiting].label + ", " + 
                            fullFrom + ", via " + fullEdgeLabel);
 
@@ -434,7 +437,49 @@ var hdxDFSRecAV = {
     
     idOfAction(action){
         return action.label;
+    },
+
+    setConditionalBreakpoints(name){
+        let max = waypoints.length-1;
+        let temp = commonConditionalBreakpoints(name);
+        
+        let isThere = name.search(/\d/);
+        name = (isThere != -1) ? name.substring(0,isThere) : name;
+        
+        //if(temp != "No innerHTML"){
+         //   return temp;
+       // }
+        //else{
+           // switch(name){
+           //     case "checkNextCategory":
+             //   case "checkTieCategory":
+             //       html = 'Stop when this is equal to: <br \><select name="quantity"><option value="true">True</option>';
+               //     html += '<option value="false">False</option></select>';
+                 //   return html;
+           // }
+        //}
+        return "No innerHTML";
+    },
+
+    hasConditonalBreakpoints(name){
+        
+        let isThere = name.search(/\d/);
+        name = (isThere != -1) ? name.substring(0,isThere) : name;
+    
+        let answer = hasCommonConditonalBreakpoints(name);
+        if(answer == true){
+            return true;
+        }
+        else{
+            switch(name){
+                case "checkNextCategory":
+                case "checkTieCategory":
+                    return true;
+            }
+        }
+        return false;
     }
+
 };
 
 
