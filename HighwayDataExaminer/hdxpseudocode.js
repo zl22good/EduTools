@@ -318,5 +318,9 @@ function createInnerHTMLChoice(choice, id, firstText, secondText ){
            html+= id + '"><option value="true">' + firstText + '</option>';
            html+= '<option value="false">' + secondText + '</option></select>';
            return html;   
+        case "number":
+            html = 'Stop when ' + firstText + '<br \><input type="number" name="quantity" id"';
+            html += id + '" min="1" max="100">';
+            return html;
     }
 }
