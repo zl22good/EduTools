@@ -50,8 +50,23 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                //fill WtoE with sorted vertices by longitude
+                thisAV.minPoints =
+                    document.getElementById("minPoints").value;
+                this.WtoE = new Array(waypoints.length);
+                this.StoN = new Array(waypoints.length);
+        
                 
+                
+                for (let i = 0; i < waypoints.length; i++) {
+                    // keep track of northmost and southmost points
+                    thisAV.southBound = Math.min(waypoints[i].lat, southBound);
+                    thisAV.northBound = Math.max(waypoints[i].lat, northBound);
+                    
+                    //fill WtoE with sorted vertices by longitude
+                    
+                    
+                    
+                }
                 
                 
                 
@@ -74,6 +89,8 @@ var hdxClosestPairsRecAV = {
                 return "Call recursion";
             }
         },
+        
+        
         
         
         
@@ -103,19 +120,10 @@ var hdxClosestPairsRecAV = {
             comment: "cleanup and updates at the end of the visualization",
             code: function(thisAV) {
 
-                // if the last vertex is not one of the closest pair or one
-                // of the closest pair, we need to discard it
-                if (waypoints.length - 1 != thisAV.closest[0] &&
-                    waypoints.length - 1 != thisAV.closest[1] &&
-                    waypoints.length - 1 != thisAV.farthest[0] &&
-                    waypoints.length - 1 != thisAV.farthest[1]) {
-                    updateMarkerAndTable(waypoints.length - 1,
-                                         visualSettings.discarded, 15, true);
-                }
                 
-                updateAVControlEntry("v1visiting", "");
-                updateAVControlEntry("v2visiting", "");
-                updateAVControlEntry("checkingDistance", "");
+                //updateAVControlEntry("v1visiting", "");
+                //updateAVControlEntry("v2visiting", "");
+                //updateAVControlEntry("checkingDistance", "");
                 hdxAV.nextAction = "DONE";
                 hdxAV.iterationDone = true;
             },
@@ -191,13 +199,14 @@ var hdxClosestPairsRecAV = {
 
         hdxAV.algStat.innerHTML = "Initializing";
 
+        //reorder waypoints
         // show waypoints, hide connections
         initWaypointsAndConnections(true, false,
                                     visualSettings.undiscovered);
         this.code = '<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">WtoE[] &larr; vertices sorted by longitude<br />StoN[] &larr; vertices sorted by latitude</td></tr>';
         this.code += pcEntry(0,'EfficientClosestPair(WtoE, StoN)',"recursiveCallTop");
         this.code += pcEntry(1,'if (WtoE.length <= 3 || recursiveDepth == userLimit)',"checkBaseCase");
-        this.code += pcEntry(2,'return min distance found by the brute-force algorithm',"returnBruteForceSolution");
+        this.code += pcEntry(2,'return brute force min distance',"returnBruteForceSolution");
         this.code += pcEntry(1,'else',"");
         this.code += pcEntry(2,'WtoE<sub>left</sub>[] &larr; copy first ⌈n/2⌉ points of WtoE',"");
         this.code += pcEntry(2,'StoN<sub>left</sub>[] &larr; copy same ⌈n/2⌉ points from StoN',"");
@@ -207,8 +216,6 @@ var hdxClosestPairsRecAV = {
         this.code += pcEntry(2,'d<sub>right</sub> &larr; EfficientClosestPair(WtoE<sub>right</sub>, StoN<sub>right</sub>)',"");
         this.code += pcEntry(2,'d &larr; min(d<sub>left</sub>, d<sub>right</sub>)',"");
         
-        this.WtoE = new Array(waypoints.length);
-        this.StoN = new Array(waypoints.length);
         
         },
 
@@ -219,7 +226,8 @@ var hdxClosestPairsRecAV = {
         hdxAV.algStat.innerHTML = "Setting up";
         hdxAV.logMessageArr = [];
         hdxAV.logMessageArr.push("Setting up");
-        let newAO = '';
+        let newAO = 'Number of points to stop on <input type="number" id="minPoints" min="3" max="' 
+        + (waypoints.length - 1)/2 + '" value="3">';
         hdxAV.algOptions.innerHTML = newAO;
         addEntryToAVControlPanel("checkingDistance", visualSettings.visiting);
         
