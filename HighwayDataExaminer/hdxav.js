@@ -8,6 +8,13 @@
 
 // group of variables used by many or all algorithm visualizations
 var hdxAV = {
+    //Used to get the name of the current speed
+    speedName: "Fast",
+    
+    //Used to determine if it should jump to breakpoint
+    //(pause)
+    jumpToBreakpoint: false,
+    
     // current state of HDX
     status: hdxStates.NO_DATA,
     
@@ -130,7 +137,13 @@ var hdxAV = {
     // this will do an action, an iteration, or run to completion
     // for the AV passed in
     nextStep(thisAV) {
-
+        if(hdxAV.jumpToBreakpoint){
+            hdxAV.setStatus(hdxStates.AV_PAUSED);
+            hdxAV.startPause.innerHTML = "Resume";
+            hdxAV.jumpToBreakpoint = false;
+            startPausePressed();
+            return;
+        }
         // if the simulation is paused, we can do nothing, as this function
         // will be called again when we restart
         if (hdxAV.paused()) {
@@ -138,11 +151,17 @@ var hdxAV = {
         }
 
         // run to completion option
-        if (hdxAV.delay == 0) {
+        if (hdxAV.delay == 0 && hdxAV.speedName == "Run To Completion") {
             while (hdxAV.nextAction != "DONE") {
                 hdxAV.oneIteration(thisAV);
             }
             hdxAV.avDone();
+            return;
+        }
+        else if(hdxAV.delay == 0){
+            while (hdxAV.nextAction != "DONE" && !hdxAV.jumpToBreakpoint) {
+                hdxAV.oneIteration(thisAV);
+            }    
             return;
         }
 
@@ -180,6 +199,10 @@ var hdxAV = {
         hdxAV.iterationDone = false;
         while (!hdxAV.iterationDone) {
             //console.log("oneIteration() calling oneAction(), nextAction=" + this.nextAction);
+            if(hdxAV.jumpToBreakpoint){
+                hdxAV.iterationDone = true;
+                return;
+            }
             hdxAV.oneAction(thisAV);
         }
     },
@@ -350,6 +373,7 @@ var hdxAV = {
         let checker;//current values
         let selection;//your selected value
         let howToDeal = "Number";
+        hdxAV.jumpToBreakpoint = false;
         //Obtain either a direct relation, or an array of the string deliminated by 
         //a space
         if((currentPoints.constructor === String) && (selectedStop.constructor === String)){
@@ -401,6 +425,7 @@ var hdxAV = {
                     if(selection == element){
                         hdxAV.setStatus(hdxStates.AV_PAUSED);
                         hdxAV.startPause.innerHTML = "Resume";
+                        hdxAV.jumpToBreakpoint = true;
                     }
                 }
             }
@@ -414,6 +439,7 @@ var hdxAV = {
                 if(selection == checker){
                     hdxAV.setStatus(hdxStates.AV_PAUSED);
                     hdxAV.startPause.innerHTML = "Resume";
+                    hdxAV.jumpToBreakpoint = true;
                 }
             }
             catch(error){
@@ -428,6 +454,7 @@ var hdxAV = {
                     if(checker == parseInt(element)){
                         hdxAV.setStatus(hdxStates.AV_PAUSED);
                         hdxAV.startPause.innerHTML = "Resume";
+                        hdxAV.jumpToBreakpoint = true;
                     }
                 }
             }
@@ -443,6 +470,7 @@ var hdxAV = {
                     if(selection == parseInt(element)){
                         hdxAV.setStatus(hdxStates.AV_PAUSED);
                         hdxAV.startPause.innerHTML = "Resume";
+                        hdxAV.jumpToBreakpoint = true;
                     }
                 }
             }
@@ -456,6 +484,7 @@ var hdxAV = {
                 if(selection === checker){
                     hdxAV.setStatus(hdxStates.AV_PAUSED);
                     hdxAV.startPause.innerHTML = "Resume";
+                    hdxAV.jumpToBreakpoint = true;
                 }
             }
             catch(error){

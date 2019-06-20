@@ -143,7 +143,7 @@ ENDOFSTUFF;
 	  </td><td id="topControlPanelAV2">
 	  <select id="speedChanger" onchange="speedChanged()">
 	    <option value="0">Run To Completion</option>
-        
+        <option value="0">Jump To Breakpoint</option>
 	    <option value="1">Fastest possible</option>
 	    <option value="5">Extremely fast</option>
 	    <option value="20">Very fast</option>

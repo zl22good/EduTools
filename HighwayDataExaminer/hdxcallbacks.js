@@ -10,7 +10,10 @@
 function speedChanged() {
 
     var speedChanger = document.getElementById("speedChanger");
-    hdxAV.delay = speedChanger.options[speedChanger.selectedIndex].value;
+    let temp = speedChanger.options[speedChanger.selectedIndex];
+    hdxAV.delay = temp.value;
+    hdxAV.speedName = temp.innerHTML;
+    console.log(hdxAV.speedName);
 }
 
 
@@ -275,7 +278,7 @@ function showTopControlPanel() {
         av4.style.display = "";
         av4button.value = "Reset AV";
         showMarkers.style.display = "none";
-        document.getElementById("speedChanger").selectedIndex = 4;
+        document.getElementById("speedChanger").selectedIndex = 5;
         speedChanged();
         document.getElementById("pseudoCheckbox").checked = true;
         document.getElementById("datatablesCheckbox").checked = true;
