@@ -62,10 +62,6 @@ var hdxClosestPairsRecAV = {
                     thisAV.southBound = Math.min(waypoints[i].lat, southBound);
                     thisAV.northBound = Math.max(waypoints[i].lat, northBound);
                     
-                    //fill WtoE with sorted vertices by longitude
-                    
-                    
-                    
                 }
                 
                 
@@ -199,6 +195,10 @@ var hdxClosestPairsRecAV = {
 
         hdxAV.algStat.innerHTML = "Initializing";
 
+        console.log(waypoints);
+        console.log(graphEdges);
+        HDXPresort();
+        
         //reorder waypoints
         // show waypoints, hide connections
         initWaypointsAndConnections(true, false,
