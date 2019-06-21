@@ -10,7 +10,7 @@ function HDXPresort() {
 
     // default comparator function for priority queue
     this.comesBefore = function(v1, v2) {
-        return v1.lon < v2.lon;
+        return v1.lon > v2.lon;
     };
 
     // set custom comparator for priority queue
@@ -40,16 +40,16 @@ function HDXPresort() {
         }
     }
     
-    for (let index = 0; index < this.sortedWaypoints.length; index++) {
-        this.sortedWaypoints[index].newIndex = index;
-    }
-    
-    for (let i = 0; i < graphEdges.length; i++) {
-        graphEdges[i].v1 = waypoints[graphEdges[i].v1].newIndex;
-        graphEdges[i].v2 = waypoints[graphEdges[i].v2].newIndex;
-    }
+    // for (let index = 0; index < this.sortedWaypoints.length; index++) {
+    //     this.sortedWaypoints[index].newIndex = index;
+    // }
+    //
+    // for (let i = 0; i < graphEdges.length; i++) {
+    //     graphEdges[i].v1 = waypoints[graphEdges[i].v1].newIndex;
+    //     graphEdges[i].v2 = waypoints[graphEdges[i].v2].newIndex;
+    // }
         
-    waypoints = this.sortedWaypoints;
+    return this;
     
     
     
