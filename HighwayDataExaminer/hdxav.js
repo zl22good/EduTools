@@ -425,7 +425,9 @@ var hdxAV = {
                     if(selection == element){
                         hdxAV.setStatus(hdxStates.AV_PAUSED);
                         hdxAV.startPause.innerHTML = "Resume";
-                        hdxAV.jumpToBreakpoint = true;
+                        if(hdxAV.speedName == "Jump To Breakpoint") {
+                            hdxAV.jumpToBreakpoint = true;
+                        }
                     }
                 }
             }
@@ -439,7 +441,9 @@ var hdxAV = {
                 if(selection == checker){
                     hdxAV.setStatus(hdxStates.AV_PAUSED);
                     hdxAV.startPause.innerHTML = "Resume";
-                    hdxAV.jumpToBreakpoint = true;
+                    if(hdxAV.speedName == "Jump To Breakpoint") {
+                        hdxAV.jumpToBreakpoint = true;
+                    }
                 }
             }
             catch(error){
@@ -454,7 +458,9 @@ var hdxAV = {
                     if(checker == parseInt(element)){
                         hdxAV.setStatus(hdxStates.AV_PAUSED);
                         hdxAV.startPause.innerHTML = "Resume";
-                        hdxAV.jumpToBreakpoint = true;
+                        if(hdxAV.speedName == "Jump To Breakpoint") {
+                            hdxAV.jumpToBreakpoint = true;
+                        }
                     }
                 }
             }
@@ -470,7 +476,9 @@ var hdxAV = {
                     if(selection == parseInt(element)){
                         hdxAV.setStatus(hdxStates.AV_PAUSED);
                         hdxAV.startPause.innerHTML = "Resume";
-                        hdxAV.jumpToBreakpoint = true;
+                        if(hdxAV.speedName == "Jump To Breakpoint") {
+                            hdxAV.jumpToBreakpoint = true;
+                        }
                     }
                 }
             }
@@ -484,7 +492,9 @@ var hdxAV = {
                 if(selection === checker){
                     hdxAV.setStatus(hdxStates.AV_PAUSED);
                     hdxAV.startPause.innerHTML = "Resume";
-                    hdxAV.jumpToBreakpoint = true;
+                    if(hdxAV.speedName == "Jump To Breakpoint") {
+                        hdxAV.jumpToBreakpoint = true;
+                    }
                 }
             }
             catch(error){
