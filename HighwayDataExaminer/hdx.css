@@ -238,13 +238,18 @@ https://stackoverflow.com/questions/19343331/how-do-i-center-an-absolutely-posit
     border: 1px solid #111111;
 }
 
-#Instructions{
+#instructions{
     width: 500px; 
     position: absolute; 
     left: 560px; 
     top: 100px; 
     z-index: 9999; 
     background-color: white;
+    border: 1px solid black;
+    border-collapse: separate;
+    max-height: 379px;
+    display: inline-block;
+    overflow-y: hidden;
 }
 
 #breakpointVariableSelector {
@@ -274,4 +279,33 @@ https://stackoverflow.com/questions/19343331/how-do-i-center-an-absolutely-posit
     position: relative;
     float: right;
     min-width: 25px;
+}
+
+#instructionsHeader{
+    text-align: center;
+    width: 100%;
+}
+
+.tabs{
+    text-align: center;
+    border: 1px solid black;
+    width: 20%;
+    display: inline-block;
+}
+
+#instructionsBody{
+    width: 100%;
+    max-width: 500px;
+    padding: 5px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    max-height: 300px;
+    display: block;
+}
+
+#instructionsBody img{
+    width: 100%;
+    max-width: 500px;
+    padding: 5px;
+
 }

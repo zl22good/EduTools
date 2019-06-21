@@ -213,6 +213,7 @@ function loadDataOptionsPressed() {
     // in all cases, we hide the top panel, show the load panel
     hideTopControlPanel();
     showLoadDataPanel();
+    deleteVariableSelector();
 }
 
 // event handler for "Show Data Tables" checkbox

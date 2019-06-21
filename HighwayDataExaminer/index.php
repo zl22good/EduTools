@@ -127,7 +127,7 @@ ENDOFSTUFF;
 <link rel="stylesheet" type="text/css" href="hdx.css" />
 </head>
 
-<body onload="loadmap(); getDescriptions(); getGraphs(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
+<body onload="loadmap(); getDescriptions(); getGraphs(); hdxAV.initOnLoad(); createTabs();" ondragover="allowdrop(event)" ondrop="drop(event)">
 <p class="menubar">
   HDX: <span id="startUp">To begin, select data to display using the Load Data panel at the upper left of the map</span>
   <span id="filename"></span>
@@ -270,9 +270,23 @@ ENDOFSTUFF;
 </div>
 <div id="datatable" draggable="false"  ondragstart="drag(event)">
 </div>
-    <span id="Instructions">
-        This is the instructions box. You can click on a pseudocode row to set a breakpoint which will allow the code to run to this point. 
-    </span>
+    <table id="instructions">
+        <thead>
+            <tr ><th id="instructionsHeader">Help and Info</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="tabs" id="instructionTab1">Map/Waypoints</td>
+                <td class="tabs" id="instructionTab2">AV Status Box</td>
+                <td class="tabs" id="instructionTab3">Pseudocode</td>
+                <td class="tabs" id="instructionTab4">Extra Info</td>
+                <td class="tabs" id="instructionTab5">Contributions</td>
+            </tr>
+            <tr>
+                <td id="instructionsBody">Please select a tab to get more info on this project and its utilities!<td>
+            <tr>
+        </tbody>
+    </table>
 </body>
 </html>
-<?php tmdb_close(); ?>
+<?php tmdb_close();?>

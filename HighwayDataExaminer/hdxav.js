@@ -137,6 +137,10 @@ var hdxAV = {
     // this will do an action, an iteration, or run to completion
     // for the AV passed in
     nextStep(thisAV) {
+        //If the breakpoint conditions are met
+        //Pause the map, set jumpToBreakpoint=false
+        //and return, so it stays on the current action and doesn't run an
+        //extra action
         if(hdxAV.jumpToBreakpoint){
             hdxAV.setStatus(hdxStates.AV_PAUSED);
             hdxAV.startPause.innerHTML = "Resume";
@@ -158,6 +162,7 @@ var hdxAV = {
             hdxAV.avDone();
             return;
         }
+        //this is for Jump To Breakpoint
         else if(hdxAV.delay == 0){
             while (hdxAV.nextAction != "DONE" && !hdxAV.jumpToBreakpoint) {
                 hdxAV.oneIteration(thisAV);

@@ -1420,7 +1420,7 @@ function getLastTitle()
 
 function hideInstructions()
 {
-    let element = document.getElementById("Instructions");
+    let element = document.getElementById("instructions");
     element.style.display = "none";
 }
 
@@ -1448,4 +1448,50 @@ function hasCommonConditonalBreakpoints(name){
             return true;
     }
     return false;
+}
+
+//This is for Instructions tabs
+
+function createTabs(){
+    var instructionTabSelected = "instructionTab1"
+    let elements = document.getElementsByClassName("tabs");
+    for(let element of elements){
+        element.addEventListener("click", function(){
+            instructionTabSelected = element.getAttribute("id");
+            document.getElementById("instructionsBody").innerHTML = instructionsText(instructionTabSelected);
+        }, false);
+    }
+}
+
+//This is the text that goes into the help box
+function instructionsText(whatText){
+    switch(whatText){
+        case "instructionTab1":
+            html = '<header><b><u>Maps and Waypoints</u></b></header><br \>';
+            html += 'METAL is a project that allows for the visualization and interaction with algorithms ' +
+                'while using locations to help show their real life contribution. This project was originally using ' +
+                'google maps to get locations and waypoints. After google discontinued support for API calls, it was ' +
+                'done away with. A solution had to be found and that was in the name of x.';
+            return html;
+        case "instructionTab2":
+            html = '<header><b><u>Algorithm Visualization Box</u></b></header><br \>';
+            html += 'The Algorithm Visualization (AV) Box contains various info for the user. Among these are ' +
+                'important points to each individual algorithm. For example, in Vertex Extreme Search, some of these ' +
+                'points would be North, South, West and East extremes, the shortest and longest vertex labels ' +
+                'and the first and last vertex label alphabetically.<br \>' +
+                '<img src="pictures/vertexExtremesAVBox.PNG" alt="Vertex Extremes AVBox Example">';
+            return html;
+        case "instructionTab3":
+            html = '<header><b><u>Pseudocode Emulation</u></b></header><br \>';
+            html += '';
+            return html;
+        case "instructionTab4":
+            html = '<header><b><u>Extra info</u></b></header><br \>';
+            html += '';
+            return html;
+        case "instructionTab5":
+            html = '<header style="text-align: center;"><b><u>Contributions</u></b></header><br \>';
+            html += '';
+            return html;
+    }
 }
