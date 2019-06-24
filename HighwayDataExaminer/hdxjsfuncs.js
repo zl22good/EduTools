@@ -1456,9 +1456,14 @@ function createTabs(){
     var instructionTabSelected = "instructionTab1"
     let elements = document.getElementsByClassName("tabs");
     for(let element of elements){
-        element.addEventListener("click", function(){
+        element.addEventListener("click", function(event){
             instructionTabSelected = element.getAttribute("id");
             document.getElementById("instructionsBody").innerHTML = instructionsText(instructionTabSelected);
+            let temp = document.getElementsByClassName("tabs");
+            for(let ele of temp){
+                ele.style.backgroundColor = "white";
+            }
+            event.target.style.backgroundColor = "yellow";
         }, false);
     }
 }
@@ -1471,19 +1476,84 @@ function instructionsText(whatText){
             html += 'METAL is a project that allows for the visualization and interaction with algorithms ' +
                 'while using locations to help show their real life contribution. This project was originally using ' +
                 'google maps to get locations and waypoints. After google discontinued support for API calls, it was ' +
-                'done away with. A solution had to be found and that was in the name of x.';
+                'done away with. A solution had to be found and that was in the name of leaflet.';
+            html += '<br \>';
+            html += 'When you first load up a map, there are many ways in doing so. Option 1 allows for you to search' +
+                ' the list of graphs and select one with enter. ' +
+                '<br \><img src="pictures/option1Selection.PNG" alt="Option 1 Selection Example"><br \>';
+            html += 'Option 2 allows for you to select the map from a drop down list of all maps. They can be ' +
+                'sorted from the number of vertices, alphabetically or other areas of interest.';
+            html += '<br \><img src="pictures/option2Selection.PNG" alt="Option 2 Example"><br \>';
+            html += 'Option 3 allows for you to select a TMG file that is saved locally, so you can specific ' +
+                'maps with ease.';
+            html += '<br \><img src="pictures/option3Selection.PNG" alt="Option 3 Example"><br \>';
+            html += 'The map will tell you the number of waypoints and connections there are on it as the size' +
+                ' ex: size:(57, 50) would mean 57 waypoints and 50 connections <br \>';
+            html += 'Upon selecting the map, you will have the choice of what algorithm to visualize. The majority' +
+                ' of which are linear algorithms and the others are recursive.';
+            html += '<br \><img src="pictures/algorithmSelect.PNG" alt="Algorithm Select Example"><br \>';
+            html += 'Options will show up once you select the algorithm allowing you to customize what data is ' +
+                'tracked and things like starting points/ending points. Below is Prims Algorithm where you can select' +
+                ' the starting point and ending point, as well as the ending condition for the algorithm.';
+            html += '<br \><img src="pictures/primsAlgorithmOptions.PNG" alt="Prims Algorithm Options Example"><br \>';
+            html += "Waypoints exist in a couple of places for the user to see. The first would be the waypoints box" +
+                " on the right side of the screen with the other as points on the map" +
+                ". In this box you can find the given waypoint number, it's real " +
+                "coordinates and it's name. Hovering on a box will bring up it's full label for you to see, which " +
+                "is a combination of it's coordinate and name.";
+            html += '<br \><img src="pictures/waypointInfoBox.png" alt="Waypoint Info Box Example"><br \>';
+            html += "When hovering on a point in the box, it will highlight the point on the map so you know " +
+                "exactly where it lies. Clicking on the point will move the map over by a few pixels to help center" +
+                " it. Although, you may have to click a few times to get there. Another key feature of waypoints are" +
+                " when you click on a specific waypoint in it's box or on the map, the vertex on the map of it will " +
+                "have a popup which shows the data above it pointing to it directly.";
+            html += '<br \><img src="pictures/waypointHoverPoint.png" alt="Waypoint Color Example">';
+            html += '<img src="pictures/waypointVertexPopup.PNG" alt="Waypoint Popup Example"><br \>';
             return html;
+
         case "instructionTab2":
             html = '<header><b><u>Algorithm Visualization Box</u></b></header><br \>';
             html += 'The Algorithm Visualization (AV) Box contains various info for the user. Among these are ' +
                 'important points to each individual algorithm. For example, in Vertex Extreme Search, some of these ' +
                 'points would be North, South, West and East extremes, the shortest and longest vertex labels ' +
                 'and the first and last vertex label alphabetically.<br \>' +
-                '<img src="pictures/vertexExtremesAVBox.PNG" alt="Vertex Extremes AVBox Example">';
+                '<img src="pictures/vertexExtremesAVBox.PNG" alt="Vertex Extremes AVBox Example"><br \>';
+            html += 'Above the unique algorithm info will be various info about the waypoints. This info will include' +
+                ' the number of vertices not yet visited, the currently visited vertex and the number of discarded' +
+                ' ones<br \><img src="pictures/genericWaypointInfo.PNG" alt="Generic Waypoint Info Example"><br \>';
+            html += 'And above this info will exist a log list and pseudocode for the algorithm. The log will explain' +
+                ' what action is currently happening and can be hovered on for a list of the past 5 events. For ' +
+                'more info on the pseudocode, click on the Pseudocode Emulation tab.<br \>' +
+                '<img src="pictures/logInfoPseudocode.PNG" alt="Log List and Pseudocode Example"><br \>';
+            html += 'Lastly, points on the map, and in the Waypoints box correspond with the info in the AV box based' +
+                ' on color';
             return html;
+
         case "instructionTab3":
             html = '<header><b><u>Pseudocode Emulation</u></b></header><br \>';
-            html += '';
+            html += 'For the METAL project, the code that is seen on screen is never ran. This means that all of the ' +
+                'code is fake. However, that is not entirely true. There is actually code tied to it so it will run ' +
+                'correctly. This allows for us to emulate a debugger/VM for the code. With that said, the pseudocode' +
+                ' provided are the correct steps for the given algorithm. A great feature is the breakpoint system.' +
+                ' By clicking on a line of code, if it has breakpoint capabilities, it will highlight in red. When ' +
+                'METAL runs, it will stop every time it comes across the on screen code.';
+            html += '<br \><img src="pictures/breakpointExample.PNG" alt="Breakpoint Example"><br \>';
+            html += 'To further on the breakpoint functionality, there are conditional breakpoints as well. This' +
+                ' means that certain lines of code (most at this point) will offer additional conditions aside from' +
+                ' when we run the line. The additional requirements show up as a pop up to the right of the AV' +
+                ' status panel.';
+            html += '<br \><img src="pictures/conditionalBreakpointPopout.PNG" alt="Condtional ' +
+                'Breakpoint Example"><br \>';
+            html += 'To enable this feature, check the box on the popout.<img ' +
+                'src="pictures/checkedBox.PNG" alt="checkbox Example"><br \>';
+            html += 'Examples of these are for loops allowing to stop at any vertex, if statements allowing you to ' +
+                'choose what condition to stop at and lines like engueue and dequeue allowing stops at certain ' +
+                'starting vertices, connections and ending vertices.<br \>';
+            html += 'Every speed setting works with these breakpoints except for run to completion. If ' +
+                'you would like to jump directly to where the next instance of your break point happens as fast as ' +
+                'possible, select the jump to breakpoint setting.';
+            html += '<br \><img src="pictures/speedSettings.PNG" alt="Speed Settings Example"><br \>';
+            html += 'Lastly, hovering over the line of code will show how many times it has been executed.';
             return html;
         case "instructionTab4":
             html = '<header><b><u>Extra info</u></b></header><br \>';
@@ -1491,7 +1561,26 @@ function instructionsText(whatText){
             return html;
         case "instructionTab5":
             html = '<header style="text-align: center;"><b><u>Contributions</u></b></header><br \>';
-            html += '';
+            html += contributions("Original Author/Owner of Metal", "Prof. James Teresco");
+            html += '<header style="text-align: center;"><b><u>Summer 2019</u></b></header><br \>';
+            html += contributions("Undergraduate Researcher", "Tyler Gorman");
+            html += contributions("Undergraduate Researcher", "Zac Goodsell");
+            html += contributions("Undergraduate Researcher", "Alissa Ronca");
+            html += '<header style="text-align: center;"><b><u>Summer 2018</u></b></header><br \>';
+            html += contributions("Undergraduate Researcher", "Abdul Samad");
+            html += contributions("Undergraduate Researcher", "Michael A. Dagostino Jr.");
+            html += contributions("Undergraduate Researcher", "Eric D. Sauer");
+            html += '<header style="text-align: center;"><b><u>Summer 2017</u></b></header><br \>';
+            html += contributions("?", "Lukasz Ziarek");
+            html += contributions("PHD candidate", "Razieh Fathi");
+            html += contributions("Undergraduate Researcher", "MariaRose Bamundo");
+            html += contributions("Undergraduate Researcher", "Arjol Pengu");
+            html += contributions("Undergraduate Researcher", "Clarice F. Tarbay");
             return html;
     }
+}
+
+function contributions(title, name){
+    let line = '<div style="float: left;">' + title + '</div><div style="float: right;">' + name + '</div><br \>';
+    return line;
 }

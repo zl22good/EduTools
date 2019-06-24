@@ -304,8 +304,7 @@ https://stackoverflow.com/questions/19343331/how-do-i-center-an-absolutely-posit
 }
 
 #instructionsBody img{
-    width: 100%;
-    max-width: 500px;
+    max-width: 100%;
     padding: 5px;
 
 }
