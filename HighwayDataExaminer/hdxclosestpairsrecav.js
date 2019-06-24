@@ -18,11 +18,12 @@ var hdxClosestPairsRecAV = {
     minPoints: 3,
     stack: null,
     callStack: null,
-    
+
+    originalWaypoints: null,
     //vertices sorted by longitude
-    WtoE: null,
+    //WtoE: null,
     //vertices sorted by latitude
-    StoN: null,
+    //StoN: null,
     
     //used for shading
     northBound: 0,
@@ -52,20 +53,16 @@ var hdxClosestPairsRecAV = {
 
                 thisAV.minPoints =
                     document.getElementById("minPoints").value;
-                this.WtoE = new Array(waypoints.length);
-                this.StoN = new Array(waypoints.length);
+                //this.WtoE = new Array(waypoints.length);
+                //this.StoN = new Array(waypoints.length);
         
                 
-                
-                for (let i = 0; i < waypoints.length; i++) {
+                thisAV.southBound = waypoints[0].lat;
+                thisAV.northBound = waypoints[0].lat;
+                for (let i = 1; i < waypoints.length; i++) {
                     // keep track of northmost and southmost points
-                    thisAV.southBound = Math.min(waypoints[i].lat, southBound);
-                    thisAV.northBound = Math.max(waypoints[i].lat, northBound);
-                    
-                    //fill WtoE with sorted vertices by longitude
-                    
-                    
-                    
+                    thisAV.southBound = Math.min(waypoints[i].lat, thisAV.southBound);
+                    thisAV.northBound = Math.max(waypoints[i].lat, thisAV.northBound);
                 }
                 
                 
@@ -200,24 +197,30 @@ var hdxClosestPairsRecAV = {
         hdxAV.algStat.innerHTML = "Initializing";
 
         //reorder waypoints
+        console.log(waypoints);
+        let presort = new HDXPresort();
+        this.originalWaypoints = waypoints;
+        waypoints = presort.sortedWaypoints;
+        console.log(waypoints);
+        updateMap();
+
         // show waypoints, hide connections
         initWaypointsAndConnections(true, false,
                                     visualSettings.undiscovered);
-        this.code = '<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">WtoE[] &larr; vertices sorted by longitude<br />StoN[] &larr; vertices sorted by latitude</td></tr>';
-        this.code += pcEntry(0,'EfficientClosestPair(WtoE, StoN)',"recursiveCallTop");
+        this.code = '<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">WtoE[] &larr; vertices sorted by longitude</td></tr>';
+        this.code += pcEntry(0,'ClosestPair(WtoE) //length = n',"recursiveCallTop");
         this.code += pcEntry(1,'if (WtoE.length <= 3 || recursiveDepth == userLimit)',"checkBaseCase");
         this.code += pcEntry(2,'return brute force min distance',"returnBruteForceSolution");
         this.code += pcEntry(1,'else',"");
-        this.code += pcEntry(2,'WtoE<sub>left</sub>[] &larr; copy first ⌈n/2⌉ points of WtoE',"");
-        this.code += pcEntry(2,'StoN<sub>left</sub>[] &larr; copy same ⌈n/2⌉ points from StoN',"");
-        this.code += pcEntry(2,'WtoE<sub>right</sub>[] &larr; copy remaining ⌊n/2⌋ points of WtoE',"");
-        this.code += pcEntry(2,'StoN<sub>right</sub>[] &larr; copy remaining ⌈n/2⌉ points from StoN',"");
-        this.code += pcEntry(2,'d<sub>left</sub> &larr; EfficientClosestPair(WtoE<sub>left</sub>, StoN<sub>left</sub>)',"");
-        this.code += pcEntry(2,'d<sub>right</sub> &larr; EfficientClosestPair(WtoE<sub>right</sub>, StoN<sub>right</sub>)',"");
-        this.code += pcEntry(2,'d &larr; min(d<sub>left</sub>, d<sub>right</sub>)',"");
-        
-        
-        },
+        this.code += pcEntry(2,'min<sub>left</sub> &larr; ClosestPair(WtoE[0, (n/2)-1])',"");
+        this.code += pcEntry(2,'min<sub>right</sub> &larr; ClosestPair(WtoE[n/2, n-1])',"");
+        this.code += pcEntry(2,'min<sub>halves</sub> &larr; min(min<sub>left</sub>, min<sub>right</sub>)',"");
+        this.code += pcEntry(2,'mid &larr; WtoE[n/2].longitude',"");
+        this.code += pcEntry(2,'closeToCenter[] &larr; all points which |longitude − mid| < min<sub>halves</sub>',"");
+        this.code += pcEntry(2,'min<sub>halves</sub>Sq &larr; min<sub>halves</sub><sup>2</sup>',"");
+
+
+    },
 
     // set up UI entries for closest/farthest pairs
     setupUI() {
@@ -236,13 +239,8 @@ var hdxClosestPairsRecAV = {
         
     // remove UI modifications made for vertex closest/farthest pairs
     cleanupUI() {
-
-        if (this.lineClosest != null) {
-            this.lineClosest.remove();
-        }
-        if (this.lineFarthest != null) {
-            this.lineFarthest.remove();
-        }
+        waypoints = this.originalWaypoints;
+        updateMap();
     },
     
     idOfAction(action){
