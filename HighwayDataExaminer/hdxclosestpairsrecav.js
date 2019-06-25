@@ -18,6 +18,15 @@ var hdxClosestPairsRecAV = {
     minPoints: 3,
     stack: null,
     callStack: null,
+    startIndex: 0,
+    endIndex: 0,
+    minLeft: 0,
+    minRight: 0,
+    midLineLong: 0,
+    closeToCenter: null,
+    minHalvesSquared: 0,
+    forLoopIndex: 0,
+    whileLoopIndex: 0,
 
     originalWaypoints: null,
     //vertices sorted by longitude
@@ -47,7 +56,7 @@ var hdxClosestPairsRecAV = {
     avActions: [
         {
             label: "START",
-            comment: "initialize closest pair variables",
+            comment: "Initialize closest pair variables",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
@@ -55,7 +64,16 @@ var hdxClosestPairsRecAV = {
                     document.getElementById("minPoints").value;
                 //this.WtoE = new Array(waypoints.length);
                 //this.StoN = new Array(waypoints.length);
-        
+                thisAV.stack = [];
+                thisAV.startIndex = 0;
+                thisAV.endIndex = waypoints.length - 1;
+                thisAV.minLeft = 0;
+                thisAV.minRight = 0;
+                thisAV.midLineLong = 0;
+                thisAV.closeToCenter = [];
+                thisAV.minHalvesSquared = 0;
+                thisAV.forLoopIndex = 0;
+                thisAV.whileLoopIndex = 0;
                 
                 thisAV.southBound = waypoints[0].lat;
                 thisAV.northBound = waypoints[0].lat;
@@ -79,19 +97,195 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                thisAV.callStack.add(thisAV.WtoE);
+                thisAV.callStack.add([thisAV.startIndex, thisAV.endIndex]);
                 hdxAV.nextAction = "checkBaseCase"
             },
             logMessage: function(thisAV) {
                 return "Call recursion";
             }
         },
-        
-        
-        
-        
-        
-        
+        {
+            label: "checkBaseCase",
+            comment: "Check if base case is reached",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                if (thisAV.endIndex - thisAV.startIndex <= thisAV.minPoints) {
+                    hdxAV.nextAction = "returnBruteForceSolution";
+                }
+                else {
+                    hdxAV.nextAction = "callRecursionLeft";
+                }
+            },
+            logMessage: function(thisAV) {
+                return "Check whether minimum number of points has been reached";
+            }
+        },
+        {
+            label: "returnBruteForceSolution",
+            comment: "Return brute force Solution",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "????"
+            },
+            logMessage: function(thisAV) {
+                return "Return brute force solution for this section";
+            }
+        },
+        {
+            label: "callRecursionLeft",
+            comment: "Call recursion on left half of points",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "callRecursionRight"
+            },
+            logMessage: function(thisAV) {
+                return "Call recursion on left half of points";
+            }
+        },
+        {
+            label: "callRecursionRight",
+            comment: "Call recursion on right half of points",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "setMinOfHalves"
+            },
+            logMessage: function(thisAV) {
+                return "Call recursion on right half of points";
+            }
+        },
+        {
+            label: "setMinOfHalves",
+            comment: "Find smaller of minimum distances from the two halves",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "setMiddlePoint"
+            },
+            logMessage: function(thisAV) {
+                return "Find smaller of minimum distances from the two halves";
+            }
+        },
+        {
+            label: "setMiddlePoint",
+            comment: "Find longitude of middle point",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "setPointsToCheck"
+            },
+            logMessage: function(thisAV) {
+                return "Get longitude of middle point that divides map in half";
+            }
+        },
+        {
+            label: "setPointsToCheck",
+            comment: "Find points closer to middle line than min distance",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                //sort by latitude
+                hdxAV.nextAction = "squareMinOfHalves"
+            },
+            logMessage: function(thisAV) {
+                return "Find points closer to middle line than min distance";
+            }
+        },
+        {
+            label: "squareMinOfHalves",
+            comment: "Square min of halves",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "forLoopTop"
+            },
+            logMessage: function(thisAV) {
+                return "Square min found from halves";
+            }
+        },
+        {
+            label: "forLoopTop",
+            comment: "Loop through vertices in closeToCenter",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "updateWhileLoopIndex"
+            },
+            logMessage: function(thisAV) {
+                return "Loop through vertices in closeToCenter";
+            }
+        },
+        {
+            label: "updateWhileLoopIndex",
+            comment: "Set index for while loop",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "whileLoopTop"
+            },
+            logMessage: function(thisAV) {
+                return "Set index for while loop";
+            }
+        },
+        {
+            label: "whileLoopTop",
+            comment: "Loop through points to check if closer than min distance",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "updateMinPairFound"
+            },
+            logMessage: function(thisAV) {
+                return "Loop through points to check if closer than min distance";
+            }
+        },
+        {
+            label: "updateMinPairFound",
+            comment: "Update new minimum distance found",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "incrementWhileLoopIndex"
+            },
+            logMessage: function(thisAV) {
+                return "Update new minimum distance found between points";
+            }
+        },
+        {
+            label: "incrementWhileLoopIndex",
+            comment: "Increment while loop index",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "return"
+            },
+            logMessage: function(thisAV) {
+                return "Increment while loop index";
+            }
+        },
+        {
+            label: "return",
+            comment: "Return min distance between points",
+            code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
+
+                hdxAV.nextAction = "????"
+            },
+            logMessage: function(thisAV) {
+                return "Return minimum distance between closest pairs";
+            }
+        },
+
+        //recursiveCallTop checkBaseCase returnBruteForceSolution
+        // callRecursionLeft callRecursionRight setMinOfHalves setMiddlePoint
+        // setPointsToCheck squareMinOfHalves forLoopTop updateWhileLoopIndex
+        // whileLoopTop updateMinPairFound incrementWhileLoopIndex return
+
+
+
 
         {
             label: "computeDistance",
@@ -207,18 +401,27 @@ var hdxClosestPairsRecAV = {
         // show waypoints, hide connections
         initWaypointsAndConnections(true, false,
                                     visualSettings.undiscovered);
+
+        this.callStack = new HDXLinear(hdxLinearTypes.CALL_STACK,
+            "Call Stack");
+
         this.code = '<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">WtoE[] &larr; vertices sorted by longitude</td></tr>';
         this.code += pcEntry(0,'ClosestPair(WtoE) //length = n',"recursiveCallTop");
         this.code += pcEntry(1,'if (WtoE.length <= 3 || recursiveDepth == userLimit)',"checkBaseCase");
         this.code += pcEntry(2,'return brute force min distance',"returnBruteForceSolution");
         this.code += pcEntry(1,'else',"");
-        this.code += pcEntry(2,'min<sub>left</sub> &larr; ClosestPair(WtoE[0, (n/2)-1])',"");
-        this.code += pcEntry(2,'min<sub>right</sub> &larr; ClosestPair(WtoE[n/2, n-1])',"");
-        this.code += pcEntry(2,'min<sub>halves</sub> &larr; min(min<sub>left</sub>, min<sub>right</sub>)',"");
-        this.code += pcEntry(2,'mid &larr; WtoE[n/2].longitude',"");
-        this.code += pcEntry(2,'closeToCenter[] &larr; all points which |longitude − mid| < min<sub>halves</sub>',"");
-        this.code += pcEntry(2,'min<sub>halves</sub>Sq &larr; min<sub>halves</sub><sup>2</sup>',"");
-
+        this.code += pcEntry(2,'min<sub>left</sub> &larr; ClosestPair(WtoE[0, (n/2)-1])',"callRecursionLeft");
+        this.code += pcEntry(2,'min<sub>right</sub> &larr; ClosestPair(WtoE[n/2, n-1])',"callRecursionRight");
+        this.code += pcEntry(2,'min<sub>halves</sub> &larr; min(min<sub>left</sub>, min<sub>right</sub>)',"setMinOfHalves");
+        this.code += pcEntry(2,'mid &larr; WtoE[n/2].long',"setMiddlePoint");
+        this.code += pcEntry(2,'closeToCenter[] &larr; all points which |longitude − mid| < min<sub>halves</sub>',"setPointsToCheck");
+        this.code += pcEntry(2,'min<sub>halves</sub>Sq &larr; min<sub>halves</sub><sup>2</sup>',"squareMinOfHalves");
+        this.code += pcEntry(2,'for i &larr; 0 to closeToCenter.length - 2 do',"forLoopTop");
+        this.code += pcEntry(3,'k &larr; i + 1',"updateWhileLoopIndex");
+        this.code += pcEntry(3,'while k <= closeToCenter.length - 1 and (closeToCenter[k].lat - closeToCenter[i].lat)<sup>2</sup> < minHalvesSq',"whileLoopTop");
+        this.code += pcEntry(4,'minHalvesSq &larr; min((closeToCenter[k].long - closeToCenter[i].long)<sup>2</sup> + (closeToCenter[k].lat - closeToCenter[i].lat)<sup>2</sup>, minHalvesSq)',"updateMinPairFound");
+        this.code += pcEntry(4,'k &larr; k + 1',"incrementWhileLoopIndex");
+        this.code += pcEntry(2,'return sqrt(minHalvesSq)',"return");
 
     },
 

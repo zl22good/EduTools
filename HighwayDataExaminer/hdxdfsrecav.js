@@ -361,7 +361,6 @@ var hdxDFSRecAV = {
                                     visualSettings.undiscovered);
         
         this.discarded= 0;
-        this.callStack= null;
         // last place to come out of the call stack, currently "visiting"
         this.visiting= null;
 
@@ -377,9 +376,6 @@ var hdxDFSRecAV = {
         this.numEUndiscovered= graphEdges.length;
         this.numEDiscardedOnRemoval= 0;
         this.totalTreeCost = 0;
-                
-        this.stack = new HDXLinear(hdxLinearTypes.STACK,
-                         "Stack");
 
         this.callStack = new HDXLinear(hdxLinearTypes.CALL_STACK,
             "Call Stack");
