@@ -1408,7 +1408,7 @@ function getLastTitle()
                        }
                 }
             //remove the "title" part and parse it for the number portion
-            theOne = theOne.substring(5);
+            theOne = theOne.substring(6);
             return (parseInt(theOne) + 1);
         }
     else
