@@ -1248,7 +1248,7 @@ function customTitle()
         {
             //offset the numbering to avoid conflicts
             var offset = numberOfDataTitles + x;
-            var theClass = "title" + offset;
+            var theClass = "Atitle" + offset;
             //adds class to the original html
             titles[x].classList.add(theClass);
             //Remove any duplicates before after adding the class, but before doing anything else
@@ -1261,7 +1261,7 @@ function customTitle()
                 try {
                     var target = event.target; //mouse enter event
                     var currClass = target.getAttribute("class"); // grabs the current class, acting as an ID
-                    currClass = currClass.substr(currClass.indexOf("title"));
+                    currClass = currClass.substr(currClass.indexOf("Atitle"));
                     var classNodes = document.body.getElementsByClassName(currClass);
                     var spanTag = classNodes[1];//Grabs the spanTag as it is always the 2nd element when pulled this way
                     var style = window.getComputedStyle(spanTag);
@@ -1298,7 +1298,7 @@ function customTitle()
 
                     var target = event.target;
                     var currClass = target.getAttribute("class"); // grabs the current class, acting as an ID
-                    currClass = currClass.substr(currClass.indexOf("title"));
+                    currClass = currClass.substr(currClass.indexOf("Atitle"));
                     var classNodes = document.body.getElementsByClassName(currClass);
                     var spanTag = classNodes[1]; //Grabs the spanTag as it is always the 2nd element
                     var style = window.getComputedStyle(spanTag);
@@ -1364,10 +1364,10 @@ function updateTitle(customSpanTag)
     for(let temp of classes)
         {
             //if the current class has title in it
-            if(temp.includes("title"))
+            if(temp.includes("Atitle"))
                 {
                     //if last class was already a title
-                    if(lastClass.includes("title"))
+                    if(lastClass.includes("Atitle"))
                         {
                             //remove the class title###... from the main tag
                             //get Elements both with the title###... and data-title classes
@@ -1402,7 +1402,7 @@ function getLastTitle()
             //make theOne equal to it
             for(let title of classes)
                 {
-                    if(/title(\d+)/.test(title))
+                    if(/Atitle(\d+)/.test(title))
                        {
                             theOne = title;
                        }
