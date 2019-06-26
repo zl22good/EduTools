@@ -162,6 +162,22 @@ var hdxKruskalAV = {
             logMessage: function(thisAV) {
                 return "Removed edge #" +
                     thisAV.visiting.connection + " from Priority Queue";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                let temp;
+                if(whatToDo == "getPlaceFromLDVCV1"){
+                    temp = thisAV.visiting.fromVIndex;
+                }
+                else if(whatToDo == "getPlaceFromLDVCV2"){
+                    temp = thisAV.visiting.vIndex;
+                }
+                else if(whatToDo == "getPlaceFromLDVCV3"){
+                    temp = thisAV.visiting.connection;
+                }
+                else{
+                    temp = -1;
+                }
+                return temp;
             }
         },
         {
@@ -183,6 +199,9 @@ var hdxKruskalAV = {
             logMessage: function(thisAV) {
                 return "Checking if edge #" + thisAV.visiting.connection +
                     " creates a cycle";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.isCycle(thisAV.visiting.connection);
             }
         },
         {
@@ -210,6 +229,9 @@ var hdxKruskalAV = {
             logMessage: function(thisAV) {
                 return "Discarding edge #" + 
                     thisAV.visiting.connection + " on removal";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.visiting.connection;
             }
         },
 
@@ -270,6 +292,16 @@ var hdxKruskalAV = {
             },
             logMessage: function(thisAV) {
                 return "Adding edge #" + thisAV.visiting.connection + " to tree";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                if(whatToDo == "isNotCycleCV1"){
+                    let temp = graphEdges[thisAV.visiting.connection].v1;
+                    return temp;
+                }
+                else if(whatToDo == "isNotCycleCV2"){
+                    let temp2 = graphEdges[thisAV.visiting.connection].v2;
+                    return temp2;
+                }
             }
         },
 
@@ -432,6 +464,30 @@ var hdxKruskalAV = {
         }
         else{
             switch(name){
+                case "checkCycle":
+                    html = createInnerHTMLChoice("boolean", "checkCycleCV", "creates a cycle", "adds an edge");
+                    return html;
+                case "isNotCycle":
+                    html = buildWaypointSelector2("isNotCycleCV1",
+                        "Please select the vertex of the connection <br \> to stop at: ");
+                    html += '<br \>';
+                    html += buildWaypointSelector2("isNotCycleCV2",
+                        "Please select the starting vertex <br \> to stop at: ");
+                    return html;
+                case "isCycle":
+                    html = buildWaypointSelector2("isCycleCV",
+                        "Please select the vertex of the discarded edge<br \> to stop at: ");
+                    return html;
+                case "getPlaceFromLDV":
+                    html = buildWaypointSelector2("getPlaceFromLDVCV1",
+                        "Please select the starting vertex to stop at: ");
+                    html += '<br \>';
+                    html += buildWaypointSelector2("getPlaceFromLDVCV2",
+                        "Please select the ending vertex to stop at: ");
+                    html += '<br \>';
+                    html += buildWaypointSelector2("getPlaceFromLDVCV3",
+                        "Please select the connection to stop at: ");
+                    return html;
 
             }
         }
@@ -446,7 +502,11 @@ var hdxKruskalAV = {
         }
         else{
             switch(name){
-                    
+                case "checkCycle":
+                case "isNotCycle":
+                case "isCycle":
+                case "getPlaceFromLDV":
+                    return true;
             }
         }
         return false;

@@ -173,6 +173,9 @@ var hdxExtremePairsAV = {
             },
             logMessage: function(thisAV) {
                 return "Check if [" + thisAV.v1 + "," + thisAV.v2 + "] is the new closest pair";
+            },
+            currentVariable: function(thisAV){
+                return (thisAV.d_this < thisAV.d_closest);
             }
         },
         {
@@ -234,6 +237,9 @@ var hdxExtremePairsAV = {
             },
             logMessage: function(thisAV) {
                 return "Check if [" + thisAV.v1 + "," + thisAV.v2 + "] is the new farthest pair";
+            },
+            currentVariable: function(thisAV){
+                return (thisAV.d_this > thisAV.d_farthest);
             }
         },
         {
@@ -508,7 +514,14 @@ var hdxExtremePairsAV = {
         }
         else{
             switch(name){
-                    
+                case "checkCloseLeader":
+                    html = createInnerHTMLChoice("boolean","checkCloseLeaderCV",
+                                                 "distance is the new closest","distnace is not the closest");
+                    return html;
+                case "checkFarLeader":
+                    html = createInnerHTMLChoice("boolean","checkCloseLeaderCV",
+                                                 "distance is the new farthest","distnace is not the farthest");
+                    return html;
             }
         }
         return "No innerHTML";
@@ -521,7 +534,9 @@ var hdxExtremePairsAV = {
         }
         else{
             switch(name){
-                    
+                case "checkCloseLeader":
+                case "checkFarLeader":
+                    return true;
             }
         }
         return false;

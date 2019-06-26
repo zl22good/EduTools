@@ -376,6 +376,9 @@ var hdxVertexExtremesSearchAV = {
             },
             logMessage: function(thisAV) {
                 return "Check for new " + thisAV.categories[thisAV.checkedCategory].label + " leader";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.categories[thisAV.nextCategory].newLeader();
             }
         },
         {
@@ -878,7 +881,46 @@ For Ties, Remember:<br />
         }
         else{
             switch(name){
-                    
+                case "checkNextCategory0":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV0",
+                                                 "current vertex is the northern most",
+                                                 "current vertex is not the northern most");
+                    return html;
+                case "checkNextCategory1":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV1",
+                                                 "current vertex is the southern most",
+                                                 "current vertex is not the southern most");
+                    return html;
+                case "checkNextCategory2":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV2",
+                                                 "current vertex is the eastern most",
+                                                 "current vertex is not the eastern most");
+                    return html;
+                case "checkNextCategory3":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV3",
+                                                 "current vertex is the western most",
+                                                 "current vertex is not the western most");
+                    return html;
+                case "checkNextCategory4":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV4",
+                                                 "current label is the shortest",
+                                                 "current label is not the shortest");
+                    return html;
+                case "checkNextCategory5":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV5",
+                                                 "current label is the longest",
+                                                 "current label is not the longest");
+                    return html;
+                case "checkNextCategory6":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV6",
+                                                 "current label is first alphabetically",
+                                                 "current label is not first alphabetically");
+                    return html;
+                case "checkNextCategory7":
+                    html = createInnerHTMLChoice("boolean","checkNextCategoryCV7",
+                                                 "current label is last alphabetically",
+                                                 "current label is not last alphabetically");
+                    return html;
             }
         }
         return "No innerHTML";
@@ -891,7 +933,15 @@ For Ties, Remember:<br />
         }
         else{
             switch(name){
-                    
+                case "checkNextCategory0":
+                case "checkNextCategory1":
+                case "checkNextCategory2":
+                case "checkNextCategory3":
+                case "checkNextCategory4":
+                case "checkNextCategory5":
+                case "checkNextCategory6":
+                case "checkNextCategory7":
+                    return true;
             }
         }
         return false;

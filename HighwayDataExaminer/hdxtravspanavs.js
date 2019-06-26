@@ -416,7 +416,6 @@ var hdxTraversalsSpanningAVCommon = {
             },
             currentVariable: function(thisAV, whatToDo){
                 let temp = thisAV.visiting.fromVIndex + " " + thisAV.visiting.vIndex;
-                console.log(temp);
                 return temp;
             }
         },
@@ -437,6 +436,11 @@ var hdxTraversalsSpanningAVCommon = {
             logMessage: function(thisAV) {
                 return "Checking if #" + thisAV.visiting.vIndex +
                     " was previously added";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                let temp = thisAV.addedV[thisAV.visiting.vIndex];
+                console.log(temp);
+                return temp;
             }
         },
         {
@@ -1133,13 +1137,21 @@ var hdxTraversalsSpanningAVCommon = {
             switch(name){
                 case "getPlaceFromLDV":
                 case "checkNeighborsLoopIfFalse":
-                    html = buildWaypointSelector2("generic3","Please select the vertex of the LDV <br \>(either starting or to) to stop at: ");
-                return html;
+                    html = buildWaypointSelector2("generic3",
+                        "Please select the vertex of the LDV <br \>(either starting or to) to stop at: ");
+                    return html;
                 case "wasNotAdded":
-                    html = buildWaypointSelector2("wasNotAdded1", "Please select the vertex of the connection <br \> to stop at: ");
+                    html = buildWaypointSelector2("wasNotAdded1",
+                        "Please select the vertex of the connection <br \> to stop at: ");
                     html += '<br \>';
-                    html += buildWaypointSelector2("wasNotAdded2", "Please select the starting vertex <br \> to stop at: ");
-                return html;        
+                    html += buildWaypointSelector2("wasNotAdded2",
+                        "Please select the starting vertex <br \> to stop at: ");
+                    return html;
+                case "checkAdded":
+                    html = createInnerHTMLChoice("boolean","checkAddedCV","Tree contains vertex",
+                        "Vertex is missing from tree");
+                    return html;
+
             }
         }
         return "No innerHTML";
@@ -1155,6 +1167,8 @@ var hdxTraversalsSpanningAVCommon = {
                 case "wasNotAdded":    
                 case "getPlaceFromLDV":
                 case "checkNeighborsLoopIfFalse":
+                case "checkNeighborsLoopIf":
+                case "checkAdded":
                     return true;
             }
         }
