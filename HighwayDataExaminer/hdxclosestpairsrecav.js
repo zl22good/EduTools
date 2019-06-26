@@ -27,6 +27,7 @@ var hdxClosestPairsRecAV = {
     minHalvesSquared: 0,
     forLoopIndex: 0,
     whileLoopIndex: 0,
+    returnValue: 0,
 
     originalWaypoints: null,
     //vertices sorted by longitude
@@ -74,6 +75,7 @@ var hdxClosestPairsRecAV = {
                 thisAV.minHalvesSquared = 0;
                 thisAV.forLoopIndex = 0;
                 thisAV.whileLoopIndex = 0;
+                thisAV.returnValue = 0;
                 
                 thisAV.southBound = waypoints[0].lat;
                 thisAV.northBound = waypoints[0].lat;
@@ -127,7 +129,12 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                hdxAV.nextAction = "????"
+                let minDistance = computeDistance(waypoints[thisAV.startIndex], waypoints[thisAV.startIndex + 1]);
+                for (let i = thisAV.startIndex; i <= thisAV.endIndex; i++){
+                    
+                }
+                
+                hdxAV.nextAction = thisAV.callStack.pop();
             },
             logMessage: function(thisAV) {
                 return "Return brute force solution for this section";
@@ -139,7 +146,8 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                hdxAV.nextAction = "callRecursionRight"
+                thisAV.callStack.push("callRecursionRight");
+                hdxAV.nextAction = "recursiveCallTop"
             },
             logMessage: function(thisAV) {
                 return "Call recursion on left half of points";
@@ -151,7 +159,8 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                hdxAV.nextAction = "setMinOfHalves"
+                thisAV.callStack.push("setMinOfHalves");
+                hdxAV.nextAction = "recursiveCallTop"
             },
             logMessage: function(thisAV) {
                 return "Call recursion on right half of points";
@@ -271,8 +280,13 @@ var hdxClosestPairsRecAV = {
             comment: "Return min distance between points",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-
-                hdxAV.nextAction = "????"
+                
+                if (thisAV.callStack.length == 0){
+                    hdxAV.nextAction = cleanup;
+                }
+                else {
+                    hdxAV.nextAction = thisAV.callStack.pop();
+                }
             },
             logMessage: function(thisAV) {
                 return "Return minimum distance between closest pairs";
@@ -337,6 +351,10 @@ var hdxClosestPairsRecAV = {
             weight: 4
         });
         this.lineVisiting.addTo(map);   
+    },
+    
+    computeDistance(v1, v2) {
+        return Math.sqrt(Math.pow(v1.lat - v2.lat, 2) + Math.pow(v1.lon - v2.lon, 2));
     },
     
     // function to remove the visiting polyline
@@ -415,13 +433,13 @@ var hdxClosestPairsRecAV = {
         this.code += pcEntry(2,'min<sub>halves</sub> &larr; min(min<sub>left</sub>, min<sub>right</sub>)',"setMinOfHalves");
         this.code += pcEntry(2,'mid &larr; WtoE[n/2].long',"setMiddlePoint");
         this.code += pcEntry(2,'closeToCenter[] &larr; all points which |longitude − mid| < min<sub>halves</sub>',"setPointsToCheck");
-        this.code += pcEntry(2,'min<sub>halves</sub>Sq &larr; min<sub>halves</sub><sup>2</sup>',"squareMinOfHalves");
+        this.code += pcEntry(2,'minSq &larr; min<sub>halves</sub><sup>2</sup>',"squareMinOfHalves");
         this.code += pcEntry(2,'for i &larr; 0 to closeToCenter.length - 2 do',"forLoopTop");
         this.code += pcEntry(3,'k &larr; i + 1',"updateWhileLoopIndex");
-        this.code += pcEntry(3,'while k <= closeToCenter.length - 1 and (closeToCenter[k].lat - closeToCenter[i].lat)<sup>2</sup> < minHalvesSq',"whileLoopTop");
-        this.code += pcEntry(4,'minHalvesSq &larr; min((closeToCenter[k].long - closeToCenter[i].long)<sup>2</sup> + (closeToCenter[k].lat - closeToCenter[i].lat)<sup>2</sup>, minHalvesSq)',"updateMinPairFound");
+        this.code += pcEntry(3,'while (k <= closeToCenter.length - 1 and (closeToCenter[k].lat - closeToCenter[i].lat)<sup>2</sup> < minSq)',"whileLoopTop");
+        this.code += pcEntry(4,'minSq &larr; min((closeToCenter[k].long - closeToCenter[i].long)<sup>2</sup> + (closeToCenter[k].lat - closeToCenter[i].lat)<sup>2</sup>, minSq)',"updateMinPairFound");
         this.code += pcEntry(4,'k &larr; k + 1',"incrementWhileLoopIndex");
-        this.code += pcEntry(2,'return sqrt(minHalvesSq)',"return");
+        this.code += pcEntry(2,'return sqrt(minSq)',"return");
 
     },
 
