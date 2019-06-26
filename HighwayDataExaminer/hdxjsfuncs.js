@@ -1418,15 +1418,16 @@ function getLastTitle()
         }
 }
 
+//Hide the instructions object
 function hideInstructions()
 {
     let element = document.getElementById("instructions");
     element.style.display = "none";
 }
 
+//Inserts innerHTML of code lines
+//for conditionals
 function commonConditionalBreakpoints(name){
-    let element = document.getElementById("useBreakpointVariable");
-    let max = waypoints.length-1;
     let html = "No innerHTML"
     switch(name){
         case "vtestforLoopTop":
@@ -1439,6 +1440,8 @@ function commonConditionalBreakpoints(name){
     return html;
 }
 
+//Used with each algorithms method to check if a method
+//has a conditional
 function hasCommonConditonalBreakpoints(name){
     switch(name){
         case "vtestforLoopTop":
@@ -1451,7 +1454,7 @@ function hasCommonConditonalBreakpoints(name){
 }
 
 //This is for Instructions tabs
-
+//This creates the clickable tabs for the info box
 function createTabs(){
     var instructionTabSelected = "instructionTab1"
     let elements = document.getElementsByClassName("tabs");
@@ -1471,6 +1474,7 @@ function createTabs(){
 //This is the text that goes into the help box
 function instructionsText(whatText){
     switch(whatText){
+        //Map Waypoints Tab
         case "instructionTab1":
             html = '<header><b><u>Maps and Waypoints</u></b></header><br \>';
             html += 'METAL is a project that allows for the visualization and interaction with algorithms ' +
@@ -1510,7 +1514,7 @@ function instructionsText(whatText){
             html += '<br \><img src="pictures/waypointHoverPoint.png" alt="Waypoint Color Example">';
             html += '<img src="pictures/waypointVertexPopup.PNG" alt="Waypoint Popup Example"><br \>';
             return html;
-
+        //AV Status Box
         case "instructionTab2":
             html = '<header><b><u>Algorithm Visualization Box</u></b></header><br \>';
             html += 'The Algorithm Visualization (AV) Box contains various info for the user. Among these are ' +
@@ -1528,7 +1532,7 @@ function instructionsText(whatText){
             html += 'Lastly, points on the map, and in the Waypoints box correspond with the info in the AV box based' +
                 ' on color';
             return html;
-
+        //Pseudocode tab
         case "instructionTab3":
             html = '<header><b><u>Pseudocode Emulation</u></b></header><br \>';
             html += 'For the METAL project, the code that is seen on screen is never ran. This means that all of the ' +
@@ -1555,10 +1559,12 @@ function instructionsText(whatText){
             html += '<br \><img src="pictures/speedSettings.PNG" alt="Speed Settings Example"><br \>';
             html += 'Lastly, hovering over the line of code will show how many times it has been executed.';
             return html;
+        //Extra Info
         case "instructionTab4":
             html = '<header><b><u>Extra info</u></b></header><br \>';
             html += '';
             return html;
+        //Contributions tab
         case "instructionTab5":
             html = '<header style="text-align: center;"><b><u>Contributions</u></b></header><br \>';
             html += contributions("Original Author/Owner of Metal", "Prof. James Teresco");
@@ -1580,6 +1586,8 @@ function instructionsText(whatText){
     }
 }
 
+//This function takes a title of a person, and their name
+//and it sets them float left, float right and adds a new line after
 function contributions(title, name){
     let line = '<div style="float: left;">' + title + '</div><div style="float: right;">' + name + '</div><br \>';
     return line;
