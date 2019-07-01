@@ -508,6 +508,7 @@ function processContents(fileContents) {
     
     document.getElementById('datatable').innerHTML = pointboxContents;
     hideLoadDataPanel();
+    mapStatus = mapStates.HDX;
     updateMap();
 }
 
