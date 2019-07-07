@@ -63,6 +63,7 @@
 <script src="hdxkruskalav.js" type="text/javascript"></script>
 <script src="hdxdegreeav.js" type="text/javascript"></script>
 <script src="hdxdfsrecav.js" type="text/javascript"></script>
+<script src="hdxinstructions.js" type="text/javascript"></script>
 <link rel="stylesheet" type="text/css" href="supplmentalTypeAhead.css"/>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
@@ -272,18 +273,28 @@ ENDOFSTUFF;
 </div>
     <table id="instructions">
         <thead>
-            <tr ><th id="instructionsHeader">Help and Info</th></tr>
+            <tr ><th id="instructionsHeader">Using METAL's Highway Data Examiner (HDX)</th></tr>
         </thead>
         <tbody>
             <tr>
-                <td class="tabs" id="instructionTab1">Map/Waypoints</td>
+                <td class="tabs" id="instructionTab1">Maps/Graphs</td>
                 <td class="tabs" id="instructionTab2">AV Status Box</td>
                 <td class="tabs" id="instructionTab3">Pseudocode</td>
                 <td class="tabs" id="instructionTab4">Extra Info</td>
-                <td class="tabs" id="instructionTab5">Contributions</td>
+                <td class="tabs" id="instructionTab5">Credits</td>
             </tr>
             <tr>
-                <td id="instructionsBody">Please select a tab to get more info on this project and its utilities!<td>
+                <td id="instructionsBody">Select a tab above to learn
+                about METAL and HDX.  This panel will close
+                automatically when you load data into HDX using the
+                  panel to the left.<br />
+		  <b>What's New?</b><br />  The 2019 Summer Scholars
+		project added new algorithms (Kruskal's algorithm, a
+		recursive depth-first traversal, a vertex degree
+		search) and new options and features in existing
+		algorithms, along with support for conditional
+		breakpoints, plus many user interface improvements and
+		general bug fixes.  Enjoy!<td>
             <tr>
         </tbody>
     </table>
