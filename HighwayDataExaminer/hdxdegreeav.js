@@ -99,8 +99,10 @@ var hdxDegreeAV = {
                 thisAV.nextToCheck = 0;
                 thisAV.discarded = 0;
 
-                updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
-                updateAVControlEntry("visiting", "Visiting #0 (initial leader in each category: #0 " + waypoints[0].label);
+                updateAVControlEntry("undiscovered", waypoints.length +
+				     " vertices not yet visited");
+                updateAVControlEntry("visiting",
+				     "Visiting #0 (initial leader in each category: #0 " + waypoints[0].label);
                 updateAVControlEntry("discarded", "0 vertices discarded");
 
                 // show marker 0 as the leader in each category
@@ -111,9 +113,11 @@ var hdxDegreeAV = {
                                          40, false);
                     updateAVControlEntry(
                         thisAV.categories[i].name,
-                        thisAV.categories[i].label + " - " + waypoints[thisAV.categories[i].index].label + " - Degree of " + waypoints[thisAV.categories[i].index].edgeList.length 
-                        //thisAV.categories[i].leaderString(thisAV.categories[i])
-                    );
+                        thisAV.categories[i].label + " = " +
+			    waypoints[thisAV.categories[i].index].edgeList.length
+			    + " at "
+			    + waypoints[thisAV.categories[i].index].label
+		    );
                 }
                 hdxAV.iterationDone = true;
                 hdxAV.nextAction = "forLoopTop";
@@ -162,17 +166,6 @@ var hdxDegreeAV = {
                 }
                 else {
                     hdxAV.nextAction = "checkTieCategory";
-                        // advance category, skipping if necessary
-                         
-                            //thisAV.nextCategory++;
-                        
-                            //if (thisAV.nextCategory == thisAV.categories.length) {
-                            //hdxAV.nextAction = "forLoopBottom";
-                            //}
-                           // else {
-                           // hdxAV.nextAction = "checkNextCategory";
-                            //}
-                    
                 }
             },
             logMessage: function(thisAV) {
@@ -222,19 +215,12 @@ var hdxDegreeAV = {
                 }
 
                 // remove all old "tied" values
-                
-                    thisAV.categories[thisAV.nextCategory].tiedWith = [];
-                
+                thisAV.categories[thisAV.nextCategory].tiedWith = [];
                 
                 // update this category to indicate its new leader
                 // but keep it shown as the vertex being visited on the
                 // map and in the table until the end of the iteration
                 thisAV.categories[thisAV.nextCategory].index = thisAV.nextToCheck;
-
-                // update bounding box
-                //if (thisAV.showBB) {
-                  //  thisAV.directionalBoundingBox();
-                //}
                 
                 ans = ' <span custom-title=';
                 for(let j = 0; j <thisAV.categories[thisAV.nextCategory].tiedWith.length; j++){
@@ -243,8 +229,9 @@ var hdxDegreeAV = {
                            
                 }  
                           
-                ans += '>' + thisAV.categories[thisAV.checkedCategory].label + " - " + waypoints[thisAV.nextToCheck].label 
-                + " - Degree of " + waypoints[thisAV.nextToCheck].edgeList.length + '</span>';
+                ans += '>' + thisAV.categories[thisAV.nextCategory].label +
+		    ' = ' + waypoints[thisAV.nextToCheck].edgeList.length +
+		    ' at ' + waypoints[thisAV.nextToCheck].label + '</span>';
                 updateAVControlEntry(
                     thisAV.categories[thisAV.nextCategory].name,
                     ans
@@ -311,32 +298,28 @@ var hdxDegreeAV = {
 
 
 
-                ans = ' <span custom-title="Tied with-'; //+  thisAV.categories[thisAV.nextCategory].tiedWith[0];
-                for(let j = 0; j <thisAV.categories[thisAV.nextCategory].tiedWith.length; j++){
-                
+                ans = ' <span custom-title="Tied with:';
+                for (let j = 0;
+		     j < thisAV.categories[thisAV.nextCategory].tiedWith.length;
+		     j++) {                
                     ans += '<br>' + waypoints[thisAV.categories[thisAV.nextCategory].tiedWith[j]].label;
-                                    
                 }  
-                          
-                ans += '">' + thisAV.categories[thisAV.checkedCategory].label + " - " + waypoints[thisAV.nextToCheck].label 
-                + " - Degree of " + waypoints[thisAV.nextToCheck].edgeList.length + " - Tied with " 
-                +  thisAV.categories[thisAV.nextCategory].tiedWith.length;
-                if(thisAV.categories[thisAV.nextCategory].tiedWith.length != 1)
-                {
-                ans +=  " others."+ '</span>';
+                
+                ans += '">' + thisAV.categories[thisAV.nextCategory].label +
+		    ' = ' + waypoints[thisAV.nextToCheck].edgeList.length +
+		    " at " + waypoints[thisAV.nextToCheck].label +
+                    ", tied with " 
+                    +  thisAV.categories[thisAV.nextCategory].tiedWith.length;
+                if (thisAV.categories[thisAV.nextCategory].tiedWith.length != 1) {
+                    ans +=  " others."+ '</span>';
                 }
-                else
-                {
-
+                else {
                     ans +=  " other."+ '</span>';
                 }
-
+		
                 updateAVControlEntry(
-
-                    
                     thisAV.categories[thisAV.nextCategory].name, 
                     ans
-                    //thisAV.categories[thisAV.checkedCategory].label + " - " + waypoints[thisAV.nextToCheck].label + " - Degree of " + waypoints[thisAV.nextToCheck].edgeList.length + " - Tied with " +  thisAV.categories[thisAV.nextCategory].tiedWith.length + " others."
                 );
                 // advance category, skipping if necessary
                 
