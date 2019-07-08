@@ -140,7 +140,6 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 // based on the visual settings, optionally hide line
 function updatePolylineAndTable(edgeNum, vs, hideTableLine) {
 
-    let edge = graphEdges[edgeNum];
     connections[edgeNum].setStyle({
         color: vs.color,
         weight: vs.weight,

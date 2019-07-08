@@ -11,7 +11,7 @@ var hdxDegreeAV = {
     // entries for list of AVs
     value: "degree",
     name: "Vertex Min/Max Degree Search",
-    description: "Search for min and max degree values based on an adjancecy list of the waypoints.",
+    description: "Search for min and max degree vertices",
 
     // state variables for vertex degree search
     nextToCheck: 0, //for loop counter
@@ -408,9 +408,15 @@ var hdxDegreeAV = {
 
         hdxAV.algStat.innerHTML = "Initializing";
 
-        // show waypoints, hide connections
-        initWaypointsAndConnections(true, false,
+        // show waypoints and connections
+        initWaypointsAndConnections(true, true,
                                     visualSettings.undiscovered);
+
+	// we want connections shown, but not to be too prominent,
+	// to color them with the discarded style
+	for (let i = 0; i < connections.length; i++) {
+	    updatePolylineAndTable(i, visualSettings.discarded, false);
+	}
 
         // start the search by initializing with the value at pos 0
         updateMarkerAndTable(0, visualSettings.visiting, 40, false);
