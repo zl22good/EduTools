@@ -289,8 +289,8 @@ ENDOFSTUFF;
                 features might not be obvious.  Select among the tabs
                 above to learn how to get the most out
                 of <a href="http://courses.teresco.org/metal/">METAL</a>
-                and HDX.  This panel will close automatically when you
-                load data into HDX using the panel to the left.<br />
+                and HDX.  This panel will close automatically after
+                data is loaded into HDX using the panel to the left.<br />
 		  <b>What's New?</b><br />  The 2019 Summer Scholars
 		project at <a href="http://www.siena.edu">Siena
 		College</a> added new algorithms (Kruskal's algorithm,
