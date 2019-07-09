@@ -293,8 +293,10 @@ var hdxVertexExtremesSearchAV = {
                 thisAV.nextToCheck = 0;
                 thisAV.discarded = 0;
 
-                updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
-                updateAVControlEntry("visiting", "Visiting #0 (initial leader in each category: #0 " + waypoints[0].label);
+                updateAVControlEntry("undiscovered", waypoints.length + " vertices not yet visited");
+                updateAVControlEntry("visiting",
+				     "Visiting #0 " +  waypoints[0].label +
+				     " (initial leader in each category)");
                 updateAVControlEntry("discarded", "0 vertices discarded");
 
                 // show marker 0 as the leader in each category
