@@ -13,7 +13,6 @@ function speedChanged() {
     let temp = speedChanger.options[speedChanger.selectedIndex];
     hdxAV.delay = temp.value;
     hdxAV.speedName = temp.innerHTML;
-    console.log(hdxAV.speedName);
 }
 
 
