@@ -18,7 +18,6 @@ var hdxDegreeAV = {
     discarded: 0,
     foundNewLeader: false,
     
-    
     // the categories for which we are finding our degrees,
     // with names for ids, labels to display, indicies of leader,
     // comparison function to determine if we have a new leader,
@@ -102,21 +101,25 @@ var hdxDegreeAV = {
                 updateAVControlEntry("undiscovered", waypoints.length +
 				     " vertices not yet visited");
                 updateAVControlEntry("visiting",
-				     "Visiting #0 (initial leader in each category: #0 " + waypoints[0].label);
+				     "Setting #0 " + waypoints[0].label + " as initial leader in each category");
                 updateAVControlEntry("discarded", "0 vertices discarded");
 
+		// show incident edges of 0 as being visited
+		for (let i = 0; i < waypoints[0].edgeList.length; i++) {
+		    updatePolylineAndTable(waypoints[0].edgeList[i].edgeListIndex,
+					   visualSettings.discovered, false);
+		}
                 // show marker 0 as the leader in each category
                 // on the map and in the table
-                for (var i = 0; i < thisAV.categories.length; i++) {
-                    updateMarkerAndTable(thisAV.categories[i].index,
+                for (let i = 0; i < thisAV.categories.length; i++) {
+                    updateMarkerAndTable(0,
                                          thisAV.categories[i].visualSettings, 
                                          40, false);
                     updateAVControlEntry(
                         thisAV.categories[i].name,
                         thisAV.categories[i].label + " = " +
-			    waypoints[thisAV.categories[i].index].edgeList.length
-			    + " at "
-			    + waypoints[thisAV.categories[i].index].label
+			    waypoints[0].edgeList.length + " at "
+			    + waypoints[0].label
 		    );
                 }
                 hdxAV.iterationDone = true;
@@ -131,6 +134,11 @@ var hdxDegreeAV = {
             comment: "for loop to iterate over remaining vertices",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
+		// unhiglight incident edges of previous
+		for (let i = 0; i < waypoints[thisAV.nextToCheck].edgeList.length; i++) {
+		    updatePolylineAndTable(waypoints[thisAV.nextToCheck].edgeList[i].edgeListIndex,
+					   visualSettings.discarded, false);
+		}
                 thisAV.nextToCheck++;
                 if (thisAV.nextToCheck == waypoints.length) {
                     hdxAV.nextAction = "cleanup";
@@ -144,6 +152,11 @@ var hdxDegreeAV = {
                                          30, false);
                     updateAVControlEntry("undiscovered", (waypoints.length - thisAV.nextToCheck) + " vertices not yet visited");
                     updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + waypoints[thisAV.nextToCheck].label);
+		    // higlight incident edges of vertex to be checked
+		    for (let i = 0; i < waypoints[thisAV.nextToCheck].edgeList.length; i++) {
+			updatePolylineAndTable(waypoints[thisAV.nextToCheck].edgeList[i].edgeListIndex,
+					       visualSettings.discovered, false);
+		    }
                 }
                 hdxAV.iterationDone = true;
             },
@@ -237,8 +250,7 @@ var hdxDegreeAV = {
                     ans
                 );
                 // advance category, skipping if necessary
-                
-                    thisAV.nextCategory++;
+                thisAV.nextCategory++;
                 
                 if (thisAV.nextCategory == thisAV.categories.length) {
                     hdxAV.nextAction = "forLoopBottom";
