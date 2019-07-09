@@ -161,20 +161,23 @@ var hdxKruskalAV = {
                     thisAV.visiting.connection + " from Priority Queue";
             },
             currentVariable: function(thisAV, whatToDo){
-                let temp;
-                if(whatToDo == "getPlaceFromLDVCV1"){
-                    temp = thisAV.visiting.fromVIndex;
+
+		if (thisAV.visiting == null) {
+		    // haven't got an edge yet
+		    return -1;
+		}
+                if (whatToDo == "getPlaceFromLDVCV1"){
+                    return thisAV.visiting.fromVIndex;
                 }
-                else if(whatToDo == "getPlaceFromLDVCV2"){
-                    temp = thisAV.visiting.vIndex;
+                if (whatToDo == "getPlaceFromLDVCV2"){
+                    return thisAV.visiting.vIndex;
                 }
-                else if(whatToDo == "getPlaceFromLDVCV3"){
-                    temp = thisAV.visiting.connection;
+                if (whatToDo == "getPlaceFromLDVCV3"){
+                    return thisAV.visiting.connection;
                 }
-                else{
-                    temp = -1;
-                }
-                return temp;
+
+		// other action without a variable
+		return -1;
             }
         },
         {
