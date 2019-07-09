@@ -291,13 +291,11 @@ var hdxKruskalAV = {
                 return "Adding edge #" + thisAV.visiting.connection + " to tree";
             },
             currentVariable: function(thisAV, whatToDo){
-                if(whatToDo == "isNotCycleCV1"){
-                    let temp = graphEdges[thisAV.visiting.connection].v1;
-                    return temp;
+                if (whatToDo == "isNotCycleCV1") {
+                    return graphEdges[thisAV.visiting.connection].v1;
                 }
-                else if(whatToDo == "isNotCycleCV2"){
-                    let temp2 = graphEdges[thisAV.visiting.connection].v2;
-                    return temp2;
+                else { // (whatToDo == "isNotCycleCV2")
+                    return graphEdges[thisAV.visiting.connection].v2;
                 }
             }
         },
@@ -309,8 +307,6 @@ var hdxKruskalAV = {
                 hdxAV.algStat.innerHTML =
                     "Done! Visited " + graphEdges.length + " edges.";
                 updateAVControlEntry("visiting", "");
-                //updateAVControlEntry("discovered", "");
-                //updateAVControlEntry("undiscovered", "");
                 hdxAV.nextAction = "DONE";
                 hdxAV.iterationDone = true;
                 document.getElementById("totalTreeCost").innerHTML =
@@ -375,23 +371,23 @@ var hdxKruskalAV = {
         initWaypointsAndConnections(false, true,
                                     visualSettings.undiscovered);
         
-        this.discarded= 0;
-        this.ldv= null;
+        this.discarded = 0;
+        this.ldv = null;
         // last place to come out of the LDV, currently "visiting"
-        this.visiting= null;
+        this.visiting = null;
 
         // when finding all, track the lists of vertices and edges that are
         // forming the current spanning tree
-        this.componentVList= [];
-        this.componentEList= [];
-        this.componentVAdj= [];
+        this.componentVList = [];
+        this.componentEList = [];
+        this.componentVAdj = [];
 
         // some additional stats to maintain and display
-        this.numVSpanningTree= 0;
-        this.numESpanningTree= 0;
-        this.numVUndiscovered= waypoints.length;
-        this.numEUndiscovered= graphEdges.length;
-        this.numEDiscardedOnRemoval= 0;
+        this.numVSpanningTree = 0;
+        this.numESpanningTree = 0;
+        this.numVUndiscovered = waypoints.length;
+        this.numEUndiscovered = graphEdges.length;
+        this.numEDiscardedOnRemoval = 0;
         this.totalTreeCost = 0;
                 
         this.ldv = new HDXLinear(hdxLinearTypes.PRIORITY_QUEUE,
@@ -456,36 +452,36 @@ var hdxKruskalAV = {
         let max = waypoints.length-1;
         let temp = commonConditionalBreakpoints(name);
         
-        if(temp != "No innerHTML"){
+        if (temp != "No innerHTML"){
             return temp;
         }
-        else{
-            switch(name){
-                case "checkCycle":
-                    html = createInnerHTMLChoice("boolean", "checkCycleCV", "creates a cycle", "adds an edge");
-                    return html;
-                case "isNotCycle":
-                    html = buildWaypointSelector2("isNotCycleCV1",
-                        "Please select the vertex of the connection <br \> to stop at: ");
-                    html += '<br \>';
-                    html += buildWaypointSelector2("isNotCycleCV2",
-                        "Please select the starting vertex <br \> to stop at: ");
-                    return html;
-                case "isCycle":
-                    html = buildWaypointSelector2("isCycleCV",
-                        "Please select the vertex of the discarded edge<br \> to stop at: ");
-                    return html;
-                case "getPlaceFromLDV":
-                    html = buildWaypointSelector2("getPlaceFromLDVCV1",
-                        "Please select the starting vertex to stop at: ");
-                    html += '<br \>';
-                    html += buildWaypointSelector2("getPlaceFromLDVCV2",
-                        "Please select the ending vertex to stop at: ");
-                    html += '<br \>';
-                    html += buildWaypointSelector2("getPlaceFromLDVCV3",
-                        "Please select the connection to stop at: ");
-                    return html;
-
+        else {
+            switch (name) {
+            case "checkCycle":
+                html = createInnerHTMLChoice("boolean", "checkCycleCV", "creates a cycle", "adds an edge");
+                return html;
+            case "isNotCycle":
+                html = buildWaypointSelector2("isNotCycleCV1",
+					      "Please select the vertex of the connection <br \> to stop at: ");
+                html += '<br \>';
+                html += buildWaypointSelector2("isNotCycleCV2",
+					       "Please select the starting vertex <br \> to stop at: ");
+                return html;
+            case "isCycle":
+                html = buildWaypointSelector2("isCycleCV",
+					      "Please select the vertex of the discarded edge<br \> to stop at: ");
+                return html;
+            case "getPlaceFromLDV":
+                html = buildWaypointSelector2("getPlaceFromLDVCV1",
+					      "Please select the starting vertex to stop at: ");
+                html += '<br \>';
+                html += buildWaypointSelector2("getPlaceFromLDVCV2",
+					       "Please select the ending vertex to stop at: ");
+                html += '<br \>';
+                html += buildWaypointSelector2("getPlaceFromLDVCV3",
+					       "Please select the connection to stop at: ");
+                return html;
+		
             }
         }
         return "No innerHTML";
@@ -494,17 +490,15 @@ var hdxKruskalAV = {
     hasConditonalBreakpoints(name){
     
         let answer = hasCommonConditonalBreakpoints(name);
-        if(answer == true){
+        if (answer){
             return true;
         }
-        else{
-            switch(name){
-                case "checkCycle":
-                case "isNotCycle":
-                case "isCycle":
-                case "getPlaceFromLDV":
-                    return true;
-            }
+        switch (name){
+        case "checkCycle":
+        case "isNotCycle":
+        case "isCycle":
+        case "getPlaceFromLDV":
+            return true;
         }
         return false;
     }
