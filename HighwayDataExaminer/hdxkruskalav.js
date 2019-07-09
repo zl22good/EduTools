@@ -11,7 +11,7 @@ var hdxKruskalAV = {
     // entries for list of AVs
     value: "kruskal",
     name: "Kruskal's Algorithm",
-    description: "Finds Minimum Spanning tree/forest by adding edges in increasing order.",
+    description: "Finds Minimum Spanning tree/forest by considering edges in increasing length.",
 
     
     // state variables for edge search
@@ -33,8 +33,6 @@ var hdxKruskalAV = {
     numEUndiscovered: 0,
     numEDiscardedOnRemoval: 0,
     totalTreeCost: 0,
-    
-   
 
     // comparator for priority queue
     comparator: function(a, b) {
@@ -96,17 +94,16 @@ var hdxKruskalAV = {
                 
                 highlightPseudocode(this.label, visualSettings.visiting);
                 
-                
                 // highlight edge 0 as leader in all categories and current
                 thisAV.discarded = 0;
         
                 thisAV.updateControlEntries();
                 
-                    
-                //add all edges to PQ sorted by length
+                // add all edges to PQ sorted by length
                 for (let i = 0; i < graphEdges.length; i++) {
                     thisAV.ldv.add(new LDVEntry(graphEdges[i].v1,
-                        edgeLengthInMiles(graphEdges[i]), i));
+						edgeLengthInMiles(graphEdges[i]), i));
+		    updatePolylineAndTable(i, visualSettings.discovered, false);
                 }
                 
                 hdxAV.iterationDone = true;
