@@ -59,6 +59,10 @@ var hdxAV = {
     startPause: null,
 
     logMessageArr: [],
+
+    // used in hdxpseudocode for breakpoint functionality
+    currentBreakpoint: "",
+    previousBreakpoint: "",
     
     // set the status and do any needed cleanup for that change
     setStatus(newStatus) {
@@ -232,7 +236,7 @@ var hdxAV = {
         //if breakpoint is the action, pause
         //then, if useVariable = true compare the special break instance to
         //determine if you have to pause else just pause
-        if(thisAV.idOfAction(currentAction) == breakpoint){
+        if(thisAV.idOfAction(currentAction) == hdxAV.currentBreakpoint){
             //If more than one element is chosen, put them 
             //into an array - chosenPoints
             var chosenPoints; 
