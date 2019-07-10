@@ -74,15 +74,15 @@ function pcEntry(indent, code, id) {
         entry = '<tr class="codeRow"><td>';
     }
     if (Array.isArray(code)) {
-        for (var i = 0; i < code.length; i++) {
-            for (var j = 0; j < indent; j++) {
+        for (let i = 0; i < code.length; i++) {
+            for (let j = 0; j < indent; j++) {
                 entry += "&nbsp;&nbsp;";
             }
             entry += code[i] + "<br />";
         }
     }
     else {
-        for (var i = 0; i < indent; i++) {
+        for (let i = 0; i < indent; i++) {
             entry += "&nbsp;&nbsp;";
         }
         entry += code;
@@ -103,19 +103,19 @@ function addStop() {
         child.setAttribute("variableValue", setInnerHTML(child.getAttribute("id")));
         elements[element].addEventListener("click", function (event) {
 
-            var target = event.target;
+            let target = event.target;
             hdxAV.previousBreakpoint = hdxAV.currentBreakpoint;
             hdxAV.currentBreakpoint = target.getAttribute("id");
 	    
             //if the previous and current breakpoints are the same,
             //unselect it, and change the colors back Else, deselect
             //the previous, and highlight current
-            if (hdxAV.previousBreakpoint == hdxAV.currentBreakpoint){
+            if (hdxAV.previousBreakpoint == hdxAV.currentBreakpoint) {
                 codeRowHighlight();
                 hdxAV.previousBreakpoint = "";
                 hdxAV.currentBreakpoint = "";
                 breakpointCheckerDisplay();
-                useVariable = false;
+                hdxAV.useVariableForBreakpoint = false;
                 document.getElementById("useBreakpointVariable").checked = false;
             }
             else {
@@ -162,8 +162,6 @@ function cleanupBreakpoints() {
     hdxAV.previousBreakpoint = "";
 }
 
-var useVariable = false; //Is the checkbox checked or not? If so, break on conditional if
-var breakpointVariableHidden  = true;//What position is the selector in?
 //Enables the clickable function and window resize change for the selector
 function showHideBreakpointVariableSelector(){
     let element = document.getElementById("showBreakpointVariable");
@@ -174,13 +172,13 @@ function showHideBreakpointVariableSelector(){
         let rect = parentContainer.getBoundingClientRect();
         let rect2 = avPanel.getBoundingClientRect();
         
-        if (breakpointVariableHidden) {
+        if (hdxAV.breakpointVariableHidden) {
             parentContainer.style.left = rect2.right + "px";
-            breakpointVariableHidden = false;
+            hdxAV.breakpointVariableHidden = false;
         }
         else {
             setDefaultVariableSelectorLocation();
-            breakpointVariableHidden = true;
+            hdxAV.breakpointVariableHidden = true;
         }
     }, false);
     window.addEventListener("resize", setDefaultVariableSelectorLocation, false);
@@ -198,7 +196,7 @@ function createVariableSelector() {
     checkbox.type = "checkbox";
     checkbox.id = "useBreakpointVariable";
     checkbox.onclick = function(){
-	useVariable = !useVariable;
+	hdxAV.useVariableForBreakpoint = !hdxAV.useVariableForBreakpoint;
     }
     checkbox.style.backgroundColor = "Red";
     
@@ -214,7 +212,7 @@ function createVariableSelector() {
     divBreakpoint1.setAttributeNode(breakpoint1ID);
     divBreakpoint2.setAttributeNode(breakpoint2ID);
     
-    var breakpointClass = document.createAttribute("class");
+    let breakpointClass = document.createAttribute("class");
     breakpointClass.value = "border border-primary rounded";
     divBreakpoint.setAttributeNode(breakpointClass);
     
@@ -253,7 +251,7 @@ function setDefaultVariableSelectorLocation()
     //it to stick out
     let trueDifference = difference2 - difference + 25;
     element.style.left = trueDifference + "px";
-    breakpointVariableHidden = true;
+    hdxAV.breakpointVariableHidden = true;
 }
 
 //Based on if a breakpoint is selected or not, display or hide the element.
@@ -283,7 +281,7 @@ function labelInnerHTML(text) {
     else {
         checkbox.style.display = "none";
         checkbox.checked = false;
-        useVariable = false;
+        hdxAV.useVariableForBreakpoint = false;
     }
 }
 
@@ -313,7 +311,7 @@ function deleteVariableSelector() {
     
     let element = document.getElementById("breakpointVariableSelector");
     element.parentNode.removeChild(element);
-    useVariable = false;
+    hdxAV.useVariableForBreakpoint = false;
 }
 
 function createInnerHTMLChoice(choice, id, firstText, secondText) {
