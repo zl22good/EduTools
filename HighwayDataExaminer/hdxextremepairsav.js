@@ -11,8 +11,8 @@ var hdxExtremePairsAV = {
 
     // entries for list of AVs
     value: "closestpairs",
-    name: "Vertex Closest/Farthest Pairs",
-    description: "Search for the closest/farthest pair of vertices (waypoints).",
+    name: "Waypoint Closest/Farthest Pairs",
+    description: "Search for the closest/farthest pair of waypoints (vertices).",
     
     // state variables for closest pairs search
     // loop indices
@@ -84,7 +84,7 @@ var hdxExtremePairsAV = {
         },
         {
             label: "v1forLoopTop",
-            comment: "outer for loop to visit all pairs of vertices",
+            comment: "outer for loop to visit all pairs of points",
             code: function(thisAV) {
                 highlightPseudocode(this.label, thisAV.visualSettings.v1);
                 thisAV.v1++;
@@ -114,7 +114,7 @@ var hdxExtremePairsAV = {
         },
         {
             label: "v2forLoopTop",
-            comment: "inner for loop to visit all pairs of vertices",
+            comment: "inner for loop to visit all pairs of points",
             code: function(thisAV) {
                 highlightPseudocode(this.label, thisAV.visualSettings.v2);
                 thisAV.v2++;
