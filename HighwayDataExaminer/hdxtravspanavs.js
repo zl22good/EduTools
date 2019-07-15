@@ -414,7 +414,12 @@ var hdxTraversalsSpanningAVCommon = {
                     thisAV.formatLDVEntry(thisAV.visiting) + " from " +
                     thisAV.ldv.displayName;
             },
-            currentVariable: function(thisAV, whatToDo){
+            currentVariable: function(thisAV, whatToDo) {
+		if (thisAV.visiting == null) {
+		    // we haven't yet removed any value from the LDV, so
+		    // it would not be a break
+		    return "-1 -1";
+		}
                 return thisAV.visiting.fromVIndex + " " + thisAV.visiting.vIndex;
             }
         },
