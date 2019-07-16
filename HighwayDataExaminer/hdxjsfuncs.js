@@ -701,7 +701,7 @@ function parseTMGContents(fileContents) {
             ' &harr; ' + edgeInfo[1] + ':&nbsp;'
             + (waypoints[newEdge.v2].label).substring(0,5) + '</td>';
         
-        eTable += '<tr custom-title = "' + test + '"' + 'onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="edgeClick('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td id = "connectname" style ="word-break:break-all;" >' + i + '</td>';
+        eTable += '<tr custom-title = "' + test + '"' + 'onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="connectionClick({ connIndex: '+i+'})" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td id = "connectname" style ="word-break:break-all;" >' + i + '</td>';
         
         var subst2 = '<td style ="word-break:break-all;"'; 
         var subst3 = subst2 + '>' + edgeInfo[2] + subst;
