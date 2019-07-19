@@ -11,13 +11,12 @@ var hdxDegreeAV = {
     // entries for list of AVs
     value: "degree",
     name: "Vertex Min/Max Degree Search",
-    description: "Search for min and max degree values based on an adjancecy list of the waypoints.",
+    description: "Search for min and max degree vertices",
 
     // state variables for vertex degree search
     nextToCheck: 0, //for loop counter
     discarded: 0,
     foundNewLeader: false,
-    
     
     // the categories for which we are finding our degrees,
     // with names for ids, labels to display, indicies of leader,
@@ -99,21 +98,29 @@ var hdxDegreeAV = {
                 thisAV.nextToCheck = 0;
                 thisAV.discarded = 0;
 
-                updateAVControlEntry("undiscovered", waypoints.length + "vertices not yet visited");
-                updateAVControlEntry("visiting", "Visiting #0 (initial leader in each category: #0 " + waypoints[0].label);
+                updateAVControlEntry("undiscovered", waypoints.length +
+				     " vertices not yet visited");
+                updateAVControlEntry("visiting",
+				     "Setting #0 " + waypoints[0].label + " as initial leader in each category");
                 updateAVControlEntry("discarded", "0 vertices discarded");
 
+		// show incident edges of 0 as being visited
+		for (let i = 0; i < waypoints[0].edgeList.length; i++) {
+		    updatePolylineAndTable(waypoints[0].edgeList[i].edgeListIndex,
+					   visualSettings.discovered, false);
+		}
                 // show marker 0 as the leader in each category
                 // on the map and in the table
-                for (var i = 0; i < thisAV.categories.length; i++) {
-                    updateMarkerAndTable(thisAV.categories[i].index,
+                for (let i = 0; i < thisAV.categories.length; i++) {
+                    updateMarkerAndTable(0,
                                          thisAV.categories[i].visualSettings, 
                                          40, false);
                     updateAVControlEntry(
                         thisAV.categories[i].name,
-                        thisAV.categories[i].label + " - " + waypoints[thisAV.categories[i].index].label + " - Degree of " + waypoints[thisAV.categories[i].index].edgeList.length 
-                        //thisAV.categories[i].leaderString(thisAV.categories[i])
-                    );
+                        thisAV.categories[i].label + " = " +
+			    waypoints[0].edgeList.length + " at "
+			    + waypoints[0].label
+		    );
                 }
                 hdxAV.iterationDone = true;
                 hdxAV.nextAction = "forLoopTop";
@@ -127,6 +134,11 @@ var hdxDegreeAV = {
             comment: "for loop to iterate over remaining vertices",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
+		// unhiglight incident edges of previous
+		for (let i = 0; i < waypoints[thisAV.nextToCheck].edgeList.length; i++) {
+		    updatePolylineAndTable(waypoints[thisAV.nextToCheck].edgeList[i].edgeListIndex,
+					   visualSettings.discarded, false);
+		}
                 thisAV.nextToCheck++;
                 if (thisAV.nextToCheck == waypoints.length) {
                     hdxAV.nextAction = "cleanup";
@@ -140,6 +152,11 @@ var hdxDegreeAV = {
                                          30, false);
                     updateAVControlEntry("undiscovered", (waypoints.length - thisAV.nextToCheck) + " vertices not yet visited");
                     updateAVControlEntry("visiting", "Visiting: #" + thisAV.nextToCheck + " " + waypoints[thisAV.nextToCheck].label);
+		    // higlight incident edges of vertex to be checked
+		    for (let i = 0; i < waypoints[thisAV.nextToCheck].edgeList.length; i++) {
+			updatePolylineAndTable(waypoints[thisAV.nextToCheck].edgeList[i].edgeListIndex,
+					       visualSettings.discovered, false);
+		    }
                 }
                 hdxAV.iterationDone = true;
             },
@@ -162,17 +179,6 @@ var hdxDegreeAV = {
                 }
                 else {
                     hdxAV.nextAction = "checkTieCategory";
-                        // advance category, skipping if necessary
-                         
-                            //thisAV.nextCategory++;
-                        
-                            //if (thisAV.nextCategory == thisAV.categories.length) {
-                            //hdxAV.nextAction = "forLoopBottom";
-                            //}
-                           // else {
-                           // hdxAV.nextAction = "checkNextCategory";
-                            //}
-                    
                 }
             },
             logMessage: function(thisAV) {
@@ -222,19 +228,12 @@ var hdxDegreeAV = {
                 }
 
                 // remove all old "tied" values
-                
-                    thisAV.categories[thisAV.nextCategory].tiedWith = [];
-                
+                thisAV.categories[thisAV.nextCategory].tiedWith = [];
                 
                 // update this category to indicate its new leader
                 // but keep it shown as the vertex being visited on the
                 // map and in the table until the end of the iteration
                 thisAV.categories[thisAV.nextCategory].index = thisAV.nextToCheck;
-
-                // update bounding box
-                //if (thisAV.showBB) {
-                  //  thisAV.directionalBoundingBox();
-                //}
                 
                 ans = ' <span custom-title=';
                 for(let j = 0; j <thisAV.categories[thisAV.nextCategory].tiedWith.length; j++){
@@ -243,15 +242,15 @@ var hdxDegreeAV = {
                            
                 }  
                           
-                ans += '>' + thisAV.categories[thisAV.checkedCategory].label + " - " + waypoints[thisAV.nextToCheck].label 
-                + " - Degree of " + waypoints[thisAV.nextToCheck].edgeList.length + '</span>';
+                ans += '>' + thisAV.categories[thisAV.nextCategory].label +
+		    ' = ' + waypoints[thisAV.nextToCheck].edgeList.length +
+		    ' at ' + waypoints[thisAV.nextToCheck].label + '</span>';
                 updateAVControlEntry(
                     thisAV.categories[thisAV.nextCategory].name,
                     ans
                 );
                 // advance category, skipping if necessary
-                
-                    thisAV.nextCategory++;
+                thisAV.nextCategory++;
                 
                 if (thisAV.nextCategory == thisAV.categories.length) {
                     hdxAV.nextAction = "forLoopBottom";
@@ -311,32 +310,28 @@ var hdxDegreeAV = {
 
 
 
-                ans = ' <span custom-title="Tied with-'; //+  thisAV.categories[thisAV.nextCategory].tiedWith[0];
-                for(let j = 0; j <thisAV.categories[thisAV.nextCategory].tiedWith.length; j++){
-                
+                ans = ' <span custom-title="Tied with:';
+                for (let j = 0;
+		     j < thisAV.categories[thisAV.nextCategory].tiedWith.length;
+		     j++) {                
                     ans += '<br>' + waypoints[thisAV.categories[thisAV.nextCategory].tiedWith[j]].label;
-                                    
                 }  
-                          
-                ans += '">' + thisAV.categories[thisAV.checkedCategory].label + " - " + waypoints[thisAV.nextToCheck].label 
-                + " - Degree of " + waypoints[thisAV.nextToCheck].edgeList.length + " - Tied with " 
-                +  thisAV.categories[thisAV.nextCategory].tiedWith.length;
-                if(thisAV.categories[thisAV.nextCategory].tiedWith.length != 1)
-                {
-                ans +=  " others."+ '</span>';
+                
+                ans += '">' + thisAV.categories[thisAV.nextCategory].label +
+		    ' = ' + waypoints[thisAV.nextToCheck].edgeList.length +
+		    " at " + waypoints[thisAV.nextToCheck].label +
+                    ", tied with " 
+                    +  thisAV.categories[thisAV.nextCategory].tiedWith.length;
+                if (thisAV.categories[thisAV.nextCategory].tiedWith.length != 1) {
+                    ans +=  " others."+ '</span>';
                 }
-                else
-                {
-
+                else {
                     ans +=  " other."+ '</span>';
                 }
-
+		
                 updateAVControlEntry(
-
-                    
                     thisAV.categories[thisAV.nextCategory].name, 
                     ans
-                    //thisAV.categories[thisAV.checkedCategory].label + " - " + waypoints[thisAV.nextToCheck].label + " - Degree of " + waypoints[thisAV.nextToCheck].edgeList.length + " - Tied with " +  thisAV.categories[thisAV.nextCategory].tiedWith.length + " others."
                 );
                 // advance category, skipping if necessary
                 
@@ -408,9 +403,15 @@ var hdxDegreeAV = {
 
         hdxAV.algStat.innerHTML = "Initializing";
 
-        // show waypoints, hide connections
-        initWaypointsAndConnections(true, false,
+        // show waypoints and connections
+        initWaypointsAndConnections(true, true,
                                     visualSettings.undiscovered);
+
+	// we want connections shown, but not to be too prominent,
+	// to color them with the discarded style
+	for (let i = 0; i < connections.length; i++) {
+	    updatePolylineAndTable(i, visualSettings.discarded, false);
+	}
 
         // start the search by initializing with the value at pos 0
         updateMarkerAndTable(0, visualSettings.visiting, 40, false);
@@ -505,8 +506,8 @@ var hdxDegreeAV = {
             switch(name){
                 case "checkNextCategory":
                 case "checkTieCategory":
-                    html = 'Stop when this is equal to: <br \><select name="quantity"><option value="true">True</option>';
-                    html += '<option value="false">False</option></select>';
+                    html = createInnerHTMLChoice("boolean", "checkCategories2","True",
+                        "False");
                     return html;
             }
         }
