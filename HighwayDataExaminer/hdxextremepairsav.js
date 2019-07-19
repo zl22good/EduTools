@@ -11,8 +11,8 @@ var hdxExtremePairsAV = {
 
     // entries for list of AVs
     value: "closestpairs",
-    name: "Vertex Closest/Farthest Pairs",
-    description: "Search for the closest/farthest pair of vertices (waypoints).",
+    name: "Waypoint Closest/Farthest Pairs",
+    description: "Search for the closest/farthest pair of waypoints (vertices).",
     
     // state variables for closest pairs search
     // loop indices
@@ -84,7 +84,7 @@ var hdxExtremePairsAV = {
         },
         {
             label: "v1forLoopTop",
-            comment: "outer for loop to visit all pairs of vertices",
+            comment: "outer for loop to visit all pairs of points",
             code: function(thisAV) {
                 highlightPseudocode(this.label, thisAV.visualSettings.v1);
                 thisAV.v1++;
@@ -114,7 +114,7 @@ var hdxExtremePairsAV = {
         },
         {
             label: "v2forLoopTop",
-            comment: "inner for loop to visit all pairs of vertices",
+            comment: "inner for loop to visit all pairs of points",
             code: function(thisAV) {
                 highlightPseudocode(this.label, thisAV.visualSettings.v2);
                 thisAV.v2++;
@@ -173,6 +173,9 @@ var hdxExtremePairsAV = {
             },
             logMessage: function(thisAV) {
                 return "Check if [" + thisAV.v1 + "," + thisAV.v2 + "] is the new closest pair";
+            },
+            currentVariable: function(thisAV){
+                return (thisAV.d_this < thisAV.d_closest);
             }
         },
         {
@@ -234,6 +237,9 @@ var hdxExtremePairsAV = {
             },
             logMessage: function(thisAV) {
                 return "Check if [" + thisAV.v1 + "," + thisAV.v2 + "] is the new farthest pair";
+            },
+            currentVariable: function(thisAV){
+                return (thisAV.d_this > thisAV.d_farthest);
             }
         },
         {
@@ -508,7 +514,14 @@ var hdxExtremePairsAV = {
         }
         else{
             switch(name){
-                    
+                case "checkCloseLeader":
+                    html = createInnerHTMLChoice("boolean","checkCloseLeaderCV",
+                                                 "distance is the new closest","distnace is not the closest");
+                    return html;
+                case "checkFarLeader":
+                    html = createInnerHTMLChoice("boolean","checkCloseLeaderCV",
+                                                 "distance is the new farthest","distnace is not the farthest");
+                    return html;
             }
         }
         return "No innerHTML";
@@ -521,7 +534,9 @@ var hdxExtremePairsAV = {
         }
         else{
             switch(name){
-                    
+                case "checkCloseLeader":
+                case "checkFarLeader":
+                    return true;
             }
         }
         return false;
