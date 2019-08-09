@@ -508,7 +508,7 @@ function processContents(fileContents) {
     document.getElementById('datatable').innerHTML = pointboxContents;
     hideLoadDataPanel();
     mapStatus = mapStates.HDX;
-    updateMap();
+    updateMap(null,null,null);
 }
 
 // TODO: make sure maps cannot be selected when an AV is running
