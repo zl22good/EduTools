@@ -371,6 +371,9 @@ var hdxBFConvexHullAV = {
             logMessage: function(thisAV) {
                 return "Checking if checkVal=" +
                     thisAV.checkVal.toFixed(3) + " is 0";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return (thisAV.checkVal == 0);
             }
         },
         {
@@ -390,6 +393,11 @@ var hdxBFConvexHullAV = {
             logMessage: function(thisAV) {
                 return "Checking if colinear point is on " +
                     thisAV.currentSegmentString();
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return isBetween(waypoints[thisAV.hullv1],
+                              waypoints[thisAV.hullv2],
+                              waypoints[thisAV.hullvtest]);
             }
         },
         {
@@ -419,6 +427,9 @@ var hdxBFConvexHullAV = {
             },
             logMessage: function(thisAV) {
                 return "checking if we are doing the first point for the segment";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return (thisAV.lookingFor == "UNKNOWN");
             }
         },
         {
@@ -436,6 +447,9 @@ var hdxBFConvexHullAV = {
             logMessage: function(thisAV) {
                 return "Testing if checkVal=" + thisAV.checkVal +
                     " is negative";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return (thisAV.checkVal < 0);
             }
         },
         {
@@ -468,6 +482,9 @@ var hdxBFConvexHullAV = {
             logMessage: function(thisAV) {
                 return "Testing if checkVal=" + thisAV.checkVal +
                     " is positive";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return (thisAV.checkVal > 0);
             }
         },
         {
@@ -517,6 +534,10 @@ var hdxBFConvexHullAV = {
             logMessage: function(thisAV) {
                 return "Checking if " + thisAV.hullvtest +
                     " is on the same side as previously checked points";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return ((thisAV.lookingFor == "POSITIVE" && thisAV.checkVal < 0) ||
+                    (thisAV.lookingFor == "NEGATIVE" && thisAV.checkVal > 0));
             }
         },
         {
@@ -563,6 +584,9 @@ var hdxBFConvexHullAV = {
                 return "Checking if " + thisAV.currentSegmentString() +
                     " has been eliminated after " +
                     thisAV.checkValThisSegment + " points";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.eliminated;
             }
         },
         {
@@ -705,14 +729,37 @@ var hdxBFConvexHullAV = {
     },
     
     setConditionalBreakpoints(name){
-        let max = waypoints.length-1;
         let temp = commonConditionalBreakpoints(name);
         if(temp != "No innerHTML"){
             return temp;
         }
         else{
             switch(name){
-                    
+                case "isCheckVal0":
+                    html = createInnerHTMLChoice("boolean","isCheckVal0CV","checkVal = 0","checkVal != 0");
+                    return html;
+                case "checkBetween":
+                    html = createInnerHTMLChoice("boolean","checkBetweenCV","Vtest is not between the vertices",
+                                                 "Vtest is between the vertices");
+                    return html;
+                case "checkFirst":
+                    html = createInnerHTMLChoice("boolean","checkFirstCV", 
+                                                 "lookingFor = UNKNOWN","lookingFor != UNKNOWN");
+                    return html;
+                case "isCheckValNegative": 
+                    html = createInnerHTMLChoice("boolean", "isCheckValNegativeCV", "checkVal < 0","checkVal >=");
+                    return html;
+                case "isCheckValPositive": 
+                    html = createInnerHTMLChoice("boolean", "isCheckValPositiveCV", "checkVal > 0","checkVal <=");
+                    return html;
+                case "checkSameSide":
+                    html = createInnerHTMLChoice("boolean","checkSameSideCV",
+                                                 "True",
+                                                 "False");
+                    return html;
+                case "checkEliminated":
+                    html = createInnerHTMLChoice("boolean","checkEliminated","Not eliminated","Eliminated");
+                    return html;
             }
         }
         return "No innerHTML";
@@ -725,7 +772,14 @@ var hdxBFConvexHullAV = {
         }
         else{
             switch(name){
-                    
+                case "isCheckVal0":
+                case "checkBetween":
+                case "checkFirst":
+                case "isCheckValNegative":
+                case "isCheckValPositive":
+                case "checkSameSide":
+                case "checkEliminated":
+                    return true;
             }
         }
         return false;

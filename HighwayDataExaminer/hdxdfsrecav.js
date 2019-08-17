@@ -126,6 +126,9 @@ var hdxDFSRecAV = {
             },
             logMessage: function(thisAV) {
                 return "Recursive call to dfs on vertex #" + thisAV.visiting;
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.visiting;
             }
         },
         {
@@ -152,6 +155,9 @@ var hdxDFSRecAV = {
             logMessage: function(thisAV) {
                 return "Set vertex #" + thisAV.visiting + "'s hops to " +
                     waypoints[thisAV.visiting].hops + " to mark as discovered";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return waypoints[waypoints[thisAV.visiting].prevVertex].hops + 1;
             }
         },
         {
@@ -190,6 +196,9 @@ var hdxDFSRecAV = {
             },
             logMessage: function(thisAV) {
                 return "Loop through each vertex in V's adjacency list";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.nextVertex;
             }
         },
         {
@@ -220,6 +229,9 @@ var hdxDFSRecAV = {
             logMessage: function(thisAV) {
                 return "Check if vertex #" + thisAV.nextVertex +
                     " has previously been discovered";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return (waypoints[thisAV.nextVertex].hops == -1);
             }
         },
         {
@@ -361,7 +373,6 @@ var hdxDFSRecAV = {
                                     visualSettings.undiscovered);
         
         this.discarded= 0;
-        this.callStack= null;
         // last place to come out of the call stack, currently "visiting"
         this.visiting= null;
 
@@ -377,9 +388,6 @@ var hdxDFSRecAV = {
         this.numEUndiscovered= graphEdges.length;
         this.numEDiscardedOnRemoval= 0;
         this.totalTreeCost = 0;
-                
-        this.stack = new HDXLinear(hdxLinearTypes.STACK,
-                         "Stack");
 
         this.callStack = new HDXLinear(hdxLinearTypes.CALL_STACK,
             "Call Stack");
@@ -440,40 +448,38 @@ var hdxDFSRecAV = {
     },
 
     setConditionalBreakpoints(name){
-        let max = waypoints.length-1;
         let temp = commonConditionalBreakpoints(name);
         
-        let isThere = name.search(/\d/);
-        name = (isThere != -1) ? name.substring(0,isThere) : name;
-        
-        //if(temp != "No innerHTML"){
-         //   return temp;
-       // }
-        //else{
-           // switch(name){
-           //     case "checkNextCategory":
-             //   case "checkTieCategory":
-             //       html = 'Stop when this is equal to: <br \><select name="quantity"><option value="true">True</option>';
-               //     html += '<option value="false">False</option></select>';
-                 //   return html;
-           // }
-        //}
+        if(temp != "No innerHTML"){
+            return temp;
+        }
+        else{
+            switch(name){
+                case "setHops":
+                    html = createInnerHTMLChoice("number", "setHopsCV", "hops is equal to");
+                    return html;
+                case "checkUndiscovered":
+                    html = createInnerHTMLChoice("boolean", "checkUndiscoveredCV", "call recursion",
+                                                 "do not call recursion");
+                    return html;
+                case "recursiveCallTop":
+                    html = buildWaypointSelector2("recursiveCallTopCV", "Please select the vertex to stop at: ");
+                    return html;
+            }
+        }
         return "No innerHTML";
     },
 
     hasConditonalBreakpoints(name){
-        
-        let isThere = name.search(/\d/);
-        name = (isThere != -1) ? name.substring(0,isThere) : name;
-    
         let answer = hasCommonConditonalBreakpoints(name);
         if(answer == true){
             return true;
         }
         else{
             switch(name){
-                case "checkNextCategory":
-                case "checkTieCategory":
+                case "setHops":
+                case "checkUndiscovered":
+                case "recursiveCallTop":
                     return true;
             }
         }
