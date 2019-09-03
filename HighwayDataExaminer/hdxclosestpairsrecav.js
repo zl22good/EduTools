@@ -146,7 +146,7 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                thisAV.callStack.push("callRecursionRight");
+                thisAV.callStack.add("callRecursionRight");
                 hdxAV.nextAction = "recursiveCallTop"
             },
             logMessage: function(thisAV) {
