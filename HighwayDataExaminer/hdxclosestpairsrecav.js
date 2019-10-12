@@ -31,9 +31,9 @@ var hdxClosestPairsRecAV = {
 
     originalWaypoints: null,
     //vertices sorted by longitude
-    //WtoE: null,
+    WtoE: null,
     //vertices sorted by latitude
-    //StoN: null,
+    StoN: null,
     
     //used for shading
     northBound: 0,
@@ -63,8 +63,24 @@ var hdxClosestPairsRecAV = {
 
                 thisAV.minPoints =
                     document.getElementById("minPoints").value;
-                //this.WtoE = new Array(waypoints.length);
-                //this.StoN = new Array(waypoints.length);
+
+                function mySorterLat(a, b) {
+                    var x = parseInt(a.waypoint.latitude);
+                    var y = parseInt(b.waypoint.latitude);
+                    return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+                }
+                this.WtoE = new Array(waypoints);
+                this.WtoE.sort((mySorterLat));
+                console.log(this.WtoE);
+
+                function mySorterLon(a, b) {
+                    var y = a.waypoint.longitude;
+                    var x = b.waypoint.longitude;
+                    return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+                }
+                this.StoN = new Array(waypoints);
+                this.StoN.sort(mySorterLon);
+                console.log(this.StoN);
                 thisAV.stack = [];
                 thisAV.startIndex = 0;
                 thisAV.endIndex = waypoints.length - 1;
@@ -146,7 +162,7 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                thisAV.callStack.push("callRecursionRight");
+                thisAV.callStack.add("callRecursionRight");
                 hdxAV.nextAction = "recursiveCallTop"
             },
             logMessage: function(thisAV) {
@@ -159,7 +175,7 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                thisAV.callStack.push("setMinOfHalves");
+                thisAV.callStack.add("setMinOfHalves");
                 hdxAV.nextAction = "recursiveCallTop"
             },
             logMessage: function(thisAV) {
