@@ -16,7 +16,7 @@ var hdxClosestPairsRecAV = {
     
     // state variables for closest pairs search
     minPoints: 3,
-    stack: null,
+    recursiveIndex: 0,   stack: null,
     callStack: null,
     startIndex: 0,
     endIndex: 0,
@@ -69,8 +69,8 @@ var hdxClosestPairsRecAV = {
                     var y = parseInt(b.waypoint.latitude);
                     return ((x < y) ? -1 : ((x > y) ? 1 : 0));
                 }
-                this.WtoE = new Array(waypoints);
-                this.WtoE.sort((mySorterLat));
+                thisAV.WtoE = new Array(waypoints);
+                thisAV.WtoE.sort((mySorterLat));
                 console.log(this.WtoE);
 
                 function mySorterLon(a, b) {
@@ -82,7 +82,10 @@ var hdxClosestPairsRecAV = {
                 this.StoN.sort(mySorterLon);
                 console.log(this.StoN);
                 thisAV.stack = [];
+                thisAV.savedArray = [];
                 thisAV.startIndex = 0;
+                thisAV.rec_level_arr= [];
+                thisAV.rec_level = 0;
                 thisAV.endIndex = waypoints.length - 1;
                 thisAV.minLeft = 0;
                 thisAV.minRight = 0;
@@ -115,7 +118,7 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                thisAV.callStack.add([thisAV.startIndex, thisAV.endIndex]);
+                //thisAV.callStack.add([thisAV.startIndex, thisAV.endIndex]);
                 hdxAV.nextAction = "checkBaseCase"
             },
             logMessage: function(thisAV) {
@@ -127,8 +130,8 @@ var hdxClosestPairsRecAV = {
             comment: "Check if base case is reached",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-
-                if (thisAV.endIndex - thisAV.startIndex <= thisAV.minPoints) {
+                console.log(thisAV.WtoE);
+                if (thisAV.WtoE.length <= 3 || thisAV.rec_level == minPoints) {
                     hdxAV.nextAction = "returnBruteForceSolution";
                 }
                 else {
@@ -163,6 +166,10 @@ var hdxClosestPairsRecAV = {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
                 thisAV.callStack.add("callRecursionRight");
+                thisAV.savedArray.push(thisAV.WtoE.slice(thisAV.WtoE.length/2-1,thisAV.WtoE.length));
+                thisAV.WtoE = thisAV.WtoE.slice(0,thisAV.WtoE.length)
+                thisAV.rec_level_arr.push(thisAV.rec_level);
+                thisAV.rec_level++;
                 hdxAV.nextAction = "recursiveCallTop"
             },
             logMessage: function(thisAV) {
