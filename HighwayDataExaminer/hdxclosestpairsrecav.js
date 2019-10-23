@@ -16,8 +16,9 @@ var hdxClosestPairsRecAV = {
     
     // state variables for closest pairs search
     minPoints: 3,
-    recursiveIndex: 0,   stack: null,
-    callStack: null,
+    recursiveIndex: 0,
+    stack: null,
+    //Stack: null,
     startIndex: 0,
     endIndex: 0,
     minLeft: 0,
@@ -72,14 +73,21 @@ var hdxClosestPairsRecAV = {
                 thisAV.WtoE = presort.sortedWaypoints;
                 console.log(thisAV.WtoE);
 
+                thisAV.Stack = new HDXLinear(hdxLinearTypes.STACK,
+                    "Stack");
 
+                thisAV.savedArray = new HDXLinear(hdxLinearTypes.STACK,
+                    "Stack");
+
+                thisAV.rec_level_arr = new HDXLinear(hdxLinearTypes.STACK,
+                    "Stack");
 
                 this.StoN = new Array(waypoints);
                 console.log(thisAV.StoN);
                 thisAV.stack = [];
-                thisAV.savedArray = [];
+                //thisAV.savedArray = new Array();
                 thisAV.startIndex = 0;
-                thisAV.rec_level_arr= [];
+                //thisAV.rec_level_arr= [];
                 thisAV.rec_levelL = 0;
                 thisAV.rec_levelR= 0;
                 thisAV.endIndex = waypoints.length ;
@@ -91,9 +99,12 @@ var hdxClosestPairsRecAV = {
                 thisAV.forLoopIndex = 0;
                 thisAV.whileLoopIndex = 0;
                 thisAV.returnValue = 0;
+                thisAV.minDist = [0,0,0]
                 
                 thisAV.southBound = waypoints[0].lat;
                 thisAV.northBound = waypoints[0].lat;
+                thisAV.Stack.add("cleanup");
+
                 for (let i = 1; i < waypoints.length; i++) {
                     // keep track of northmost and southmost points
                     thisAV.southBound = Math.min(waypoints[i].lat, thisAV.southBound);
@@ -113,7 +124,7 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
 
-                //thisAV.callStack.add([thisAV.startIndex, thisAV.endIndex]);
+                //thisAV.Stack.add([thisAV.startIndex, thisAV.endIndex]);
                 hdxAV.nextAction = "checkBaseCase"
             },
             logMessage: function(thisAV) {
@@ -126,9 +137,17 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 console.log(thisAV.endIndex - thisAV.startIndex);
-                console.log(thisAV.rec_levelL);
-                console.log(thisAV.minPoints);
+                console.log("recursion level - " + thisAV.rec_levelL);
+                console.log("min pts -  " + thisAV.minPoints);
+                console.log("start index " + thisAV.startIndex);
+                console.log("end index - " + thisAV.endIndex);
+
                 for (let i = 0  ; i < thisAV.WtoE.length; i++) {
+                    updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
+                        visualSettings.discarded,
+                        40, false);
+                }
+                for (let i = thisAV.startIndex  ; i < thisAV.WtoE.length; i++) {
                     updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
                         visualSettings.spanningTree,
                         40, false);
@@ -136,6 +155,14 @@ var hdxClosestPairsRecAV = {
                 for (let i = thisAV.startIndex; i < thisAV.endIndex; i++) {
                     updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
                         visualSettings.visiting,
+                        40, false);
+                }
+                if (thisAV.minDist [0] != 0) {
+                    updateMarkerAndTable(waypoints.indexOf(thisAV.minDist[1]),
+                        visualSettings.discovered,
+                        40, false);
+                    updateMarkerAndTable(waypoints.indexOf(thisAV.minDist[2]),
+                        visualSettings.discovered,
                         40, false);
                 }
                 if (thisAV.endIndex - thisAV.startIndex <= 3 || thisAV.rec_levelL == thisAV.minPoints) {
@@ -156,24 +183,41 @@ var hdxClosestPairsRecAV = {
             comment: "Return brute force Solution",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-               // if(thisAV.rec_levelR != thisAV.minPoints){
-                    thisAV.rec_levelL = 0;
-                   // hdxAV.nextAction = "callRecursionRight"
-
-
-               // }
-               // else {
-                let minDistance = thisAV.computeDistance(waypoints.indexOf(thisAV.WtoE[thisAV.startIndex]), waypoints.indexOf(thisAV.WtoE[thisAV.startIndex + 1]));
-                for (let i = thisAV.startIndex; i < thisAV.endIndex-1; i++){
-                    let minDistTest = thisAV.computeDistance(waypoints.indexOf(thisAV.WtoE[i]), waypoints.indexOf(thisAV.WtoE[i + 1]));
-                    console.log("min " + minDistTest);
-
-                    if(minDistTest > minDistance){
-                        minDistance = minDistTest;
-                    }
+                if(false){
+                let minDistTest = thisAV.computeDistance(thisAV.WtoE[thisAV.startIndex], thisAV.WtoE[thisAV.startIndex + 1]);
+                console.log("min " + minDistTest);
                 }
-                console.log("min " + minDistance);
-                hdxAV.nextAction = thisAV.callStack.pop();
+                else {
+
+                    if(thisAV.endIndex - thisAV.startIndex == 2){
+                        let minDistTest = thisAV.computeDistance(thisAV.WtoE[thisAV.startIndex], thisAV.WtoE[thisAV.endIndex]);
+                        console.log("min test" + minDistTest);
+                        console.log("min " + thisAV.minDist[0]);
+
+                        if (minDistTest > thisAV.minDist[0]) {
+                            thisAV.minDist = [minDistTest, thisAV.WtoE[thisAV.startIndex], thisAV.WtoE[thisAV.endIndex]];
+                        }
+                    }
+                    else {
+                        for (let i = thisAV.startIndex; i < thisAV.endIndex - 2; i++) {
+                            for (let j = i + 1; j < thisAV.endIndex - 1; j++) {
+                                let minDistTest = thisAV.computeDistance(thisAV.WtoE[i], thisAV.WtoE[j]);
+                                console.log("min test" + minDistTest);
+                                console.log("min " + thisAV.minDist[0]);
+
+                                if (minDistTest < thisAV.minDist[0]) {
+                                    thisAV.minDist = [minDistTest, thisAV.WtoE[i], thisAV.WtoE[j]];
+                                }
+
+
+                            }
+                        }
+                    }
+
+                }
+                console.log("min " + thisAV.minDist);
+                hdxAV.nextAction = thisAV.Stack.remove();
+                console.log(hdxAV.nextAction);
                 //}
            },
             logMessage: function(thisAV) {
@@ -190,16 +234,20 @@ var hdxClosestPairsRecAV = {
                     //    visualSettings.visiting, 10, false);
                 }
 
-                thisAV.callStack.add("callRecursionRight");
-                //thisAV.savedArray.push(thisAV.WtoE.length/2-1,thisAV.WtoE.length));
+                thisAV.Stack.add("callRecursionRight");
+
+                thisAV.savedArray.add([Math.ceil(thisAV.startIndex +
+                    ((thisAV.endIndex-thisAV.startIndex)/2)) ,thisAV.endIndex]);
+                console.log("Saved array - " +  Math.ceil(thisAV.startIndex +
+                    ((thisAV.endIndex-thisAV.startIndex)/2)) + " " + thisAV.WtoE.length);
                 console.log(typeof thisAV.WtoE);
                 thisAV.WtoE = thisAV.WtoE.slice(0,thisAV.WtoE.length);
 
-                thisAV.endIndex = Math.ceil((thisAV.endIndex-thisAV.startIndex)/2);
+                thisAV.endIndex = Math.ceil(thisAV.startIndex + ((thisAV.endIndex-thisAV.startIndex)/2));
 
                 console.log(thisAV.WtoE);
-                thisAV.rec_level_arr.push(thisAV.rec_levelL);
                 thisAV.rec_levelL++;
+                thisAV.rec_level_arr.add(thisAV.rec_levelL);
                 hdxAV.nextAction = "recursiveCallTop"
             },
             logMessage: function(thisAV) {
@@ -211,8 +259,15 @@ var hdxClosestPairsRecAV = {
             comment: "Call recursion on right half of points",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-
-                //thisAV.callStack.add("setMinOfHalves");
+                nums = thisAV.savedArray.remove();
+                thisAV.rec_levelL = thisAV.rec_level_arr.remove();
+                console.log("test - ");
+                console.log(nums);
+                thisAV.startIndex = nums[0];
+                thisAV.endIndex = nums[1];
+                console.log("start - " +  thisAV.startIndex);
+                console.log("end - " +  thisAV.endIndex);
+                //thisAV.Stack.add("setMinOfHalves");
                 hdxAV.nextAction = "recursiveCallTop"
             },
             logMessage: function(thisAV) {
@@ -334,11 +389,11 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 
-                if (thisAV.callStack.length == 0){
+                if (thisAV.Stack.length == 0){
                     hdxAV.nextAction = cleanup;
                 }
                 else {
-                    hdxAV.nextAction = thisAV.callStack.pop();
+                    hdxAV.nextAction = thisAV.Stack.pop();
                 }
             },
             logMessage: function(thisAV) {
@@ -474,8 +529,9 @@ var hdxClosestPairsRecAV = {
         initWaypointsAndConnections(true, false,
                                     visualSettings.undiscovered);
 
-        this.callStack = new HDXLinear(hdxLinearTypes.CALL_STACK,
-            "Call Stack");
+        this.Stack = new HDXLinear(hdxLinearTypes.STACK,
+            "Stack");this.Stack = new HDXLinear(hdxLinearTypes.STACK,
+            "Stack");
 
         this.code = '<table class="pseudocode"><tr id="START" class="pseudocode"><td class="pseudocode">WtoE[] &larr; vertices sorted by longitude</td></tr>';
         this.code += pcEntry(0,'ClosestPair(WtoE) //length = n',"recursiveCallTop");
