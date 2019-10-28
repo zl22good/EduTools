@@ -100,6 +100,7 @@ var hdxClosestPairsRecAV = {
                 thisAV.whileLoopIndex = 0;
                 thisAV.returnValue = 0;
                 thisAV.minDist = [0,0,0]
+                thisAV.setMin = false;
                 
                 thisAV.southBound = waypoints[0].lat;
                 thisAV.northBound = waypoints[0].lat;
@@ -157,7 +158,10 @@ var hdxClosestPairsRecAV = {
                         visualSettings.visiting,
                         40, false);
                 }
-                if (thisAV.minDist [0] != 0) {
+                //if (thisAV.minDist [0] == -1) {
+                if (thisAV.setMin == true) {
+                    
+                
                     updateMarkerAndTable(waypoints.indexOf(thisAV.minDist[1]),
                         visualSettings.discovered,
                         40, false);
@@ -267,7 +271,14 @@ var hdxClosestPairsRecAV = {
                 thisAV.endIndex = nums[1];
                 console.log("start - " +  thisAV.startIndex);
                 console.log("end - " +  thisAV.endIndex);
-                //thisAV.Stack.add("setMinOfHalves");
+                
+                
+                
+                //thisAV.Stack.add("recursiveCallTop");
+                //hdxAV.nextAction = "setMinOfHalves"
+                
+                
+                thisAV.Stack.add("setMinOfHalves");
                 hdxAV.nextAction = "recursiveCallTop"
             },
             logMessage: function(thisAV) {
@@ -278,8 +289,31 @@ var hdxClosestPairsRecAV = {
             label: "setMinOfHalves",
             comment: "Find smaller of minimum distances from the two halves",
             code: function(thisAV) {
-                highlightPseudocode(this.label, visualSettings.visiting);
+                // for (let i = thisAV.startIndex  ; i < thisAV.WtoE.length; i++) {
+                //     updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
+                //         visualSettings.spanningTree,
+                //         40, false);
+                // }
+                // highlightPseudocode(this.label, visualSettings.visiting);
+                for (let i = 0  ; i < thisAV.endIndex; i++) {
+                    updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
+                        visualSettings.discarded,
+                        40, false);
+                }
 
+                updateMarkerAndTable(waypoints.indexOf(thisAV.minDist[1]),
+                        visualSettings.discovered,
+                        40, false);
+                updateMarkerAndTable(waypoints.indexOf(thisAV.minDist[2]),
+                        visualSettings.discovered,
+                        40, false);
+                
+                thisAV.setMin = true;
+                console.log("draw - " + waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex])]);
+                thisAV.drawLineVisiting(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])],
+                waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex])]);
+
+               // hdxAV.nextAction = "recursiveCallTop";
                 hdxAV.nextAction = "setMiddlePoint"
             },
             logMessage: function(thisAV) {
@@ -393,7 +427,7 @@ var hdxClosestPairsRecAV = {
                     hdxAV.nextAction = cleanup;
                 }
                 else {
-                    hdxAV.nextAction = thisAV.Stack.pop();
+                    hdxAV.nextAction = thisAV.Stack.remove();
                 }
             },
             logMessage: function(thisAV) {
@@ -448,11 +482,13 @@ var hdxClosestPairsRecAV = {
 
     // function to draw the polyline connecting the current
     // candidate pair of vertices
-    drawLineVisiting() {
+    drawLineVisiting(v1, v2) {
 
         let visitingLine = [];
-        visitingLine[0] = [waypoints[this.v1].lat, waypoints[this.v1].lon];
-        visitingLine[1] = [waypoints[this.v2].lat, waypoints[this.v2].lon];
+        let lonLine = (parseFloat(v2.lon) + parseFloat(v1.lon)) / 2;
+        console.log(lonLine);
+        visitingLine[0] = [90, lonLine];
+        visitingLine[1] = [-90, lonLine];
         this.lineVisiting = L.polyline(visitingLine, {
             color: visualSettings.visiting.color,
             opacity: 0.6,
