@@ -81,6 +81,8 @@ var hdxClosestPairsRecAV = {
 
                 thisAV.rec_level_arr = new HDXLinear(hdxLinearTypes.STACK,
                     "Stack");
+                thisAV.lineStack = new HDXLinear(hdxLinearTypes.STACK,
+                    "Stack");    
 
                 this.StoN = new Array(waypoints);
                 console.log(thisAV.StoN);
@@ -99,9 +101,9 @@ var hdxClosestPairsRecAV = {
                 thisAV.forLoopIndex = 0;
                 thisAV.whileLoopIndex = 0;
                 thisAV.returnValue = 0;
-                thisAV.minDist = [0,0,0]
+                thisAV.minDist = [9999,0,0]
                 thisAV.setMin = false;
-                
+                thisAV.currentLine;
                 thisAV.southBound = waypoints[0].lat;
                 thisAV.northBound = waypoints[0].lat;
                 thisAV.Stack.add("cleanup");
@@ -193,35 +195,40 @@ var hdxClosestPairsRecAV = {
                 }
                 else {
 
-                    if(thisAV.endIndex - thisAV.startIndex == 2){
+                    if(thisAV.endIndex - thisAV.startIndex == 1){
                         let minDistTest = thisAV.computeDistance(thisAV.WtoE[thisAV.startIndex], thisAV.WtoE[thisAV.endIndex]);
-                        console.log("min test" + minDistTest);
+                        console.log("min test2 " + minDistTest);
                         console.log("min " + thisAV.minDist[0]);
 
-                        if (minDistTest > thisAV.minDist[0]) {
+                        if (minDistTest < thisAV.minDist[0]) {
                             thisAV.minDist = [minDistTest, thisAV.WtoE[thisAV.startIndex], thisAV.WtoE[thisAV.endIndex]];
                         }
                     }
                     else {
-                        for (let i = thisAV.startIndex; i < thisAV.endIndex - 2; i++) {
-                            for (let j = i + 1; j < thisAV.endIndex - 1; j++) {
+                        for (let i = thisAV.startIndex; i < thisAV.endIndex - 1; i++) {
+                            for (let j = i + 1; j < thisAV.endIndex; j++) {
                                 let minDistTest = thisAV.computeDistance(thisAV.WtoE[i], thisAV.WtoE[j]);
-                                console.log("min test" + minDistTest);
+                                console.log("min test " + minDistTest);
                                 console.log("min " + thisAV.minDist[0]);
 
                                 if (minDistTest < thisAV.minDist[0]) {
                                     thisAV.minDist = [minDistTest, thisAV.WtoE[i], thisAV.WtoE[j]];
                                 }
-
-
                             }
                         }
                     }
 
                 }
                 console.log("min " + thisAV.minDist);
+                console.log("stack len - " + thisAV.Stack.length);
                 hdxAV.nextAction = thisAV.Stack.remove();
-                console.log(hdxAV.nextAction);
+                console.log("stack len - " + thisAV.Stack.length == 0);
+                if(thisAV.endIndex == thisAV.WtoE.length && thisAV.Stack.isEmpty){
+                    console.log("null");                    
+                    thisAV.startIndex = Math.ceil(thisAV.WtoE.length/2);
+                    //hdxAV.nextAction = hdxAV.nextAction[0];
+                }
+                console.log("after brute " + hdxAV.nextAction);
                 //}
            },
             logMessage: function(thisAV) {
@@ -233,10 +240,10 @@ var hdxClosestPairsRecAV = {
             comment: "Call recursion on left half of points",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-                for( i = 0; i < thisAV.WtoE.length-1; i++) {
+                //for( i = 0; i < thisAV.WtoE.length-1; i++) {
                   //  updateMarkerAndTable(i.vIndex,
                     //    visualSettings.visiting, 10, false);
-                }
+                //}
 
                 thisAV.Stack.add("callRecursionRight");
 
@@ -289,6 +296,7 @@ var hdxClosestPairsRecAV = {
             label: "setMinOfHalves",
             comment: "Find smaller of minimum distances from the two halves",
             code: function(thisAV) {
+                highlightPseudocode(this.label, visualSettings.visiting);
                 // for (let i = thisAV.startIndex  ; i < thisAV.WtoE.length; i++) {
                 //     updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
                 //         visualSettings.spanningTree,
@@ -310,10 +318,25 @@ var hdxClosestPairsRecAV = {
                 
                 thisAV.setMin = true;
                 console.log("draw - " + waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex])]);
-                thisAV.drawLineVisiting(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])],
+                if(thisAV.currentLine != null && false){
+                    thisAV.currentLine = thisAV.lineStack.remove();
+                    thisAV.removeLineVisiting(thisAV.currentLine);
+                    thisAV.currentLine = thisAV.lineStack.remove();
+                    thisAV.removeLineVisiting(thisAV.currentLine);
+                    
+                    
+            }
+                thisAV.currentLine = thisAV.drawLineVisiting(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])],
                 waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex])]);
 
-               // hdxAV.nextAction = "recursiveCallTop";
+
+                //DRAW YELLOW LINE
+                thisAV.lineStack.add(thisAV.currentLine);
+
+
+
+               
+                // hdxAV.nextAction = "recursiveCallTop";
                 hdxAV.nextAction = "setMiddlePoint"
             },
             logMessage: function(thisAV) {
@@ -325,6 +348,27 @@ var hdxClosestPairsRecAV = {
             comment: "Find longitude of middle point",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
+
+                thisAV.currentLine = thisAV.lineStack.remove();
+                thisAV.removeLineVisiting(thisAV.currentLine);
+                
+                leftDot = thisAV.waypoints[1];
+                rightDot = thisAV.waypoints[1];
+                console.log("left lon - " +(parseFloat(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])].lon) +
+                parseFloat(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex])].lon))/2);
+                console.log("way - " + waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])].lon);
+                leftDot.lon = ((parseFloat(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])].lon) +
+                parseFloat(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex])].lon))/2) 
+                + parseFloat(thisAV.minDist);
+                console.log("left lon - " + leftDot.lon);
+                leftDot.lat = 0;
+                thisAV.currentLine = thisAV.drawLineVisiting(leftDot,leftDot);
+                thisAV.lineStack.add(thisAV.currentLine);
+
+                rightDot.lon = leftDot.lon - (2 * parseFloat(thisAV.minDist));
+               
+                thisAV.currentLine = thisAV.drawLineVisiting(rightDot,rightDot);
+                thisAV.lineStack.add(thisAV.currentLine);
 
                 hdxAV.nextAction = "setPointsToCheck"
             },
@@ -422,7 +466,11 @@ var hdxClosestPairsRecAV = {
             comment: "Return min distance between points",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-                
+                console.log("stack len - " + thisAV.Stack.length);
+                thisAV.currentLine = thisAV.lineStack.remove();
+                thisAV.removeLineVisiting(thisAV.currentLine);
+                thisAV.currentLine = thisAV.lineStack.remove();
+                thisAV.removeLineVisiting(thisAV.currentLine);
                 if (thisAV.Stack.length == 0){
                     hdxAV.nextAction = cleanup;
                 }
@@ -471,6 +519,7 @@ var hdxClosestPairsRecAV = {
                 //updateAVControlEntry("v1visiting", "");
                 //updateAVControlEntry("v2visiting", "");
                 //updateAVControlEntry("checkingDistance", "");
+                console.log("end");
                 hdxAV.nextAction = "DONE";
                 hdxAV.iterationDone = true;
             },
@@ -480,21 +529,35 @@ var hdxClosestPairsRecAV = {
         }
     ],
 
+    
     // function to draw the polyline connecting the current
     // candidate pair of vertices
     drawLineVisiting(v1, v2) {
 
         let visitingLine = [];
         let lonLine = (parseFloat(v2.lon) + parseFloat(v1.lon)) / 2;
-        console.log(lonLine);
+        console.log("line count - " + this.lineCount);
         visitingLine[0] = [90, lonLine];
         visitingLine[1] = [-90, lonLine];
+
+        if (this.lineCount % 3 == 0) {
         this.lineVisiting = L.polyline(visitingLine, {
             color: visualSettings.visiting.color,
             opacity: 0.6,
             weight: 4
         });
-        this.lineVisiting.addTo(map);   
+    }
+    else{
+        this.lineVisiting = L.polyline(visitingLine, {
+            color: visualSettings.discovered.color,
+            opacity: 0.6,
+            weight: 4
+        });
+    }
+        //thisAV.lineStack.add(this.lineVisiting);
+        this.lineVisiting.addTo(map);  
+        this.lineCount ++; 
+        return this.lineVisiting
     },
     
     computeDistance(v1, v2) {
@@ -502,9 +565,9 @@ var hdxClosestPairsRecAV = {
     },
     
     // function to remove the visiting polyline
-    removeLineVisiting() {
+    removeLineVisiting(l1) {
 
-        this.lineVisiting.remove();
+        l1.remove();
     },
 
     // functions to draw or update the polylines connecting the
@@ -551,6 +614,7 @@ var hdxClosestPairsRecAV = {
     prepToStart() {
 
         hdxAV.algStat.innerHTML = "Initializing";
+        let lineCount = 0;
 
         //reorder waypoints
         console.log(waypoints);
