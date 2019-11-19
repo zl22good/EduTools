@@ -105,11 +105,14 @@ var hdxClosestPairsRecAV = {
                 thisAV.minSq = 0;
                 thisAV.setMin = false;
                 thisAV.currentLine;
-                thisAV.southBound = waypoints[0].lat;
+                setMiddlePoint.southBound = waypoints[0].lat;
                 thisAV.northBound = waypoints[0].lat;
                 thisAV.Stack.add("cleanup");
                 thisAV.globali = 0;
                 thisAV.globalk = 0;
+                thisAV.finalDraw = false;
+                thisAV.oldRightStart = waypoints.length;
+                thisAV.bounds = null;
 
                 for (let i = 1; i < waypoints.length; i++) {
                     // keep track of northmost and southmost points
@@ -225,12 +228,8 @@ var hdxClosestPairsRecAV = {
                 console.log("min " + thisAV.minDist);
                 console.log("stack len - " + thisAV.Stack.length);
                 hdxAV.nextAction = thisAV.Stack.remove();
-                console.log("stack len - " + thisAV.Stack.length == 0);
-                if(thisAV.endIndex == thisAV.WtoE.length && thisAV.Stack.isEmpty){
-                    console.log("null");                    
-                    thisAV.startIndex = Math.ceil(thisAV.WtoE.length/2);
-                    //hdxAV.nextAction = hdxAV.nextAction[0];
-                }
+                
+                
                 console.log("after brute " + hdxAV.nextAction);
                 //}
            },
@@ -247,14 +246,17 @@ var hdxClosestPairsRecAV = {
                   //  updateMarkerAndTable(i.vIndex,
                     //    visualSettings.visiting, 10, false);
                 //}
-
+                
+               
+                thisAV.oldRightStart = thisAV.startIndex + 
+                        ((thisAV.endIndex-thisAV.startIndex)/2);
                 thisAV.Stack.add("callRecursionRight");
-
                 thisAV.savedArray.add([Math.ceil(thisAV.startIndex +
                     ((thisAV.endIndex-thisAV.startIndex)/2)) ,thisAV.endIndex]);
                 console.log("Saved array - " +  Math.ceil(thisAV.startIndex +
                     ((thisAV.endIndex-thisAV.startIndex)/2)) + " " + thisAV.WtoE.length);
                 console.log(typeof thisAV.WtoE);
+                    
                 thisAV.WtoE = thisAV.WtoE.slice(0,thisAV.WtoE.length);
 
                 thisAV.endIndex = Math.ceil(thisAV.startIndex + ((thisAV.endIndex-thisAV.startIndex)/2));
@@ -306,6 +308,17 @@ var hdxClosestPairsRecAV = {
                 //         40, false);
                 // }
                 // highlightPseudocode(this.label, visualSettings.visiting);
+                console.log("stack len - " + thisAV.Stack.length == 0);
+                if (thisAV.finalDraw == true) {
+                    console.log("null");                    
+                    thisAV.startIndex = Math.ceil(thisAV.WtoE.length/2);
+                }
+                console.log("start - end = " + (thisAV.WtoE.length - thisAV.startIndex));
+                if(thisAV.WtoE.length - thisAV.startIndex <= 3){
+                    thisAV.finalDraw = true;
+                    console.log("final")
+                    //hdxAV.nextAction = hdxAV.nextAction[0];
+                }
                 for (let i = 0  ; i < thisAV.endIndex; i++) {
                     updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
                         visualSettings.discarded,
@@ -329,8 +342,8 @@ var hdxClosestPairsRecAV = {
                     
                     
             }
-                thisAV.currentLine = thisAV.drawLineMap(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])],
-                waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex])]);
+                thisAV.currentLine = thisAV.drawLineMap(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])].lon,
+                waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex])].lon);
 
 
                 //DRAW YELLOW LINE
@@ -355,21 +368,21 @@ var hdxClosestPairsRecAV = {
                 thisAV.currentLine = thisAV.lineStack.remove();
                 thisAV.removeLineVisiting(thisAV.currentLine);
                 
-                thisAV.leftDot = thisAV.waypoints[1];
-                thisAV.rightDot = thisAV.waypoints[2];
+                thisAV.leftDot = 0;
+                thisAV.rightDot = 0;
                 console.log("left lon - " +(parseFloat(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])].lon) +
                 parseFloat(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex])].lon))/2);
                 console.log("way - " + waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])].lon);
-                thisAV.leftDot.lon = ((parseFloat(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])].lon) +
+                thisAV.leftDot = ((parseFloat(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex - 1])].lon) +
                 parseFloat(waypoints[waypoints.indexOf(thisAV.WtoE[thisAV.startIndex])].lon))/2) 
                 + parseFloat(thisAV.minDist);
-                console.log("left lon - " + thisAV.leftDot.lon);
-                thisAV.leftDot.lat = 0;
+                console.log("left lon - " + thisAV.leftDot);
+                //thisAV.leftDot.lat = 0;
                 thisAV.currentLine = thisAV.drawLineMap(thisAV.leftDot,thisAV.leftDot);
                 thisAV.lineStack.add(thisAV.currentLine);
-                console.log("left lon - " + thisAV.leftDot.lon);
-                thisAV.rightDot.lon = thisAV.leftDot.lon - (2 * parseFloat(thisAV.minDist));
-                console.log("left lon - " + thisAV.leftDot.lon);
+                console.log("left lon - " + thisAV.leftDot);
+                thisAV.rightDot = thisAV.leftDot - (2 * parseFloat(thisAV.minDist));
+                console.log("left lon - " + thisAV.leftDot);
                 thisAV.currentLine = thisAV.drawLineMap(thisAV.rightDot,thisAV.rightDot);
                 thisAV.lineStack.add(thisAV.currentLine);
 
@@ -423,10 +436,17 @@ var hdxClosestPairsRecAV = {
             comment: "Loop through vertices in closeToCenter",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-                
+                thisAV.NtoS.sort((a,b) => (a.lat > b.lat) ? -1: 1);
+                console.log(thisAV.NtoS);
                 if(thisAV.globali <= thisAV.NtoS.length - 2){
                 hdxAV.nextAction = "updateWhileLoopIndex"
+                if (thisAV.bounds != null) {
+                    
                 }
+                thisAV.bounds = [[thisAV.NtoS[i].lat,thisAV.leftDot],[thisAV.NtoS[i].lat - thisAV.minSq,thisAV.rightDot]]
+                
+                thisAV.drawRec = L.rectangle(bounds, {color: "red", weight: 40}).addTo(map);
+            }
                 else{
                     hdxAV.nextAction = "return";
                 }
@@ -458,7 +478,9 @@ var hdxClosestPairsRecAV = {
                 if(thisAV.currentLine != null){
                 thisAV.removeLineVisiting(thisAV.currentLine);
                 }
-                if (thisAV.globalk < thisAV.NtoS.length-1) {
+                if (thisAV.globalk < thisAV.NtoS.length-1 && 
+                    (Math.pow(thisAV.NtoS[thisAV.globalk].lat - thisAV.NtoS[thisAV.globali].lat, 2) 
+                        < thisAV.minSq)) {
                     hdxAV.nextAction = "updateMinPairFound"
                     thisAV.currentLine = thisAV.drawLineVisiting(thisAV.NtoS[thisAV.globali], thisAV.NtoS[thisAV.globalk]);
 
@@ -600,13 +622,13 @@ var hdxClosestPairsRecAV = {
         return this.lineVisiting
     },
 
-    drawLineMap(v1, v2) {
+    drawLineMap(v1,v2) {
 
         let visitingLine = [];
         let lonLine = (parseFloat(v2.lon) + parseFloat(v1.lon)) / 2;
         console.log("line count - " + this.lineCount);
-        visitingLine[0] = [90, lonLine];
-        visitingLine[1] = [-90, lonLine];
+        visitingLine[0] = [90, v1];
+        visitingLine[1] = [-90, v2];
 
         if (this.lineCount % 3 == 0) {
         this.lineVisiting = L.polyline(visitingLine, {
