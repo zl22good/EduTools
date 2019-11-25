@@ -406,7 +406,7 @@ var hdxClosestPairsRecAV = {
                    // console.log(thisAV.WtoE[i].lon);
                    // console.log("test 1 - " + (typeof parseFloat(thisAV.WtoE[i].lon)) + " " + typeof thisAV.rightDot.lon );
                    // console.log("test 2 - " + parseFloat(thisAV.WtoE[i].lon) + " " + thisAV.leftDot.lon);
-                    if ((parseFloat(thisAV.WtoE[i].lon) > thisAV.rightDot.lon) && parseFloat(thisAV.WtoE[i].lon) < thisAV.leftDot.lon) {
+                    if ((parseFloat(thisAV.WtoE[i].lon) > thisAV.rightDot) && parseFloat(thisAV.WtoE[i].lon) < thisAV.leftDot) {
                         thisAV.NtoS.push(thisAV.WtoE[i]);
                         console.log(thisAV.WtoE[i].lon);
                     }
@@ -437,15 +437,15 @@ var hdxClosestPairsRecAV = {
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
                 thisAV.NtoS.sort((a,b) => (a.lat > b.lat) ? -1: 1);
-                console.log(thisAV.NtoS);
+                console.log("sorted ntos " + thisAV.NtoS);
                 if(thisAV.globali <= thisAV.NtoS.length - 2){
                 hdxAV.nextAction = "updateWhileLoopIndex"
                 if (thisAV.bounds != null) {
-                    
+                   thisAV.drawRec.remove(); 
                 }
-                thisAV.bounds = [[thisAV.NtoS[i].lat,thisAV.leftDot],[thisAV.NtoS[i].lat - thisAV.minSq,thisAV.rightDot]]
+                thisAV.bounds = [[thisAV.NtoS[thisAV.globali].lat,thisAV.leftDot],[thisAV.NtoS[thisAV.globali].lat - thisAV.minDist[0],thisAV.rightDot]]
                 
-                thisAV.drawRec = L.rectangle(bounds, {color: "red", weight: 40}).addTo(map);
+                thisAV.drawRec = L.rectangle(thisAV.bounds, {color: "red", weight: 5}).addTo(map);
             }
                 else{
                     hdxAV.nextAction = "return";
@@ -480,7 +480,8 @@ var hdxClosestPairsRecAV = {
                 }
                 if (thisAV.globalk < thisAV.NtoS.length-1 && 
                     (Math.pow(thisAV.NtoS[thisAV.globalk].lat - thisAV.NtoS[thisAV.globali].lat, 2) 
-                        < thisAV.minSq)) {
+                      < thisAV.minSq)) 
+                      {
                     hdxAV.nextAction = "updateMinPairFound"
                     thisAV.currentLine = thisAV.drawLineVisiting(thisAV.NtoS[thisAV.globali], thisAV.NtoS[thisAV.globalk]);
 
