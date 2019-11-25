@@ -310,7 +310,8 @@ var hdxClosestPairsRecAV = {
                 // highlightPseudocode(this.label, visualSettings.visiting);
                 console.log("stack len - " + thisAV.Stack.length == 0);
                 if (thisAV.finalDraw == true) {
-                    console.log("null");                    
+                    console.log("null");    
+                    thisAV.skipExtra = true;                
                     thisAV.startIndex = Math.ceil(thisAV.WtoE.length/2);
                 }
                 console.log("start - end = " + (thisAV.WtoE.length - thisAV.startIndex));
@@ -410,6 +411,17 @@ var hdxClosestPairsRecAV = {
                         thisAV.NtoS.push(thisAV.WtoE[i]);
                         console.log(thisAV.WtoE[i].lon);
                     }
+                for (let i = 0; i < thisAV.NtoS.length - 1; i++) {
+                        updateMarkerAndTable(waypoints.indexOf(thisAV.NtoS[i]),
+                            visualSettings.visiting,
+                            40, false);
+                    }
+                updateMarkerAndTable(waypoints.indexOf(thisAV.minDist[1]),
+                        visualSettings.discovered,
+                        40, false);
+                updateMarkerAndTable(waypoints.indexOf(thisAV.minDist[2]),
+                        visualSettings.discovered,
+                        40, false);
                 }
                 console.log(thisAV.NtoS);
                 hdxAV.nextAction = "squareMinOfHalves"
@@ -441,7 +453,8 @@ var hdxClosestPairsRecAV = {
                 if(thisAV.globali <= thisAV.NtoS.length - 2){
                 hdxAV.nextAction = "updateWhileLoopIndex"
                 if (thisAV.bounds != null) {
-                   thisAV.drawRec.remove(); 
+                   thisAV.drawRec.remove();
+                   thisAV.bounds = null; 
                 }
                 thisAV.bounds = [[thisAV.NtoS[thisAV.globali].lat,thisAV.leftDot],[thisAV.NtoS[thisAV.globali].lat - thisAV.minDist[0],thisAV.rightDot]]
                 
@@ -477,6 +490,7 @@ var hdxClosestPairsRecAV = {
                 //add checking for too far
                 if(thisAV.currentLine != null){
                 thisAV.removeLineVisiting(thisAV.currentLine);
+                thisAV.currentLine = null;
                 }
                 if (thisAV.globalk < thisAV.NtoS.length-1 && 
                     (Math.pow(thisAV.NtoS[thisAV.globalk].lat - thisAV.NtoS[thisAV.globali].lat, 2) 
@@ -509,6 +523,11 @@ var hdxClosestPairsRecAV = {
                     for (let i = 0  ; i < thisAV.WtoE.length; i++) {
                         updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
                             visualSettings.discarded,
+                            40, false);
+                    }
+                    for (let i = 0; i < thisAV.NtoS.length - 1; i++) {
+                        updateMarkerAndTable(waypoints.indexOf(thisAV.NtoS[i]),
+                            visualSettings.visiting,
                             40, false);
                     }
                     updateMarkerAndTable(waypoints.indexOf(thisAV.minDist[1]),
@@ -548,8 +567,24 @@ var hdxClosestPairsRecAV = {
                 thisAV.removeLineVisiting(thisAV.currentLine);
                 thisAV.currentLine = thisAV.lineStack.remove();
                 thisAV.removeLineVisiting(thisAV.currentLine);
-                if (thisAV.Stack.length == 0){
-                    hdxAV.nextAction = cleanup;
+                for (let i = 0  ; i < thisAV.WtoE.length; i++) {
+                    updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
+                        visualSettings.discarded,
+                        40, false);
+                }
+                updateMarkerAndTable(waypoints.indexOf(thisAV.minDist[1]),
+                visualSettings.discovered,
+                40, false);
+                updateMarkerAndTable(waypoints.indexOf(thisAV.minDist[2]),
+                visualSettings.discovered,
+                40, false);
+
+                if (thisAV.bounds != null) {
+                    thisAV.drawRec.remove();
+                    thisAV.bounds = null; 
+                 }
+                if (thisAV.Stack.length == 0 || thisAV.skipExtra){
+                    hdxAV.nextAction = "cleanup";
                 }
                 else {
                     hdxAV.nextAction = thisAV.Stack.remove();
@@ -615,7 +650,7 @@ var hdxClosestPairsRecAV = {
         visitingLine[0] = [v1.lat, v1.lon];
         visitingLine[1] = [v2.lat, v2.lon];
         this.lineVisiting = L.polyline(visitingLine, {
-            color: visualSettings.visiting.color,
+            color: "gold",
             opacity: 0.6,
             weight: 4
         });
