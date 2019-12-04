@@ -61,7 +61,8 @@ var hdxClosestPairsRecAV = {
             comment: "Initialize closest pair variables",
             code: function(thisAV) {
                 highlightPseudocode(this.label, visualSettings.visiting);
-
+                updateAVControlEntry("closeLeader", "no leader yet, dclosest = &infin;");
+                updateAVControlEntry("totalChecked", "no checks done yet");
                 thisAV.minPoints =
                     document.getElementById("minPoints").value;
 
@@ -208,6 +209,9 @@ var hdxClosestPairsRecAV = {
 
                         if (minDistTest < thisAV.minDist[0]) {
                             thisAV.minDist = [minDistTest, thisAV.WtoE[thisAV.startIndex], thisAV.WtoE[thisAV.endIndex]];
+                            updateAVControlEntry("closeLeader", "Closest: [" + 
+                            thisAV.minDist[1].label + "," +  thisAV.minDist[2].label
+                             + "], d: " + thisAV.minDist[0].toFixed(5));
                         }
                     }
                     else {
@@ -219,6 +223,9 @@ var hdxClosestPairsRecAV = {
 
                                 if (minDistTest < thisAV.minDist[0]) {
                                     thisAV.minDist = [minDistTest, thisAV.WtoE[i], thisAV.WtoE[j]];
+                                    updateAVControlEntry("closeLeader", "Closest: [" + 
+                                     thisAV.minDist[1].label + "," +  thisAV.minDist[2].label
+                                        + "], d: " + thisAV.minDist[0].toFixed(5));
                                 }
                             }
                         }
@@ -411,7 +418,9 @@ var hdxClosestPairsRecAV = {
                         thisAV.NtoS.push(thisAV.WtoE[i]);
                         console.log(thisAV.WtoE[i].lon);
                     }
-                for (let i = 0; i < thisAV.NtoS.length - 1; i++) {
+                    updateAVControlEntry("totalChecked", "Total Points in Area - " + thisAV.NtoS.length + ", Total Points Checked - 0");
+                    thisAV.checkedCounter = 0;
+                    for (let i = 0; i < thisAV.NtoS.length - 1; i++) {
                         updateMarkerAndTable(waypoints.indexOf(thisAV.NtoS[i]),
                             visualSettings.visiting,
                             40, false);
@@ -492,6 +501,9 @@ var hdxClosestPairsRecAV = {
                 thisAV.removeLineVisiting(thisAV.currentLine);
                 thisAV.currentLine = null;
                 }
+                thisAV.checkedCounter++;
+                updateAVControlEntry("totalChecked", "Points in Area - " + thisAV.NtoS.length + ", Points Checked - " + thisAV.checkedCounter);
+
                 if (thisAV.globalk < thisAV.NtoS.length-1 && 
                     (Math.pow(thisAV.NtoS[thisAV.globalk].lat - thisAV.NtoS[thisAV.globali].lat, 2) 
                       < thisAV.minSq)) 
@@ -520,6 +532,9 @@ var hdxClosestPairsRecAV = {
                 if((Math.pow(thisAV.NtoS[thisAV.globali].lat - thisAV.NtoS[thisAV.globalk].lat,2) + Math.pow(thisAV.NtoS[thisAV.globali].lon - thisAV.NtoS[thisAV.globalk].lon,2))< thisAV.minSq ){
                     thisAV.minSq = Math.pow(thisAV.NtoS[thisAV.globali].lat - thisAV.NtoS[thisAV.globalk].lat,2) + Math.pow(thisAV.NtoS[thisAV.globali].lon - thisAV.NtoS[thisAV.globalk].lon,2); 
                     thisAV.minDist = [Math.sqrt(thisAV.minSq), thisAV.NtoS[thisAV.globali],thisAV.NtoS[thisAV.globalk] ]
+                    updateAVControlEntry("closeLeader", "Closest: [" + 
+                            thisAV.minDist[1].label + "," +  thisAV.minDist[2].label
+                             + "], d: " + thisAV.minDist[0].toFixed(5));
                     for (let i = 0  ; i < thisAV.WtoE.length; i++) {
                         updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
                             visualSettings.discarded,
@@ -567,6 +582,9 @@ var hdxClosestPairsRecAV = {
                 thisAV.removeLineVisiting(thisAV.currentLine);
                 thisAV.currentLine = thisAV.lineStack.remove();
                 thisAV.removeLineVisiting(thisAV.currentLine);
+                updateAVControlEntry("savedCheck", "Total Checks Saved: " + (thisAV.NtoS.length*
+                    thisAV.NtoS.length) + "(Brute Force) - " + thisAV.checkedCounter + " = " +
+                    ((thisAV.NtoS.length*thisAV.NtoS.length) - thisAV.checkedCounter));
                 for (let i = 0  ; i < thisAV.WtoE.length; i++) {
                     updateMarkerAndTable(waypoints.indexOf(thisAV.WtoE[i]),
                         visualSettings.discarded,
@@ -789,8 +807,10 @@ var hdxClosestPairsRecAV = {
         let newAO = 'Number of points to stop on <input type="number" id="minPoints" min="3" max="' 
         + (waypoints.length - 1)/2 + '" value="3">';
         hdxAV.algOptions.innerHTML = newAO;
-        addEntryToAVControlPanel("checkingDistance", visualSettings.visiting);
-        
+       // addEntryToAVControlPanel("checkingDistance", visualSettings.visiting);
+        addEntryToAVControlPanel("closeLeader", visualSettings.leader);
+        addEntryToAVControlPanel("totalChecked", visualSettings.visiting);
+        addEntryToAVControlPanel("savedCheck", visualSettings.undiscovered);
     },
         
         
