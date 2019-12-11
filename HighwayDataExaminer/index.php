@@ -59,10 +59,13 @@
 <script src="hdxtravspanavs.js" type="text/javascript"></script>
 <script src="hdxbfchav.js" type="text/javascript"></script>
 <script src="hdxlinear.js" type="text/javascript"></script>
+<script src="hdxpresort.js" type="text/javascript"></script>
 <script src="hdxgraphsearchbox.js" type="text/javascript"></script>
 <script src="hdxkruskalav.js" type="text/javascript"></script>
 <script src="hdxdegreeav.js" type="text/javascript"></script>
 <script src="hdxdfsrecav.js" type="text/javascript"></script>
+<script src="hdxinstructions.js" type="text/javascript"></script>
+<script src="hdxclosestpairsrecav.js" type="text/javascript"></script>
 <link rel="stylesheet" type="text/css" href="supplmentalTypeAhead.css"/>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
@@ -127,7 +130,7 @@ ENDOFSTUFF;
 <link rel="stylesheet" type="text/css" href="hdx.css" />
 </head>
 
-<body onload="loadmap(); getDescriptions(); getGraphs(); hdxAV.initOnLoad();" ondragover="allowdrop(event)" ondrop="drop(event)">
+<body onload="loadmap(); getDescriptions(); getGraphs(); hdxAV.initOnLoad(); createTabs();" ondragover="allowdrop(event)" ondrop="drop(event)">
 <p class="menubar">
   HDX: <span id="startUp">To begin, select data to display using the Load Data panel at the upper left of the map</span>
   <span id="filename"></span>
@@ -143,6 +146,7 @@ ENDOFSTUFF;
 	  </td><td id="topControlPanelAV2">
 	  <select id="speedChanger" onchange="speedChanged()">
 	    <option value="0">Run To Completion</option>
+        <option value="0">Jump To Breakpoint</option>
 	    <option value="1">Fastest possible</option>
 	    <option value="5">Extremely fast</option>
 	    <option value="20">Very fast</option>
@@ -269,9 +273,37 @@ ENDOFSTUFF;
 </div>
 <div id="datatable" draggable="false"  ondragstart="drag(event)">
 </div>
-    <span id="Instructions">
-        This is the instructions box. You can click on a pseudocode row to set a breakpoint which will allow the code to run to this point. 
-    </span>
+    <table id="instructions">
+        <thead>
+            <tr ><th id="instructionsHeader">Using METAL's Highway Data Examiner (HDX)</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="tabs" id="instructionTab1">Maps/Graphs</td>
+                <td class="tabs" id="instructionTab2">AV Control Panel</td>
+                <td class="tabs" id="instructionTab3">AV Status Panel</td>
+                <td class="tabs" id="instructionTab4">Code/Breakpoints</td>
+                <td class="tabs" id="instructionTab5">Credits</td>
+            </tr>
+            <tr>
+                <td id="instructionsBody">HDX's user interface is
+                intended to be self-explanatory, but some of its
+                features might not be obvious.  Select among the tabs
+                above to learn how to get the most out
+                of <a href="http://courses.teresco.org/metal/">METAL</a>
+                and HDX.  This panel will close automatically after
+                data is loaded into HDX using the panel to the left.<br />
+		  <b>What's New?</b><br />  The 2019 Summer Scholars
+		project at <a href="http://www.siena.edu">Siena
+		College</a> added new algorithms (Kruskal's algorithm,
+		a recursive depth-first traversal, a vertex degree
+		search) new options and features in existing
+		algorithms, support for conditional breakpoints, plus
+		many user interface improvements and general bug
+		fixes.  Enjoy!<td>
+            <tr>
+        </tbody>
+    </table>
 </body>
 </html>
-<?php tmdb_close(); ?>
+<?php tmdb_close();?>

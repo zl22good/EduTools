@@ -11,7 +11,7 @@ var hdxKruskalAV = {
     // entries for list of AVs
     value: "kruskal",
     name: "Kruskal's Algorithm",
-    description: "Finds Minimum Spanning tree/forest by adding edges in increasing order.",
+    description: "Finds Minimum Spanning tree/forest by considering edges in increasing length.",
 
     
     // state variables for edge search
@@ -33,8 +33,6 @@ var hdxKruskalAV = {
     numEUndiscovered: 0,
     numEDiscardedOnRemoval: 0,
     totalTreeCost: 0,
-    
-   
 
     // comparator for priority queue
     comparator: function(a, b) {
@@ -96,17 +94,16 @@ var hdxKruskalAV = {
                 
                 highlightPseudocode(this.label, visualSettings.visiting);
                 
-                
                 // highlight edge 0 as leader in all categories and current
                 thisAV.discarded = 0;
         
                 thisAV.updateControlEntries();
                 
-                    
-                //add all edges to PQ sorted by length
+                // add all edges to PQ sorted by length
                 for (let i = 0; i < graphEdges.length; i++) {
                     thisAV.ldv.add(new LDVEntry(graphEdges[i].v1,
-                        edgeLengthInMiles(graphEdges[i]), i));
+						edgeLengthInMiles(graphEdges[i]), i));
+		    updatePolylineAndTable(i, visualSettings.discovered, false);
                 }
                 
                 hdxAV.iterationDone = true;
@@ -162,6 +159,25 @@ var hdxKruskalAV = {
             logMessage: function(thisAV) {
                 return "Removed edge #" +
                     thisAV.visiting.connection + " from Priority Queue";
+            },
+            currentVariable: function(thisAV, whatToDo){
+
+		if (thisAV.visiting == null) {
+		    // haven't got an edge yet
+		    return -1;
+		}
+                if (whatToDo == "getPlaceFromLDVCV1"){
+                    return thisAV.visiting.fromVIndex;
+                }
+                if (whatToDo == "getPlaceFromLDVCV2"){
+                    return thisAV.visiting.vIndex;
+                }
+                if (whatToDo == "getPlaceFromLDVCV3"){
+                    return thisAV.visiting.connection;
+                }
+
+		// other action without a variable
+		return -1;
             }
         },
         {
@@ -183,6 +199,9 @@ var hdxKruskalAV = {
             logMessage: function(thisAV) {
                 return "Checking if edge #" + thisAV.visiting.connection +
                     " creates a cycle";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.isCycle(thisAV.visiting.connection);
             }
         },
         {
@@ -210,6 +229,9 @@ var hdxKruskalAV = {
             logMessage: function(thisAV) {
                 return "Discarding edge #" + 
                     thisAV.visiting.connection + " on removal";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.visiting.connection;
             }
         },
 
@@ -270,6 +292,14 @@ var hdxKruskalAV = {
             },
             logMessage: function(thisAV) {
                 return "Adding edge #" + thisAV.visiting.connection + " to tree";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                if (whatToDo == "isNotCycleCV1") {
+                    return graphEdges[thisAV.visiting.connection].v1;
+                }
+                else { // (whatToDo == "isNotCycleCV2")
+                    return graphEdges[thisAV.visiting.connection].v2;
+                }
             }
         },
 
@@ -280,8 +310,6 @@ var hdxKruskalAV = {
                 hdxAV.algStat.innerHTML =
                     "Done! Visited " + graphEdges.length + " edges.";
                 updateAVControlEntry("visiting", "");
-                //updateAVControlEntry("discovered", "");
-                //updateAVControlEntry("undiscovered", "");
                 hdxAV.nextAction = "DONE";
                 hdxAV.iterationDone = true;
                 document.getElementById("totalTreeCost").innerHTML =
@@ -346,23 +374,23 @@ var hdxKruskalAV = {
         initWaypointsAndConnections(false, true,
                                     visualSettings.undiscovered);
         
-        this.discarded= 0;
-        this.ldv= null;
+        this.discarded = 0;
+        this.ldv = null;
         // last place to come out of the LDV, currently "visiting"
-        this.visiting= null;
+        this.visiting = null;
 
         // when finding all, track the lists of vertices and edges that are
         // forming the current spanning tree
-        this.componentVList= [];
-        this.componentEList= [];
-        this.componentVAdj= [];
+        this.componentVList = [];
+        this.componentEList = [];
+        this.componentVAdj = [];
 
         // some additional stats to maintain and display
-        this.numVSpanningTree= 0;
-        this.numESpanningTree= 0;
-        this.numVUndiscovered= waypoints.length;
-        this.numEUndiscovered= graphEdges.length;
-        this.numEDiscardedOnRemoval= 0;
+        this.numVSpanningTree = 0;
+        this.numESpanningTree = 0;
+        this.numVUndiscovered = waypoints.length;
+        this.numEUndiscovered = graphEdges.length;
+        this.numEDiscardedOnRemoval = 0;
         this.totalTreeCost = 0;
                 
         this.ldv = new HDXLinear(hdxLinearTypes.PRIORITY_QUEUE,
@@ -427,12 +455,36 @@ var hdxKruskalAV = {
         let max = waypoints.length-1;
         let temp = commonConditionalBreakpoints(name);
         
-        if(temp != "No innerHTML"){
+        if (temp != "No innerHTML"){
             return temp;
         }
-        else{
-            switch(name){
-
+        else {
+            switch (name) {
+            case "checkCycle":
+                html = createInnerHTMLChoice("boolean", "checkCycleCV", "creates a cycle", "adds an edge");
+                return html;
+            case "isNotCycle":
+                html = buildWaypointSelector2("isNotCycleCV1",
+					      "Please select the vertex of the connection <br \> to stop at: ");
+                html += '<br \>';
+                html += buildWaypointSelector2("isNotCycleCV2",
+					       "Please select the starting vertex <br \> to stop at: ");
+                return html;
+            case "isCycle":
+                html = buildWaypointSelector2("isCycleCV",
+					      "Please select the vertex of the discarded edge<br \> to stop at: ");
+                return html;
+            case "getPlaceFromLDV":
+                html = buildWaypointSelector2("getPlaceFromLDVCV1",
+					      "Please select the starting vertex to stop at: ");
+                html += '<br \>';
+                html += buildWaypointSelector2("getPlaceFromLDVCV2",
+					       "Please select the ending vertex to stop at: ");
+                html += '<br \>';
+                html += buildWaypointSelector2("getPlaceFromLDVCV3",
+					       "Please select the connection to stop at: ");
+                return html;
+		
             }
         }
         return "No innerHTML";
@@ -441,13 +493,15 @@ var hdxKruskalAV = {
     hasConditonalBreakpoints(name){
     
         let answer = hasCommonConditonalBreakpoints(name);
-        if(answer == true){
+        if (answer){
             return true;
         }
-        else{
-            switch(name){
-                    
-            }
+        switch (name){
+        case "checkCycle":
+        case "isNotCycle":
+        case "isCycle":
+        case "getPlaceFromLDV":
+            return true;
         }
         return false;
     }

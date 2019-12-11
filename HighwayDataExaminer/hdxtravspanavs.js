@@ -414,10 +414,13 @@ var hdxTraversalsSpanningAVCommon = {
                     thisAV.formatLDVEntry(thisAV.visiting) + " from " +
                     thisAV.ldv.displayName;
             },
-            currentVariable: function(thisAV, whatToDo){
-                let temp = thisAV.visiting.fromVIndex + " " + thisAV.visiting.vIndex;
-                console.log(temp);
-                return temp;
+            currentVariable: function(thisAV, whatToDo) {
+		if (thisAV.visiting == null) {
+		    // we haven't yet removed any value from the LDV, so
+		    // it would not be a break
+		    return "-1 -1";
+		}
+                return thisAV.visiting.fromVIndex + " " + thisAV.visiting.vIndex;
             }
         },
         {
@@ -437,6 +440,9 @@ var hdxTraversalsSpanningAVCommon = {
             logMessage: function(thisAV) {
                 return "Checking if #" + thisAV.visiting.vIndex +
                     " was previously added";
+            },
+            currentVariable: function(thisAV, whatToDo){
+                return thisAV.addedV[thisAV.visiting.vIndex];
             }
         },
         {
@@ -1119,43 +1125,53 @@ var hdxTraversalsSpanningAVCommon = {
 
     },
     
-    idOfAction(action){
+    idOfAction(action) {
             return action.label;
     },
     
-    setConditionalBreakpoints(name){
+    setConditionalBreakpoints(name) {
         let max = waypoints.length-1;
         let temp = commonConditionalBreakpoints(name);
-        if(temp != "No innerHTML"){
+        if(temp != "No innerHTML") {
             return temp;
         }
-        else{
-            switch(name){
-                case "getPlaceFromLDV":
-                case "checkNeighborsLoopIfFalse":
-                    html = buildWaypointSelector2("generic3","Please select the vertex of the LDV <br \>(either starting or to) to stop at: ");
+        else {
+            switch(name) {
+            case "getPlaceFromLDV":
+            case "checkNeighborsLoopIfFalse":
+                html = buildWaypointSelector2("generic3",
+					      "Please select the vertex of the LDV <br \>(either starting or to) to stop at: ");
                 return html;
-                case "wasNotAdded":
-                    html = buildWaypointSelector2("wasNotAdded1", "Please select the vertex of the connection <br \> to stop at: ");
-                    html += '<br \>';
-                    html += buildWaypointSelector2("wasNotAdded2", "Please select the starting vertex <br \> to stop at: ");
-                return html;        
+            case "wasNotAdded":
+                html = buildWaypointSelector2("wasNotAdded1",
+					      "Please select the vertex of the connection <br \> to stop at: ");
+                html += '<br \>';
+                html += buildWaypointSelector2("wasNotAdded2",
+					       "Please select the starting vertex <br \> to stop at: ");
+                return html;
+            case "checkAdded":
+                html = createInnerHTMLChoice("boolean","checkAddedCV","Tree contains vertex",
+					     "Vertex is missing from tree");
+                return html;
+		
             }
         }
         return "No innerHTML";
     },
-
-    hasConditonalBreakpoints(name){
+    
+    hasConditonalBreakpoints(name) {
         let answer = hasCommonConditonalBreakpoints(name);
-        if(answer == true){
+        if (answer){
             return true;
         }
-        else{
-            switch(name){
-                case "wasNotAdded":    
-                case "getPlaceFromLDV":
-                case "checkNeighborsLoopIfFalse":
-                    return true;
+        else {
+            switch (name) {
+            case "wasNotAdded":    
+            case "getPlaceFromLDV":
+            case "checkNeighborsLoopIfFalse":
+            case "checkNeighborsLoopIf":
+            case "checkAdded":
+                return true;
             }
         }
         return false;

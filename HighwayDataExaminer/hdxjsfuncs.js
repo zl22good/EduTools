@@ -140,7 +140,6 @@ function updateMarkerAndTable(waypointNum, vs, zIndex, hideTableLine) {
 // based on the visual settings, optionally hide line
 function updatePolylineAndTable(edgeNum, vs, hideTableLine) {
 
-    let edge = graphEdges[edgeNum];
     connections[edgeNum].setStyle({
         color: vs.color,
         weight: vs.weight,
@@ -508,7 +507,8 @@ function processContents(fileContents) {
     
     document.getElementById('datatable').innerHTML = pointboxContents;
     hideLoadDataPanel();
-    updateMap();
+    mapStatus = mapStates.HDX;
+    updateMap(null,null,null);
 }
 
 // TODO: make sure maps cannot be selected when an AV is running
@@ -701,7 +701,7 @@ function parseTMGContents(fileContents) {
             ' &harr; ' + edgeInfo[1] + ':&nbsp;'
             + (waypoints[newEdge.v2].label).substring(0,5) + '</td>';
         
-        eTable += '<tr custom-title = "' + test + '"' + 'onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="edgeClick('+i+')" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td id = "connectname" style ="word-break:break-all;" >' + i + '</td>';
+        eTable += '<tr custom-title = "' + test + '"' + 'onmouseover="hoverE(event,'+i+')" onmouseout="hoverEndE(event,'+i+')" onclick="connectionClick({ connIndex: '+i+'})" id="connection' + i + '" class="v_' + firstNode + '_' + secondNode + '"><td id = "connectname" style ="word-break:break-all;" >' + i + '</td>';
         
         var subst2 = '<td style ="word-break:break-all;"'; 
         var subst3 = subst2 + '>' + edgeInfo[2] + subst;
@@ -1248,7 +1248,7 @@ function customTitle()
         {
             //offset the numbering to avoid conflicts
             var offset = numberOfDataTitles + x;
-            var theClass = "title" + offset;
+            var theClass = "Atitle" + offset;
             //adds class to the original html
             titles[x].classList.add(theClass);
             //Remove any duplicates before after adding the class, but before doing anything else
@@ -1261,7 +1261,7 @@ function customTitle()
                 try {
                     var target = event.target; //mouse enter event
                     var currClass = target.getAttribute("class"); // grabs the current class, acting as an ID
-                    currClass = currClass.substr(currClass.indexOf("title"));
+                    currClass = currClass.substr(currClass.indexOf("Atitle"));
                     var classNodes = document.body.getElementsByClassName(currClass);
                     var spanTag = classNodes[1];//Grabs the spanTag as it is always the 2nd element when pulled this way
                     var style = window.getComputedStyle(spanTag);
@@ -1298,7 +1298,7 @@ function customTitle()
 
                     var target = event.target;
                     var currClass = target.getAttribute("class"); // grabs the current class, acting as an ID
-                    currClass = currClass.substr(currClass.indexOf("title"));
+                    currClass = currClass.substr(currClass.indexOf("Atitle"));
                     var classNodes = document.body.getElementsByClassName(currClass);
                     var spanTag = classNodes[1]; //Grabs the spanTag as it is always the 2nd element
                     var style = window.getComputedStyle(spanTag);
@@ -1364,10 +1364,10 @@ function updateTitle(customSpanTag)
     for(let temp of classes)
         {
             //if the current class has title in it
-            if(temp.includes("title"))
+            if(temp.includes("Atitle"))
                 {
                     //if last class was already a title
-                    if(lastClass.includes("title"))
+                    if(lastClass.includes("Atitle"))
                         {
                             //remove the class title###... from the main tag
                             //get Elements both with the title###... and data-title classes
@@ -1402,13 +1402,13 @@ function getLastTitle()
             //make theOne equal to it
             for(let title of classes)
                 {
-                    if(/title(\d+)/.test(title))
+                    if(/Atitle(\d+)/.test(title))
                        {
                             theOne = title;
                        }
                 }
             //remove the "title" part and parse it for the number portion
-            theOne = theOne.substring(5);
+            theOne = theOne.substring(6);
             return (parseInt(theOne) + 1);
         }
     else
@@ -1418,15 +1418,16 @@ function getLastTitle()
         }
 }
 
+//Hide the instructions object
 function hideInstructions()
 {
-    let element = document.getElementById("Instructions");
+    let element = document.getElementById("instructions");
     element.style.display = "none";
 }
 
+//Inserts innerHTML of code lines
+//for conditionals
 function commonConditionalBreakpoints(name){
-    let element = document.getElementById("useBreakpointVariable");
-    let max = waypoints.length-1;
     let html = "No innerHTML"
     switch(name){
         case "vtestforLoopTop":
@@ -1439,6 +1440,8 @@ function commonConditionalBreakpoints(name){
     return html;
 }
 
+//Used with each algorithms method to check if a method
+//has a conditional
 function hasCommonConditonalBreakpoints(name){
     switch(name){
         case "vtestforLoopTop":
